@@ -16,29 +16,12 @@
  */
 package org.apache.camel.quarkus.component.tika.it;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import org.apache.camel.builder.RouteBuilder;
 
-import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
-import org.junit.jupiter.api.Test;
-
-@QuarkusTest
-class TikaTest {
-
-    @Test
-    public void test() throws Exception {
-        Path document = Paths.get("src/test/resources/test.doc");
-        RestAssured.given() //
-                .contentType(ContentType.BINARY)
-                .body(Files.readAllBytes(document))
-                .post("/tika/post") //
-                .then()
-                .statusCode(200);
-        //                .body(is("test")); todo
-
+public class TikaRouteBuilder extends RouteBuilder {
+    @Override
+    public void configure() {
+        from("direct:start")
+                .to("tika:parse");
     }
-
 }
