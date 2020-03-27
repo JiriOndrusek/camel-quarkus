@@ -19,11 +19,8 @@ package org.apache.camel.quarkus.component.tika.it;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import org.apache.camel.Exchange;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.containsStringIgnoringCase;
 
 @QuarkusTest
@@ -38,9 +35,7 @@ class TikaTest {
                 .post("/tika/post") //
                 .then()
                 .statusCode(201)
-                .body(containsStringIgnoringCase(msg))
-        ;
-
+                .body(containsStringIgnoringCase(msg));
 
     }
 
