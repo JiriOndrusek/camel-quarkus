@@ -21,6 +21,7 @@ import java.util.Map;
 
 import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.annotations.Recorder;
+import io.quarkus.tika.TikaParser;
 import org.apache.camel.Component;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Producer;
@@ -67,16 +68,16 @@ public class TikaRecorder {
 
         @Override
         public Producer createProducer() throws Exception {
-
+            TikaParser tikaParser = getCamelContext().getRegistry().findByType(TikaParser.class).iterator().next();
             //TODO get tikaParse intialized by quarkus.tika
-            return new QuarkusTikaProducer(this);
+            return new QuarkusTikaProducer(this, tikaParser);
         }
     }
 
     static class QuarkusTikaProducer extends TikaProducer {
 
-        public QuarkusTikaProducer(TikaEndpoint endpoint) {
-            super(endpoint);
+        public QuarkusTikaProducer(TikaEndpoint endpoint, TikaParser tikaParser) {
+            super(endpoint, tikaParser);
         }
     }
 }

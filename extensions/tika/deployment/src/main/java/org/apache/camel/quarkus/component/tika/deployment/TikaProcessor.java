@@ -20,7 +20,6 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
-import io.quarkus.tika.TikaParser;
 import org.apache.camel.quarkus.component.tika.TikaRecorder;
 import org.apache.camel.quarkus.core.deployment.CamelRuntimeBeanBuildItem;
 import org.apache.camel.quarkus.core.deployment.CamelServiceFilter;
