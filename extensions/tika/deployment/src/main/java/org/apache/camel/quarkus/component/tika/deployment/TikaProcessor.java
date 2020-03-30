@@ -17,7 +17,14 @@
 package org.apache.camel.quarkus.component.tika.deployment;
 
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.annotations.ExecutionTime;
+import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.tika.TikaParser;
+import org.apache.camel.quarkus.component.tika.TikaRecorder;
+import org.apache.camel.quarkus.core.deployment.CamelRuntimeBeanBuildItem;
+import org.apache.camel.quarkus.core.deployment.CamelServiceFilter;
+import org.apache.camel.quarkus.core.deployment.CamelServiceFilterBuildItem;
 import org.jboss.logging.Logger;
 
 class TikaProcessor {
@@ -28,5 +35,23 @@ class TikaProcessor {
     @BuildStep
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
+    }
+
+    /*
+     * The bean-validator component is programmatically configured by the extension thus
+     * we can safely prevent camel to instantiate a default instance.
+     */
+    @BuildStep
+    CamelServiceFilterBuildItem serviceFilter() {
+        return new CamelServiceFilterBuildItem(CamelServiceFilter.forComponent("tika"));
+    }
+
+    @Record(ExecutionTime.STATIC_INIT)
+    @BuildStep
+    CamelRuntimeBeanBuildItem beanValidatorComponent(TikaRecorder recorder) {
+        return new CamelRuntimeBeanBuildItem(
+                "tika",
+                TikaRecorder.class.getName(),
+                recorder.createTikaComponent());
     }
 }

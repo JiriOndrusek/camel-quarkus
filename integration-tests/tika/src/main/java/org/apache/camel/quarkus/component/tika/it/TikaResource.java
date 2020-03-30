@@ -44,7 +44,7 @@ public class TikaResource {
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.TEXT_PLAIN)
     public Response post(byte[] message) throws Exception {
-        final String response = producerTemplate.requestBody("tika:parse", message, String.class);
+        final String response = (String) producerTemplate.requestBody("tika:parse?tikaParseOutputFormat=text", message);
         return Response
                 .created(new URI("https://camel.apache.org/"))
                 .entity(response)
