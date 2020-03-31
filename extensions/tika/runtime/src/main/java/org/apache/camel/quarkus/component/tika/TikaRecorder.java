@@ -16,7 +16,6 @@
  */
 package org.apache.camel.quarkus.component.tika;
 
-import java.net.URI;
 import java.util.Map;
 
 import io.quarkus.runtime.RuntimeValue;
@@ -26,10 +25,8 @@ import org.apache.camel.Component;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Producer;
 import org.apache.camel.component.tika.TikaComponent;
-import org.apache.camel.component.tika.TikaConfiguration;
 import org.apache.camel.component.tika.TikaEndpoint;
 import org.apache.camel.component.tika.TikaProducer;
-import org.apache.tika.config.TikaConfig;
 
 @Recorder
 public class TikaRecorder {
@@ -47,23 +44,15 @@ public class TikaRecorder {
 
         @Override
         protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
-            TikaConfiguration tikaConfiguration = new TikaConfiguration();
-            setProperties(tikaConfiguration, parameters);
-            TikaConfig config = resolveAndRemoveReferenceParameter(parameters, TIKA_CONFIG, TikaConfig.class);
-            if (config != null) {
-                tikaConfiguration.setTikaConfig(config);
-            }
-            tikaConfiguration.setOperation(new URI(uri).getHost());
-
-            TikaEndpoint endpoint = new QuarkusTikaEndpoint(uri, this, tikaConfiguration);
+            TikaEndpoint endpoint = new QuarkusTikaEndpoint(uri, this);
             return endpoint;
         }
     }
 
     static class QuarkusTikaEndpoint extends TikaEndpoint {
 
-        public QuarkusTikaEndpoint(String endpointUri, Component component, TikaConfiguration tikaConfiguration) {
-            super(endpointUri, component, tikaConfiguration);
+        public QuarkusTikaEndpoint(String endpointUri, Component component) {
+            super(endpointUri, component, null);
         }
 
         @Override

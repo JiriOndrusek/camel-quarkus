@@ -32,7 +32,7 @@ class TikaTest {
 
     @Test
     public void test() throws Exception {
-        Path document = Paths.get("src/test/resources/test.doc");
+        Path document = Paths.get("src/test/resources/test_bg.docx");
         RestAssured.given() //
                 .contentType(ContentType.BINARY)
                 .body(Files.readAllBytes(document))

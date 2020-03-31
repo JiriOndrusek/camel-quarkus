@@ -16,10 +16,12 @@
  */
 package org.apache.camel.quarkus.component.tika.deployment;
 
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import org.apache.camel.quarkus.component.tika.TikaRecorder;
 import org.apache.camel.quarkus.core.deployment.CamelRuntimeBeanBuildItem;
 import org.apache.camel.quarkus.core.deployment.CamelServiceFilter;
@@ -43,6 +45,51 @@ class TikaProcessor {
     @BuildStep
     CamelServiceFilterBuildItem serviceFilter() {
         return new CamelServiceFilterBuildItem(CamelServiceFilter.forComponent("tika"));
+    }
+
+    @BuildStep
+    void registerForReflection(BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
+        reflectiveClass.produce(
+                new ReflectiveClassBuildItem(
+                        true,
+                        false,
+                        "org.apache.poi.hwpf.model.FileInformationBlock"));
+
+        reflectiveClass.produce(
+                new ReflectiveClassBuildItem(
+                        false,
+                        false,
+                        "org.apache.http.impl.client.CloseableHttpResponseProxy"));
+
+        reflectiveClass.produce(
+                new ReflectiveClassBuildItem(
+                        true,
+                        false,
+                        "org.jboss.resteasy.core.ContextParameterInjector"));
+
+        reflectiveClass.produce(
+                new ReflectiveClassBuildItem(
+                        true,
+                        false,
+                        "org.jboss.resteasy.core.ContextParameterInjector$GenericDelegatingProxy"));
+
+        reflectiveClass.produce(
+                new ReflectiveClassBuildItem(
+                        true,
+                        false,
+                        "com.sun.xml.bind.v2.model.annotation.LocatableAnnotation"));
+
+        reflectiveClass.produce(
+                new ReflectiveClassBuildItem(
+                        true,
+                        false,
+                        "java.lang.annotation.Annotation"));
+
+        reflectiveClass.produce(
+                new ReflectiveClassBuildItem(
+                        true,
+                        false,
+                        "porg.apache.http.HttpResponse"));
     }
 
     @Record(ExecutionTime.STATIC_INIT)
