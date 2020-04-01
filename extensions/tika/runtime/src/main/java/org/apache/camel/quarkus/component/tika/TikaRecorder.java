@@ -16,17 +16,30 @@
  */
 package org.apache.camel.quarkus.component.tika;
 
-import java.util.Map;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.Set;
+
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
 
 import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.annotations.Recorder;
+import io.quarkus.tika.TikaContent;
+import io.quarkus.tika.TikaMetadata;
 import io.quarkus.tika.TikaParser;
 import org.apache.camel.Component;
-import org.apache.camel.Endpoint;
 import org.apache.camel.Producer;
 import org.apache.camel.component.tika.TikaComponent;
+import org.apache.camel.component.tika.TikaConfiguration;
 import org.apache.camel.component.tika.TikaEndpoint;
 import org.apache.camel.component.tika.TikaProducer;
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
 
 @Recorder
 public class TikaRecorder {
@@ -43,30 +56,40 @@ public class TikaRecorder {
         private static final String TIKA_CONFIG = "tikaConfig";
 
         @Override
-        protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
-            TikaEndpoint endpoint = new QuarkusTikaEndpoint(uri, this);
-            return endpoint;
+        protected TikaEndpoint createEndpoint(String uri, TikaConfiguration tikaConfiguration) {
+            return new QuarkusTikaEndpoint(uri, this, tikaConfiguration);
         }
     }
 
     static class QuarkusTikaEndpoint extends TikaEndpoint {
 
-        public QuarkusTikaEndpoint(String endpointUri, Component component) {
-            super(endpointUri, component, null);
+        public QuarkusTikaEndpoint(String endpointUri, Component component, TikaConfiguration tikaConfiguration) {
+
+            super(endpointUri, component, tikaConfiguration);
         }
 
         @Override
         public Producer createProducer() throws Exception {
             TikaParser tikaParser = getCamelContext().getRegistry().findByType(TikaParser.class).iterator().next();
-            //TODO get tikaParse intialized by quarkus.tika
-            return new QuarkusTikaProducer(this, tikaParser);
+            return new TikaProducer(this, new Parser() {
+                @Override
+                public Set<MediaType> getSupportedTypes(ParseContext parseContext) {
+                    return Collections.emptySet();
+                }
+
+                @Override
+                public void parse(InputStream inputStream, ContentHandler contentHandler, Metadata metadata,
+                        ParseContext parseContext) throws IOException, SAXException, TikaException {
+                    TikaContent tc = tikaParser.parse(inputStream, contentHandler);
+                    TikaMetadata tm = tc.getMetadata();
+                    if (tm != null) {
+                        for (String name : tm.getNames()) {
+                            tm.getValues(name).stream().forEach((v) -> metadata.add(name, v));
+                        }
+                    }
+                }
+            });
         }
     }
 
-    static class QuarkusTikaProducer extends TikaProducer {
-
-        public QuarkusTikaProducer(TikaEndpoint endpoint, TikaParser tikaParser) {
-            super(endpoint, tikaParser);
-        }
-    }
 }

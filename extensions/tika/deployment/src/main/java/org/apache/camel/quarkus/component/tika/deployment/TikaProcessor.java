@@ -94,7 +94,7 @@ class TikaProcessor {
 
     @Record(ExecutionTime.STATIC_INIT)
     @BuildStep
-    CamelRuntimeBeanBuildItem beanValidatorComponent(TikaRecorder recorder) {
+    CamelRuntimeBeanBuildItem tikaComponent(TikaRecorder recorder) {
         return new CamelRuntimeBeanBuildItem(
                 "tika",
                 TikaRecorder.class.getName(),

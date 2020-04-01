@@ -27,6 +27,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+// import org.apache.camel.ProducerTemplate;
 import org.apache.camel.ProducerTemplate;
 import org.jboss.logging.Logger;
 
@@ -44,10 +45,11 @@ public class TikaResource {
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.TEXT_PLAIN)
     public Response post(byte[] message) throws Exception {
-        final String response = (String) producerTemplate.requestBody("tika:parse", message);
+        final String response = producerTemplate.requestBody("tika:parse", message, String.class);
         return Response
                 .created(new URI("https://camel.apache.org/"))
                 .entity(response)
                 .build();
     }
+
 }

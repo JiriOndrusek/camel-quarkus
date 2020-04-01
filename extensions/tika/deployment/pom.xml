@@ -57,10 +57,10 @@
             <artifactId>quarkus-tika-deployment</artifactId>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>org.apache.camel.quarkus</groupId>-->
-<!--            <artifactId>camel-quarkus-support-xalan-deployment</artifactId>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.apache.camel.quarkus</groupId>
+            <artifactId>camel-quarkus-support-xalan-deployment</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

@@ -16,6 +16,10 @@
  */
 package org.apache.camel.quarkus.component.tika.it;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,23 +27,40 @@ import java.nio.file.Paths;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.txt.UniversalEncodingDetector;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.containsStringIgnoringCase;
+import static org.hamcrest.Matchers.startsWith;
 
 @QuarkusTest
 class TikaTest {
 
     @Test
-    public void test() throws Exception {
-        Path document = Paths.get("src/test/resources/test_bg.docx");
-        RestAssured.given() //
+    public void testDoc() throws Exception {
+        Path document = Paths.get("src/test/resources/test.doc");
+        String body = RestAssured.given() //
                 .contentType(ContentType.BINARY)
                 .body(Files.readAllBytes(document))
                 .post("/tika/post") //
                 .then()
                 .statusCode(201)
-                .body(containsStringIgnoringCase("test_quarkus_tika"));
+                .body(containsStringIgnoringCase("application/msword"))
+                .body(containsStringIgnoringCase("test"))
+                .extract().asString();
+
+        Charset detectedCharset = null;
+        try {
+            InputStream bodyIs = new ByteArrayInputStream(body.getBytes());
+            UniversalEncodingDetector encodingDetector = new UniversalEncodingDetector();
+            detectedCharset = encodingDetector.detect(bodyIs, new Metadata());
+        } catch (IOException e1) {
+            Assertions.fail();
+        }
+
+        Assertions.assertTrue(detectedCharset.name().startsWith(Charset.defaultCharset().name()));
     }
 
 }
