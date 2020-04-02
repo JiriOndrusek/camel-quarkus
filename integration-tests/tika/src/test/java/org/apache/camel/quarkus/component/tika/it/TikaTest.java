@@ -40,7 +40,7 @@ import static org.hamcrest.Matchers.startsWith;
 @QuarkusTest
 class TikaTest {
 
-        @Test
+    @Test
     public void testDoc() throws Exception {
         Path document = Paths.get("src/test/resources/test.doc");
         String body = test(document, "application/msword", "test");
@@ -57,7 +57,7 @@ class TikaTest {
         Assertions.assertTrue(detectedCharset.name().startsWith(Charset.defaultCharset().name()));
     }
 
-//    @Test
+    @Test
     public void testOdt() throws Exception {
         Path document = Paths.get("src/test/resources/testOpenOffice2.odt");
         String body = test(document, "application/vnd.oasis.opendocument.text",
