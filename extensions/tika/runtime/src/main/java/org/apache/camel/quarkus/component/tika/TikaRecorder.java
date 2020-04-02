@@ -18,9 +18,14 @@ package org.apache.camel.quarkus.component.tika;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.parser.microsoft.OfficeParser;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -29,12 +34,9 @@ import io.quarkus.runtime.annotations.Recorder;
 import io.quarkus.tika.TikaContent;
 import io.quarkus.tika.TikaMetadata;
 import io.quarkus.tika.TikaParser;
-import org.apache.camel.Component;
-import org.apache.camel.Producer;
 import org.apache.camel.component.tika.TikaComponent;
 import org.apache.camel.component.tika.TikaConfiguration;
 import org.apache.camel.component.tika.TikaEndpoint;
-import org.apache.camel.component.tika.TikaProducer;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
@@ -56,40 +58,40 @@ public class TikaRecorder {
         private static final String TIKA_CONFIG = "tikaConfig";
 
         @Override
-        protected TikaEndpoint createEndpoint(String uri, TikaConfiguration tikaConfiguration) {
-            return new QuarkusTikaEndpoint(uri, this, tikaConfiguration);
-        }
-    }
+        protected TikaEndpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters)  throws Exception {
+            TikaConfiguration tikaConfiguration = new TikaConfiguration();
+            setProperties(tikaConfiguration, parameters);
+            TikaConfig config = resolveAndRemoveReferenceParameter(parameters, TIKA_CONFIG, TikaConfig.class);
+            if (config == null) {
+                TikaParser tikaParser = getCamelContext().getRegistry().findByType(TikaParser.class).iterator().next();
+                config = new TikaConfig() {
+                    @Override
+                    public Parser getParser() {
+                        return new  Parser() {
+                            @Override
+                            public Set<MediaType> getSupportedTypes(ParseContext parseContext) {
+                                return Arrays.stream(OfficeParser.POIFSDocumentType.values()).map(t -> t.getType()).collect(Collectors.toSet());
+                            }
 
-    static class QuarkusTikaEndpoint extends TikaEndpoint {
-
-        public QuarkusTikaEndpoint(String endpointUri, Component component, TikaConfiguration tikaConfiguration) {
-
-            super(endpointUri, component, tikaConfiguration);
-        }
-
-        @Override
-        public Producer createProducer() throws Exception {
-            TikaParser tikaParser = getCamelContext().getRegistry().findByType(TikaParser.class).iterator().next();
-            return new TikaProducer(this, new Parser() {
-                @Override
-                public Set<MediaType> getSupportedTypes(ParseContext parseContext) {
-                    return Collections.emptySet();
-                }
-
-                @Override
-                public void parse(InputStream inputStream, ContentHandler contentHandler, Metadata metadata,
-                        ParseContext parseContext) throws IOException, SAXException, TikaException {
-                    TikaContent tc = tikaParser.parse(inputStream, contentHandler);
-                    TikaMetadata tm = tc.getMetadata();
-                    if (tm != null) {
-                        for (String name : tm.getNames()) {
-                            tm.getValues(name).stream().forEach((v) -> metadata.add(name, v));
-                        }
+                            @Override
+                            public void parse(InputStream inputStream, ContentHandler contentHandler, Metadata metadata,
+                                    ParseContext parseContext) throws IOException, SAXException, TikaException {
+                                TikaContent tc = tikaParser.parse(inputStream, contentHandler);
+                                TikaMetadata tm = tc.getMetadata();
+                                if (tm != null) {
+                                    for (String name : tm.getNames()) {
+                                        tm.getValues(name).stream().forEach((v) -> metadata.add(name, v));
+                                    }
+                                }
+                            }
+                        };
                     }
-                }
-            });
+                };
+                tikaConfiguration.setTikaConfig(config);
+            }
+            tikaConfiguration.setOperation(new URI(uri).getHost());
+
+            return new TikaEndpoint(uri, this, tikaConfiguration);
         }
     }
-
 }
