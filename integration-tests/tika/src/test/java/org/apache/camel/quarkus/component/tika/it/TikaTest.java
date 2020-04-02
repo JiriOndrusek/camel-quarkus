@@ -43,22 +43,6 @@ class TikaTest {
     }
 
     @Test
-    public void testOffice() throws Exception {
-        String body = test("test.doc", "application/msword", "test");
-
-        Charset detectedCharset = null;
-        try {
-            InputStream bodyIs = new ByteArrayInputStream(body.getBytes());
-            UniversalEncodingDetector encodingDetector = new UniversalEncodingDetector();
-            detectedCharset = encodingDetector.detect(bodyIs, new Metadata());
-        } catch (IOException e1) {
-            Assertions.fail();
-        }
-
-        Assertions.assertTrue(detectedCharset.name().startsWith(Charset.defaultCharset().name()));
-    }
-
-    @Test
     public void testOdf() throws Exception {
         String body = test("testOpenOffice2.odt", "application/vnd.oasis.opendocument.text",
                 "This is a sample Open Office document, written in NeoOffice 2.2.1 for the Mac");
@@ -74,12 +58,32 @@ class TikaTest {
 
         Assertions.assertTrue(detectedCharset.name().startsWith(StandardCharsets.UTF_16.name()));
     }
-    //
-    ////    @Test
-    //    public void testGif() throws Exception {
-    //        Path document = Paths.get("src/test/resources/testGIF.gif");
-    //        test(document, "image/gif", null);
-    //    }
+
+    @Test
+    public void testOffice() throws Exception {
+        String body = test("test.doc", "application/msword", "test");
+
+        Charset detectedCharset = null;
+        try {
+            InputStream bodyIs = new ByteArrayInputStream(body.getBytes());
+            UniversalEncodingDetector encodingDetector = new UniversalEncodingDetector();
+            detectedCharset = encodingDetector.detect(bodyIs, new Metadata());
+        } catch (IOException e1) {
+            Assertions.fail();
+        }
+
+        Assertions.assertTrue(detectedCharset.name().startsWith(Charset.defaultCharset().name()));
+    }
+
+    //    @Test
+    public void testImageGif() throws Exception {
+        test("black.png", "image/gif", null);
+    }
+
+    @Test
+    public void testXml() throws Exception {
+        test("quarkus.xml", "application/xml", "Hello Quarkus");
+    }
 
     //---------------------------------------------------------------------------------------------------------
 
