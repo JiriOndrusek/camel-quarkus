@@ -17,13 +17,11 @@
 package org.apache.camel.quarkus.component.tika.it;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
@@ -35,15 +33,18 @@ import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.containsStringIgnoringCase;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.startsWith;
 
 @QuarkusTest
 class TikaTest {
 
     @Test
-    public void testDoc() throws Exception {
-        Path document = Paths.get("src/test/resources/test.doc");
-        String body = test(document, "application/msword", "test");
+    public void testPdf() throws Exception {
+        test("quarkus.pdf", "application/pdf", "Hello Quarkus");
+    }
+
+    @Test
+    public void testOffice() throws Exception {
+        String body = test("test.doc", "application/msword", "test");
 
         Charset detectedCharset = null;
         try {
@@ -58,9 +59,8 @@ class TikaTest {
     }
 
     @Test
-    public void testOdt() throws Exception {
-        Path document = Paths.get("src/test/resources/testOpenOffice2.odt");
-        String body = test(document, "application/vnd.oasis.opendocument.text",
+    public void testOdf() throws Exception {
+        String body = test("testOpenOffice2.odt", "application/vnd.oasis.opendocument.text",
                 "This is a sample Open Office document, written in NeoOffice 2.2.1 for the Mac");
 
         Charset detectedCharset = null;
@@ -74,19 +74,19 @@ class TikaTest {
 
         Assertions.assertTrue(detectedCharset.name().startsWith(StandardCharsets.UTF_16.name()));
     }
-
-    //    @Test
-    public void testGif() throws Exception {
-        Path document = Paths.get("src/test/resources/testGIF.gif");
-        test(document, "image/gif", null);
-    }
+    //
+    ////    @Test
+    //    public void testGif() throws Exception {
+    //        Path document = Paths.get("src/test/resources/testGIF.gif");
+    //        test(document, "image/gif", null);
+    //    }
 
     //---------------------------------------------------------------------------------------------------------
 
-    private String test(Path path, String expectedContentType, String expectedBody) throws Exception {
+    private String test(String fileName, String expectedContentType, String expectedBody) throws Exception {
         String body = RestAssured.given() //
                 .contentType(ContentType.BINARY)
-                .body(Files.readAllBytes(path))
+                .body(readQuarkusFile(fileName))
                 .post("/tika/post") //
                 .then()
                 .statusCode(201)
@@ -97,4 +97,19 @@ class TikaTest {
         return body;
     }
 
+    private byte[] readQuarkusFile(String fileName) throws Exception {
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream(fileName)) {
+            return readBytes(is);
+        }
+    }
+
+    static byte[] readBytes(InputStream is) throws Exception {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        byte[] buffer = new byte[4096];
+        int len;
+        while ((len = is.read(buffer)) != -1) {
+            os.write(buffer, 0, len);
+        }
+        return os.toByteArray();
+    }
 }
