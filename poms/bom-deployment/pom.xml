@@ -61,6 +61,13 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <!-- A temporary workaround for https://github.com/quarkusio/quarkus/issues/8266-->
+            <dependency>
+                <groupId>org.apache.camel.quarkus</groupId>
+                <artifactId>camel-quarkus-tika-deployment</artifactId>
+                <version>${camel-quarkus.version}</version>
+            </dependency>
+
             <!-- Dependencies a..z; do not remove this comment, it is important when sorting via  mvn process-resources -Pformat -->
 
             <!--$ org.apache.camel.quarkus $-->
