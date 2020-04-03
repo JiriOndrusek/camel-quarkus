@@ -24,6 +24,11 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.URIResolver;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TemplatesHandler;
+import javax.xml.transform.sax.TransformerHandler;
+
+import org.xml.sax.XMLFilter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +37,7 @@ import org.slf4j.LoggerFactory;
  * A {@link TransformerFactory} delegating to a {@link TransformerFactory} created via
  * {@code TransformerFactory.newInstance("org.apache.xalan.xsltc.trax.TransformerFactoryImpl", Thread.currentThread().getContextClassLoader())}
  */
-public final class XalanTransformerFactory extends TransformerFactory {
+public final class XalanTransformerFactory extends SAXTransformerFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(XalanTransformerFactory.class);
 
     private final TransformerFactory delegate;
@@ -110,4 +115,42 @@ public final class XalanTransformerFactory extends TransformerFactory {
     public ErrorListener getErrorListener() {
         return delegate.getErrorListener();
     }
+
+    private SAXTransformerFactory delegateAsSAXTransformerFactory() {
+        if (delegate instanceof SAXTransformerFactory) {
+            return (SAXTransformerFactory) delegate;
+        }
+        throw new IllegalArgumentException("Unsupported TransformerFactory feature " + SAXTransformerFactory.FEATURE);
+    }
+
+    @Override
+    public TransformerHandler newTransformerHandler(Source source) throws TransformerConfigurationException {
+        return delegateAsSAXTransformerFactory().newTransformerHandler(source);
+    }
+
+    @Override
+    public TransformerHandler newTransformerHandler(Templates templates) throws TransformerConfigurationException {
+        return delegateAsSAXTransformerFactory().newTransformerHandler(templates);
+    }
+
+    @Override
+    public TransformerHandler newTransformerHandler() throws TransformerConfigurationException {
+        return delegateAsSAXTransformerFactory().newTransformerHandler();
+    }
+
+    @Override
+    public TemplatesHandler newTemplatesHandler() throws TransformerConfigurationException {
+        return delegateAsSAXTransformerFactory().newTemplatesHandler();
+    }
+
+    @Override
+    public XMLFilter newXMLFilter(Source source) throws TransformerConfigurationException {
+        return delegateAsSAXTransformerFactory().newXMLFilter(source);
+    }
+
+    @Override
+    public XMLFilter newXMLFilter(Templates templates) throws TransformerConfigurationException {
+        return delegateAsSAXTransformerFactory().newXMLFilter(templates);
+    }
+
 }

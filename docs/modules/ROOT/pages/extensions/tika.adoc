@@ -1,0 +1,44 @@
+[[qute]]
+= Camel Tika Extension
+
+*Since Camel Quarkus 1.0.0-M6*
+
+The Camel Tika component provides the ability to detect and parse documents with Apache Tika.
+This component uses https://tika.apache.org/[Apache Tika] as underlying library to work
+with documents.
+
+Maven users will need to add the following dependency to their `pom.xml` for this extension.
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.apache.camel.quarkus</groupId>
+    <artifactId>camel-quarkus-tika</artifactId>
+</dependency>
+----
+
+== Usage
+
+Please refer to the https://quarkus.io/guides/qute[Quarkus Qute].
+
+
+== Configuration
+
+In order to work in native mode the `quarkus.tika.parsers` and optionally 'quarkus.tika.parser.*'  configuration
+should be set. Example of `application.properties` follows :
+[source,properties]
+----
+quarkus.tika.parsers= pdf,odf,office
+quarkus.tika.parser.office = org.apache.tika.parser.microsoft.OfficeParser
+----
+
+More information about selecting parsers see https://quarkus.io/guides/tika[QUARKUS - USING APACHE TIKA]
+
+== Limitations
+
+Not all available parsers from https://tika.apache.org/[Apache Tika] works completely in native or JVM mode.
+For example PDF and Open Document parser works completely. For more information see
+https://quarkus.io/guides/tika[QUARKUS - USING APACHE TIKA]
+
+Parameters `tikaConfig` and `tikaConfigUri` are not available in quarkus camel tika extension. The only configuration
+can be changed via `application.properties` (see Configuration for more information)

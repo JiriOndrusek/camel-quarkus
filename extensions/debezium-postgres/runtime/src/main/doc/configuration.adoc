@@ -1,0 +1,9 @@
+In order to work in native mode the `quarkus.tika.parsers` and optionally 'quarkus.tika.parser.*'  configuration
+should be set. Example of `application.properties` follows :
+[source,properties]
+----
+quarkus.tika.parsers= pdf,odf,office
+quarkus.tika.parser.office = org.apache.tika.parser.microsoft.OfficeParser
+----
+
+More information about selecting parsers see https://quarkus.io/guides/tika[QUARKUS - USING APACHE TIKA]

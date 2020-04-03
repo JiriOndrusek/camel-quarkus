@@ -1,0 +1,5 @@
+While you can use any of the available Tika parsers in JVM mode (https://tika.apache.org/[Apache Tika]),
+only several Tika parses are supported in native mode. See https://quarkus.io/guides/tika[QUARKUS - USING APACHE TIKA].
+
+Parameters `tikaConfig` and `tikaConfigUri` are not available in quarkus camel tika extension. The only configuration
+can be changed via `application.properties` (see Configuration for more information)
