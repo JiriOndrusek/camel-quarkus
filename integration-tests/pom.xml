@@ -83,6 +83,7 @@
         <module>http</module>
         <module>hystrix</module>
         <module>infinispan</module>
+        <module>influxdb</module>
         <module>jaxb</module>
         <module>jdbc</module>
         <module>jira</module>
