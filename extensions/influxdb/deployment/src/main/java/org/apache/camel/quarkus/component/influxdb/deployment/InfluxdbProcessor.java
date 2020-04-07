@@ -20,6 +20,7 @@ import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.ExtensionSslNativeSupportBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.NativeImageProxyDefinitionBuildItem;
 
 class InfluxdbProcessor {
 
@@ -32,5 +33,10 @@ class InfluxdbProcessor {
         extensionSslNativeSupport.produce(new ExtensionSslNativeSupportBuildItem(FEATURE));
 
         return new FeatureBuildItem(FEATURE);
+    }
+
+    @BuildStep
+    void clientProxies(BuildProducer<NativeImageProxyDefinitionBuildItem> proxies) {
+        proxies.produce(new NativeImageProxyDefinitionBuildItem("org.influxdb.impl.InfluxDBService"));
     }
 }
