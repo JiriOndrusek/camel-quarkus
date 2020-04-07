@@ -16,7 +16,9 @@
  */
 package org.apache.camel.quarkus.component.influxdb.deployment;
 
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.ExtensionSslNativeSupportBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 
 class InfluxdbProcessor {
@@ -24,7 +26,11 @@ class InfluxdbProcessor {
     private static final String FEATURE = "camel-influxdb";
 
     @BuildStep
-    FeatureBuildItem feature() {
+    FeatureBuildItem feature(BuildProducer<ExtensionSslNativeSupportBuildItem> extensionSslNativeSupport) {
+
+        // Indicates that this extension would like the SSL support to be enabled
+        extensionSslNativeSupport.produce(new ExtensionSslNativeSupportBuildItem(FEATURE));
+
         return new FeatureBuildItem(FEATURE);
     }
 }
