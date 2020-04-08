@@ -16,18 +16,28 @@
  */
 package org.apache.camel.quarkus.component.influxdb.it;
 
+import java.util.List;
+
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Observes;
 import javax.inject.Inject;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.component.influxdb.InfluxDbConstants;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
+import org.influxdb.dto.BatchPoints;
 import org.influxdb.dto.Pong;
+import org.influxdb.dto.Query;
+import org.influxdb.dto.QueryResult;
 import org.jboss.logging.Logger;
 
 @Path("/influxdb")
@@ -35,6 +45,8 @@ import org.jboss.logging.Logger;
 public class InfluxdbResource {
 
     private static final Logger LOG = Logger.getLogger(InfluxdbResource.class);
+
+    public static final String DB_NAME = "myTestTimeSeries";
 
     public static final String INFLUXDB_CONNECTION_PROPERTY = "quarkus.influxdb.connection.url";
     public static final String INFLUXDB_VERSION = "1.7.10";
@@ -49,15 +61,75 @@ public class InfluxdbResource {
     @Inject
     CamelContext context;
 
+    private InfluxDB influxDB;
+
+    void onStart(@Observes org.apache.camel.quarkus.core.CamelMainEvents.BeforeConfigure ev) {
+        System.out.println("============================= start ==========================================");
+        influxDB = InfluxDBFactory.connect(context.getPropertiesComponent().parseUri(INFLUXDB_CONNECTION));
+
+        influxDB.query(new Query("CREATE DATABASE " + DB_NAME));
+
+        context.getRegistry().bind(INFLUXDB_CONNECTION_NAME, influxDB);
+    }
+
+    void beforeStop(@Observes org.apache.camel.quarkus.core.CamelMainEvents.BeforeStop ev) {
+        if (influxDB != null) {
+            influxDB.query(new Query("DROP DATABASE " + DB_NAME, ""));
+            influxDB.close();
+        }
+    }
+
     @Path("/ping")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public String pingVersion() throws Exception {
-        InfluxDB influxDB = InfluxDBFactory.connect(context.getPropertiesComponent().parseUri(INFLUXDB_CONNECTION));
-        context.getRegistry().bind(INFLUXDB_CONNECTION_NAME, influxDB);
-
+    public String ping() {
+        System.out.println("============================= ping ==========================================");
         Pong pong = producerTemplate.requestBody(INFLUXDB_ENDPOINT_URL + "?operation=ping", null, Pong.class);
 
         return pong.getVersion();
     }
+
+    @Path("/insert")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    public boolean insert(Point point) {
+        System.out.println("============================= insert ==========================================");
+        org.influxdb.dto.Point p = point.toPoint();
+
+        org.influxdb.dto.Point result = producerTemplate.requestBody(
+                INFLUXDB_ENDPOINT_URL + "?databaseName=" + DB_NAME + "&operation=insert&retentionPolicy=autogen", p,
+                org.influxdb.dto.Point.class);
+
+        return result != null;
+    }
+
+    @Path("/batch")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    public String batch(Points points) {
+        System.out.println("============================= batch ==========================================");
+        BatchPoints p = points.toBatchPoints();
+
+        BatchPoints result = producerTemplate.requestBody(INFLUXDB_ENDPOINT_URL + "?batch=true", p,
+                BatchPoints.class);
+
+        return String.valueOf(result.getPoints().size());
+    }
+
+    @Path("/query")
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.TEXT_PLAIN)
+    public int query(String query) throws Exception {
+        System.out.println("============================= query ==========================================");
+        Exchange exchange = producerTemplate.request(
+                INFLUXDB_ENDPOINT_URL + "?databaseName=" + DB_NAME + "&operation=query&retentionPolicy=autogen",
+                e -> e.getIn().setHeader(InfluxDbConstants.INFLUXDB_QUERY, query));
+        List<QueryResult.Result> results = exchange.getMessage().getBody(QueryResult.class).getResults();
+        return results == null ? 0 : results.size();
+
+    }
+
 }

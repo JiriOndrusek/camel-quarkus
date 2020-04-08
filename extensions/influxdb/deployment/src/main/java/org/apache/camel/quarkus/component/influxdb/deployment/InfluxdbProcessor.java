@@ -20,23 +20,42 @@ import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.ExtensionSslNativeSupportBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageProxyDefinitionBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import org.influxdb.dto.BatchPoints;
+import org.influxdb.dto.Point;
+import org.influxdb.dto.QueryResult;
 
 class InfluxdbProcessor {
 
     private static final String FEATURE = "camel-influxdb";
 
     @BuildStep
-    FeatureBuildItem feature(BuildProducer<ExtensionSslNativeSupportBuildItem> extensionSslNativeSupport) {
-
-        // Indicates that this extension would like the SSL support to be enabled
-        extensionSslNativeSupport.produce(new ExtensionSslNativeSupportBuildItem(FEATURE));
+    FeatureBuildItem feature() {
 
         return new FeatureBuildItem(FEATURE);
     }
 
     @BuildStep
+    void sslSupport(BuildProducer<ExtensionSslNativeSupportBuildItem> extensionSslNativeSupport) {
+
+        // Indicates that this extension would like the SSL support to be enabled
+        extensionSslNativeSupport.produce(new ExtensionSslNativeSupportBuildItem(FEATURE));
+    }
+
+    @BuildStep
     void clientProxies(BuildProducer<NativeImageProxyDefinitionBuildItem> proxies) {
         proxies.produce(new NativeImageProxyDefinitionBuildItem("org.influxdb.impl.InfluxDBService"));
+    }
+
+    @BuildStep
+    ReflectiveClassBuildItem registerForReflection() {
+        return new ReflectiveClassBuildItem(true, true, BatchPoints.class, Point.class, QueryResult.class);
+    }
+
+    @BuildStep
+    IndexDependencyBuildItem registerDependencyForIndex() {
+        return new IndexDependencyBuildItem("org.influxdb", "influxdb-java");
     }
 }
