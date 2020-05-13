@@ -16,8 +16,13 @@
  */
 package org.apache.camel.quarkus.component.debezium.postgres.deployment;
 
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import org.jboss.jandex.IndexView;
 
 class DebeziumPostgresProcessor {
 
@@ -28,36 +33,31 @@ class DebeziumPostgresProcessor {
         return new FeatureBuildItem(FEATURE);
     }
 
-    //    @BuildStep
-    //    ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
-    //        IndexView index = combinedIndex.getIndex();
-    //
-    //        String[] dtos = index.getKnownClasses().stream()
-    //                .map(ci -> ci.name().toString())
-    //                .filter(n -> n.startsWith("org.apache.kafka.connect.json") || n.startsWith("io.debezium.connector")
-    //                        || n.startsWith("org.apache.kafka"))
-    //                .sorted()
-    //                .peek(System.out::println)
-    //                .toArray(String[]::new);
-    //
-    //        return new ReflectiveClassBuildItem(false, true, dtos);
-    //    }
+    @BuildStep
+    ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
+        IndexView index = combinedIndex.getIndex();
 
-    //    @BuildStep
-    //    IndexDependencyBuildItem registerDependencyForIndex() {
-    //        return new IndexDependencyBuildItem("org.apache.kafka", "connect-json");
-    //    }
+        String[] dtos = index.getKnownClasses().stream()
+                .map(ci -> ci.name().toString())
+                .filter(n -> n.startsWith("org.apache.kafka.connect.json") || n.startsWith("io.debezium.connector")
+                        || n.startsWith("org.apache.kafka")
+                        || n.startsWith("org.apache.camel.component.debezium.MemoryOffsetBackingStore")
+                        || n.startsWith("io.debezium.embedded"))
+                //                        || n.startsWith("org.postgresql.Driver"))
+                .sorted()
+                .peek(System.out::println)
+                .toArray(String[]::new);
 
-    //    @BuildStep
-    //    void addDependencies(BuildProducer<IndexDependencyBuildItem> indexDependency) {
-    //        indexDependency.produce(new IndexDependencyBuildItem("org.apache.kafka", "connect-json"));
-    //        indexDependency.produce(new IndexDependencyBuildItem("org.apache.kafka", "connect-api"));
-    //    }
+        return new ReflectiveClassBuildItem(false, true, dtos);
+    }
 
-    //    @BuildStep
-    //    void addDependencies(BuildProducer<IndexDependencyBuildItem> indexDependency) {
-    //        indexDependency.produce(new IndexDependencyBuildItem("org.apache.kafka", "connect-json"));
-    //        indexDependency.produce(new IndexDependencyBuildItem("org.apache.kafka", "connect-runtime"));
-    //        indexDependency.produce(new IndexDependencyBuildItem("io.debezium", "debezium-connector-postgres"));
-    //    }
+    @BuildStep
+    void addDependencies(BuildProducer<IndexDependencyBuildItem> indexDependency) {
+        indexDependency.produce(new IndexDependencyBuildItem("org.apache.kafka", "connect-json"));
+        //        indexDependency.produce(new IndexDependencyBuildItem("org.apache.kafka", "connect-runtime"));
+        indexDependency.produce(new IndexDependencyBuildItem("org.apache.camel", "camel-debezium-common"));
+        indexDependency.produce(new IndexDependencyBuildItem("io.debezium", "debezium-connector-postgres"));
+        indexDependency.produce(new IndexDependencyBuildItem("io.debezium", "debezium-embedded"));
+        //        indexDependency.produce(new IndexDependencyBuildItem("org.postgresql", "postgresql"));
+    }
 }

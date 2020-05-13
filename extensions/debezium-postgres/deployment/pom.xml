@@ -52,6 +52,14 @@
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-debezium-postgres</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql-deployment</artifactId>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>io.quarkus</groupId>-->
+<!--            <artifactId>quarkus-agroal-deployment</artifactId>-->
+<!--        </dependency>-->
 <!--         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-kafka-deployment</artifactId>

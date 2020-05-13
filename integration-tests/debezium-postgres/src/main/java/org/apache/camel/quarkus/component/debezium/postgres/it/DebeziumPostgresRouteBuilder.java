@@ -10,6 +10,7 @@ public class DebeziumPostgresRouteBuilder extends RouteBuilder {
 
     @Override
     public void configure() {
+        System.out.println("++++++++++++++++++++++++ configuring route");
 
         from("debezium-postgres:localhost?"
                 + "databaseHostname={{" + DebeziumPostgresResource.PROPERTY_HOSTNAME + "}}"
@@ -20,7 +21,9 @@ public class DebeziumPostgresRouteBuilder extends RouteBuilder {
                 + "&databaseServerName=qa"
                 //                + "&offsetStorageFileName=test.backup")
                 //                + "&offsetStorage=")
-                + "&offsetStorage=org.apache.kafka.connect.storage.MemoryOffsetBackingStore")
+                + "&offsetStorage=org.apache.camel.component.debezium.MemoryOffsetBackingStore")
+                        //                + "&offsetStorage=org.apache.kafka.connect.storage.MemoryOffsetBackingStore")
+                        .log(">>> direct event created <<<<<")
                         .to("direct:event");
     }
 }

@@ -46,7 +46,7 @@ public class DebeziumPostgresResource {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String getEvent() throws Exception {
-        final Exchange message = consumerTemplate.receive("direct:event", 5000);
+        final Exchange message = consumerTemplate.receive("direct:event", 15000);
         return message.getIn().getBody(String.class);
     }
 

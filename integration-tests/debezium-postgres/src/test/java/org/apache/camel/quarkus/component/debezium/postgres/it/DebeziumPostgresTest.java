@@ -48,6 +48,9 @@ class DebeziumPostgresTest {
     @Test
     @Order(1)
     public void insert() throws SQLException {
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>> waiting done");
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>> INSERT INTO COMPANY (name, city) VALUES ('"
+                + COMPANY_1 + "', '" + CITY_1 + "')");
         int res = executeUpdate("INSERT INTO COMPANY (name, city) VALUES ('" + COMPANY_1 + "', '" + CITY_1 + "')");
         Assert.assertEquals(1, res);
 
@@ -58,7 +61,7 @@ class DebeziumPostgresTest {
                 .body(containsString(COMPANY_1));
     }
 
-    //    @Test
+    @Test
     @Order(2)
     public void testUpdate() throws SQLException {
         int res = executeUpdate("INSERT INTO COMPANY (name, city) VALUES ('" + COMPANY_2 + "', '" + CITY_2 + "')");
@@ -85,7 +88,7 @@ class DebeziumPostgresTest {
                 .body(containsString(COMPANY_2 + "_changed"));
     }
 
-    //    @Test
+    @Test
     @Order(3)
     public void testDelete() throws SQLException {
         int res = executeUpdate("DELETE FROM COMPANY");
