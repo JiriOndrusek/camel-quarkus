@@ -39,10 +39,10 @@ class DebeziumPostgresProcessor {
 
         String[] dtos = index.getKnownClasses().stream()
                 .map(ci -> ci.name().toString())
+                //todo validate whch are neccessary
                 .filter(n -> n.startsWith("org.apache.kafka.connect.json") || n.startsWith("io.debezium.connector")
                         || n.startsWith("io.debezium.embedded"))
                 .sorted()
-                .peek(System.out::println)
                 .toArray(String[]::new);
 
         return new ReflectiveClassBuildItem(false, true, dtos);

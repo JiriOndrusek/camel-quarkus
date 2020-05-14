@@ -17,6 +17,8 @@
 
 package org.apache.camel.quarkus.component.debezium.postgres.it;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Map;
@@ -36,12 +38,15 @@ public class DebeziumPostgresTestResource implements ContainerResourceLifecycleM
 
     private PostgreSQLContainer<?> postgresContainer;
     private Connection connection;
+    private Path tmpDir;
 
     @Override
     public Map<String, String> start() {
         LOGGER.info(TestcontainersConfiguration.getInstance().toString());
 
         try {
+            tmpDir = Files.createTempDirectory(getClass().getSimpleName()).toRealPath();
+
             postgresContainer = new PostgreSQLContainer<>(POSTGRES_IMAGE)
                     .withUsername(DebeziumPostgresResource.DB_USERNAME)
                     .withPassword(DebeziumPostgresResource.DB_PASSWORD)
@@ -57,7 +62,8 @@ public class DebeziumPostgresTestResource implements ContainerResourceLifecycleM
 
             return CollectionHelper.mapOf(
                     DebeziumPostgresResource.PROPERTY_HOSTNAME, postgresContainer.getContainerIpAddress(),
-                    DebeziumPostgresResource.PROPERTY_PORT, postgresContainer.getMappedPort(POSTGRES_PORT) + "");
+                    DebeziumPostgresResource.PROPERTY_PORT, postgresContainer.getMappedPort(POSTGRES_PORT) + "",
+                    DebeziumPostgresResource.PROPERTY_STORE_FOLDER, tmpDir.toString());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -68,10 +74,12 @@ public class DebeziumPostgresTestResource implements ContainerResourceLifecycleM
         try {
             if (connection != null) {
                 connection.close();
-                ;
             }
             if (postgresContainer != null) {
                 postgresContainer.stop();
+            }
+            if (tmpDir != null) {
+                Files.delete(tmpDir);
             }
         } catch (Exception e) {
             // ignored

@@ -16,6 +16,8 @@
  */
 package org.apache.camel.quarkus.component.debezium.postgres.it;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.camel.builder.RouteBuilder;
@@ -25,7 +27,7 @@ public class DebeziumPostgresRouteBuilder extends RouteBuilder {
     static final AtomicInteger EVENT_COUNTER = new AtomicInteger(0);
 
     @Override
-    public void configure() {
+    public void configure() throws IOException {
         System.out.println("++++++++++++++++++++++++ configuring route");
 
         from("debezium-postgres:localhost?"
@@ -35,10 +37,10 @@ public class DebeziumPostgresRouteBuilder extends RouteBuilder {
                 + "&databasePassword=" + DebeziumPostgresResource.DB_PASSWORD
                 + "&databaseDbname=" + DebeziumPostgresResource.DB_NAME
                 + "&databaseServerName=qa"
-                //                + "&offsetStorageFileName=test.backup")
-                //                + "&offsetStorage=")
-                //                + "&offsetStorage=org.apache.camel.component.debezium.MemoryOffsetBackingStore")
-                + "&offsetStorage=org.apache.camel.quarkus.component.debezium.postgres.graal.storage.NativeMemoryOffsetBackingStore")
+                + "&offsetStorageFileName={{" + DebeziumPostgresResource.PROPERTY_STORE_FOLDER + "}}" + File.pathSeparator
+                + "store"
+                //todo change default value in native extension
+                + "&offsetStorage=org.apache.camel.quarkus.component.debezium.postgres.graal.storage.NativeFileOffsetBackingStore")
                         .log(">>> direct event created <<<<<")
                         .to("direct:event");
     }

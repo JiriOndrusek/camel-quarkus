@@ -35,6 +35,7 @@ public class DebeziumPostgresResource {
     public static final String DB_USERNAME = "user";
     public static final String DB_PASSWORD = "changeit";
     public static final String PROPERTY_HOSTNAME = "quarkus.postgres.hostname";
+    public static final String PROPERTY_STORE_FOLDER = "quarkus.debezium.store.folder";
     public static final String PROPERTY_PORT = "quarkus.postgres.port";
 
     private static final Logger LOG = Logger.getLogger(DebeziumPostgresResource.class);
@@ -46,7 +47,7 @@ public class DebeziumPostgresResource {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String getEvent() throws Exception {
-        final Exchange message = consumerTemplate.receive("direct:event", 15000);
+        final Exchange message = consumerTemplate.receive("direct:event", 2000);
         return message.getIn().getBody(String.class);
     }
 
