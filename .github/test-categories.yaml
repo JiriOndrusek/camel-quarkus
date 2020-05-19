@@ -33,6 +33,7 @@ main:
 database:
   - couchdb
   - debezium-postgres
+  - debezium-mysql
   - influxdb
   - jdbc
   - kudu
