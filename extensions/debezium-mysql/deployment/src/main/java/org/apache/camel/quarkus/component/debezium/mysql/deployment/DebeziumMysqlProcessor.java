@@ -16,8 +16,16 @@
  */
 package org.apache.camel.quarkus.component.debezium.mysql.deployment;
 
+import java.util.ArrayList;
+import java.util.stream.Collectors;
+
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import org.jboss.jandex.IndexView;
 
 class DebeziumMysqlProcessor {
 
@@ -26,5 +34,30 @@ class DebeziumMysqlProcessor {
     @BuildStep
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
+    }
+
+    @BuildStep
+    ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
+        IndexView index = combinedIndex.getIndex();
+
+        ArrayList<String> dtos = index.getKnownClasses().stream().map(ci -> ci.name().toString())
+                .filter(n -> n.startsWith("org.apache.kafka.connect.json")
+                        || n.startsWith("io.debezium.connector.mysql.MysqlConnector")
+                        || n.startsWith("io.debezium.embedded.spi"))
+                .sorted()
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        dtos.add("org.apache.kafka.connect.storage.FileOffsetBackingStore");
+        dtos.add("org.apache.kafka.connect.storage.MemoryOffsetBackingStore");
+
+        return new ReflectiveClassBuildItem(false, true, dtos.toArray(new String[dtos.size()]));
+
+    }
+
+    @BuildStep
+    void addDependencies(BuildProducer<IndexDependencyBuildItem> indexDependency) {
+        indexDependency.produce(new IndexDependencyBuildItem("org.apache.kafka", "connect-json"));
+        indexDependency.produce(new IndexDependencyBuildItem("io.debezium", "debezium-connector-mysql"));
+        indexDependency.produce(new IndexDependencyBuildItem("io.debezium", "debezium-embedded"));
     }
 }

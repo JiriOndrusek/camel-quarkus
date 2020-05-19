@@ -16,54 +16,64 @@
  */
 package org.apache.camel.quarkus.component.debezium.mysql.it;
 
-import java.net.URI;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import org.apache.camel.ConsumerTemplate;
-import org.apache.camel.ProducerTemplate;
-import org.jboss.logging.Logger;
 
 @Path("/debezium-mysql")
 @ApplicationScoped
 public class DebeziumMysqlResource {
 
-    private static final Logger LOG = Logger.getLogger(DebeziumMysqlResource.class);
-
-    @Inject
-    ProducerTemplate producerTemplate;
+    public static final String DB_USERNAME = "root";
+    public static final String DB_PASSWORD = "test";
 
     @Inject
     ConsumerTemplate consumerTemplate;
 
-    @Path("/get")
+    @Path("/receiveAlsoNull")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public String get() throws Exception {
-        final String message = consumerTemplate.receiveBodyNoWait("debezium-mysql:--fix-me--", String.class);
-        LOG.infof("Received from debezium-mysql: %s", message);
-        return message;
+    public String receiveAlsoNull(@QueryParam("hostname") String hostname,
+            @QueryParam("port") int port,
+            @QueryParam("offsetStorageFileName") String offsetStorageFileName,
+            @QueryParam("databaseHistoryFileFilename") String databaseHistoryFileFilename)
+            throws Exception {
+        return receive(hostname, port, offsetStorageFileName, databaseHistoryFileFilename, true);
     }
 
-    @Path("/post")
-    @POST
-    @Consumes(MediaType.TEXT_PLAIN)
+    @Path("/receive")
+    @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public Response post(String message) throws Exception {
-        LOG.infof("Sending to debezium-mysql: %s", message);
-        final String response = producerTemplate.requestBody("debezium-mysql:--fix-me--", message, String.class);
-        LOG.infof("Got response from debezium-mysql: %s", response);
-        return Response
-                .created(new URI("https://camel.apache.org/"))
-                .entity(response)
-                .build();
+    public String receive(@QueryParam("hostname") String hostname,
+            @QueryParam("port") int port,
+            @QueryParam("offsetStorageFileName") String offsetStorageFileName,
+            @QueryParam("databaseHistoryFileFilename") String databaseHistoryFileFilename) {
+        return receive(hostname, port, offsetStorageFileName, databaseHistoryFileFilename, false);
+    }
+
+    public String receive(String hostname, int port, String offsetStorageFileName, String databaseHistoryFileFilename,
+            boolean alsoNull) {
+        String ret = consumerTemplate.receiveBody("debezium-mysql:localhost?"
+                + "databaseHostname=" + hostname
+                + "&databasePort=" + port
+                + "&databaseUser=" + DB_USERNAME
+                + "&databasePassword=" + DB_PASSWORD
+                + "&databaseServerId=223344"
+                + "&databaseHistoryFileFilename=" + databaseHistoryFileFilename
+                + "&databaseServerName=qa"
+                + "&offsetStorageFileName=" + offsetStorageFileName, 2000, String.class);
+
+        //todo quick attempt
+        if (!alsoNull && ret == null) {
+            return receive(hostname, port, offsetStorageFileName, databaseHistoryFileFilename, true);
+        }
+        System.out.println("=============================================" + ret);
+        return ret;
     }
 }
