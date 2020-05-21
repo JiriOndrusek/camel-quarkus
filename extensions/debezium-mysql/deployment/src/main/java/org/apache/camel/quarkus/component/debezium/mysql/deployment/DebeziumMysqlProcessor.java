@@ -16,9 +16,6 @@
  */
 package org.apache.camel.quarkus.component.debezium.mysql.deployment;
 
-import java.util.ArrayList;
-import java.util.stream.Collectors;
-
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
@@ -35,23 +32,46 @@ class DebeziumMysqlProcessor {
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
     }
+    //
+    //    @BuildStep
+    //    ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
+    //        IndexView index = combinedIndex.getIndex();
+    //
+    //        ArrayList<String> dtos = index.getKnownClasses().stream().map(ci -> ci.name().toString())
+    //                .filter(n -> n.startsWith("org.apache.kafka.connect.json")
+    //                        || n.startsWith("io.debezium.connector.mysql.MysqlConnector")
+    //                        || n.startsWith("io.debezium.embedded.spi"))
+    //                .sorted()
+    //                .collect(Collectors.toCollection(ArrayList::new));
+    //
+    //        dtos.add("org.apache.kafka.connect.storage.FileOffsetBackingStore");
+    //        dtos.add("org.apache.kafka.connect.storage.MemoryOffsetBackingStore");
+    //
+    //        return new ReflectiveClassBuildItem(false, true, dtos.toArray(new String[dtos.size()]));
+    //
+    //    }
 
     @BuildStep
     ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
         IndexView index = combinedIndex.getIndex();
 
-        ArrayList<String> dtos = index.getKnownClasses().stream().map(ci -> ci.name().toString())
+        String[] dtos = index.getKnownClasses().stream().map(ci -> ci.name().toString())
                 .filter(n -> n.startsWith("org.apache.kafka.connect.json")
-                        || n.startsWith("io.debezium.connector.mysql.MysqlConnector")
                         || n.startsWith("io.debezium.embedded.spi"))
                 .sorted()
-                .collect(Collectors.toCollection(ArrayList::new));
+                .toArray(String[]::new);
 
-        dtos.add("org.apache.kafka.connect.storage.FileOffsetBackingStore");
-        dtos.add("org.apache.kafka.connect.storage.MemoryOffsetBackingStore");
+        return new ReflectiveClassBuildItem(false, true, dtos);
+    }
 
-        return new ReflectiveClassBuildItem(false, true, dtos.toArray(new String[dtos.size()]));
-
+    @BuildStep
+    ReflectiveClassBuildItem reflectiveClasses() {
+        return new ReflectiveClassBuildItem(false, false,
+                new String[] { "org.apache.kafka.connect.storage.FileOffsetBackingStore",
+                        "org.apache.kafka.connect.storage.MemoryOffsetBackingStore",
+                        "io.debezium.connector.mysql.MySqlConnector",
+                        "io.debezium.connector.mysql.MySqlConnectorTask",
+                        "io.debezium.relational.history.FileDatabaseHistory" });
     }
 
     @BuildStep

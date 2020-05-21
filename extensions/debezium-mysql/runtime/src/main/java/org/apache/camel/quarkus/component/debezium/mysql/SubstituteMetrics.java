@@ -20,7 +20,7 @@ import com.oracle.svm.core.annotate.Substitute;
 import com.oracle.svm.core.annotate.TargetClass;
 import org.slf4j.Logger;
 
-@TargetClass
+@TargetClass(io.debezium.metrics.Metrics.class)
 final class SubstituteMetrics {
 
     @Substitute

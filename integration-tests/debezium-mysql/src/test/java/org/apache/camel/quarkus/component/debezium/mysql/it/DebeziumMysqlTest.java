@@ -69,6 +69,11 @@ class DebeziumMysqlTest {
         System.out.println();
         System.out.println();
         System.out.println();
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>. getting empty messaages");
+        receiveResponse("receiveEmptyMessages")
+                .then()
+                .statusCode(204);
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>. After getting response");
         int i = 0;
         while (true) {
             Assert.assertTrue("Debezium does not react", i++ < REPEAT_COUNT);
@@ -78,7 +83,7 @@ class DebeziumMysqlTest {
             System.out.println("================== insert " + i);
             executeUpdate("INSERT INTO COMPANY (name, city) VALUES ('" + COMPANY_1 + "_" + i + "', '" + CITY_1 + "')");
 
-            Response response = receiveResponse(false);
+            Response response = receiveResponse();
 
             //if status code is 204 (no response), try again
             if (response.getStatusCode() == 204) {
@@ -123,16 +128,20 @@ class DebeziumMysqlTest {
         }
     }
 
-    private Response receiveResponse(boolean alsoNull) {
+    private Response receiveResponse() {
+        return receiveResponse("receive");
+    }
+
+    private Response receiveResponse(String method) {
         return RestAssured.given().queryParam("hostname", hostname)
                 .queryParam("port", port)
                 .queryParam("offsetStorageFileName", offsetStorageFileName)
                 .queryParam("databaseHistoryFileFilename", databaseHistoryFileFilename)
-                .get(alsoNull ? "/debezium-mysql/receiveAlsoNull" : "/debezium-mysql/receive");
+                .get("/debezium-mysql/" + method);
     }
 
     private void receiveResponse(int statusCode, Matcher<String> stringMatcher) {
-        receiveResponse(true).then()
+        receiveResponse().then()
                 .statusCode(statusCode)
                 .body(stringMatcher);
     }
