@@ -21,11 +21,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.Statement;
-import java.util.Collections;
 import java.util.Map;
 
 import org.apache.camel.quarkus.testcontainers.ContainerResourceLifecycleManager;
+import org.apache.camel.util.CollectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MySQLContainer;
@@ -36,13 +35,11 @@ public class DebeziumMysqlTestResource implements ContainerResourceLifecycleMana
 
     private static final int MYSQL_PORT = 3306;
     private static final String MYSQL_IMAGE = "mysql:5.7";
-    private static final String DB_NAME = "mysqlDB";
+    private static final String DB_NAME = "test";
 
     private MySQLContainer<?> mySQLContainer;
     private Connection connection;
     private Path storeFile, historyFile;
-    private String hostname;
-    private int port;
 
     @Override
     public Map<String, String> start() {
@@ -53,35 +50,25 @@ public class DebeziumMysqlTestResource implements ContainerResourceLifecycleMana
             historyFile = Files.createTempFile("debezium-mysql-history-file-", "");
 
             mySQLContainer = new MySQLContainer<>(MYSQL_IMAGE)
-                    .withUsername("test")
-                    .withPassword("test");
-            //                    .withDatabaseName(DB_NAME)
-            //                    .withInitScript("init.sql");
+                    .withUsername(DebeziumMysqlResource.DB_USERNAME)
+                    .withPassword(DebeziumMysqlResource.DB_PASSWORD)
+                    .withDatabaseName(DB_NAME)
+                    .withInitScript("init.sql");
             ;
-
             mySQLContainer.start();
 
-            hostname = mySQLContainer.getContainerIpAddress();
-            port = mySQLContainer.getMappedPort(MYSQL_PORT);
-            //            hostname  = "localhost";
-            //            port = 3306;
+            final String jdbcUrl = "jdbc:mysql://" + mySQLContainer.getContainerIpAddress() + ":"
+                    + mySQLContainer.getMappedPort(MYSQL_PORT) + "/" + DB_NAME + "?user="
+                    + DebeziumMysqlResource.DB_USERNAME + "&password=" + DebeziumMysqlResource.DB_PASSWORD;
 
-            final String jdbcUrl = "jdbc:mysql://localhost:"
-                    + port + "/test?user=root&password=test";
-            //            final String jdbcUrl = "jdbc:mysql://" + hostname + ":"
-            //                    + port + "/" + DB_NAME + "?user="
-            //                    + DebeziumMysqlResource.DB_USERNAME + "&password=" + DebeziumMysqlResource.DB_PASSWORD;
             connection = DriverManager.getConnection(jdbcUrl);
 
-            try (Statement statement = connection.createStatement()) {
-                statement.executeUpdate("CREATE TABLE COMPANY(\n" +
-                        "    NAME           VARCHAR(100) NOT NULL,\n" +
-                        "    CITY           VARCHAR(100) NOT NULL,\n" +
-                        "    PRIMARY KEY ( NAME )\n" +
-                        ");");
-            }
+            return CollectionHelper.mapOf(
+                    DebeziumMysqlResource.PROPERTY_HOSTNAME, mySQLContainer.getContainerIpAddress(),
+                    DebeziumMysqlResource.PROPERTY_PORT, mySQLContainer.getMappedPort(MYSQL_PORT) + "",
+                    DebeziumMysqlResource.PROPERTY_DB_HISTORY_FILE, historyFile.toString(),
+                    DebeziumMysqlResource.PROPERTY_OFFSET_STORE_FILEPORT, storeFile.toString());
 
-            return Collections.emptyMap();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -110,10 +97,6 @@ public class DebeziumMysqlTestResource implements ContainerResourceLifecycleMana
     @Override
     public void inject(Object testInstance) {
         ((DebeziumMysqlTest) testInstance).connection = this.connection;
-        ((DebeziumMysqlTest) testInstance).hostname = this.hostname;
-        ((DebeziumMysqlTest) testInstance).port = this.port;
-        ((DebeziumMysqlTest) testInstance).offsetStorageFileName = this.storeFile.toString();
-        ((DebeziumMysqlTest) testInstance).databaseHistoryFileFilename = this.historyFile.toString();
     }
 
 }

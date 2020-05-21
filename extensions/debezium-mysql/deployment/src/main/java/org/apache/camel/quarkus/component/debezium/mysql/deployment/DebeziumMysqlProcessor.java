@@ -32,24 +32,6 @@ class DebeziumMysqlProcessor {
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
     }
-    //
-    //    @BuildStep
-    //    ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
-    //        IndexView index = combinedIndex.getIndex();
-    //
-    //        ArrayList<String> dtos = index.getKnownClasses().stream().map(ci -> ci.name().toString())
-    //                .filter(n -> n.startsWith("org.apache.kafka.connect.json")
-    //                        || n.startsWith("io.debezium.connector.mysql.MysqlConnector")
-    //                        || n.startsWith("io.debezium.embedded.spi"))
-    //                .sorted()
-    //                .collect(Collectors.toCollection(ArrayList::new));
-    //
-    //        dtos.add("org.apache.kafka.connect.storage.FileOffsetBackingStore");
-    //        dtos.add("org.apache.kafka.connect.storage.MemoryOffsetBackingStore");
-    //
-    //        return new ReflectiveClassBuildItem(false, true, dtos.toArray(new String[dtos.size()]));
-    //
-    //    }
 
     @BuildStep
     ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {

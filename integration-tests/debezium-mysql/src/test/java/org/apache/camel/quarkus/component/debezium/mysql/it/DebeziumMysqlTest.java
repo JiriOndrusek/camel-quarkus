@@ -26,7 +26,6 @@ import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.hamcrest.Matcher;
 import org.jboss.logging.Logger;
-import org.junit.Assert;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -52,53 +51,22 @@ class DebeziumMysqlTest {
 
     /** Connection is handled by DebeziumMysqlTestResource (which also takes care of closing) */
     Connection connection;
-    /** Property initialized by DebeziumMysqlTestResource */
-    String hostname;
-    /** Property initialized by DebeziumMysqlTestResource */
-    int port;
-    /** Property initialized by DebeziumMysqlTestResource */
-    String offsetStorageFileName;
-    /** Property initialized by DebeziumMysqlTestResource */
-    String databaseHistoryFileFilename;
 
     @Test
     @Order(1)
-    public void insert() throws SQLException, InterruptedException {
-        System.out.println();
-        System.out.println();
-        System.out.println();
-        System.out.println();
-        System.out.println();
-        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>. getting empty messaages");
+    public void insert() throws SQLException {
+
+        //receive all empty messages before insert
         receiveResponse("receiveEmptyMessages")
                 .then()
                 .statusCode(204);
-        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>. After getting response");
-        int i = 0;
-        while (true) {
-            Assert.assertTrue("Debezium does not react", i++ < REPEAT_COUNT);
-            //it could happen that debeium is not initialoized in time of the insert, for that case is insert repeated
-            //until debezium reacts (max number of repetition is 5, which takes max 10 seconds - because call of
-            // /debezium-postgres/getEvent has 2 seconds timeout
-            System.out.println("================== insert " + i);
-            executeUpdate("INSERT INTO COMPANY (name, city) VALUES ('" + COMPANY_1 + "_" + i + "', '" + CITY_1 + "')");
 
-            Response response = receiveResponse();
+        executeUpdate("INSERT INTO COMPANY (name, city) VALUES ('" + COMPANY_1 + "', '" + CITY_1 + "')");
 
-            //if status code is 204 (no response), try again
-            if (response.getStatusCode() == 204) {
-                LOG.debug("Response code 204. Debezium is not running yet, repeating (" + i + "/" + REPEAT_COUNT + ")");
-                continue;
-            }
-            System.out.println("=============== expecting " + i + ", get " + response.body().asString());
-            response
-                    .then()
-                    .statusCode(200)
-                    .body(containsString((COMPANY_1 + "_" + i)));
-            //if response is valid, no need for another inserts
-            break;
-        }
-
+        receiveResponse()
+                .then()
+                .statusCode(200)
+                .body(containsString((COMPANY_1)));
     }
 
     @Test
@@ -133,11 +101,7 @@ class DebeziumMysqlTest {
     }
 
     private Response receiveResponse(String method) {
-        return RestAssured.given().queryParam("hostname", hostname)
-                .queryParam("port", port)
-                .queryParam("offsetStorageFileName", offsetStorageFileName)
-                .queryParam("databaseHistoryFileFilename", databaseHistoryFileFilename)
-                .get("/debezium-mysql/" + method);
+        return RestAssured.get("/debezium-mysql/" + method);
     }
 
     private void receiveResponse(int statusCode, Matcher<String> stringMatcher) {

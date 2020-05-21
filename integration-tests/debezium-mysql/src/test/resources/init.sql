@@ -13,14 +13,9 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
---
-CREATE DATABASE inventory;
-GRANT ALL PRIVILEGES ON inventory.* TO 'test'@'%';
 
 CREATE TABLE COMPANY(
     NAME           VARCHAR(100) NOT NULL,
     CITY           VARCHAR(100) NOT NULL,
     PRIMARY KEY ( NAME )
 );
-
--- GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'root' IDENTIFIED BY 'test';

@@ -21,7 +21,6 @@ import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.camel.ConsumerTemplate;
@@ -31,7 +30,16 @@ import org.apache.camel.Exchange;
 @ApplicationScoped
 public class DebeziumMysqlResource {
 
-    public static final String DB_USERNAME = "root";
+    public static final String PROPERTY_HOSTNAME = DebeziumMysqlResource.class.getName() + "_hostname";
+    public static final String PROPERTY_PORT = DebeziumMysqlResource.class.getName() + "_port";
+    public static final String PROPERTY_OFFSET_STORE_FILEPORT = DebeziumMysqlResource.class.getName()
+            + "_offsetStorageFileName";
+    public static final String PROPERTY_DB_HISTORY_FILE = DebeziumMysqlResource.class.getName()
+            + "_databaseHistoryFileFilename";
+
+    public static final String DB_USERNAME = "user";
+    //debezium needs more privileges, therefore it will use root user
+    public static final String DB_ROOT_USERNAME = "root";
     public static final String DB_PASSWORD = "test";
 
     private static long TIMEOUT = 2000;
@@ -42,18 +50,13 @@ public class DebeziumMysqlResource {
     @Path("/receiveEmptyMessages")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public String receiveEmptyMessages(@QueryParam("hostname") String hostname,
-            @QueryParam("port") int port,
-            @QueryParam("offsetStorageFileName") String offsetStorageFileName,
-            @QueryParam("databaseHistoryFileFilename") String databaseHistoryFileFilename)
-            throws Exception {
+    public String receiveEmptyMessages() {
 
         int i = 0;
         Exchange exchange;
         while (i++ < 10) {
-            exchange = receiveAsExange(hostname, port, offsetStorageFileName, databaseHistoryFileFilename);
-            System.out.println(">>>>>>>>>>>>.. received " + i + "'empty' exchange " + exchange);
-            //if exchange is null (timeout), al messages are received
+            exchange = receiveAsExange();
+            //if exchange is null (timeout), all empty messages are received
             if (exchange == null) {
                 return null;
             }
@@ -70,28 +73,25 @@ public class DebeziumMysqlResource {
     @Path("/receive")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public String receive(@QueryParam("hostname") String hostname,
-            @QueryParam("port") int port,
-            @QueryParam("offsetStorageFileName") String offsetStorageFileName,
-            @QueryParam("databaseHistoryFileFilename") String databaseHistoryFileFilename) {
-        Exchange exchange = receiveAsExange(hostname, port, offsetStorageFileName, databaseHistoryFileFilename);
+    public String receive() {
+        Exchange exchange = receiveAsExange();
         if (exchange == null) {
             return null;
         }
         return exchange.getIn().getBody(String.class);
     }
 
-    public Exchange receiveAsExange(String hostname, int port, String offsetStorageFileName,
-            String databaseHistoryFileFilename) {
+    public Exchange receiveAsExange() {
         Exchange ret = consumerTemplate.receive("debezium-mysql:localhost?"
-                + "databaseHostname=" + hostname
-                + "&databasePort=" + port
-                + "&databaseUser=" + DB_USERNAME
+                + "databaseHostname=" + System.getProperty(DebeziumMysqlResource.PROPERTY_HOSTNAME)
+                + "&databasePort=" + System.getProperty(DebeziumMysqlResource.PROPERTY_PORT)
+                + "&databaseUser=" + DB_ROOT_USERNAME
                 + "&databasePassword=" + DB_PASSWORD
                 + "&databaseServerId=223344"
-                + "&databaseHistoryFileFilename=" + databaseHistoryFileFilename
+                + "&databaseHistoryFileFilename=" + System.getProperty(DebeziumMysqlResource.PROPERTY_DB_HISTORY_FILE)
                 + "&databaseServerName=qa"
-                + "&offsetStorageFileName=" + offsetStorageFileName, TIMEOUT);
+                + "&offsetStorageFileName=" + System.getProperty(DebeziumMysqlResource.PROPERTY_OFFSET_STORE_FILEPORT),
+                TIMEOUT);
 
         return ret;
     }

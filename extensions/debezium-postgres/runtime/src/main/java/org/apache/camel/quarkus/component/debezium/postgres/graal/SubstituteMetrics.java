@@ -17,7 +17,6 @@
 package org.apache.camel.quarkus.component.debezium.postgres.graal;
 
 import com.oracle.svm.core.annotate.Substitute;
-import com.oracle.svm.core.annotate.TargetClass;
 import org.slf4j.Logger;
 
 @TargetClass(io.debezium.metrics.Metrics.class)
