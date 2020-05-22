@@ -222,8 +222,8 @@ Level | Since | Description
  Preview | 1.0.0-M6 | Capture changes from a MongoDB database.
 
 | xref:extensions/debezium-mysql.adoc[Debezium MySQL Connector] (camel-quarkus-debezium-mysql) +
-`debezium-mysql:name` | JVM +
- Preview | 1.0.0-M6 | Capture changes from a MySQL database.
+`debezium-mysql:name` | Native +
+ Stable | 1.0.0-M6 | Capture changes from a MySQL database.
 
 | xref:extensions/debezium-postgres.adoc[Debezium PostgresSQL Connector] (camel-quarkus-debezium-postgres) +
 `debezium-postgres:name` | Native +

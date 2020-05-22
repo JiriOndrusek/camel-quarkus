@@ -4,7 +4,7 @@
 [[debezium-mysql]]
 = Debezium MySQL Connector
 
-*Since Camel Quarkus 1.0.0-M6, JVM only*
+*Since Camel Quarkus 1.0.0-M6, JVM and native*
 
 Capture changes from a MySQL database.
 
