@@ -1,0 +1,30 @@
+[[debezium-mysql]]
+= Debezium Mysql Extension
+
+*Since Camel Quarkus 1.0.0-M6*
+
+*Only consumer is supported*
+
+The Debezium MySQL component is wrapper around https://debezium.io/[Debezium] using
+https://debezium.io/documentation/reference/0.9/operations/embedded.html[Debezium Embedded], which enables Change Data
+Capture from MySQL database using Debezium without the need for Kafka or Kafka Connect.
+
+[source,xml]
+------------------------------------------------------------
+<dependency>
+    <groupId>org.apache.camel.quarkus</groupId>
+    <artifactId>camel-debezium-mysql</artifactId>
+</dependency>
+------------------------------------------------------------
+
+== Usage
+
+The extension provides support for the Camel https://camel.apache.org/components/latest/debezium-mysql-component.html[Debezium Postgres Connector].
+
+=== Limitations
+
+Not all offset stores are supported in the native mode. Supported ones are:
+
+* org.apache.kafka.connect.storage.FileOffsetBackingStore
+* org.apache.kafka.connect.storage.MemoryOffsetBackingStore
+

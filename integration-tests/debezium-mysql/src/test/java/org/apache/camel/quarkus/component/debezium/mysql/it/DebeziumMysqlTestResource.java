@@ -19,8 +19,6 @@ package org.apache.camel.quarkus.component.debezium.mysql.it;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.util.Map;
 
 import org.apache.camel.quarkus.testcontainers.ContainerResourceLifecycleManager;
@@ -31,14 +29,14 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 public class DebeziumMysqlTestResource implements ContainerResourceLifecycleManager {
+    public static final String DB_NAME = "test";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumMysqlTestResource.class);
 
     private static final int MYSQL_PORT = 3306;
     private static final String MYSQL_IMAGE = "mysql:5.7";
-    private static final String DB_NAME = "test";
 
     private MySQLContainer<?> mySQLContainer;
-    private Connection connection;
     private Path storeFile, historyFile;
 
     @Override
@@ -54,14 +52,8 @@ public class DebeziumMysqlTestResource implements ContainerResourceLifecycleMana
                     .withPassword(DebeziumMysqlResource.DB_PASSWORD)
                     .withDatabaseName(DB_NAME)
                     .withInitScript("init.sql");
-            ;
+
             mySQLContainer.start();
-
-            final String jdbcUrl = "jdbc:mysql://" + mySQLContainer.getContainerIpAddress() + ":"
-                    + mySQLContainer.getMappedPort(MYSQL_PORT) + "/" + DB_NAME + "?user="
-                    + DebeziumMysqlResource.DB_USERNAME + "&password=" + DebeziumMysqlResource.DB_PASSWORD;
-
-            connection = DriverManager.getConnection(jdbcUrl);
 
             return CollectionHelper.mapOf(
                     DebeziumMysqlResource.PROPERTY_HOSTNAME, mySQLContainer.getContainerIpAddress(),
@@ -77,9 +69,6 @@ public class DebeziumMysqlTestResource implements ContainerResourceLifecycleMana
     @Override
     public void stop() {
         try {
-            if (connection != null) {
-                connection.close();
-            }
             if (mySQLContainer != null) {
                 mySQLContainer.stop();
             }
@@ -93,10 +82,4 @@ public class DebeziumMysqlTestResource implements ContainerResourceLifecycleMana
             // ignored
         }
     }
-
-    @Override
-    public void inject(Object testInstance) {
-        ((DebeziumMysqlTest) testInstance).connection = this.connection;
-    }
-
 }

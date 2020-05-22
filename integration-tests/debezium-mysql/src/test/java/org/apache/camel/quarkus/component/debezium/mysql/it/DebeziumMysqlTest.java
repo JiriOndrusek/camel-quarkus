@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.component.debezium.mysql.it;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -26,6 +27,8 @@ import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.hamcrest.Matcher;
 import org.jboss.logging.Logger;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -50,7 +53,23 @@ class DebeziumMysqlTest {
     private static int REPEAT_COUNT = 5;
 
     /** Connection is handled by DebeziumMysqlTestResource (which also takes care of closing) */
-    Connection connection;
+    private static Connection connection;
+
+    @BeforeAll
+    public static void setUp() throws SQLException {
+        final String jdbcUrl = "jdbc:mysql://" + System.getProperty(DebeziumMysqlResource.PROPERTY_HOSTNAME) + ":"
+                + System.getProperty(DebeziumMysqlResource.PROPERTY_PORT) + "/" + DebeziumMysqlTestResource.DB_NAME + "?user="
+                + DebeziumMysqlResource.DB_USERNAME + "&password=" + DebeziumMysqlResource.DB_PASSWORD;
+
+        connection = DriverManager.getConnection(jdbcUrl);
+    }
+
+    @AfterAll
+    public static void cleanUp() throws SQLException {
+        if (connection != null) {
+            connection.close();
+        }
+    }
 
     @Test
     @Order(1)
