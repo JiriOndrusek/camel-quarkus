@@ -29,6 +29,8 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 public abstract class AbstractDebeziumTestResource implements ContainerResourceLifecycleManager {
+    public static final String DB_NAME = "test";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDebeziumTestResource.class);
 
     protected GenericContainer<?> container;
@@ -36,7 +38,7 @@ public abstract class AbstractDebeziumTestResource implements ContainerResourceL
 
     protected abstract GenericContainer createContainer();
 
-    protected abstract Map<String, String> enhanceStart();
+    protected abstract void enhanceStart(Map<String, String> map);
 
     protected abstract String getJdbcUrl();
 
@@ -55,7 +57,7 @@ public abstract class AbstractDebeziumTestResource implements ContainerResourceL
                     DebeziumMysqlResource.PROPERTY_OFFSET_STORE_FILEPORT, storeFile.toString(),
                     AbstractDebeziumTest.PROPERTY_JDBC, getJdbcUrl());
 
-            map.putAll(enhanceStart());
+            enhanceStart(map);
 
             return map;
 

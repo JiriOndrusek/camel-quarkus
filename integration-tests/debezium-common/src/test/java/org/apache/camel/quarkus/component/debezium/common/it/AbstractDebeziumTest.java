@@ -47,7 +47,7 @@ public abstract class AbstractDebeziumTest {
 
     private static Connection connection;
 
-    protected abstract String getJdbcUrl();
+    protected abstract String getResourcePath();
 
     @BeforeAll
     public static void setUp() throws SQLException {
@@ -65,13 +65,29 @@ public abstract class AbstractDebeziumTest {
 
     @Test
     @Order(1)
-    public void insert() throws SQLException {
-        executeUpdate("INSERT INTO COMPANY (name, city) VALUES ('" + COMPANY_1 + "', '" + CITY_1 + "')");
+    public void insert() throws SQLException, InterruptedException {
+        int i = 0;
+        while (i++ < REPEAT_COUNT) {
+            //it could happen that debeium is not initialoized in time of the insert, for that case is insert repeated
+            //until debezium reacts (max number of repetition is 5, which takes max 10 seconds - because call of
+            // /debezium-postgres/getEvent has 2 seconds timeout
+            executeUpdate("INSERT INTO COMPANY (name, city) VALUES ('" + COMPANY_1 + "_" + i + "', '" + CITY_1 + "')");
 
-        receiveResponse()
-                .then()
-                .statusCode(200)
-                .body(containsString((COMPANY_1)));
+            Response response = receiveResponse();
+
+            //if status code is 204 (no response), try again
+            if (response.getStatusCode() == 204) {
+                LOG.debug("Response code 204. Debezium is not running yet, repeating (" + i + "/" + REPEAT_COUNT + ")");
+                continue;
+            }
+
+            response
+                    .then()
+                    .statusCode(200)
+                    .body(containsString((COMPANY_1 + "_" + i)));
+            //if response is valid, no need for another inserts
+            break;
+        }
     }
 
     @Test
@@ -106,7 +122,7 @@ public abstract class AbstractDebeziumTest {
     }
 
     protected Response receiveResponse(String method) {
-        return RestAssured.get("/debezium-mysql/" + method);
+        return RestAssured.get(getResourcePath() + "/" + method);
     }
 
     protected void receiveResponse(int statusCode, Matcher<String> stringMatcher) {

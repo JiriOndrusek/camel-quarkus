@@ -16,42 +16,34 @@
  */
 package org.apache.camel.quarkus.component.debezium.common.it;
 
-import org.apache.camel.ConsumerTemplate;
-
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 @Path("/debezium-postgres")
 @ApplicationScoped
-public class DebeziumPostgresResource {
+public class DebeziumPostgresResource extends AbstractDebeziumResource {
+    public static final String DB_NAME = "PostgresDB";
 
-    public static final String DB_NAME = "postgresDB";
-    public static final String DB_USERNAME = "user";
-    public static final String DB_PASSWORD = "changeit";
-
-    @Inject
-    ConsumerTemplate consumerTemplate;
+    @Override
+    String getEndpointComponent() {
+        return "debezium-postgres";
+    }
 
     @Path("/receive")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public String receive(@QueryParam("hostname") String hostname,
-            @QueryParam("port") int port,
-            @QueryParam("offsetStorageFileName") String offsetStorageFileName)
-            throws Exception {
-        return consumerTemplate.receiveBody("debezium-postgres:localhost?"
-                + "databaseHostname=" + hostname
-                + "&databasePort=" + port
-                + "&databaseUser=" + DebeziumPostgresResource.DB_USERNAME
-                + "&databasePassword=" + DebeziumPostgresResource.DB_PASSWORD
-                + "&databaseDbname=" + DebeziumPostgresResource.DB_NAME
-                + "&databaseServerName=qa"
-                + "&offsetStorageFileName=" + offsetStorageFileName, 2000, String.class);
+    public String receive() {
+        return super.receive();
     }
 
+    @Override
+    String getEndpoinUrl(String hostname, String port, String username, String password, String databaseServerName,
+            String offsetStorageFileName) {
+        return super.getEndpoinUrl(hostname, port, username, password, databaseServerName, offsetStorageFileName)
+                //adding db name
+                + "&databaseDbname=" + DB_NAME;
+    }
 }

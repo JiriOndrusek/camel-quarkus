@@ -40,13 +40,15 @@ abstract class AbstractDebeziumResource {
 
     String getEndpoinUrl(String hostname, String port, String username, String password, String databaseServerName,
             String offsetStorageFileName) {
-        return getEndpointComponent() + ":localhost?"
+        String endpointUrl = getEndpointComponent() + ":localhost?"
                 + "databaseHostname=" + hostname
                 + "&databasePort=" + port
                 + "&databaseUser=" + username
                 + "&databasePassword=" + password
                 + "&databaseServerName=" + databaseServerName
                 + "&offsetStorageFileName=" + offsetStorageFileName;
+
+        return endpointUrl;
     }
 
     @Inject
@@ -70,6 +72,7 @@ abstract class AbstractDebeziumResource {
             if (exchange == null) {
                 return null;
             }
+            System.out.println("Receiving empty message " + i + ": " + exchange);
             //if exchange contains data, return value
             String value = exchange.getIn().getBody(String.class);
             if (value != null) {
@@ -82,8 +85,8 @@ abstract class AbstractDebeziumResource {
 
     public Exchange receiveAsExange() {
         return consumerTemplate.receive(getEndpoinUrl(
-                System.getProperty(DebeziumMysqlResource.PROPERTY_HOSTNAME),
-                System.getProperty(DebeziumMysqlResource.PROPERTY_PORT),
+                System.getProperty(AbstractDebeziumResource.PROPERTY_HOSTNAME),
+                System.getProperty(AbstractDebeziumResource.PROPERTY_PORT),
                 DB_USERNAME, DB_PASSWORD, "qa",
                 System.getProperty(DebeziumMysqlResource.PROPERTY_OFFSET_STORE_FILEPORT)), TIMEOUT);
     }

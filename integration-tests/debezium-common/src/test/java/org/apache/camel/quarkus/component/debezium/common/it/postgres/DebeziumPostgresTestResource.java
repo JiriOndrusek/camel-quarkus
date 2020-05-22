@@ -15,84 +15,39 @@
  * limitations under the License.
  */
 
-package org.apache.camel.quarkus.component.debezium.postgres.it;
+package org.apache.camel.quarkus.component.debezium.common.it.postgres;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.util.Collections;
 import java.util.Map;
 
-import org.apache.camel.quarkus.testcontainers.ContainerResourceLifecycleManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.camel.quarkus.component.debezium.common.it.AbstractDebeziumTestResource;
+import org.apache.camel.quarkus.component.debezium.common.it.DebeziumPostgresResource;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.TestcontainersConfiguration;
 
-public class DebeziumPostgresTestResource implements ContainerResourceLifecycleManager {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumPostgresTestResource.class);
+public class DebeziumPostgresTestResource extends AbstractDebeziumTestResource {
 
     private static final int POSTGRES_PORT = 5432;
     private static final String POSTGRES_IMAGE = "debezium/postgres:11";
 
-    private PostgreSQLContainer<?> postgresContainer;
-    private Connection connection;
-    private Path storeFile;
-    private String hostname;
-    private int port;
-
     @Override
-    public Map<String, String> start() {
-        LOGGER.info(TestcontainersConfiguration.getInstance().toString());
-
-        try {
-            storeFile = Files.createTempFile("debezium-postgress-store-", "");
-
-            postgresContainer = new PostgreSQLContainer<>(POSTGRES_IMAGE)
-                    .withUsername(DebeziumPostgresResource.DB_USERNAME)
-                    .withPassword(DebeziumPostgresResource.DB_PASSWORD)
-                    .withDatabaseName(DebeziumPostgresResource.DB_NAME)
-                    .withInitScript("init.sql");
-
-            postgresContainer.start();
-
-            final String jdbcUrl = "jdbc:postgresql://" + postgresContainer.getContainerIpAddress() + ":"
-                    + postgresContainer.getMappedPort(POSTGRES_PORT) + "/" + DebeziumPostgresResource.DB_NAME + "?user="
-                    + DebeziumPostgresResource.DB_USERNAME + "&password=" + DebeziumPostgresResource.DB_PASSWORD;
-            connection = DriverManager.getConnection(jdbcUrl);
-            hostname = postgresContainer.getContainerIpAddress();
-            port = postgresContainer.getMappedPort(POSTGRES_PORT);
-
-            return Collections.emptyMap();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    protected GenericContainer createContainer() {
+        return new PostgreSQLContainer<>(POSTGRES_IMAGE)
+                .withUsername(DebeziumPostgresResource.DB_USERNAME)
+                .withPassword(DebeziumPostgresResource.DB_PASSWORD)
+                .withDatabaseName(DebeziumPostgresResource.DB_NAME)
+                .withInitScript("initPostgres.sql");
     }
 
     @Override
-    public void stop() {
-        try {
-            if (connection != null) {
-                connection.close();
-            }
-            if (postgresContainer != null) {
-                postgresContainer.stop();
-            }
-            if (storeFile != null) {
-                Files.deleteIfExists(storeFile);
-            }
-        } catch (Exception e) {
-            // ignored
-        }
+    protected void enhanceStart(Map<String, String> map) {
+        map.put(DebeziumPostgresResource.PROPERTY_HOSTNAME, container.getContainerIpAddress());
+        map.put(DebeziumPostgresResource.PROPERTY_PORT, container.getMappedPort(POSTGRES_PORT) + "");
     }
 
     @Override
-    public void inject(Object testInstance) {
-        ((DebeziumPostgresTest) testInstance).connection = this.connection;
-        ((DebeziumPostgresTest) testInstance).hostname = this.hostname;
-        ((DebeziumPostgresTest) testInstance).port = this.port;
-        ((DebeziumPostgresTest) testInstance).offsetStorageFileName = this.storeFile.toString();
+    protected String getJdbcUrl() {
+        return "jdbc:postgresql://" + container.getContainerIpAddress() + ":"
+                + container.getMappedPort(POSTGRES_PORT) + "/" + DebeziumPostgresResource.DB_NAME + "?user="
+                + DebeziumPostgresResource.DB_USERNAME + "&password=" + DebeziumPostgresResource.DB_PASSWORD;
     }
-
 }

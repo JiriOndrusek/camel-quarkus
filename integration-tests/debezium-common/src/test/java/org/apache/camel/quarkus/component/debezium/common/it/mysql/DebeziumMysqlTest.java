@@ -16,33 +16,22 @@
  */
 package org.apache.camel.quarkus.component.debezium.common.it.mysql;
 
-import java.sql.Connection;
-
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.camel.quarkus.component.debezium.common.it.AbstractDebeziumTest;
-import org.apache.camel.quarkus.component.debezium.common.it.DebeziumMysqlResource;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
-import static org.hamcrest.Matchers.is;
-
 @QuarkusTest
 @QuarkusTestResource(DebeziumMysqlTestResource.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class DebeziumMysqlTest extends AbstractDebeziumTest {
-    /**
-     * Connection is handled by DebeziumMysqlTestResource (which also takes care of closing)
-     */
-    private static Connection connection;
 
     @Override
-    protected String getJdbcUrl() {
-        return "jdbc:mysql://" + System.getProperty(DebeziumMysqlResource.PROPERTY_HOSTNAME) + ":"
-                + System.getProperty(DebeziumMysqlResource.PROPERTY_PORT) + "/" + DebeziumMysqlTestResource.DB_NAME + "?user="
-                + DebeziumMysqlResource.DB_USERNAME + "&password=" + DebeziumMysqlResource.DB_PASSWORD;
+    protected String getResourcePath() {
+        return "/debezium-mysql";
     }
 
     @Test

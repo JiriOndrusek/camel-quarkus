@@ -23,15 +23,12 @@ import java.util.Map;
 
 import org.apache.camel.quarkus.component.debezium.common.it.AbstractDebeziumTestResource;
 import org.apache.camel.quarkus.component.debezium.common.it.DebeziumMysqlResource;
-import org.apache.camel.util.CollectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MySQLContainer;
 
 public class DebeziumMysqlTestResource extends AbstractDebeziumTestResource {
-    public static final String DB_NAME = "test";
-
     private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumMysqlTestResource.class);
 
     private static final int MYSQL_PORT = 3306;
@@ -49,15 +46,14 @@ public class DebeziumMysqlTestResource extends AbstractDebeziumTestResource {
     }
 
     @Override
-    protected Map<String, String> enhanceStart() {
+    protected void enhanceStart(Map<String, String> map) {
 
         try {
             historyFile = Files.createTempFile(getClass().getName() + "-history-file-", "");
 
-            return CollectionHelper.mapOf(
-                    DebeziumMysqlResource.PROPERTY_HOSTNAME, container.getContainerIpAddress(),
-                    DebeziumMysqlResource.PROPERTY_PORT, container.getMappedPort(MYSQL_PORT) + "",
-                    DebeziumMysqlResource.PROPERTY_DB_HISTORY_FILE, historyFile.toString());
+            map.put(DebeziumMysqlResource.PROPERTY_HOSTNAME, container.getContainerIpAddress());
+            map.put(DebeziumMysqlResource.PROPERTY_PORT, container.getMappedPort(MYSQL_PORT) + "");
+            map.put(DebeziumMysqlResource.PROPERTY_DB_HISTORY_FILE, historyFile.toString());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
