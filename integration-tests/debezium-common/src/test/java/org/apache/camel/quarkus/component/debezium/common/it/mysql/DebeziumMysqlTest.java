@@ -16,9 +16,12 @@
  */
 package org.apache.camel.quarkus.component.debezium.common.it.mysql;
 
+import java.sql.SQLException;
+
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.camel.quarkus.component.debezium.common.it.AbstractDebeziumTest;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -35,11 +38,20 @@ class DebeziumMysqlTest extends AbstractDebeziumTest {
     }
 
     @Test
-    @Order(0)
-    public void receiveEmptyMessages() {
-        //receive all empty messages before other tests
+    @Order(1)
+    @Override
+    public void insert() throws SQLException {
+
+        //receive all empty messages before insert
         receiveResponse("receiveEmptyMessages")
                 .then()
                 .statusCode(204);
+
+        executeUpdate("INSERT INTO COMPANY (name, city) VALUES ('" + COMPANY_1 + "', '" + CITY_1 + "')");
+
+        receiveResponse()
+                .then()
+                .statusCode(200)
+                .body(Matchers.containsString((COMPANY_1)));
     }
 }

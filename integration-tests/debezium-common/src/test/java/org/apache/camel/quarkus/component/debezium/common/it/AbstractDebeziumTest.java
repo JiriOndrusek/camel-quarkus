@@ -25,6 +25,7 @@ import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.hamcrest.Matcher;
 import org.jboss.logging.Logger;
+import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
@@ -39,10 +40,10 @@ public abstract class AbstractDebeziumTest {
 
     static final String PROPERTY_JDBC = AbstractDebeziumTest.class.getName() + "_jdbc";
 
-    private static String COMPANY_1 = "Best Company";
-    private static String COMPANY_2 = "Even Better Company";
-    private static String CITY_1 = "Prague";
-    private static String CITY_2 = "Paris";
+    protected static String COMPANY_1 = "Best Company";
+    protected static String COMPANY_2 = "Even Better Company";
+    protected static String CITY_1 = "Prague";
+    protected static String CITY_2 = "Paris";
     private static int REPEAT_COUNT = 5;
 
     private static Connection connection;
@@ -65,7 +66,7 @@ public abstract class AbstractDebeziumTest {
 
     @Test
     @Order(1)
-    public void insert() throws SQLException, InterruptedException {
+    public void insert() throws SQLException {
         int i = 0;
         while (i++ < REPEAT_COUNT) {
             //it could happen that debeium is not initialoized in time of the insert, for that case is insert repeated
@@ -88,17 +89,21 @@ public abstract class AbstractDebeziumTest {
             //if response is valid, no need for another inserts
             break;
         }
+
+        Assert.assertTrue("Debezium does not react", i < REPEAT_COUNT);
     }
 
-    @Test
+    //    @Test
     @Order(2)
     public void testUpdate() throws SQLException {
         executeUpdate("INSERT INTO COMPANY (name, city) VALUES ('" + COMPANY_2 + "', '" + CITY_2 + "')");
+        System.out.println("........................................ insert");
 
         //validate event in queue
         receiveResponse(200, containsString(COMPANY_2));
 
         executeUpdate("UPDATE COMPANY SET name = '" + COMPANY_2 + "_changed' WHERE city = '" + CITY_2 + "'");
+        System.out.println("........................................ update");
 
         //validate event with delete is in queue
         receiveResponse(204, is(emptyOrNullString()));
@@ -106,7 +111,7 @@ public abstract class AbstractDebeziumTest {
         receiveResponse(200, containsString(COMPANY_2 + "_changed"));
     }
 
-    @Test
+    //    @Test
     @Order(3)
     public void testDelete() throws SQLException {
         int res = executeUpdate("DELETE FROM COMPANY");

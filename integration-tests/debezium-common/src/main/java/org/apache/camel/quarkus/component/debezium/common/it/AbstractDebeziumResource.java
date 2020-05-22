@@ -68,11 +68,13 @@ abstract class AbstractDebeziumResource {
         Exchange exchange;
         while (i++ < 10) {
             exchange = receiveAsExange();
+            System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++ received empty message " + i + ": "
+                    + exchange + " ++++++++++++++++++++++");
             //if exchange is null (timeout), all empty messages are received
             if (exchange == null) {
                 return null;
             }
-            System.out.println("Receiving empty message " + i + ": " + exchange);
+            System.out.println(".............................................Receiving empty message " + i + ": " + exchange);
             //if exchange contains data, return value
             String value = exchange.getIn().getBody(String.class);
             if (value != null) {

@@ -36,6 +36,8 @@ public class DebeziumMysqlResource extends AbstractDebeziumResource {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String receiveEmptyMessages() {
+        System.out.println(
+                "++++++++++++++++++++++++++++++++++++++++++++++++++++ receiving empty messafges ++++++++++++++++++++++");
         return super.receiveEmptyMessages();
     }
 
