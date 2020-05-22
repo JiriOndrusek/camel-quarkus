@@ -14,12 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.debezium.common.it;
+package org.apache.camel.quarkus.component.debezium.common.it.mysql;
 
 import java.sql.Connection;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
+import org.apache.camel.quarkus.component.debezium.common.it.AbstractDebeziumTest;
+import org.apache.camel.quarkus.component.debezium.common.it.DebeziumMysqlResource;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -37,7 +39,7 @@ class DebeziumMysqlTest extends AbstractDebeziumTest {
     private static Connection connection;
 
     @Override
-    String getJdbcUrl() {
+    protected String getJdbcUrl() {
         return "jdbc:mysql://" + System.getProperty(DebeziumMysqlResource.PROPERTY_HOSTNAME) + ":"
                 + System.getProperty(DebeziumMysqlResource.PROPERTY_PORT) + "/" + DebeziumMysqlTestResource.DB_NAME + "?user="
                 + DebeziumMysqlResource.DB_USERNAME + "&password=" + DebeziumMysqlResource.DB_PASSWORD;

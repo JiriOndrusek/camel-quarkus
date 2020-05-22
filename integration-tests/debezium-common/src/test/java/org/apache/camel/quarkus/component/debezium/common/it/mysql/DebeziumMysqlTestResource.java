@@ -15,12 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.camel.quarkus.component.debezium.common.it;
+package org.apache.camel.quarkus.component.debezium.common.it.mysql;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
+import org.apache.camel.quarkus.component.debezium.common.it.AbstractDebeziumTestResource;
+import org.apache.camel.quarkus.component.debezium.common.it.DebeziumMysqlResource;
 import org.apache.camel.util.CollectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +40,7 @@ public class DebeziumMysqlTestResource extends AbstractDebeziumTestResource {
     private Path historyFile;
 
     @Override
-    GenericContainer createContainer() {
+    protected GenericContainer createContainer() {
         return new MySQLContainer<>(MYSQL_IMAGE)
                 .withUsername(DebeziumMysqlResource.DB_USERNAME)
                 .withPassword(DebeziumMysqlResource.DB_PASSWORD)
@@ -47,7 +49,7 @@ public class DebeziumMysqlTestResource extends AbstractDebeziumTestResource {
     }
 
     @Override
-    Map<String, String> enhanceStart() {
+    protected Map<String, String> enhanceStart() {
 
         try {
             historyFile = Files.createTempFile(getClass().getName() + "-history-file-", "");
@@ -62,7 +64,7 @@ public class DebeziumMysqlTestResource extends AbstractDebeziumTestResource {
     }
 
     @Override
-    String getJdbcUrl() {
+    protected String getJdbcUrl() {
         return "jdbc:mysql://" + container.getContainerIpAddress() + ":" + container.getMappedPort(MYSQL_PORT) + "/"
                 + DebeziumMysqlTestResource.DB_NAME + "?user=" + DebeziumMysqlResource.DB_USERNAME
                 + "&password=" + DebeziumMysqlResource.DB_PASSWORD;

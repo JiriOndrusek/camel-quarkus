@@ -34,7 +34,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.Matchers.is;
 
-abstract class AbstractDebeziumTest {
+public abstract class AbstractDebeziumTest {
     private static final Logger LOG = Logger.getLogger(AbstractDebeziumTest.class);
 
     static final String PROPERTY_JDBC = AbstractDebeziumTest.class.getName() + "_jdbc";
@@ -47,7 +47,7 @@ abstract class AbstractDebeziumTest {
 
     private static Connection connection;
 
-    abstract String getJdbcUrl();
+    protected abstract String getJdbcUrl();
 
     @BeforeAll
     public static void setUp() throws SQLException {
@@ -101,21 +101,21 @@ abstract class AbstractDebeziumTest {
         }
     }
 
-    Response receiveResponse() {
+    protected Response receiveResponse() {
         return receiveResponse("receive");
     }
 
-    Response receiveResponse(String method) {
+    protected Response receiveResponse(String method) {
         return RestAssured.get("/debezium-mysql/" + method);
     }
 
-    void receiveResponse(int statusCode, Matcher<String> stringMatcher) {
+    protected void receiveResponse(int statusCode, Matcher<String> stringMatcher) {
         receiveResponse().then()
                 .statusCode(statusCode)
                 .body(stringMatcher);
     }
 
-    int executeUpdate(String sql) throws SQLException {
+    protected int executeUpdate(String sql) throws SQLException {
         try (Statement statement = connection.createStatement()) {
             return statement.executeUpdate(sql);
         }

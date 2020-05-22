@@ -28,17 +28,17 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
-abstract class AbstractDebeziumTestResource implements ContainerResourceLifecycleManager {
+public abstract class AbstractDebeziumTestResource implements ContainerResourceLifecycleManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDebeziumTestResource.class);
 
-    GenericContainer<?> container;
+    protected GenericContainer<?> container;
     private Path storeFile;
 
-    abstract GenericContainer createContainer();
+    protected abstract GenericContainer createContainer();
 
-    abstract Map<String, String> enhanceStart();
+    protected abstract Map<String, String> enhanceStart();
 
-    abstract String getJdbcUrl();
+    protected abstract String getJdbcUrl();
 
     @Override
     public Map<String, String> start() {
