@@ -72,6 +72,7 @@
         <module>csv</module>
         <module>dataformat</module>
         <module>dataformats-json</module>
+        <module>debezium-common</module>
         <module>debezium-mysql</module>
         <module>debezium-postgres</module>
         <module>dozer</module>

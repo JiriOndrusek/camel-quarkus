@@ -14,25 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.debezium.postgres.graal;
+package org.apache.camel.quarkus.component.debezium.common.it.postgres;
 
-import com.oracle.svm.core.annotate.Substitute;
-import com.oracle.svm.core.annotate.TargetClass;
-import org.slf4j.Logger;
+import io.quarkus.test.junit.NativeImageTest;
 
-@TargetClass(io.debezium.metrics.Metrics.class)
-final class SubstituteMetrics {
+@NativeImageTest
+class DebeziumPostgresIT extends DebeziumPostgresTest {
 
-    @Substitute
-    public synchronized void register(Logger logger) {
-        //JMX is not supported in the native mode
-        //because there is no API for avoiding MBean registration, substitution is used to skip registration
-        // enhancement in debezium:https://issues.redhat.com/browse/DBZ-2089
-        logger.warn("Metrics are not registered in native mode.");
-    }
-
-    @Substitute
-    public final void unregister(Logger logger) {
-        logger.debug("Metrics are not unregistered in native mode.");
-    }
 }
