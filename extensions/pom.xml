@@ -69,6 +69,7 @@
         <module>cron</module>
         <module>csv</module>
         <module>dataformat</module>
+        <module>debezium-mongodb</module>
         <module>debezium-mysql</module>
         <module>debezium-postgres</module>
         <module>debezium-sqlserver</module>

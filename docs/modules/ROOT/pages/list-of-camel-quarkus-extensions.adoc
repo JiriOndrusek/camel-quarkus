@@ -120,7 +120,7 @@ Number of Camel components: 148 in 113 JAR artifacts (0 deprecated)
 
 | xref:extensions/dataformat.adoc[Data Format] | camel-quarkus-dataformat | Native + Stable | 0.4.0 | Use a Camel Data Format as a regular Camel Component.
 
-| xref:extensions/debezium-mongodb.adoc[Debezium MongoDB Connector] | camel-quarkus-debezium-mongodb | JVM + Preview | 1.0.0-M6 | Capture changes from a MongoDB database.
+| xref:extensions/debezium-mongodb.adoc[Debezium MongoDB Connector] | camel-quarkus-debezium-mongodb | Native + Stable | 1.0.0-CR2 | Capture changes from a MongoDB database.
 
 | xref:extensions/debezium-mysql.adoc[Debezium MySQL Connector] | camel-quarkus-debezium-mysql | Native + Stable | 1.0.0-M6 | Capture changes from a MySQL database.
 

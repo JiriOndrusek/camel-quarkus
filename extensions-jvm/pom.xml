@@ -47,7 +47,6 @@
         <module>aws2-translate</module>
         <module>cassandraql</module>
         <module>couchbase</module>
-        <module>debezium-mongodb</module>
         <module>google-bigquery</module>
         <module>google-pubsub</module>
         <module>groovy</module>
