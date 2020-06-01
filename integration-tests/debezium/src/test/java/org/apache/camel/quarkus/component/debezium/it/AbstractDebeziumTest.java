@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.debezium.common.it;
+package org.apache.camel.quarkus.component.debezium.it;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -26,7 +26,6 @@ import org.hamcrest.Matcher;
 import org.jboss.logging.Logger;
 import org.junit.Assert;
 import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyOrNullString;
@@ -60,13 +59,10 @@ public abstract class AbstractDebeziumTest {
         return "COMPANY";
     }
 
-    @Test
+    //    @Test
     @Order(1)
     public void testInsert() throws SQLException {
-        if (getConnection() == null) {
-            LOG.warn("Test 'testInsert' is skipped, because container is not running.");
-            return;
-        }
+        Assert.assertNotNull("Test 'testInsert' is skipped, because container is not running.", getConnection());
 
         int i = 0;
 
@@ -94,13 +90,10 @@ public abstract class AbstractDebeziumTest {
                 i < REPEAT_COUNT);
     }
 
-    @Test
+    //    @Test
     @Order(2)
     public void testUpdate() throws SQLException {
-        if (getConnection() == null) {
-            LOG.warn("Test 'testUpdate' is skipped, because container is not running.");
-            return;
-        }
+        Assert.assertNotNull("Test 'testUpdate' is skipped, because container is not running.", getConnection());
 
         executeUpdate(String.format("INSERT INTO %s (name, city) VALUES ('%s', '%s')", getCompanyTableName(),
                 COMPANY_2, CITY_2));
@@ -117,13 +110,10 @@ public abstract class AbstractDebeziumTest {
         receiveResponse(200, containsString(COMPANY_2 + "_changed"));
     }
 
-    @Test
+    //    @Test
     @Order(3)
     public void testDelete() throws SQLException {
-        if (getConnection() == null) {
-            LOG.warn("Test 'testDelete' is skipped, because container is not running.");
-            return;
-        }
+        Assert.assertNotNull("Test 'testDelete' is skipped, because container is not running.", getConnection());
 
         int res = executeUpdate("DELETE FROM " + getCompanyTableName());
         int i = 0;

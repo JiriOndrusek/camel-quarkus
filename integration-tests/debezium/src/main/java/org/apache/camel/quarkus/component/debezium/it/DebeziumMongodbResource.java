@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.debezium.common.it;
+package org.apache.camel.quarkus.component.debezium.it;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.GET;
@@ -22,17 +22,17 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-@Path("/debezium-sqlserver")
+@Path("/debezium-mongodb")
 @ApplicationScoped
-public class DebeziumSqlserverResource extends AbstractDebeziumResource {
+public class DebeziumMongodbResource extends AbstractDebeziumResource {
 
-    public static final String PROPERTY_DB_HISTORY_FILE = DebeziumSqlserverResource.class.getSimpleName()
-            + "_databaseHistoryFileFilename";
+    //    public static final String PROPERTY_DB_HISTORY_FILE = DebeziumSqlserverResource.class.getSimpleName()
+    //            + "_databaseHistoryFileFilename";
+    //
+    //    public static final String DB_NAME = "testDB";
 
-    public static final String DB_NAME = "testDB";
-
-    public DebeziumSqlserverResource() {
-        super(Type.sqlserver);
+    public DebeziumMongodbResource() {
+        super(Type.mongodb);
     }
 
     @Path("/receiveAsRecord")
@@ -54,11 +54,11 @@ public class DebeziumSqlserverResource extends AbstractDebeziumResource {
         return record.getValue();
     }
 
-    @Override
-    String getEndpoinUrl(String hostname, String port, String username, String password, String databaseServerName,
-            String offsetStorageFileName) {
-        return super.getEndpoinUrl(hostname, port, username, password, databaseServerName, offsetStorageFileName)
-                + "&databaseDbname=" + DB_NAME
-                + "&databaseHistoryFileFilename=" + System.getProperty(PROPERTY_DB_HISTORY_FILE);
-    }
+    //    @Override
+    //    String getEndpoinUrl(String hostname, String port, String username, String password, String databaseServerName,
+    //            String offsetStorageFileName) {
+    //        return super.getEndpoinUrl(hostname, port, username, password, databaseServerName, offsetStorageFileName)
+    //                + "&databaseDbname=" + DB_NAME
+    //                + "&databaseHistoryFileFilename=" + System.getProperty(PROPERTY_DB_HISTORY_FILE);
+    //    } debezium-mongodb:dbz-test-1?offsetStorageFileName=/usr/offset-file-1.dat&mongodbHosts=rs0/localhost:27017&mongodbUser=debezium&mongodbPassword=dbz&mongodbName=dbserver1&databaseHistoryFileName=/usr/history-file-1.dat"
 }

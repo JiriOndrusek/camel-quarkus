@@ -15,45 +15,51 @@
  * limitations under the License.
  */
 
-package org.apache.camel.quarkus.component.debezium.common.it.sqlserver;
+package org.apache.camel.quarkus.component.debezium.it.mysql;
 
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
 
-import org.apache.camel.quarkus.component.debezium.common.it.AbstractDebeziumTestResource;
-import org.apache.camel.quarkus.component.debezium.common.it.DebeziumSqlserverResource;
-import org.apache.camel.quarkus.component.debezium.common.it.Type;
+import org.apache.camel.quarkus.component.debezium.it.AbstractDebeziumTestResource;
+import org.apache.camel.quarkus.component.debezium.it.DebeziumMysqlResource;
+import org.apache.camel.quarkus.component.debezium.it.Type;
 import org.jboss.logging.Logger;
-import org.testcontainers.containers.MSSQLServerContainer;
+import org.testcontainers.containers.MySQLContainer;
 
-public class DebeziumSqlserverTestResource extends AbstractDebeziumTestResource<MSSQLServerContainer> {
-    private static final Logger LOG = Logger.getLogger(DebeziumSqlserverTestResource.class);
+public class DebeziumMysqlTestResource extends AbstractDebeziumTestResource<MySQLContainer> {
+    private static final Logger LOG = Logger.getLogger(DebeziumMysqlTestResource.class);
 
-    private static int DB_PORT = 1433;
+    public static final String DB_NAME = "test";
+    public static final String DB_USERNAME = "user";
+    public static final String DB_PASSWORD = "test";
+    private static final int DB_PORT = 3306;
+    private static final String MYSQL_IMAGE = "mysql:5.7";
 
     private Path historyFile;
 
-    public DebeziumSqlserverTestResource() {
-        super(Type.sqlserver);
+    public DebeziumMysqlTestResource() {
+        super(Type.mysql);
     }
 
     @Override
-    protected MSSQLServerContainer createContainer() {
-        return new MSSQLServerContainer<>().withEnv(Collections.singletonMap("MSSQL_AGENT_ENABLED", "True"))
-                .withInitScript("initSqlserver.sql");
+    protected MySQLContainer createContainer() {
+        return new MySQLContainer<>(MYSQL_IMAGE)
+                .withUsername(DB_USERNAME)
+                .withPassword(DB_PASSWORD)
+                .withDatabaseName(DB_NAME)
+                .withInitScript("initMysql.sql");
     }
 
     @Override
     public Map<String, String> start() {
-        //detect EULA for MsSql
-        URL eulaUrl = Thread.currentThread().getContextClassLoader().getResource("container-license-acceptance.txt");
-        if (eulaUrl == null) {
-            LOG.warn(
-                    "Ms SQL EAULA is not accepted. Container won't start. See https://camel.apache.org/camel-quarkus/latest/extensions/debezium-sqlserver.html#_usage for more details.");
+        //in case that driver is not provided, container is not started
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            LOG.warn("Driver for mySql database is not provided. Container won't start.");
             return Collections.emptyMap();
         }
 
@@ -62,7 +68,7 @@ public class DebeziumSqlserverTestResource extends AbstractDebeziumTestResource<
         try {
             historyFile = Files.createTempFile(getClass().getSimpleName() + "-history-file-", "");
 
-            properties.put(DebeziumSqlserverResource.PROPERTY_DB_HISTORY_FILE, historyFile.toString());
+            properties.put(DebeziumMysqlResource.PROPERTY_DB_HISTORY_FILE, historyFile.toString());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -85,20 +91,19 @@ public class DebeziumSqlserverTestResource extends AbstractDebeziumTestResource<
 
     @Override
     protected String getJdbcUrl() {
-        final String jdbcUrl = container.getJdbcUrl() + ";databaseName=testDB;user=" + getUsername() + ";password="
-                + getPassword();
-
-        return jdbcUrl;
+        return "jdbc:mysql://" + container.getContainerIpAddress() + ":" + container.getMappedPort(DB_PORT) + "/"
+                + DebeziumMysqlTestResource.DB_NAME + "?user=" + DB_USERNAME
+                + "&password=" + DB_PASSWORD;
     }
 
     @Override
     protected String getUsername() {
-        return container.getUsername();
+        return DB_USERNAME;
     }
 
     @Override
     protected String getPassword() {
-        return container.getPassword();
+        return DB_PASSWORD;
     }
 
     @Override

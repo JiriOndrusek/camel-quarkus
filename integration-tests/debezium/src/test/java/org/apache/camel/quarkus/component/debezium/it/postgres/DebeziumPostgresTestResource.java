@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.camel.quarkus.component.debezium.common.it.postgres;
+package org.apache.camel.quarkus.component.debezium.it.postgres;
 
-import org.apache.camel.quarkus.component.debezium.common.it.AbstractDebeziumTestResource;
-import org.apache.camel.quarkus.component.debezium.common.it.DebeziumPostgresResource;
-import org.apache.camel.quarkus.component.debezium.common.it.Type;
+import org.apache.camel.quarkus.component.debezium.it.AbstractDebeziumTestResource;
+import org.apache.camel.quarkus.component.debezium.it.DebeziumPostgresResource;
+import org.apache.camel.quarkus.component.debezium.it.Type;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public class DebeziumPostgresTestResource extends AbstractDebeziumTestResource<PostgreSQLContainer> {

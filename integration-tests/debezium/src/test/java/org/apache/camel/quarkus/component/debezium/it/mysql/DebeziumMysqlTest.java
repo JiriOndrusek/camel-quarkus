@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.debezium.common.it.mongodb;
+package org.apache.camel.quarkus.component.debezium.it.mysql;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -22,13 +22,9 @@ import java.sql.SQLException;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.response.Response;
-import org.apache.camel.quarkus.component.debezium.common.it.AbstractDebeziumTest;
-import org.apache.camel.quarkus.component.debezium.common.it.Record;
-import org.apache.camel.quarkus.component.debezium.common.it.Type;
+import org.apache.camel.quarkus.component.debezium.it.AbstractDebeziumTest;
+import org.apache.camel.quarkus.component.debezium.it.Type;
 import org.jboss.logging.Logger;
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -38,34 +34,28 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 @QuarkusTest
-@QuarkusTestResource(DebeziumMongodbTestResource.class)
+@QuarkusTestResource(DebeziumMysqlTestResource.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class DebeziumMongodbTest extends AbstractDebeziumTest {
-    private static final Logger LOG = Logger.getLogger(DebeziumMongodbTest.class);
+class DebeziumMysqlTest extends AbstractDebeziumTest {
+    private static final Logger LOG = Logger.getLogger(DebeziumMysqlTest.class);
 
     //has to be constant and has to be equal to Type.mysql.getJdbcProperty
-    public static final String PROPERTY_JDBC = "mongodb_jdbc";
-
+    public static final String PROPERTY_JDBC = "mysql_jdbc";
     private static Connection connection;
 
-    public DebeziumMongodbTest() {
-        super(Type.mongodb);
+    public DebeziumMysqlTest() {
+        super(Type.mysql);
     }
 
     @BeforeAll
     public static void setUp() throws SQLException {
-        final String jdbcUrl = System.getProperty(Type.mongodb.getPropertyJdbc());
+        final String jdbcUrl = System.getProperty(PROPERTY_JDBC);
 
         if (jdbcUrl != null) {
             connection = DriverManager.getConnection(jdbcUrl);
         } else {
             LOG.warn("Container is not running. Connection is not created.");
         }
-    }
-
-    @Before
-    public void before() {
-        org.junit.Assume.assumeTrue(connection != null);
     }
 
     @AfterAll
@@ -75,29 +65,14 @@ class DebeziumMongodbTest extends AbstractDebeziumTest {
         }
     }
 
-    @Override
-    protected Connection getConnection() {
-        return connection;
-    }
-
-    @Override
-    protected String getCompanyTableName() {
-        return "Test." + super.getCompanyTableName();
-    }
-
     @Test
     @Order(0)
     @EnabledIfSystemProperty(named = PROPERTY_JDBC, matches = ".*")
-    public void testReceiveInitCompany() {
-        //receive first record (operation r) for the init company - using larger timeout
-        Response response = receiveResponse("/receiveAsRecord");
-
-        response.then()
-                .statusCode(200);
-
-        Record record = response.getBody().as(Record.class);
-        Assert.assertEquals("r", record.getOperation());
-        Assert.assertEquals("Struct{NAME=init,CITY=init}", record.getValue());
+    public void testReceiveEmptyMessages() {
+        //receive all empty messages before other tests
+        receiveResponse("/receiveEmptyMessages")
+                .then()
+                .statusCode(204);
     }
 
     @Test
@@ -121,4 +96,8 @@ class DebeziumMongodbTest extends AbstractDebeziumTest {
         super.testDelete();
     }
 
+    @Override
+    protected Connection getConnection() {
+        return connection;
+    }
 }

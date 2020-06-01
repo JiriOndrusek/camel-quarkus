@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.camel.quarkus.component.debezium.common.it;
+package org.apache.camel.quarkus.component.debezium.it;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -66,10 +66,13 @@ public abstract class AbstractDebeziumTestResource<T extends GenericContainer> i
             Map<String, String> map = CollectionHelper.mapOf(
                     type.getPropertyHostname(), container.getContainerIpAddress(),
                     type.getPropertyPort(), container.getMappedPort(getPort()) + "",
-                    type.getPropertyUsername(), getUsername(),
-                    type.getPropertyPassword(), getPassword(),
                     type.getPropertyOffsetFileName(), storeFile.toString(),
                     type.getPropertyJdbc(), getJdbcUrl());
+
+            if (getUsername() != null) {
+                map.put(type.getPropertyUsername(), getUsername());
+                map.put(type.getPropertyPassword(), getPassword());
+            }
 
             return map;
 

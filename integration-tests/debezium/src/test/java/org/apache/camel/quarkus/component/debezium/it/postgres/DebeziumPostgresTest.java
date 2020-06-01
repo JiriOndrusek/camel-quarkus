@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.debezium.common.it.postgres;
+package org.apache.camel.quarkus.component.debezium.it.postgres;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -22,8 +22,8 @@ import java.sql.SQLException;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
-import org.apache.camel.quarkus.component.debezium.common.it.AbstractDebeziumTest;
-import org.apache.camel.quarkus.component.debezium.common.it.Type;
+import org.apache.camel.quarkus.component.debezium.it.AbstractDebeziumTest;
+import org.apache.camel.quarkus.component.debezium.it.Type;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;

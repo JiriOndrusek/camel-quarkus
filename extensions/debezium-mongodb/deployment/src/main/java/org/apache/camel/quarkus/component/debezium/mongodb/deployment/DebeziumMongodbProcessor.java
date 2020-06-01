@@ -16,8 +16,10 @@
  */
 package org.apache.camel.quarkus.component.debezium.mongodb.deployment;
 
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 
 class DebeziumMongodbProcessor {
 
@@ -26,5 +28,11 @@ class DebeziumMongodbProcessor {
     @BuildStep
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
+    }
+
+    @BuildStep
+    void addDependencies(BuildProducer<IndexDependencyBuildItem> indexDependency) {
+        indexDependency.produce(new IndexDependencyBuildItem("io.debezium", "debezium-connector-mongodb"));
+        indexDependency.produce(new IndexDependencyBuildItem("org.mongodb", "mongodb-driver"));
     }
 }

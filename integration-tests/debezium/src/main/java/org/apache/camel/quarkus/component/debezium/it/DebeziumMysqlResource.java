@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.debezium.common.it;
+package org.apache.camel.quarkus.component.debezium.it;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.GET;

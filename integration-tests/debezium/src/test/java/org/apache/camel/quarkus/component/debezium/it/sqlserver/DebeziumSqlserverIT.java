@@ -14,34 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.debezium.common.it;
+package org.apache.camel.quarkus.component.debezium.it.sqlserver;
 
-public class Record {
+import io.quarkus.test.junit.NativeImageTest;
 
-    private String operation;
-    private String value;
+@NativeImageTest
+class DebeziumSqlserverIT extends DebeziumSqlserverTest {
 
-    public Record() {
-    }
-
-    public Record(String operation, String value) {
-        this.operation = operation;
-        this.value = value;
-    }
-
-    public String getOperation() {
-        return operation;
-    }
-
-    public void setOperation(String operation) {
-        this.operation = operation;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
 }

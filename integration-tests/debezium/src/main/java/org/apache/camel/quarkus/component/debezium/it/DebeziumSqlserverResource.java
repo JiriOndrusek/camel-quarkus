@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.debezium.common.it;
+package org.apache.camel.quarkus.component.debezium.it;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.GET;
@@ -22,34 +22,43 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-@Path("/debezium-postgres")
+@Path("/debezium-sqlserver")
 @ApplicationScoped
-public class DebeziumPostgresResource extends AbstractDebeziumResource {
+public class DebeziumSqlserverResource extends AbstractDebeziumResource {
 
-    public static final String DB_NAME = "PostgresDB";
+    public static final String PROPERTY_DB_HISTORY_FILE = DebeziumSqlserverResource.class.getSimpleName()
+            + "_databaseHistoryFileFilename";
 
-    public DebeziumPostgresResource() {
-        super(Type.postgres);
+    public static final String DB_NAME = "testDB";
+
+    public DebeziumSqlserverResource() {
+        super(Type.sqlserver);
     }
 
-    @Path("/receiveEmptyMessages")
+    @Path("/receiveAsRecord")
     @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public String receiveEmptyMessages() {
-        return super.receiveEmptyMessages();
+    @Produces(MediaType.APPLICATION_JSON)
+    public Record receiveAsRecord() {
+        return super.receiveAsRecord();
     }
 
     @Path("/receive")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String receive() {
-        return super.receive();
+        Record record = super.receiveAsRecord();
+        //mssql return empty Strring instead of nulls, wich leads to different status code 200 vs 204
+        if (record == null || ("d".equals(record.getOperation()) && "".equals(record.getValue()))) {
+            return null;
+        }
+        return record.getValue();
     }
 
     @Override
     String getEndpoinUrl(String hostname, String port, String username, String password, String databaseServerName,
             String offsetStorageFileName) {
         return super.getEndpoinUrl(hostname, port, username, password, databaseServerName, offsetStorageFileName)
-                + "&databaseDbname=" + DB_NAME;
+                + "&databaseDbname=" + DB_NAME
+                + "&databaseHistoryFileFilename=" + System.getProperty(PROPERTY_DB_HISTORY_FILE);
     }
 }

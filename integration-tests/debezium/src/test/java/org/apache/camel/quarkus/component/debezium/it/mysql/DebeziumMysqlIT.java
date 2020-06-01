@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.debezium.common.it.mysql;
+package org.apache.camel.quarkus.component.debezium.it.mysql;
 
 import io.quarkus.test.junit.NativeImageTest;
 

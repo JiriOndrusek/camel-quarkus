@@ -14,18 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.debezium.common.it.sqlserver;
+package org.apache.camel.quarkus.component.debezium.it.mongodb;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import io.debezium.connector.mongodb.MongoDbCollectionSchema;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
-import org.apache.camel.quarkus.component.debezium.common.it.AbstractDebeziumTest;
-import org.apache.camel.quarkus.component.debezium.common.it.Record;
-import org.apache.camel.quarkus.component.debezium.common.it.Type;
+import org.apache.camel.quarkus.component.debezium.it.AbstractDebeziumTest;
+import org.apache.camel.quarkus.component.debezium.it.Record;
+import org.apache.camel.quarkus.component.debezium.it.Type;
+import org.bson.Document;
 import org.jboss.logging.Logger;
 import org.junit.Assert;
 import org.junit.Before;
@@ -38,26 +44,26 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 @QuarkusTest
-@QuarkusTestResource(DebeziumSqlserverTestResource.class)
+@QuarkusTestResource(DebeziumMongodbTestResource.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class DebeziumSqlserverTest extends AbstractDebeziumTest {
-    private static final Logger LOG = Logger.getLogger(DebeziumSqlserverTest.class);
+class DebeziumMongodbTest extends AbstractDebeziumTest {
+    private static final Logger LOG = Logger.getLogger(DebeziumMongodbTest.class);
 
     //has to be constant and has to be equal to Type.mysql.getJdbcProperty
-    public static final String PROPERTY_JDBC = "sqlserver_jdbc";
+    public static final String PROPERTY_JDBC = "mongodb_jdbc";
 
-    private static Connection connection;
+    private static MongoClient mongoClient;
 
-    public DebeziumSqlserverTest() {
-        super(Type.sqlserver);
+    public DebeziumMongodbTest() {
+        super(Type.mongodb);
     }
 
     @BeforeAll
     public static void setUp() throws SQLException {
-        final String jdbcUrl = System.getProperty(Type.sqlserver.getPropertyJdbc());
+        final String mongoUrl = System.getProperty(Type.mongodb.getPropertyJdbc());
 
-        if (jdbcUrl != null) {
-            connection = DriverManager.getConnection(jdbcUrl);
+        if (mongoUrl != null) {
+            mongoClient = MongoClients.create(mongoUrl);
         } else {
             LOG.warn("Container is not running. Connection is not created.");
         }
@@ -65,19 +71,19 @@ class DebeziumSqlserverTest extends AbstractDebeziumTest {
 
     @Before
     public void before() {
-        org.junit.Assume.assumeTrue(connection != null);
+        org.junit.Assume.assumeTrue(mongoClient != null);
     }
 
     @AfterAll
     public static void cleanUp() throws SQLException {
-        if (connection != null) {
-            connection.close();
+        if (mongoClient != null) {
+            mongoClient.close();
         }
     }
 
     @Override
     protected Connection getConnection() {
-        return connection;
+        return null;
     }
 
     @Override
@@ -89,15 +95,16 @@ class DebeziumSqlserverTest extends AbstractDebeziumTest {
     @Order(0)
     @EnabledIfSystemProperty(named = PROPERTY_JDBC, matches = ".*")
     public void testReceiveInitCompany() {
-        //receive first record (operation r) for the init company - using larger timeout
-        Response response = receiveResponse("/receiveAsRecord");
+        MongoDatabase db = mongoClient.getDatabase("test");
+        db.createCollection("companies");
 
-        response.then()
-                .statusCode(200);
+        MongoCollection companies = db.getCollection("companies");
+        Document doc = new Document();
+        doc.put("name", "company01");
+        companies.insertOne(doc);
 
-        Record record = response.getBody().as(Record.class);
-        Assert.assertEquals("r", record.getOperation());
-        Assert.assertEquals("Struct{NAME=init,CITY=init}", record.getValue());
+        Response response = receiveResponse();
+        System.out.println(response.getStatusCode());
     }
 
     @Test
