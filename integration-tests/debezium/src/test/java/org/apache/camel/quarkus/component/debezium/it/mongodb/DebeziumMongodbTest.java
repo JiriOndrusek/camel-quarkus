@@ -17,23 +17,19 @@
 package org.apache.camel.quarkus.component.debezium.it.mongodb;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import io.debezium.connector.mongodb.MongoDbCollectionSchema;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
 import org.apache.camel.quarkus.component.debezium.it.AbstractDebeziumTest;
-import org.apache.camel.quarkus.component.debezium.it.Record;
 import org.apache.camel.quarkus.component.debezium.it.Type;
 import org.bson.Document;
 import org.jboss.logging.Logger;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;

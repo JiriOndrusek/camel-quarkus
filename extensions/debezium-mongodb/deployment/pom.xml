@@ -56,6 +56,10 @@
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-support-debezium-deployment</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-mongodb-client-deployment</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

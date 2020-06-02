@@ -36,7 +36,8 @@ public class DebeziumMongodbTestResource extends AbstractDebeziumTestResource<Mo
 
     @Override
     protected MongoDBContainer createContainer() {
-        return new MongoDBContainer().withEnv("MONGO_INITDB_ROOT_USERNAME", DB_USERNAME).withEnv("MONGO_INITDB_ROOT_PASSWORD", DB_PASSWORD);
+        return new MongoDBContainer().withEnv("MONGO_DATABASE_USERNAME", DB_USERNAME).withEnv("MONGO_DATABASE_PASSWORD",
+                DB_PASSWORD);
 
     }
 

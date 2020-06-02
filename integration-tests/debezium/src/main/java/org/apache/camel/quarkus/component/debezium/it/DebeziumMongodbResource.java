@@ -54,11 +54,13 @@ public class DebeziumMongodbResource extends AbstractDebeziumResource {
         return record.getValue();
     }
 
-    //    @Override
-    //    String getEndpoinUrl(String hostname, String port, String username, String password, String databaseServerName,
-    //            String offsetStorageFileName) {
-    //        return super.getEndpoinUrl(hostname, port, username, password, databaseServerName, offsetStorageFileName)
-    //                + "&databaseDbname=" + DB_NAME
-    //                + "&databaseHistoryFileFilename=" + System.getProperty(PROPERTY_DB_HISTORY_FILE);
-    //    } debezium-mongodb:dbz-test-1?offsetStorageFileName=/usr/offset-file-1.dat&mongodbHosts=rs0/localhost:27017&mongodbUser=debezium&mongodbPassword=dbz&mongodbName=dbserver1&databaseHistoryFileName=/usr/history-file-1.dat"
+    @Override
+    String getEndpoinUrl(String hostname, String port, String username, String password, String databaseServerName,
+            String offsetStorageFileName) {
+        return Type.mongodb.getComponent() + ":localhost?"
+                + "offsetStorageFileName=" + offsetStorageFileName
+                + "&mongodbPassword=" + System.getProperty(Type.mongodb.getPropertyPassword())
+                + "&mongodbName=docker-rs"
+                + "&mongodbHosts=" + hostname + ":" + port;
+    }
 }

@@ -33,6 +33,6 @@ class DebeziumMongodbProcessor {
     @BuildStep
     void addDependencies(BuildProducer<IndexDependencyBuildItem> indexDependency) {
         indexDependency.produce(new IndexDependencyBuildItem("io.debezium", "debezium-connector-mongodb"));
-        indexDependency.produce(new IndexDependencyBuildItem("org.mongodb", "mongodb-driver"));
+        //        indexDependency.produce(new IndexDependencyBuildItem("org.mongodb", "mongodb-driver"));
     }
 }
