@@ -1,0 +1,131 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.camel.quarkus.component.nitrite.it;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+import org.apache.camel.ConsumerTemplate;
+import org.apache.camel.Exchange;
+import org.apache.camel.FluentProducerTemplate;
+import org.apache.camel.component.nitrite.NitriteConstants;
+import org.dizitart.no2.Document;
+import org.jboss.logging.Logger;
+
+@Path("/nitrite")
+@ApplicationScoped
+public class NitriteResource {
+
+    public static String PROPERTY_DB_FILE = NitriteResource.class.getSimpleName()
+            + "_databaseFileFilename";
+
+    private static final Logger LOG = Logger.getLogger(NitriteResource.class);
+
+    @Inject
+    FluentProducerTemplate producerTemplate;
+
+    @Inject
+    ConsumerTemplate consumerTemplate;
+
+    @Path("/getEmployee")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Object getEmployee() throws Exception {
+        final Exchange exchange = consumerTemplate.receiveNoWait(String.format("nitrite://%s?repositoryClass=%s",
+                System.getProperty(PROPERTY_DB_FILE), Employee.class.getCanonicalName()));
+        LOG.infof("Received from nitrite: %s", exchange == null ? null : exchange.getIn().getBody());
+        return exchange == null ? null
+                : exchange.getIn().getBody().toString() + ", headers: " + exchange.getIn().getHeader("CamelNitriteChangeType");
+    }
+
+    @Path("/getCollection")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Object getCollection() throws Exception {
+        final Exchange exchange = consumerTemplate.receiveNoWait(String.format("nitrite://%s?collection=collection",
+                System.getProperty(PROPERTY_DB_FILE)));
+        LOG.infof("Received from nitrite: %s", exchange == null ? null : exchange.getIn().getBody());
+        return exchange == null ? null
+                : exchange.getIn().getBody().toString() + ", headers: " + exchange.getIn().getHeader("CamelNitriteChangeType");
+    }
+
+    @Path("/insertCollection")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    public boolean insertCollection(Document doc) {
+        LOG.infof("Sending to nitrite: {%s}", doc);
+        final String response = producerTemplate.toF("nitrite://%s?collection=collection",
+                System.getProperty(PROPERTY_DB_FILE))
+                .withBody(doc)
+                .withHeader(NitriteConstants.OPERATION, null)
+                .request(String.class);
+
+        return response != null;
+    }
+
+    @Path("/insertEmployee")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    public boolean insertEmployee(Employee object) {
+        LOG.infof("Sending to nitrite: {%s}", object);
+        final Object response = producerTemplate.toF("nitrite://%s?repositoryClass=%s",
+                System.getProperty(PROPERTY_DB_FILE), Employee.class.getCanonicalName())
+                .withBody(object)
+                .withHeader(NitriteConstants.OPERATION, null)
+                .request();
+
+        return response != null;
+    }
+
+    @Path("/operationEmployee")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object operationEmployee(Operation operation) {
+        LOG.infof("Sending to nitrite: {%s}", operation);
+        final Object response = producerTemplate.toF("nitrite://%s?repositoryClass=%s",
+                System.getProperty(PROPERTY_DB_FILE), Employee.class.getCanonicalName())
+                .withBody(operation.getEmployee())
+                .withHeader(NitriteConstants.OPERATION, operation.toRepositoryOperation())
+                .request();
+
+        return response == null ? true : response;
+    }
+
+    @Path("/operationCollection")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object operationCollection(Operation operation) {
+        LOG.infof("Sending to nitrite: {%s}", operation);
+        final Object response = producerTemplate.toF("nitrite://%s?collection=collection",
+                System.getProperty(PROPERTY_DB_FILE))
+                .withBody(operation.getDocument())
+                .withHeader(NitriteConstants.OPERATION, operation.toCollectionOperation())
+                .request();
+
+        return response == null ? true : response;
+    }
+}

@@ -238,7 +238,7 @@ Number of Camel components: 151 in 116 JAR artifacts (0 deprecated)
 
 | xref:extensions/netty-http.adoc[Netty HTTP] | camel-quarkus-netty-http | Native + Stable | 0.2.0 | Netty HTTP server and client using the Netty 4.x.
 
-| xref:extensions/nitrite.adoc[Nitrite] | camel-quarkus-nitrite | JVM + Preview | 1.0.0-M6 | Access Nitrite databases.
+| xref:extensions/nitrite.adoc[Nitrite] | camel-quarkus-nitrite | Native + Stable | 1.0.0-CR3 | Access Nitrite databases.
 
 | xref:extensions/olingo4.adoc[Olingo4] | camel-quarkus-olingo4 | Native + Stable | 1.0.0-M4 | Communicate with OData 4.0 services using Apache Olingo OData API.
 

@@ -38,6 +38,7 @@ database:
   - jdbc
   - kudu
   - mongodb
+  - nitrite
   - sql
 dataformats:
   - avro
