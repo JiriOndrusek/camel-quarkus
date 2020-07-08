@@ -48,6 +48,7 @@
         <awssdk2.version>2.13.58</awssdk2.version>
         <bouncycastle.version>1.66</bouncycastle.version>
         <camel.version>3.5.0-SNAPSHOT</camel.version>
+        <cassandra-quarkus.version>1.0.0-alpha3</cassandra-quarkus.version>
         <debezium.version>1.2.1.Final</debezium.version>
         <elasticsearch.version>7.6.1</elasticsearch.version>
         <freemarker.version>2.3.30</freemarker.version>

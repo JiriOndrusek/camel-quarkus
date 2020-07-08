@@ -4,7 +4,7 @@
 [camel-quarkus-components]
 = Camel components supported on Quarkus
 
-159 components in 124 JAR artifacts (2 deprecated, 17 JVM only)
+159 components in 124 JAR artifacts (2 deprecated, 16 JVM only)
 
 [width="100%",cols="4,1,1,1,5",options="header"]
 |===
@@ -139,8 +139,8 @@ Stable | 1.0.0 | Upload, download and manage files, folders, groups, collaborati
 | xref:reference/extensions/braintree.adoc[Braintree] | camel-quarkus-braintree | Native +
 Stable | 1.2.0 | Process payments using Braintree Payments.
 
-| xref:reference/extensions/cassandraql.adoc[Cassandra CQL] | camel-quarkus-cassandraql | JVM +
-Preview | 1.0.0 | Integrate with Cassandra 2.0 using the CQL3 API (not the Thrift API). Based on Cassandra Java Driver provided by DataStax.
+| xref:reference/extensions/cassandraql.adoc[Cassandra CQL] | camel-quarkus-cassandraql | Native +
+Stable | 1.0.0 | Integrate with Cassandra 2.0 using the CQL3 API (not the Thrift API). Based on Cassandra Java Driver provided by DataStax.
 
 | xref:reference/extensions/bean.adoc[Class] | camel-quarkus-bean | Native +
 Stable | 0.2.0 | Invoke methods of Java beans specified by class name.
