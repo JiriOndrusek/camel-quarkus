@@ -36,6 +36,7 @@ core-main-validation:
   - json-validator
   - validator
 database:
+  - cassandraql
   - couchdb
   - debezium
   - influxdb

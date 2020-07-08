@@ -48,7 +48,6 @@
         <module>bonita</module>
         <module>browse</module>
         <module>caffeine</module>
-        <module>cassandraql</module>
         <module>chatscript</module>
         <module>chunk</module>
         <module>cm-sms</module>

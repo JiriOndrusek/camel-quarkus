@@ -48,7 +48,7 @@ Stable | 1.0.0 | Call external HTTP services using Async Http Client.
 Stable | 1.0.0 | Exchange data with external Websocket servers using Async Http Client.
 
 |  xref:reference/extensions/atmos.adoc[Atmos]  | camel-quarkus-atmos | [.camel-element-JVM]##JVM## +
-Preview | 1.1.0 | Integract with EMC's ViPR object data services using the Atmos Client.
+Preview | 1.1.0 | Integrate with EMC's ViPR object data services using the Atmos Client.
 
 |  xref:reference/extensions/atom.adoc[Atom]  | camel-quarkus-atom | [.camel-element-JVM]##JVM## +
 Preview | 1.1.0 | Poll Atom RSS feeds.
@@ -197,8 +197,8 @@ Preview | 1.1.0 | Perform caching operations using Caffeine Cache.
 |  xref:reference/extensions/caffeine-lrucache.adoc[Caffeine LRUCache]  | camel-quarkus-caffeine-lrucache | [.camel-element-Native]##Native## +
 Stable | 1.0.0 | An LRUCacheFactory implementation based on Caffeine
 
-|  xref:reference/extensions/cassandraql.adoc[Cassandra CQL]  | camel-quarkus-cassandraql | [.camel-element-JVM]##JVM## +
-Preview | 1.0.0 | Integrate with Cassandra 2.0 using the CQL3 API (not the Thrift API). Based on Cassandra Java Driver provided by DataStax.
+|  xref:reference/extensions/cassandraql.adoc[Cassandra CQL]  | camel-quarkus-cassandraql | [.camel-element-Native]##Native## +
+Stable | 1.0.0 | Integrate with Cassandra 2.0 using the CQL3 API (not the Thrift API). Based on Cassandra Java Driver provided by DataStax.
 
 |  xref:reference/extensions/chatscript.adoc[ChatScript]  | camel-quarkus-chatscript | [.camel-element-JVM]##JVM## +
 Preview | 1.1.0 | Chat with a ChatScript Server.

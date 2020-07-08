@@ -48,6 +48,8 @@
         <awssdk2.version>2.14.3</awssdk2.version>
         <bouncycastle.version>1.66</bouncycastle.version>
         <camel.version>3.5.0</camel.version>
+        <!-- todo jondruse remove snapshot once alpha4 is released -->
+        <cassandra-quarkus.version>1.0.0-alpha4-SNAPSHOT</cassandra-quarkus.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version><!-- keep in sync with Camel -->
         <commons-cli.version>1.4</commons-cli.version><!-- keep in sync with Quarkus, via quarkus-bootstrap-core -->
         <debezium.version>1.2.1.Final</debezium.version>

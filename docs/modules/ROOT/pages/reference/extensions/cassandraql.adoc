@@ -6,9 +6,9 @@
 :page-aliases: extensions/cassandraql.adoc
 
 [.badges]
-[.badge-key]##Since Camel Quarkus##[.badge-version]##1.0.0## [.badge-key]##JVM##[.badge-supported]##supported## [.badge-key]##Native##[.badge-unsupported]##unsupported##
+[.badge-key]##Since Camel Quarkus##[.badge-version]##1.0.0## [.badge-key]##JVM##[.badge-supported]##supported## [.badge-key]##Native##[.badge-supported]##supported##
 
-Integrate with Cassandra 2.0 using the CQL3 API (not the Thrift API). Based on Cassandra Java Driver provided by DataStax.
+Integrate with Cassandra 2.0 using the CQL3 API (not the Thrift API).
 
 == What's inside
 
@@ -27,3 +27,21 @@ Please refer to the above link for usage and configuration details.
 ----
 
 Check the xref:user-guide/index.adoc[User guide] for more information about writing Camel Quarkus applications.
+
+== Additional Camel Quarkus configuration
+
+[width="100%",cols="80,5,15",options="header"]
+|===
+| Configuration property | Type | Default
+
+
+|icon:lock[title=Fixed at build time] [[quarkus.cassandra.init.eager-session-init]]`link:#quarkus.cassandra.init.eager-session-init[quarkus.cassandra.init.eager-session-init]`
+
+Reads configuration of cassandra-quarkus init property eager-session-init.
+| `java.lang.Boolean`
+| 
+|===
+
+[.configuration-legend]
+icon:lock[title=Fixed at build time] Configuration property fixed at build time. All other configuration properties are overridable at runtime.
+
