@@ -106,7 +106,7 @@ Number of Camel components: 154 in 119 JAR artifacts (0 deprecated)
 
 | xref:extensions/braintree.adoc[Braintree] | camel-quarkus-braintree | Native + Stable | 1.2.0 | Process payments using Braintree Payments.
 
-| xref:extensions/cassandraql.adoc[Cassandra CQL] | camel-quarkus-cassandraql | JVM + Preview | 1.0.0-M6 | Integrate with Cassandra 2.0 using the CQL3 API (not the Thrift API).
+| xref:extensions/cassandraql.adoc[Cassandra CQL] | camel-quarkus-cassandraql | Native + Stable | 1.0.0-CR4 | Integrate with Cassandra 2.0 using the CQL3 API (not the Thrift API).
 
 | xref:extensions/bean.adoc[Class] | camel-quarkus-bean | Native + Stable | 0.2.0 | Invoke methods of Java beans specified by class name.
 

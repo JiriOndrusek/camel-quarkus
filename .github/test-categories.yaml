@@ -32,6 +32,7 @@ main:
   - main-xml-io
   - main-xml-jaxb
 database:
+  - cassandraql
   - couchdb
   - debezium
   - influxdb

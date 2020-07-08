@@ -75,6 +75,7 @@
         <module>bindy</module>
         <module>box</module>
         <module>braintree</module>
+        <module>cassandraql</module>
         <module>compression</module>
         <module>consul</module>
         <module>controlbus</module>
