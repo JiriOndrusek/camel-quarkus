@@ -22,7 +22,7 @@ final List<String> parityViolations = []
 final File pomXml = new File(project.basedir, "pom.xml")
 
 /* groupIds that contain extensions */
-final Set<String> extensionGroupIds = ["org.apache.camel.quarkus", "io.quarkus", "org.amqphub.quarkus"] as Set
+final Set<String> extensionGroupIds = ["org.apache.camel.quarkus", "io.quarkus", "org.amqphub.quarkus", "com.datastax.oss.quarkus"] as Set
 /* artifactIds from groups contained in extensionGroupIds that are not extensions */
 final Set<String> nonExtensionArtifactIds = ["quarkus-development-mode-spi", "camel-quarkus-qute-component"] as Set
 
@@ -73,8 +73,8 @@ if (pomXml.exists()) {
                 actualRuntimeDeps.add(new Tuple2(it.groupId.text(), it.artifactId.text()))
             }
 
-        // println "expectedRuntimeDeps: " + expectedRuntimeDeps
-        // println "actualRuntimeDeps:   " + actualRuntimeDeps
+         // println "expectedRuntimeDeps: " + expectedRuntimeDeps
+         // println "actualRuntimeDeps:   " + actualRuntimeDeps
 
         expectedRuntimeDeps
             .findAll {

@@ -58,7 +58,8 @@ public class CassandraqlResource {
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
     public String getEmployee(String id) throws Exception {
-        final Exchange exchange = consumerTemplate.receive(createUrl(String.format("SELECT * FROM employee WHERE id = %s", id)));
+        final Exchange exchange = consumerTemplate
+                .receive(createUrl(String.format("SELECT * FROM employee WHERE id = %s", id)));
         LOG.infof("Received from Cassandra: %s", exchange == null ? null : exchange.getIn().getBody());
         return exchange.getIn().getBody().toString();
     }
@@ -74,10 +75,12 @@ public class CassandraqlResource {
 
     @Path("/updateEmployee")
     @POST
-//    @Consumes(MediaType.APPLICATION_JSON)
+    //    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
     public boolean updateEmployee(Employee employee) throws Exception {
-        final Exchange exchange = consumerTemplate.receive(createUrl(String.format("UPDATE employee SET name = '%s', address = '%s' WHERE id = %s", employee.getName(), employee.getAddress(), employee.getId())));
+        final Exchange exchange = consumerTemplate
+                .receive(createUrl(String.format("UPDATE employee SET name = '%s', address = '%s' WHERE id = %s",
+                        employee.getName(), employee.getAddress(), employee.getId())));
         LOG.infof("Updated Employee with id :" + employee.getId());
         return exchange != null;
     }
@@ -91,7 +94,8 @@ public class CassandraqlResource {
     }
 
     private String createUrl(String cql) {
-        String url = System.getProperty(DB_URL_PARAMETER);
-        return String.format("cql://%s/%s?cql=%s", url, KEYSPACE, cql);
+        String hostname = System.getProperty("quarkus.cassandra.docker_host");
+        String port = System.getProperty("quarkus.cassandra.docker_port");
+        return String.format("cql://%s:%s/%s?cql=%s", hostname, port, KEYSPACE, cql);
     }
 }
