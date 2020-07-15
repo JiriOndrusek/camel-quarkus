@@ -21,6 +21,7 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,7 +35,6 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.CamelContext;
-import org.apache.camel.Endpoint;
 import org.apache.camel.component.as2.AS2Component;
 import org.apache.camel.component.as2.AS2Configuration;
 import org.apache.camel.component.as2.api.AS2Charset;
@@ -45,13 +45,9 @@ import org.apache.camel.component.as2.api.AS2MessageStructure;
 import org.apache.camel.component.as2.api.AS2MimeType;
 import org.apache.camel.component.as2.api.AS2ServerConnection;
 import org.apache.camel.component.as2.api.AS2ServerManager;
+import org.apache.camel.component.as2.api.AS2SignatureAlgorithm;
 import org.apache.camel.component.as2.api.AS2SignedDataGenerator;
-import org.apache.camel.component.as2.api.entity.AS2DispositionType;
-import org.apache.camel.component.as2.api.entity.AS2MessageDispositionNotificationEntity;
 import org.apache.camel.component.as2.api.entity.ApplicationEDIEntity;
-import org.apache.camel.component.as2.api.entity.DispositionMode;
-import org.apache.camel.component.as2.api.entity.DispositionNotificationMultipartReportEntity;
-import org.apache.camel.component.as2.api.entity.MimeEntity;
 import org.apache.camel.component.as2.api.util.HttpMessageUtils;
 import org.apache.camel.component.as2.internal.AS2ApiCollection;
 import org.apache.camel.component.as2.internal.AS2ClientManagerApiMethod;
@@ -78,6 +74,7 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.jcajce.JcaCertStore;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoGeneratorBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -179,6 +176,12 @@ class As2Test {
         context.addComponent("as2", component);
     }
 
+    @BeforeAll
+    public static void setupTest() throws Exception {
+        setupServerKeysAndCertificates();
+        receiveTestMessages();
+    }
+
     //    @Override
     @BeforeEach
     public void setUp() throws Exception {
@@ -245,10 +248,10 @@ class As2Test {
         // parameter type is String
         headers.put("CamelAS2.dispositionNotificationTo", "mrAS2@example.com");
 
-//        Endpoint e = context.getEndpoint("as2://client/send?inBody=ediMessage");
+        //        Endpoint e = context.getEndpoint("as2://client/send?inBody=ediMessage");
 
-        final Triple<HttpEntity, HttpRequest, HttpResponse> result = executeRequest(headers);
-        HttpEntity responseEntity = result.getLeft();
+        final Triple<Result, HttpRequest, HttpResponse> result = executeRequest(headers);
+        Result responseEntity = result.getLeft();
         HttpRequest request = result.getMiddle();
         HttpResponse response = result.getRight();
 
@@ -278,32 +281,36 @@ class As2Test {
         assertNotNull(HttpMessageUtils.getHeaderValue(response, AS2Header.MESSAGE_ID), "Missing message id");
 
         assertNotNull(responseEntity, "Response entity");
-        assertTrue(responseEntity instanceof DispositionNotificationMultipartReportEntity, "Unexpected response entity type");
-        DispositionNotificationMultipartReportEntity reportEntity = (DispositionNotificationMultipartReportEntity) responseEntity;
-        assertEquals(2, reportEntity.getPartCount(), "Unexpected number of body parts in report");
-        MimeEntity firstPart = reportEntity.getPart(0);
-        assertEquals(org.apache.http.entity.ContentType.create(AS2MimeType.TEXT_PLAIN, AS2Charset.US_ASCII).toString(),
-                firstPart.getContentTypeValue(), "Unexpected content type in first body part of report");
-        MimeEntity secondPart = reportEntity.getPart(1);
-        assertEquals(
-                org.apache.http.entity.ContentType.create(AS2MimeType.MESSAGE_DISPOSITION_NOTIFICATION, AS2Charset.US_ASCII)
-                        .toString(),
-                secondPart.getContentTypeValue(),
-                "Unexpected content type in second body part of report");
+        assertEquals(2, responseEntity.getPartsCount(), "Unexpected number of body parts in report");
+    }
 
-        assertTrue(secondPart instanceof AS2MessageDispositionNotificationEntity, "");
-        AS2MessageDispositionNotificationEntity messageDispositionNotificationEntity = (AS2MessageDispositionNotificationEntity) secondPart;
-        assertEquals(ORIGIN_SERVER_NAME, messageDispositionNotificationEntity.getReportingUA(),
-                "Unexpected value for reporting UA");
-        assertEquals(AS2_NAME, messageDispositionNotificationEntity.getFinalRecipient(),
-                "Unexpected value for final recipient");
-        assertEquals(HttpMessageUtils.getHeaderValue(request, AS2Header.MESSAGE_ID),
-                messageDispositionNotificationEntity.getOriginalMessageId(), "Unexpected value for original message ID");
-        assertEquals(DispositionMode.AUTOMATIC_ACTION_MDN_SENT_AUTOMATICALLY,
-                messageDispositionNotificationEntity.getDispositionMode(), "Unexpected value for disposition mode");
-        assertEquals(AS2DispositionType.PROCESSED, messageDispositionNotificationEntity.getDispositionType(),
-                "Unexpected value for disposition type");
+    private static void setupServerKeysAndCertificates() throws Exception {
+        Security.addProvider(new BouncyCastleProvider());
 
+        //
+        // set up our certificates
+        //
+        KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", "BC");
+
+        kpg.initialize(1024, new SecureRandom());
+
+        String issueDN = "O=Punkhorn Software, C=US";
+        KeyPair issueKP = kpg.generateKeyPair();
+        X509Certificate issueCert = Utils.makeCertificate(
+                issueKP, issueDN, issueKP, issueDN);
+
+        //
+        // certificate we sign against
+        //
+        String signingDN = "CN=William J. Collins, E=punkhornsw@gmail.com, O=Punkhorn Software, C=US";
+        serverSigningKP = kpg.generateKeyPair();
+        X509Certificate signingCert = Utils.makeCertificate(
+                serverSigningKP, signingDN, issueKP, issueDN);
+
+        serverCertList = new ArrayList<>();
+
+        serverCertList.add(signingCert);
+        serverCertList.add(issueCert);
     }
 
     private void setupKeysAndCertificates() throws Exception {
@@ -336,21 +343,30 @@ class As2Test {
         decryptingKP = signingKP;
     }
 
-    private Triple<HttpEntity, HttpRequest, HttpResponse> executeRequest(Map<String, Object> headers) throws Exception {
+    private Triple<Result, HttpRequest, HttpResponse> executeRequest(Map<String, Object> headers) throws Exception {
         Point p = new Point();
         p.applyHeadersTypeSafe(headers);
-//        p.setMessageStructure((AS2MessageStructure) headers.get("CamelAS2.as2MessageStructure"));
-//        p.setMessageStructureKey("CamelAS2.as2MessageStructure");
-//        p.setContentTypeKey("CamelAS2.ediMessageContentType");
-//        p.setContentType((org.apache.http.entity.ContentType)headers.get(p.getContentTypeKey()));
-        RestAssured.given() //
+        //        p.setMessageStructure((AS2MessageStructure) headers.get("CamelAS2.as2MessageStructure"));
+        //        p.setMessageStructureKey("CamelAS2.as2MessageStructure");
+        //        p.setContentTypeKey("CamelAS2.ediMessageContentType");
+        //        p.setContentType((org.apache.http.entity.ContentType)headers.get(p.getContentTypeKey()));
+        Result result = RestAssured.given() //
                 .contentType(ContentType.JSON)
                 .body(p)
                 .post("/as2/post") //
                 .then()
-                .statusCode(201);
+                .statusCode(201)
+                .extract().body().as(Result.class);
 
-        return new ImmutableTriple(/*responseEntity*/ null, requestHandler.getRequest(), requestHandler.getResponse());
+        return new ImmutableTriple(/*responseEntity*/ result, requestHandler.getRequest(), requestHandler.getResponse());
+    }
+
+    private static void receiveTestMessages() throws IOException {
+        serverConnection = new AS2ServerConnection(AS2_VERSION, ORIGIN_SERVER_NAME,
+                SERVER_FQDN, PARTNER_TARGET_PORT, AS2SignatureAlgorithm.SHA256WITHRSA,
+                serverCertList.toArray(new Certificate[0]), serverSigningKP.getPrivate(), serverSigningKP.getPrivate());
+        requestHandler = new RequestHandler();
+        serverConnection.listen("/", requestHandler);
     }
 
     public static class RequestHandler implements HttpRequestHandler {

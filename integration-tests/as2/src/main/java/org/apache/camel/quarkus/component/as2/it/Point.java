@@ -1,12 +1,12 @@
 package org.apache.camel.quarkus.component.as2.it;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.camel.component.as2.api.AS2Charset;
 import org.apache.camel.component.as2.api.AS2MediaType;
 import org.apache.camel.component.as2.api.AS2MessageStructure;
 import org.apache.http.entity.ContentType;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class Point {
 
@@ -60,29 +60,29 @@ public class Point {
         this.contentTypeKey = contentTypeKey;
     }
 
-
     public void applyHeadersTypeSafe(Map<String, Object> headers) {
         this.headers = headers;
-        for(Map.Entry<String, Object> entry : headers.entrySet()) {
-            if(entry.getValue() instanceof AS2MessageStructure) {
+        for (Map.Entry<String, Object> entry : headers.entrySet()) {
+            if (entry.getValue() instanceof AS2MessageStructure) {
                 setMessageStructure((AS2MessageStructure) entry.getValue());
                 setMessageStructureKey(entry.getKey());
             }
-//            } else if(entry.getValue() instanceof ContentType) {
-//                setContentType((ContentType) entry.getValue());
-//                setContentTypeKey(entry.getKey());
-//            } else if(!(entry.getValue() instanceof String)) {
-//                throw new IllegalArgumentException("Type is not supported");
-//            }
+            //            } else if(entry.getValue() instanceof ContentType) {
+            //                setContentType((ContentType) entry.getValue());
+            //                setContentTypeKey(entry.getKey());
+            //            } else if(!(entry.getValue() instanceof String)) {
+            //                throw new IllegalArgumentException("Type is not supported");
+            //            }
         }
     }
 
     public Map<String, Object> applyHeadersTypeSafe() {
         Map<String, Object> retVal = new HashMap<>(headers);
-        if(getMessageStructure() != null) {
+        if (getMessageStructure() != null) {
             retVal.put(getMessageStructureKey(), getMessageStructure());
         }
-        retVal.put("CamelAS2.ediMessageContentType", org.apache.http.entity.ContentType.create(AS2MediaType.APPLICATION_EDIFACT, AS2Charset.US_ASCII));
+        retVal.put("CamelAS2.ediMessageContentType",
+                org.apache.http.entity.ContentType.create(AS2MediaType.APPLICATION_EDIFACT, AS2Charset.US_ASCII));
         return retVal;
     }
 
