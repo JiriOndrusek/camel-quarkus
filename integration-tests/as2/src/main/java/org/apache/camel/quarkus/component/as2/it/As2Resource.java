@@ -19,15 +19,21 @@ package org.apache.camel.quarkus.component.as2.it;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.camel.ConsumerTemplate;
+import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.as2.api.entity.DispositionNotificationMultipartReportEntity;
+import org.apache.camel.component.as2.internal.AS2Constants;
+import org.apache.camel.quarkus.component.as2.it.transport.ClientResult;
 import org.apache.camel.quarkus.component.as2.it.transport.Request;
-import org.apache.camel.quarkus.component.as2.it.transport.Result;
+import org.apache.camel.quarkus.component.as2.it.transport.ServerResult;
+import org.apache.http.protocol.HttpCoreContext;
 import org.jboss.logging.Logger;
 
 @Path("/as2")
@@ -42,25 +48,46 @@ public class As2Resource {
     @Inject
     ProducerTemplate producerTemplate;
 
+    @Inject
+    ConsumerTemplate consumerTemplate;
+
     @Path("/client")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Result client(Request request) throws Exception {
+    public ClientResult client(Request request) throws Exception {
         LOG.infof("Sending to as2: %s", request.getHeaders());
         final Object response = producerTemplate.requestBodyAndHeaders("as2-client://client/send?inBody=ediMessage",
                 request.getEdiMessage(), request.collectHeaders());
-        Result result = new Result();
+        ClientResult clientResult = new ClientResult();
         if (response instanceof DispositionNotificationMultipartReportEntity) {
-            result.setDispositionNotificationMultipartReportEntity(true);
-            result.setPartsCount(((DispositionNotificationMultipartReportEntity) response).getPartCount());
-            if (result.getPartsCount() > 1) {
-                result.setSecondPartClassName(
+            clientResult.setDispositionNotificationMultipartReportEntity(true);
+            clientResult.setPartsCount(((DispositionNotificationMultipartReportEntity) response).getPartCount());
+            if (clientResult.getPartsCount() > 1) {
+                clientResult.setSecondPartClassName(
                         ((DispositionNotificationMultipartReportEntity) response).getPart(1).getClass().getSimpleName());
             }
         }
 
         LOG.infof("Got response from as2: %s", response);
-        return result;
+        return clientResult;
+    }
+
+    @Path("/server")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public ServerResult server() throws Exception {
+        LOG.info("Receiving from as2.");
+        Exchange exchange = consumerTemplate.receive("as2-server://server/listen?requestUriPattern=/");
+        if (exchange == null) {
+            return null;
+        }
+        ServerResult serverResult = new ServerResult();
+        serverResult.setResult(exchange.getIn().getBody(String.class));
+        HttpCoreContext coreContext = exchange.getProperty(AS2Constants.AS2_INTERCHANGE, HttpCoreContext.class);
+        if (coreContext != null) {
+            serverResult.setRequestClass(coreContext.getRequest().getClass().getSimpleName());
+        }
+        return serverResult;
     }
 }

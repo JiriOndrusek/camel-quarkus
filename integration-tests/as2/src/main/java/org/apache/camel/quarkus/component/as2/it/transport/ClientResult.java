@@ -1,6 +1,6 @@
 package org.apache.camel.quarkus.component.as2.it.transport;
 
-public class Result {
+public class ClientResult {
 
     boolean isDispositionNotificationMultipartReportEntity;
 

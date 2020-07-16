@@ -80,7 +80,7 @@ public class As2RouteBuilder extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        from("as2-server://server/listen?requestUriPattern=/")
-                .to("mock:as2RcvMsgs");
+        //        from("as2-server://server/listen?requestUriPattern=/")
+        //                .to("mock:as2RcvMsgs");
     }
 }

@@ -16,7 +16,9 @@
  */
 package org.apache.camel.quarkus.component.as2.it;
 
-import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -25,26 +27,20 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
 import org.apache.camel.component.as2.api.AS2ClientManager;
 import org.apache.camel.component.as2.api.entity.AS2MessageDispositionNotificationEntity;
-import org.apache.camel.component.as2.internal.AS2Constants;
-import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.quarkus.component.as2.it.transport.ClientResult;
 import org.apache.camel.quarkus.component.as2.it.transport.Request;
-import org.apache.camel.quarkus.component.as2.it.transport.Result;
-import org.apache.http.HttpRequest;
+import org.apache.camel.quarkus.component.as2.it.transport.ServerResult;
 import org.apache.http.message.BasicHttpEntityEnclosingRequest;
-import org.apache.http.protocol.HttpCoreContext;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTestResource(As2TestResource.class)
 @QuarkusTest
@@ -89,7 +85,13 @@ public class As2Test {
     @Test
     public void serverTest() throws Exception {
 
-        //todo jondruse wait for the response of the server
+        //execute component server to wait for the result
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<ServerResult> futureResult = executor.submit(
+                () -> RestAssured.given().get("/as2/server").then().statusCode(200).extract().as(ServerResult.class));
+
+        //give some time for server component to be created
+        Thread.sleep(5000);
 
         //create client for sending message to server
         AS2ClientManager clientManager = As2TestHelper
@@ -98,29 +100,16 @@ public class As2Test {
         //send message to server
         As2TestHelper.sendMessage(clientManager, EDI_MESSAGE);
 
-        MockEndpoint mockEndpoint = context.getEndpoint("mock:as2RcvMsgs", MockEndpoint.class);
-        mockEndpoint.expectedMinimumMessageCount(1);
-        mockEndpoint.setResultWaitTime(TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS));
-        mockEndpoint.assertIsSatisfied();
+        //wait for the result from the server
+        await().atMost(10L, TimeUnit.SECONDS).untilAsserted(() -> {
+            ServerResult result = futureResult.get();
 
-        final List<Exchange> exchanges = mockEndpoint.getExchanges();
-        assertNotNull(exchanges, "listen result");
-        assertFalse(exchanges.isEmpty(), "listen result");
-        LOG.debug("poll result: " + exchanges);
+            assertEquals(EDI_MESSAGE.replaceAll("[\n\r]", ""), result.getResult().replaceAll("[\n\r]", ""),
+                    "Unexpected content for enveloped mime part");
 
-        Exchange exchange = exchanges.get(0);
-
-        Message message = exchange.getIn();
-        assertNotNull(message, "exchange message");
-        String rcvdMessage = message.getBody(String.class);
-        assertEquals(EDI_MESSAGE.replaceAll("[\n\r]", ""), rcvdMessage.replaceAll("[\n\r]", ""),
-                "Unexpected content for enveloped mime part");
-
-        HttpCoreContext coreContext = exchange.getProperty(AS2Constants.AS2_INTERCHANGE, HttpCoreContext.class);
-        assertNotNull(coreContext, "context");
-        HttpRequest request = coreContext.getRequest();
-        assertTrue(request instanceof BasicHttpEntityEnclosingRequest, "Request does not contain entity");
-
+            assertEquals(BasicHttpEntityEnclosingRequest.class.getSimpleName(), result.getRequestClass(),
+                    "Request does not contain entity");
+        });
     }
 
     @Test
@@ -135,12 +124,12 @@ public class As2Test {
         request.setEdiMessage(EDI_MESSAGE);
 
         //send message by component (as client)
-        Result result = executeRequest(request);
+        ClientResult clientResult = executeRequest(request);
 
         //assert result
-        assertNotNull(result, "Response entity");
-        assertEquals(2, result.getPartsCount(), "Unexpected number of body parts in report");
-        assertEquals(AS2MessageDispositionNotificationEntity.class.getSimpleName(), result.getSecondPartClassName(),
+        assertNotNull(clientResult, "Response entity");
+        assertEquals(2, clientResult.getPartsCount(), "Unexpected number of body parts in report");
+        assertEquals(AS2MessageDispositionNotificationEntity.class.getSimpleName(), clientResult.getSecondPartClassName(),
                 "Unexpected type of As2Entity");
 
         //assert that receiver was really used
@@ -148,14 +137,14 @@ public class As2Test {
         assertNotNull(requestHandler.getResponse(), "Response");
     }
 
-    private Result executeRequest(Request headers) throws Exception {
+    private ClientResult executeRequest(Request headers) throws Exception {
         return RestAssured.given() //
                 .contentType(io.restassured.http.ContentType.JSON)
                 .body(headers)
                 .post("/as2/client") //
                 .then()
                 .statusCode(200)
-                .extract().body().as(Result.class);
+                .extract().body().as(ClientResult.class);
     }
 
 }
