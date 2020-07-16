@@ -16,6 +16,7 @@
  */
 package org.apache.camel.quarkus.component.as2.it;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 

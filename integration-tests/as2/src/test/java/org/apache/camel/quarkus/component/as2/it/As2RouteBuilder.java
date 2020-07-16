@@ -18,43 +18,47 @@ package org.apache.camel.quarkus.component.as2.it;
 
 import javax.enterprise.context.ApplicationScoped;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.as2.AS2Component;
+import org.apache.camel.component.as2.AS2Configuration;
 import org.apache.camel.http.common.HttpMessage;
+import org.apache.camel.support.PropertyBindingSupport;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @ApplicationScoped
 public class As2RouteBuilder extends RouteBuilder {
 
     private static final String TEST_OPTIONS_PROPERTIES = "/test-options.properties";
 
-    //    @Override
-    //    public void addRoutesToCamelContext(CamelContext context) throws Exception {
-    //
-    //
-    //        // read AS2 component configuration from TEST_OPTIONS_PROPERTIES
-    //        final Properties properties = new Properties();
-    //        try {
-    //            properties.load(getClass().getResourceAsStream(TEST_OPTIONS_PROPERTIES));
-    //        } catch (Exception e) {
-    //            throw new IOException(String.format("%s could not be loaded: %s", TEST_OPTIONS_PROPERTIES, e.getMessage()),
-    //                    e);
-    //        }
-    //
-    //        Map<String, Object> options = new HashMap<>();
-    //        for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-    //            options.put(entry.getKey().toString(), entry.getValue());
-    //        }
-    //
-    //        final AS2Configuration configuration = new AS2Configuration();
-    //        PropertyBindingSupport.bindProperties(context, configuration, options);
-    //
-    //        // add AS2Component to Camel context
-    //        final AS2Component component = new AS2Component(context);
-    //        component.setConfiguration(configuration);
-    //        context.addComponent("as2", component);
-    //
-    //        super.addRoutesToCamelContext(context);
-    //    }
+        @Override
+        public void addRoutesToCamelContext(CamelContext context) throws Exception {
+            //prepare component in camel context
+            // create AS2 component configuration
+            Map<String, Object> options = new HashMap<>();
+            //host name of host messages sent to
+            options.put("targetHostname","localhost");
+            //port number of host messages sent to
+            options.put("targetPortNumber", System.getProperty(As2ClientTest.PORT_PARAMETER));
+            //fully qualified domain name used in Message-Id message header.
+            options.put("clientFqdn", "example.com");
+            //port number listened on
+            options.put("serverPortNumber", System.getProperty(As2ClientTest.PORT_PARAMETER));
+
+            final AS2Configuration configuration = new AS2Configuration();
+            PropertyBindingSupport.bindProperties(context, configuration, options);
+
+            // add AS2Component to Camel context
+            final AS2Component component = new AS2Component(context);
+            component.setConfiguration(configuration);
+            context.addComponent("as2", component);
+
+
+            super.addRoutesToCamelContext(context);
+        }
 
     @Override
     public void configure() throws Exception {
@@ -66,6 +70,9 @@ public class As2RouteBuilder extends RouteBuilder {
                 String body = message.getBody(String.class);
             }
         };
+
+        from("as2://server/listen?requestUriPattern=/")
+                .to("mock:as2RcvMsgs");
 
         //        from("netty:tcp://0.0.0.0:8888/handle-receipts").process(proc)
         //                from("netty:tcp://0.0.0.0:8888/").process(proc)
