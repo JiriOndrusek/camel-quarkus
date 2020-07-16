@@ -8,7 +8,7 @@ import org.apache.camel.component.as2.api.AS2MediaType;
 import org.apache.camel.component.as2.api.AS2MessageStructure;
 import org.apache.http.entity.ContentType;
 
-public class Point {
+public class Headers {
 
     private AS2MessageStructure messageStructure;
     private String messageStructureKey;
@@ -60,7 +60,7 @@ public class Point {
         this.contentTypeKey = contentTypeKey;
     }
 
-    public void applyHeadersTypeSafe(Map<String, Object> headers) {
+    public Headers withHeaders(Map<String, Object> headers) {
         this.headers = headers;
         for (Map.Entry<String, Object> entry : headers.entrySet()) {
             if (entry.getValue() instanceof AS2MessageStructure) {
@@ -74,9 +74,10 @@ public class Point {
             //                throw new IllegalArgumentException("Type is not supported");
             //            }
         }
+        return this;
     }
 
-    public Map<String, Object> applyHeadersTypeSafe() {
+    public Map<String, Object> collectHeaders() {
         Map<String, Object> retVal = new HashMap<>(headers);
         if (getMessageStructure() != null) {
             retVal.put(getMessageStructureKey(), getMessageStructure());

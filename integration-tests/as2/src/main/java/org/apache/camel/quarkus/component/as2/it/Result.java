@@ -6,6 +6,8 @@ public class Result {
 
     int partsCount;
 
+    String secondPartClassName;
+
     public boolean isDispositionNotificationMultipartReportEntity() {
         return isDispositionNotificationMultipartReportEntity;
     }
@@ -20,5 +22,13 @@ public class Result {
 
     public void setPartsCount(int partsCount) {
         this.partsCount = partsCount;
+    }
+
+    public String getSecondPartClassName() {
+        return secondPartClassName;
+    }
+
+    public void setSecondPartClassName(String secondPartClassName) {
+        this.secondPartClassName = secondPartClassName;
     }
 }

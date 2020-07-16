@@ -17,7 +17,6 @@
 package org.apache.camel.quarkus.component.as2.it;
 
 import java.net.URI;
-import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -30,12 +29,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.camel.ConsumerTemplate;
-import org.apache.camel.FluentProducerTemplate;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.as2.api.entity.DispositionNotificationMultipartReportEntity;
 import org.apache.camel.component.as2.internal.AS2ApiCollection;
 import org.apache.camel.component.as2.internal.AS2ClientManagerApiMethod;
-import org.apache.http.HttpEntity;
 import org.jboss.logging.Logger;
 
 @Path("/as2")
@@ -43,7 +40,7 @@ import org.jboss.logging.Logger;
 public class As2Resource {
 
     private static final Logger LOG = Logger.getLogger(As2Resource.class);
-    private static final String PATH_PREFIX = AS2ApiCollection.getCollection().getApiName(AS2ClientManagerApiMethod.class)
+    private static final String CLIENT_PREFIX = AS2ApiCollection.getCollection().getApiName(AS2ClientManagerApiMethod.class)
             .getName();
 
     public static final String EDI_MESSAGE = "UNB+UNOA:1+005435656:1+006415160:1+060515:1434+00000000000778'\n"
@@ -74,52 +71,25 @@ public class As2Resource {
             + "UNZ+1+00000000000778'\n";
 
     @Inject
-    FluentProducerTemplate producerTemplate;
+    ProducerTemplate producerTemplate;
 
-    @Inject
-    ProducerTemplate producerTemplate2;
-
-    @Inject
-    ConsumerTemplate consumerTemplate;
-
-    @Path("/get")
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public String get() throws Exception {
-        final String message = consumerTemplate.receiveBodyNoWait("as2:--fix-me--", String.class);
-        LOG.infof("Received from as2: %s", message);
-        return message;
-    }
-
-    @Path("/post")
+    @Path("/client")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response post(Point point) throws Exception {
-        LOG.infof("Sending headers to as2: %s", point.getHeaders());
-        FluentProducerTemplate pt = producerTemplate.withBody(EDI_MESSAGE);
-        Map<String, Object> headers = point.applyHeadersTypeSafe();
-        //        if(point.getMessageStructure() != null) {
-        //            headers.put(point.getMessageStructureKey(), point.getMessageStructure());
-        //        }
-        //        if(point.getContentType() != null) {
-        //            headers.put(point.getContentTypeKey(), point.getContentType());
-        //        }
-        //        point.addField("CamelAS2.as2MessageStructure", point.getMessageStructure());
-        for (String key : headers.keySet()) {
-            pt = pt.withHeader(key, headers.get(key));
-        }
-        final Object response = pt.toF("as2://client/send?inBody=ediMessage").request(HttpEntity.class);
+    public Result client(Headers headers) throws Exception {
+        LOG.infof("Sending headers to as2: %s", headers.getHeaders());
+        final Object response = producerTemplate.requestBodyAndHeaders("as2://" + CLIENT_PREFIX + "/send?inBody=ediMessage", EDI_MESSAGE, headers.collectHeaders());
         Result result = new Result();
         if (response instanceof DispositionNotificationMultipartReportEntity) {
             result.setDispositionNotificationMultipartReportEntity(true);
             result.setPartsCount(((DispositionNotificationMultipartReportEntity) response).getPartCount());
+            if(result.getPartsCount() > 1) {
+                result.setSecondPartClassName(((DispositionNotificationMultipartReportEntity) response).getPart(1).getClass().getSimpleName());
+            }
         }
 
         LOG.infof("Got response from as2: %s", response);
-        return Response
-                .created(new URI("https://camel.apache.org/"))
-                .entity(result)
-                .build();
+        return result;
     }
 }

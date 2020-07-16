@@ -23,7 +23,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.http.common.HttpMessage;
 
 @ApplicationScoped
-public class MyRouteBuilder extends RouteBuilder {
+public class As2RouteBuilder extends RouteBuilder {
 
     private static final String TEST_OPTIONS_PROPERTIES = "/test-options.properties";
 

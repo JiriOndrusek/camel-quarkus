@@ -22,10 +22,10 @@ import java.util.Objects;
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.apache.camel.quarkus.test.AvailablePortFinder;
 
-public class NettyTestResource implements QuarkusTestResourceLifecycleManager {
+public class As2TestResource implements QuarkusTestResourceLifecycleManager {
     @Override
     public Map<String, String> start() {
-        return AvailablePortFinder.reserveNetworkPorts(Objects::toString, "camel.netty.test-port");
+        return AvailablePortFinder.reserveNetworkPorts(Objects::toString, As2ClientTest.PORT_PARAMETER);
     }
 
     @Override

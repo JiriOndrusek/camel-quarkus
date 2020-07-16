@@ -27,10 +27,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.inject.Inject;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -47,6 +49,7 @@ import org.apache.camel.component.as2.api.AS2ServerConnection;
 import org.apache.camel.component.as2.api.AS2ServerManager;
 import org.apache.camel.component.as2.api.AS2SignatureAlgorithm;
 import org.apache.camel.component.as2.api.AS2SignedDataGenerator;
+import org.apache.camel.component.as2.api.entity.AS2MessageDispositionNotificationEntity;
 import org.apache.camel.component.as2.api.entity.ApplicationEDIEntity;
 import org.apache.camel.component.as2.api.util.HttpMessageUtils;
 import org.apache.camel.component.as2.internal.AS2ApiCollection;
@@ -84,31 +87,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@QuarkusTestResource(As2TestResource.class)
 @QuarkusTest
-class As2Test {
-
-    //    @Test
-    //    public void test() {
-    //        final String msg = java.util.UUID.randomUUID().toString().replace("-", "");
-    //        RestAssured.given() //
-    //                .contentType(ContentType.TEXT)
-    //                .body(msg)
-    //                .post("/as2/post") //
-    //                .then()
-    //                .statusCode(201);
-    //
-    //        Assertions.fail("Add some assertions to " + getClass().getName());
-    //
-    //        RestAssured.get("/as2/get")
-    //                .then()
-    //                .statusCode(200);
-    //    }
+class As2ClientTest {
+    
+    public static String PORT_PARAMETER = As2ClientTest.class.getSimpleName() + "-port";
 
     private static final String TEST_OPTIONS_PROPERTIES = "/test-options.properties";
 
-    private static final Logger LOG = LoggerFactory.getLogger(As2Test.class);
-    private static final String PATH_PREFIX = AS2ApiCollection.getCollection().getApiName(AS2ClientManagerApiMethod.class)
-            .getName();
+    private static final Logger LOG = LoggerFactory.getLogger(As2ClientTest.class);
 
     private static final String SERVER_FQDN = "server.example.com";
     private static final String ORIGIN_SERVER_NAME = "AS2ClientManagerIntegrationTest Server";
@@ -122,14 +109,6 @@ class As2Test {
     private static final String MDN_SUBJECT_PREFIX = "MDN Response:";
 
     private static final String EDI_MESSAGE_CONTENT_TRANSFER_ENCODING = "7bit";
-    private static final String EXPECTED_AS2_VERSION = AS2_VERSION;
-    private static final String EXPECTED_MDN_SUBJECT = MDN_SUBJECT_PREFIX + SUBJECT;
-    private static final String[] SIGNED_RECEIPT_MIC_ALGORITHMS = new String[] { "sha1", "md5" };
-    private static final String DISPOSITION_NOTIFICATION_OPTIONS = "signed-receipt-protocol=optional,pkcs7-signature; signed-receipt-micalg=optional,sha1";
-    private static final int PARTNER_TARGET_PORT = 8888;
-    private static final int MDN_TARGET_PORT = AvailablePortFinder.getNextAvailable();
-    private static final String RECIPIENT_DELIVERY_ADDRESS = "http://localhost:" + MDN_TARGET_PORT + "/handle-receipts";
-    private static final String REPORTING_UA = "Server Responding with MDN";
 
     private static AS2ServerConnection serverConnection;
     private static KeyPair serverSigningKP;
@@ -152,7 +131,6 @@ class As2Test {
 
     @BeforeEach
     public void before() throws IOException {
-
         // read AS2 component configuration from TEST_OPTIONS_PROPERTIES
         final Properties properties = new Properties();
         try {
@@ -164,7 +142,12 @@ class As2Test {
 
         Map<String, Object> options = new HashMap<>();
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-            options.put(entry.getKey().toString(), entry.getValue());
+            Optional<String> resolvedValue = context.getPropertiesComponent().resolveProperty((String)entry.getValue());
+            if(resolvedValue.isPresent()) {
+                options.put(entry.getKey().toString(), resolvedValue.get());
+            }  else {
+                options.put(entry.getKey().toString(), entry.getValue());
+            }
         }
 
         final AS2Configuration configuration = new AS2Configuration();
@@ -248,40 +231,11 @@ class As2Test {
         // parameter type is String
         headers.put("CamelAS2.dispositionNotificationTo", "mrAS2@example.com");
 
-        //        Endpoint e = context.getEndpoint("as2://client/send?inBody=ediMessage");
+        Result result = executeRequest(headers);
 
-        final Triple<Result, HttpRequest, HttpResponse> result = executeRequest(headers);
-        Result responseEntity = result.getLeft();
-        HttpRequest request = result.getMiddle();
-        HttpResponse response = result.getRight();
-
-        assertNotNull(result, "send result");
-        LOG.debug("send: " + result);
-        assertNotNull(request, "Request");
-        assertTrue(request instanceof HttpEntityEnclosingRequest, "Request does not contain body");
-        HttpEntity entity = ((HttpEntityEnclosingRequest) request).getEntity();
-        assertNotNull(entity, "Request body");
-        assertTrue(entity instanceof ApplicationEDIEntity, "Request body does not contain EDI entity");
-        String ediMessage = ((ApplicationEDIEntity) entity).getEdiMessage();
-        assertEquals(As2Resource.EDI_MESSAGE.replaceAll("[\n\r]", ""), ediMessage.replaceAll("[\n\r]", ""),
-                "EDI message is different");
-
-        assertNotNull(response, "Response");
-        assertTrue(HttpMessageUtils.getHeaderValue(response, AS2Header.CONTENT_TYPE).startsWith(AS2MimeType.MULTIPART_REPORT),
-                "Unexpected response type");
-        assertEquals(AS2Constants.MIME_VERSION, HttpMessageUtils.getHeaderValue(response, AS2Header.MIME_VERSION),
-                "Unexpected mime version");
-        assertEquals(EXPECTED_AS2_VERSION, HttpMessageUtils.getHeaderValue(response, AS2Header.AS2_VERSION),
-                "Unexpected AS2 version");
-        assertEquals(EXPECTED_MDN_SUBJECT, HttpMessageUtils.getHeaderValue(response, AS2Header.SUBJECT),
-                "Unexpected MDN subject");
-        assertEquals(MDN_FROM, HttpMessageUtils.getHeaderValue(response, AS2Header.FROM), "Unexpected MDN from");
-        assertEquals(AS2_NAME, HttpMessageUtils.getHeaderValue(response, AS2Header.AS2_FROM), "Unexpected AS2 from");
-        assertEquals(AS2_NAME, HttpMessageUtils.getHeaderValue(response, AS2Header.AS2_TO), "Unexpected AS2 to");
-        assertNotNull(HttpMessageUtils.getHeaderValue(response, AS2Header.MESSAGE_ID), "Missing message id");
-
-        assertNotNull(responseEntity, "Response entity");
-        assertEquals(2, responseEntity.getPartsCount(), "Unexpected number of body parts in report");
+        assertNotNull(result, "Response entity");
+        assertEquals(2, result.getPartsCount(), "Unexpected number of body parts in report");
+        assertEquals(AS2MessageDispositionNotificationEntity.class.getSimpleName(), result.getSecondPartClassName(), "Unexpected type of As2Entity");
     }
 
     private static void setupServerKeysAndCertificates() throws Exception {
@@ -343,27 +297,19 @@ class As2Test {
         decryptingKP = signingKP;
     }
 
-    private Triple<Result, HttpRequest, HttpResponse> executeRequest(Map<String, Object> headers) throws Exception {
-        Point p = new Point();
-        p.applyHeadersTypeSafe(headers);
-        //        p.setMessageStructure((AS2MessageStructure) headers.get("CamelAS2.as2MessageStructure"));
-        //        p.setMessageStructureKey("CamelAS2.as2MessageStructure");
-        //        p.setContentTypeKey("CamelAS2.ediMessageContentType");
-        //        p.setContentType((org.apache.http.entity.ContentType)headers.get(p.getContentTypeKey()));
-        Result result = RestAssured.given() //
+    private Result executeRequest(Map<String, Object> headers) throws Exception {
+        return RestAssured.given() //
                 .contentType(ContentType.JSON)
-                .body(p)
-                .post("/as2/post") //
+                .body(new Headers().withHeaders(headers))
+                .post("/as2/client") //
                 .then()
-                .statusCode(201)
+                .statusCode(200)
                 .extract().body().as(Result.class);
-
-        return new ImmutableTriple(/*responseEntity*/ result, requestHandler.getRequest(), requestHandler.getResponse());
     }
 
     private static void receiveTestMessages() throws IOException {
-        serverConnection = new AS2ServerConnection(AS2_VERSION, ORIGIN_SERVER_NAME,
-                SERVER_FQDN, PARTNER_TARGET_PORT, AS2SignatureAlgorithm.SHA256WITHRSA,
+       serverConnection = new AS2ServerConnection(AS2_VERSION, ORIGIN_SERVER_NAME,
+                SERVER_FQDN, Integer.parseInt(System.getProperty(PORT_PARAMETER)), AS2SignatureAlgorithm.SHA256WITHRSA,
                 serverCertList.toArray(new Certificate[0]), serverSigningKP.getPrivate(), serverSigningKP.getPrivate());
         requestHandler = new RequestHandler();
         serverConnection.listen("/", requestHandler);
