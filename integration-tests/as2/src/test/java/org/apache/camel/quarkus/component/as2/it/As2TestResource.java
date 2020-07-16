@@ -16,7 +16,6 @@
  */
 package org.apache.camel.quarkus.component.as2.it;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
@@ -26,7 +25,8 @@ import org.apache.camel.quarkus.test.AvailablePortFinder;
 public class As2TestResource implements QuarkusTestResourceLifecycleManager {
     @Override
     public Map<String, String> start() {
-        return AvailablePortFinder.reserveNetworkPorts(Objects::toString, As2ClientTest.PORT_PARAMETER);
+        return AvailablePortFinder.reserveNetworkPorts(Objects::toString, As2Resource.CLIENT_PORT_PARAMETER,
+                As2Resource.SERVER_PORT_PARAMETER);
     }
 
     @Override

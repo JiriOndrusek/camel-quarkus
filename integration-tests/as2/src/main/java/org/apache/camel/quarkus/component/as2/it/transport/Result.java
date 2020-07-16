@@ -1,4 +1,4 @@
-package org.apache.camel.quarkus.component.as2.it;
+package org.apache.camel.quarkus.component.as2.it.transport;
 
 public class Result {
 

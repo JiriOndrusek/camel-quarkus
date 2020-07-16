@@ -16,59 +16,28 @@
  */
 package org.apache.camel.quarkus.component.as2.it;
 
-import java.net.URI;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
-import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.as2.api.entity.DispositionNotificationMultipartReportEntity;
-import org.apache.camel.component.as2.internal.AS2ApiCollection;
-import org.apache.camel.component.as2.internal.AS2ClientManagerApiMethod;
+import org.apache.camel.quarkus.component.as2.it.transport.Request;
+import org.apache.camel.quarkus.component.as2.it.transport.Result;
 import org.jboss.logging.Logger;
 
 @Path("/as2")
 @ApplicationScoped
 public class As2Resource {
 
-    private static final Logger LOG = Logger.getLogger(As2Resource.class);
-    private static final String CLIENT_PREFIX = AS2ApiCollection.getCollection().getApiName(AS2ClientManagerApiMethod.class)
-            .getName();
+    public static String CLIENT_PORT_PARAMETER = As2Resource.class.getSimpleName() + "-client-port";
+    public static String SERVER_PORT_PARAMETER = As2Resource.class.getSimpleName() + "-server-port";
 
-    public static final String EDI_MESSAGE = "UNB+UNOA:1+005435656:1+006415160:1+060515:1434+00000000000778'\n"
-            + "UNH+00000000000117+INVOIC:D:97B:UN'\n"
-            + "BGM+380+342459+9'\n"
-            + "DTM+3:20060515:102'\n"
-            + "RFF+ON:521052'\n"
-            + "NAD+BY+792820524::16++CUMMINS MID-RANGE ENGINE PLANT'\n"
-            + "NAD+SE+005435656::16++GENERAL WIDGET COMPANY'\n"
-            + "CUX+1:USD'\n"
-            + "LIN+1++157870:IN'\n"
-            + "IMD+F++:::WIDGET'\n"
-            + "QTY+47:1020:EA'\n"
-            + "ALI+US'\n"
-            + "MOA+203:1202.58'\n"
-            + "PRI+INV:1.179'\n"
-            + "LIN+2++157871:IN'\n"
-            + "IMD+F++:::DIFFERENT WIDGET'\n"
-            + "QTY+47:20:EA'\n"
-            + "ALI+JP'\n"
-            + "MOA+203:410'\n"
-            + "PRI+INV:20.5'\n"
-            + "UNS+S'\n"
-            + "MOA+39:2137.58'\n"
-            + "ALC+C+ABG'\n"
-            + "MOA+8:525'\n"
-            + "UNT+23+00000000000117'\n"
-            + "UNZ+1+00000000000778'\n";
+    private static final Logger LOG = Logger.getLogger(As2Resource.class);
 
     @Inject
     ProducerTemplate producerTemplate;
@@ -77,15 +46,17 @@ public class As2Resource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Result client(Headers headers) throws Exception {
-        LOG.infof("Sending headers to as2: %s", headers.getHeaders());
-        final Object response = producerTemplate.requestBodyAndHeaders("as2://" + CLIENT_PREFIX + "/send?inBody=ediMessage", EDI_MESSAGE, headers.collectHeaders());
+    public Result client(Request request) throws Exception {
+        LOG.infof("Sending to as2: %s", request.getHeaders());
+        final Object response = producerTemplate.requestBodyAndHeaders("as2-client://client/send?inBody=ediMessage",
+                request.getEdiMessage(), request.collectHeaders());
         Result result = new Result();
         if (response instanceof DispositionNotificationMultipartReportEntity) {
             result.setDispositionNotificationMultipartReportEntity(true);
             result.setPartsCount(((DispositionNotificationMultipartReportEntity) response).getPartCount());
-            if(result.getPartsCount() > 1) {
-                result.setSecondPartClassName(((DispositionNotificationMultipartReportEntity) response).getPart(1).getClass().getSimpleName());
+            if (result.getPartsCount() > 1) {
+                result.setSecondPartClassName(
+                        ((DispositionNotificationMultipartReportEntity) response).getPart(1).getClass().getSimpleName());
             }
         }
 

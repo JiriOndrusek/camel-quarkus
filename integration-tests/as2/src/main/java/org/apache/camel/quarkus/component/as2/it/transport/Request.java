@@ -1,4 +1,4 @@
-package org.apache.camel.quarkus.component.as2.it;
+package org.apache.camel.quarkus.component.as2.it.transport;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,13 +8,21 @@ import org.apache.camel.component.as2.api.AS2MediaType;
 import org.apache.camel.component.as2.api.AS2MessageStructure;
 import org.apache.http.entity.ContentType;
 
-public class Headers {
+public class Request {
 
     private AS2MessageStructure messageStructure;
     private String messageStructureKey;
     private ContentType contentType;
     private String contentTypeKey;
     private Map<String, Object> headers = new HashMap<>();
+    private String ediMessage;
+
+    public Request() {
+    }
+
+    public Request(String ediMessage) {
+        this.ediMessage = ediMessage;
+    }
 
     public AS2MessageStructure getMessageStructure() {
         return messageStructure;
@@ -60,19 +68,21 @@ public class Headers {
         this.contentTypeKey = contentTypeKey;
     }
 
-    public Headers withHeaders(Map<String, Object> headers) {
+    public String getEdiMessage() {
+        return ediMessage;
+    }
+
+    public void setEdiMessage(String ediMessage) {
+        this.ediMessage = ediMessage;
+    }
+
+    public Request withHeaders(Map<String, Object> headers) {
         this.headers = headers;
         for (Map.Entry<String, Object> entry : headers.entrySet()) {
             if (entry.getValue() instanceof AS2MessageStructure) {
                 setMessageStructure((AS2MessageStructure) entry.getValue());
                 setMessageStructureKey(entry.getKey());
             }
-            //            } else if(entry.getValue() instanceof ContentType) {
-            //                setContentType((ContentType) entry.getValue());
-            //                setContentTypeKey(entry.getKey());
-            //            } else if(!(entry.getValue() instanceof String)) {
-            //                throw new IllegalArgumentException("Type is not supported");
-            //            }
         }
         return this;
     }
