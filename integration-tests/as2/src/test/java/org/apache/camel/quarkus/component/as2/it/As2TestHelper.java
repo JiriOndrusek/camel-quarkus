@@ -6,6 +6,7 @@ import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
+import java.security.Provider;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
@@ -83,6 +84,11 @@ public class As2TestHelper {
 
     public static void setup() throws Exception {
         Security.addProvider(new BouncyCastleProvider());
+        System.out.println("^^^^^^^^^^^^^^ security providers ^^^^^^^^^^^^^^^^^");
+        Provider[] providers = Security.getProviders();
+        for (int i = 0; i < providers.length; i++) {
+            System.out.println(i + ": " + providers[i].getInfo());
+        }
 
         setupKeysAndCertificates();
 

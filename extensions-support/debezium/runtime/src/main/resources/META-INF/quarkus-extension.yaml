@@ -16,8 +16,8 @@
 #
 
 ---
-name: "Camel Quarkus Support Debezium"
-description: "Camel Quarkus Support Debezium"
+name: "Camel Quarkus Support Bouncycastle"
+description: "Camel Quarkus Support Bouncycastle"
 metadata:
   unlisted: true
   keywords:

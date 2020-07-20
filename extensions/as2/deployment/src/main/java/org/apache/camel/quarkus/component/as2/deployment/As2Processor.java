@@ -17,7 +17,16 @@
 package org.apache.camel.quarkus.component.as2.deployment;
 
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
+import org.apache.camel.component.as2.AS2ClientManagerEndpointConfiguration;
+import org.apache.camel.component.as2.AS2ServerManagerEndpointConfiguration;
+import org.apache.camel.quarkus.core.deployment.spi.UnbannedReflectiveBuildItem;
+import org.jboss.jandex.IndexView;
 
 class As2Processor {
 
@@ -26,5 +35,68 @@ class As2Processor {
     @BuildStep
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
+    }
+
+    //    @BuildStep
+    //    ExtensionSslNativeSupportBuildItem activateSslNativeSupport() {
+    //        return new ExtensionSslNativeSupportBuildItem(FEATURE);
+    //    }
+
+    @BuildStep
+    RuntimeInitializedClassBuildItem runtimeInitializedClasses() {
+        return new RuntimeInitializedClassBuildItem("org.apache.camel.component.as2.api.util.AS2Utils");
+    }
+
+    @BuildStep
+    UnbannedReflectiveBuildItem whitelistConfigurationClasses() {
+        return new UnbannedReflectiveBuildItem(
+                AS2ServerManagerEndpointConfiguration.class.getCanonicalName(),
+                AS2ClientManagerEndpointConfiguration.class.getCanonicalName());
+    }
+
+    @BuildStep
+    ReflectiveClassBuildItem registerAs2ConfigurationForReflection() {
+        return new ReflectiveClassBuildItem(true, false,
+                AS2ServerManagerEndpointConfiguration.class.getCanonicalName(),
+                AS2ClientManagerEndpointConfiguration.class.getCanonicalName());
+    }
+
+    //    @BuildStep
+    //    ReflectiveClassBuildItem registerForReflection() {
+    //        return new ReflectiveClassBuildItem(false, false,
+    //                ResourceManagerImpl.class.getCanonicalName(),
+    //                ClasspathResourceLoader.class.getCanonicalName(),
+    //                FileResourceLoader.class.getCanonicalName());
+    //    }
+
+    @BuildStep
+    ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
+        IndexView index = combinedIndex.getIndex();
+
+        String[] dtos = index.getKnownClasses().stream()
+                .map(ci -> ci.name().toString())
+                .filter(n -> n.startsWith("org.apache.velocity.runtime") || n.startsWith("org.apache.velocity.util")
+                        || n.startsWith("org.bouncycastle.jcajce.provider.digest"))
+                .sorted()
+                .peek(System.out::println)
+                .toArray(String[]::new);
+
+        return new ReflectiveClassBuildItem(false, false, dtos);
+    }
+
+    @BuildStep
+    IndexDependencyBuildItem registerDependencyForIndex() {
+        return new IndexDependencyBuildItem("org.apache.velocity", "velocity-engine-core");
+    }
+
+    @BuildStep
+    IndexDependencyBuildItem registerBCDependencyForIndex() {
+        return new IndexDependencyBuildItem("org.bouncycastle", "bcprov-jdk15on");
+    }
+
+    @BuildStep
+    NativeImageResourceBuildItem initResources() {
+        return new NativeImageResourceBuildItem("org/apache/velocity/runtime/defaults/velocity.properties",
+                "org/apache/velocity/runtime/defaults/directive.properties");
     }
 }

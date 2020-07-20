@@ -73,12 +73,22 @@ public class As2Resource {
         return clientResult;
     }
 
+    @Path("/serverInit")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public boolean serverInit() throws Exception {
+        LOG.info("Initializing server from as2 component.");
+        //execute request, which won't return anything, because client doesn't send anything, but it starts component
+        consumerTemplate.receiveNoWait(getServerEndpoint());
+        return true;
+    }
+
     @Path("/server")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public ServerResult server() throws Exception {
         LOG.info("Receiving from as2.");
-        Exchange exchange = consumerTemplate.receive("as2-server://server/listen?requestUriPattern=/");
+        Exchange exchange = consumerTemplate.receive(getServerEndpoint());
         if (exchange == null) {
             return null;
         }
@@ -89,5 +99,12 @@ public class As2Resource {
             serverResult.setRequestClass(coreContext.getRequest().getClass().getSimpleName());
         }
         return serverResult;
+    }
+
+    private String getServerEndpoint() {
+        String url = String.format("as2://server/listen?serverPortNumber=%s&clientFqdn=%s&requestUriPattern=/",
+                System.getProperty(SERVER_PORT_PARAMETER), "example.com");
+
+        return url;
     }
 }
