@@ -37,11 +37,6 @@ class As2Processor {
         return new FeatureBuildItem(FEATURE);
     }
 
-    //    @BuildStep
-    //    ExtensionSslNativeSupportBuildItem activateSslNativeSupport() {
-    //        return new ExtensionSslNativeSupportBuildItem(FEATURE);
-    //    }
-
     @BuildStep
     RuntimeInitializedClassBuildItem runtimeInitializedClasses() {
         return new RuntimeInitializedClassBuildItem("org.apache.camel.component.as2.api.util.AS2Utils");
@@ -61,22 +56,13 @@ class As2Processor {
                 AS2ClientManagerEndpointConfiguration.class.getCanonicalName());
     }
 
-    //    @BuildStep
-    //    ReflectiveClassBuildItem registerForReflection() {
-    //        return new ReflectiveClassBuildItem(false, false,
-    //                ResourceManagerImpl.class.getCanonicalName(),
-    //                ClasspathResourceLoader.class.getCanonicalName(),
-    //                FileResourceLoader.class.getCanonicalName());
-    //    }
-
     @BuildStep
     ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
         IndexView index = combinedIndex.getIndex();
 
         String[] dtos = index.getKnownClasses().stream()
                 .map(ci -> ci.name().toString())
-                .filter(n -> n.startsWith("org.apache.velocity.runtime") || n.startsWith("org.apache.velocity.util")
-                        || n.startsWith("org.bouncycastle.jcajce.provider.digest"))
+                .filter(n -> n.startsWith("org.apache.velocity.runtime") || n.startsWith("org.apache.velocity.util"))
                 .sorted()
                 .peek(System.out::println)
                 .toArray(String[]::new);
@@ -87,11 +73,6 @@ class As2Processor {
     @BuildStep
     IndexDependencyBuildItem registerDependencyForIndex() {
         return new IndexDependencyBuildItem("org.apache.velocity", "velocity-engine-core");
-    }
-
-    @BuildStep
-    IndexDependencyBuildItem registerBCDependencyForIndex() {
-        return new IndexDependencyBuildItem("org.bouncycastle", "bcprov-jdk15on");
     }
 
     @BuildStep

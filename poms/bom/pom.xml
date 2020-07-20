@@ -3077,6 +3077,16 @@
 
             <!--$ Other third party dependencies $-->
             <dependency>
+                <artifactId>bcprov-jdk15on</artifactId>
+                <groupId>org.bouncycastle</groupId>
+                <version>${bouncycastle.version}</version>
+            </dependency>
+            <dependency>
+                <artifactId>bcpkix-jdk15on</artifactId>
+                <groupId>org.bouncycastle</groupId>
+                <version>${bouncycastle.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>ca.uhn.hapi.fhir</groupId>
                 <artifactId>hapi-fhir-server</artifactId>
                 <version>${hapi.version}</version>

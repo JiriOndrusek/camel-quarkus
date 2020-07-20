@@ -41,14 +41,8 @@
             <artifactId>camel-quarkus-as2</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.github.project-openubl</groupId>
-            <artifactId>quarkus-bouncycastle-deployment</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.bouncycastle</groupId>
-                    <artifactId>bcpkix-jdk15on</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.apache.camel.quarkus</groupId>
+            <artifactId>camel-quarkus-support-bouncycastle-deployment</artifactId>
         </dependency>
     </dependencies>
 

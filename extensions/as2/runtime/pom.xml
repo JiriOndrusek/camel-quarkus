@@ -58,18 +58,8 @@
             <artifactId>camel-as2</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.github.project-openubl</groupId>
-            <artifactId>quarkus-bouncycastle</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>bcprov-jdk15on</artifactId>
-                    <groupId>org.bouncycastle</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>bcpkix-jdk15on</artifactId>
-                    <groupId>org.bouncycastle</groupId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.apache.camel.quarkus</groupId>
+            <artifactId>camel-quarkus-support-bouncycastle</artifactId>
         </dependency>
     </dependencies>
 
