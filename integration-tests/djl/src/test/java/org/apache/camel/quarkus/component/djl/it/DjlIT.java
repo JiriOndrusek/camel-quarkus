@@ -16,9 +16,54 @@
  */
 package org.apache.camel.quarkus.component.djl.it;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+
 import io.quarkus.test.junit.NativeImageTest;
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import io.restassured.response.ValidatableResponse;
+import org.junit.jupiter.api.Test;
+
+import static org.apache.camel.quarkus.component.djl.it.DjlResource.ModelType.external;
+import static org.hamcrest.Matchers.is;
 
 @NativeImageTest
 class DjlIT extends DjlTest {
+    @Test
+    public void testExternalModel() throws Exception {
+        post("data/mnist/0.png", external).body(is("0"));
+        post("data/mnist/1.png", external).body(is("1"));
+    }
 
+    //    @Test
+    //    public void testLocalModel() throws Exception {
+    //        post("data/mnist/0.png", local).body(is("0"));
+    //        post("data/mnist/1.png", local).body(is("1"));
+    //    }
+
+    private byte[] readFile(String fileName) throws Exception {
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream(fileName)) {
+            return readBytes(is);
+        }
+    }
+
+    private byte[] readBytes(InputStream is) throws Exception {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        byte[] buffer = new byte[4096];
+        int len;
+        while ((len = is.read(buffer)) != -1) {
+            os.write(buffer, 0, len);
+        }
+        return os.toByteArray();
+    }
+
+    private ValidatableResponse post(String fileName, DjlResource.ModelType modelType) throws Exception {
+        return RestAssured.given()
+                .contentType(ContentType.BINARY)
+                .body(readFile(fileName))
+                .post("djl/classificate/" + modelType)
+                .then()
+                .statusCode(200);
+    }
 }

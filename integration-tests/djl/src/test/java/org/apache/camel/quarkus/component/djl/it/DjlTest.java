@@ -17,29 +17,44 @@
 package org.apache.camel.quarkus.component.djl.it;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 class DjlTest {
 
-    @Test
-    public void test() {
-        final String msg = java.util.UUID.randomUUID().toString().replace("-", "");
-        RestAssured.given() //
-                .contentType(ContentType.TEXT)
-                .body(msg)
-                .post("/djl/post") //
-                .then()
-                .statusCode(201);
-
-        Assertions.fail("Add some assertions to " + getClass().getName());
-
-        RestAssured.get("/djl/get")
-                .then()
-                .statusCode(200);
-    }
-
+    //    @Test
+    //    public void testExternalModel() throws Exception {
+    //        post("data/mnist/0.png", external).body(is("0"));
+    //        post("data/mnist/1.png", external).body(is("1"));
+    //    }
+    //
+    //    //    @Test
+    //    //    public void testLocalModel() throws Exception {
+    //    //        post("data/mnist/0.png", local).body(is("0"));
+    //    //        post("data/mnist/1.png", local).body(is("1"));
+    //    //    }
+    //
+    //    private byte[] readFile(String fileName) throws Exception {
+    //        try (InputStream is = getClass().getClassLoader().getResourceAsStream(fileName)) {
+    //            return readBytes(is);
+    //        }
+    //    }
+    //
+    //    private byte[] readBytes(InputStream is) throws Exception {
+    //        ByteArrayOutputStream os = new ByteArrayOutputStream();
+    //        byte[] buffer = new byte[4096];
+    //        int len;
+    //        while ((len = is.read(buffer)) != -1) {
+    //            os.write(buffer, 0, len);
+    //        }
+    //        return os.toByteArray();
+    //    }
+    //
+    //    private ValidatableResponse post(String fileName, DjlResource.ModelType modelType) throws Exception {
+    //        return RestAssured.given()
+    //                .contentType(ContentType.BINARY)
+    //                .body(readFile(fileName))
+    //                .post("djl/classificate/" + modelType)
+    //                .then()
+    //                .statusCode(200);
+    //    }
 }

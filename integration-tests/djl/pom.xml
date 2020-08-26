@@ -75,6 +75,11 @@
             <artifactId>rest-assured</artifactId>
             <scope>test</scope>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>ai.djl.mxnet</groupId>-->
+<!--            <artifactId>mlp</artifactId>-->
+<!--            <version>0.0.1</version>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>

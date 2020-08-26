@@ -16,8 +16,16 @@
  */
 package org.apache.camel.quarkus.component.djl.deployment;
 
+import java.io.IOException;
+
+import ai.djl.repository.zoo.LocalZooProvider;
+import ai.djl.repository.zoo.ZooProvider;
+import com.google.gson.JsonSerializer;
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ServiceProviderBuildItem;
 
 class DjlProcessor {
 
@@ -26,5 +34,38 @@ class DjlProcessor {
     @BuildStep
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
+    }
+
+    @BuildStep
+    ReflectiveClassBuildItem registerForReflection() {
+        return new ReflectiveClassBuildItem(false, false,
+                JsonSerializer.class.getCanonicalName());
+    }
+
+    @BuildStep
+    void registerNativeImageResources(BuildProducer<ServiceProviderBuildItem> services) throws IOException {
+        //        String service = "META-INF/services/" + ZooProvider.class.getName();
+        //
+        //        // find out all the implementation classes listed in the service files
+        //        Set<String> implementations = ServiceUtil.classNamesNamedIn(Thread.currentThread().getContextClassLoader(),
+        //                service);
+        //
+        //        System.out.println("--------------------------------");
+        //        System.out.println("registering for: " + ZooProvider.class.getName());
+        //        System.out.println(implementations);
+        //        System.out.println("--------------------------------");
+        // register every listed implementation class so they can be instantiated
+        // in native-image at run-time
+        //        services.produce(
+        //                new ServiceProviderBuildItem(ZooProvider.class.getName(),
+        //                        implementations.toArray(new String[0])));
+
+        System.out.println("--------------------------------");
+        System.out.println("registering for: " + ZooProvider.class.getName());
+        System.out.println(LocalZooProvider.class.getName());
+        System.out.println("--------------------------------");
+        services.produce(
+                new ServiceProviderBuildItem(ZooProvider.class.getName(), LocalZooProvider.class.getName()));
+
     }
 }
