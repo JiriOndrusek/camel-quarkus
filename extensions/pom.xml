@@ -85,6 +85,7 @@
         <module>debezium-postgres</module>
         <module>debezium-sqlserver</module>
         <module>direct</module>
+        <module>djl</module>
         <module>dozer</module>
         <module>elasticsearch-rest</module>
         <module>endpointdsl</module>

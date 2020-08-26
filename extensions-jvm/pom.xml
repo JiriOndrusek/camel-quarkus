@@ -61,7 +61,6 @@
         <module>debezium-mongodb</module>
         <module>digitalocean</module>
         <module>disruptor</module>
-        <module>djl</module>
         <module>dns</module>
         <module>drill</module>
         <module>dropbox</module>
