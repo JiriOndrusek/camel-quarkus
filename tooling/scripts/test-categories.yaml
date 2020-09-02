@@ -88,6 +88,7 @@ messaging-networking1:
   - graphql
 misc:
   - braintree
+  - fop
   - jolt
   - mustache
   - pdf
