@@ -30,6 +30,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.component.fop.FopConstants;
 import org.jboss.logging.Logger;
 
 @Path("/fop")
@@ -50,7 +51,9 @@ public class FopResource {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response post(String message) throws Exception {
         LOG.infof("Sending to fop: %s", message);
-        try (InputStream response = producerTemplate.requestBody("fop:pdf", message, InputStream.class)) {
+//        try (InputStream response = producerTemplate.requestBodyAndHeader("fop:application/pdf", message,
+//                FopConstants.CAMEL_FOP_OUTPUT_FORMAT, "txt", InputStream.class)) {
+        try (InputStream response = producerTemplate.requestBody("fop:application/pdf", message, InputStream.class)) {
             LOG.info("Got response from fop.");
             return Response
                     .created(new URI("https://camel.apache.org/"))

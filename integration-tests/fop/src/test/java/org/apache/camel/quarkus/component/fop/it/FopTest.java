@@ -34,9 +34,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @QuarkusTest
 class FopTest {
 
-    @Test
+    //    @Test
     public void convertToPdf() throws IOException {
-        final String msg = decorateTextWithXSLFO("Hello camel-quarkus!");
+        final String msg = decorateTextWithXSLFO("FF Hello camel-quarkus!");
         ExtractableResponse response = RestAssured.given() //
                 .contentType(ContentType.XML)
                 .body(msg)
@@ -46,8 +46,27 @@ class FopTest {
                 .extract();
 
         PDDocument document = getDocumentFrom(response.asInputStream());
+        //        document.save("/home/jondruse/work/2020-08-31_CQ1642_FOP-native/tmp/fromQuarkus.pdf");
         String content = extractTextFrom(document);
-        assertEquals("Hello camel-quarkus!", content);
+        assertEquals("FF Hello camel-quarkus!", content);
+
+    }
+
+    @Test
+    public void convertToTxt() throws IOException {
+        final String msg = decorateTextWithXSLFO("FF Hello camel-quarkus!");
+        ExtractableResponse response = RestAssured.given() //
+                .contentType(ContentType.XML)
+                .body(msg)
+                .post("/fop/post") //
+                .then()
+                .statusCode(201)
+                .extract();
+
+        //        PDDocument document = getDocumentFrom(response.asInputStream());
+        //        //        document.save("/home/jondruse/work/2020-08-31_CQ1642_FOP-native/tmp/fromQuarkus.pdf");
+        //        String content = extractTextFrom(document);
+        //        assertEquals("FF Hello camel-quarkus!", content);
 
     }
 
@@ -62,7 +81,8 @@ class FopTest {
                 + "    </fo:layout-master-set>\n"
                 + "    <fo:page-sequence master-reference=\"only\">\n"
                 + "      <fo:flow flow-name=\"xsl-region-body\">\n"
-                + "      <fo:block>" + text + "</fo:block>\n"
+                //                + "      <fo:block>" + text + "</fo:block>\n"
+                + "      <fo:block font-family=\"FreeMono\">" + text + "</fo:block>\n"
                 + "    </fo:flow>\n"
                 + "  </fo:page-sequence>\n"
                 + "</fo:root>";
