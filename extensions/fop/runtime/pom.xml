@@ -73,6 +73,18 @@
                     <groupId>xml-apis</groupId>
                     <artifactId>xml-apis</artifactId>
                 </exclusion>
+<!--                <exclusion>-->
+<!--                    <artifactId>fop-core</artifactId>-->
+<!--                    <groupId>org.apache.xmlgraphics</groupId>-->
+<!--                </exclusion>-->
+                <!--<exclusion>
+                    <artifactId>batik-anim</artifactId>
+                    <groupId>org.apache.xmlgraphics</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>batik-awt-util</artifactId>
+                    <groupId>org.apache.xmlgraphics</groupId>
+                </exclusion>-->
             </exclusions>
         </dependency>
         <dependency>
@@ -82,6 +94,16 @@
         </dependency>
 
     </dependencies>
+
+<!--    [INFO] |     +- org.apache.xmlgraphics:batik-awt-util:jar:1.10:compile-->
+<!--    [INFO] |     +- org.apache.xmlgraphics:batik-bridge:jar:1.10:compile-->
+<!--    [INFO] |     |  +- org.apache.xmlgraphics:batik-script:jar:1.10:compile-->
+<!--    [INFO] |     |  \- org.apache.xmlgraphics:batik-xml:jar:1.10:compile-->
+<!--    [INFO] |     +- org.apache.xmlgraphics:batik-extension:jar:1.10:compile-->
+<!--    [INFO] |     +- org.apache.xmlgraphics:batik-gvt:jar:1.10:compile-->
+<!--    [INFO] |     +- org.apache.xmlgraphics:batik-transcoder:jar:1.10:compile-->
+<!--    [INFO] |     |  \- org.apache.xmlgraphics:batik-svggen:jar:1.10:compile-->
+
 
     <build>
         <plugins>

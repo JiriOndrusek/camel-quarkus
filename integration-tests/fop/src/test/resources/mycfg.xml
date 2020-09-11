@@ -1,6 +1,9 @@
 <fop version="1.0">
+
+    <use-cache>false</use-cache>
     <renderers>
         <renderer mime="application/pdf">
+            <disable-srgb-colorspace>true</disable-srgb-colorspace>
             <fonts>
                 <font
                         kerning="yes"
@@ -9,5 +12,18 @@
                 </font>
             </fonts>
         </renderer>
+<!--        <renderer mime="application/pdf">-->
+<!--            <disable-srgb-colorspace>true</disable-srgb-colorspace>-->
+<!--&lt;!&ndash;            <pdf-x-mode>PDF/X-4</pdf-x-mode>&ndash;&gt;-->
+<!--&lt;!&ndash;            <pdf-vt-mode>PDF/VT-1</pdf-vt-mode>&ndash;&gt;-->
+<!--&lt;!&ndash;            <output-profile>ISOcoated_v2_300_bas.icc</output-profile>&ndash;&gt;-->
+<!--&lt;!&ndash;            <fonts>&ndash;&gt;-->
+<!--&lt;!&ndash;                <font kerning="yes" embed-url="arial.ttf">&ndash;&gt;-->
+<!--&lt;!&ndash;                    <font-triplet name="Arial" style="normal" weight="normal"/>&ndash;&gt;-->
+<!--&lt;!&ndash;                </font>&ndash;&gt;-->
+<!--&lt;!&ndash;            </fonts>&ndash;&gt;-->
+<!--        </renderer>-->
+
     </renderers>
+
 </fop>

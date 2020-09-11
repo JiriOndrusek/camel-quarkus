@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @QuarkusTest
 class FopTest {
 
-    //    @Test
+    //        @Test
     public void convertToPdf() throws IOException {
         final String msg = decorateTextWithXSLFO("FF Hello camel-quarkus!");
         ExtractableResponse response = RestAssured.given() //
@@ -53,9 +53,11 @@ class FopTest {
     }
 
     @Test
-    public void convertToTxt() throws IOException {
+    public void convertToPdfWithCustomFont() throws IOException {
         final String msg = decorateTextWithXSLFO("FF Hello camel-quarkus!");
-        ExtractableResponse response = RestAssured.given() //
+        String cofigFile = "file:" + getClass().getResource("/mycfg.xml").getFile();
+        ExtractableResponse response = RestAssured.given()
+                .queryParam("userConfigURL", cofigFile)
                 .contentType(ContentType.XML)
                 .body(msg)
                 .post("/fop/post") //
@@ -63,10 +65,10 @@ class FopTest {
                 .statusCode(201)
                 .extract();
 
-        //        PDDocument document = getDocumentFrom(response.asInputStream());
-        //        //        document.save("/home/jondruse/work/2020-08-31_CQ1642_FOP-native/tmp/fromQuarkus.pdf");
-        //        String content = extractTextFrom(document);
-        //        assertEquals("FF Hello camel-quarkus!", content);
+        PDDocument document = getDocumentFrom(response.asInputStream());
+        document.save("/home/jondruse/work/2020-08-31_CQ1642_FOP-native/success/fromQuarkus.pdf");
+        String content = extractTextFrom(document);
+        assertEquals("FF Hello camel-quarkus!", content);
 
     }
 
@@ -98,5 +100,4 @@ class FopTest {
         stripper.writeText(document, output);
         return output.toString().trim();
     }
-
 }

@@ -25,12 +25,12 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.component.fop.FopConstants;
 import org.jboss.logging.Logger;
 
 @Path("/fop")
@@ -49,11 +49,13 @@ public class FopResource {
     @POST
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response post(String message) throws Exception {
+    public Response post(String message, @QueryParam("userConfigURL") String userConfigURL) throws Exception {
         LOG.infof("Sending to fop: %s", message);
-//        try (InputStream response = producerTemplate.requestBodyAndHeader("fop:application/pdf", message,
-//                FopConstants.CAMEL_FOP_OUTPUT_FORMAT, "txt", InputStream.class)) {
-        try (InputStream response = producerTemplate.requestBody("fop:application/pdf", message, InputStream.class)) {
+        //        try (InputStream response = producerTemplate.requestBodyAndHeader("fop:application/pdf", message,
+        //                FopConstants.CAMEL_FOP_OUTPUT_FORMAT, "txt", InputStream.class)) {
+        String endpointUri = userConfigURL == null ? "fop:pdf" : "fop:application/pdf?userConfigURL=" + userConfigURL;
+        try (InputStream response = producerTemplate.requestBody(
+                endpointUri, message, InputStream.class)) {
             LOG.info("Got response from fop.");
             return Response
                     .created(new URI("https://camel.apache.org/"))
