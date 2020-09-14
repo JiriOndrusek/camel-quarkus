@@ -34,9 +34,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @QuarkusTest
 class FopTest {
 
+    public static final String MSG = "hello";
+
     //    @Test
     public void convertToPdf() throws IOException {
-        final String msg = decorateTextWithXSLFO("Hello camel-quarkus!", null);
+        final String msg = decorateTextWithXSLFO(MSG, null);
         ExtractableResponse response = RestAssured.given() //
                 .contentType(ContentType.XML)
                 .body(msg)
@@ -47,13 +49,13 @@ class FopTest {
 
         PDDocument document = getDocumentFrom(response.asInputStream());
         String content = extractTextFrom(document);
-        assertEquals("Hello camel-quarkus!", content);
+        assertEquals(MSG, content);
 
     }
 
     @Test
     public void convertToPdfWithCustomFont() throws IOException {
-        final String msg = decorateTextWithXSLFO("Hello camel-quarkus!", "FreeMono");
+        final String msg = decorateTextWithXSLFO(MSG, "Freedom");
         String cofigFile = "file:" + getClass().getResource("/mycfg.xml").getFile();
         ExtractableResponse response = RestAssured.given()
                 .queryParam("userConfigURL", cofigFile)
@@ -66,7 +68,7 @@ class FopTest {
 
         PDDocument document = getDocumentFrom(response.asInputStream());
         String content = extractTextFrom(document);
-        assertEquals("Hello camel-quarkus!", content);
+        assertEquals(MSG, content);
 
     }
 
