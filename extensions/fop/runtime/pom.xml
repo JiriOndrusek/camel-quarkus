@@ -92,6 +92,10 @@
             <artifactId>svm</artifactId>
             <scope>provided</scope>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>io.quarkus</groupId>-->
+<!--            <artifactId>quarkus-jaxb-deployment</artifactId>-->
+<!--        </dependency>-->
 
     </dependencies>
 

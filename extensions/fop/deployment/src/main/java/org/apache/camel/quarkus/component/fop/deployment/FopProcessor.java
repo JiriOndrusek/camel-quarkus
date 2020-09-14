@@ -25,6 +25,7 @@ import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBundleBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import org.apache.fop.render.intermediate.IFUtil;
@@ -46,7 +47,7 @@ class FopProcessor {
 
         List<String> dtos = index.getKnownClasses().stream()
                 .map(ci -> ci.name().toString())
-                .filter(n -> n.endsWith("ElementMapping"))
+                .filter(n -> n.endsWith("ElementMapping")/*|| /* todo jondruse testing n.contains("xalan")*/)
                 .sorted()
                 .peek(System.out::println)
                 .collect(Collectors.toList());
@@ -54,8 +55,12 @@ class FopProcessor {
         dtos.add("org.apache.fop.render.pdf.extensions.PDFExtensionHandlerFactory");
         dtos.add("org.apache.fop.render.pdf.PDFDocumentHandlerMaker");
         dtos.add("org.apache.fop.render.RendererEventProducer");
+        dtos.add("org.apache.fop.events.model.EventProducerModel"); //needs methods
+        dtos.add("org.apache.fop.events.mode.SAXTransformerFactory");
+        dtos.add("java.io.IOException");
+        dtos.add("java.lang.Integer");
 
-        return new ReflectiveClassBuildItem(false, false, dtos.toArray(new String[dtos.size()]));
+        return new ReflectiveClassBuildItem(true, false, dtos.toArray(new String[dtos.size()]));
         //        return new ReflectiveClassBuildItem(false, false, new String[] { "org.apache.fop.fo.ElementMapping",
         //                "org.apache.fop.fo.FOElementMapping", "org.apache.fop.render.pdf.extensions.PDFElementMapping",
         //                "org.apache.fop.fo.extensions.InternalElementMapping",
@@ -65,6 +70,11 @@ class FopProcessor {
     @BuildStep
     IndexDependencyBuildItem registerDependencyForIndex() {
         return new IndexDependencyBuildItem("org.jboss.logging", "commons-logging-jboss-logging");
+    }
+
+    @BuildStep
+    IndexDependencyBuildItem registerDependencyForInde2() {
+        return new IndexDependencyBuildItem("xalan", "xalan");
     }
 
     @BuildStep
@@ -91,7 +101,14 @@ class FopProcessor {
         //use regex, once this is implemented https://github.com/quarkusio/quarkus/issues/7033
         return new NativeImageResourceBuildItem(
                 "META-INF/services/org.apache.fop.util.ContentHandlerFactory",
-                "org/apache/fop/render/event-model.xml");
+                "org/apache/fop/render/event-model.xml",
+                "com.sun.org.apache.xerces.internal.impl.msg.SAXMessages");
+    }
+
+    @BuildStep
+    NativeImageResourceBundleBuildItem initResources3() {
+        return new NativeImageResourceBundleBuildItem(
+                "com.sun.org.apache.xerces.internal.impl.msg.SAXMessages");
     }
 
     //    @BuildStep
