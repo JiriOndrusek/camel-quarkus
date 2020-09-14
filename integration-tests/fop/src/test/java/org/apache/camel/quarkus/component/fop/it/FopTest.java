@@ -34,9 +34,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @QuarkusTest
 class FopTest {
 
-    //        @Test
+    //    @Test
     public void convertToPdf() throws IOException {
-        final String msg = decorateTextWithXSLFO("FF Hello camel-quarkus!");
+        final String msg = decorateTextWithXSLFO("Hello camel-quarkus!", null);
         ExtractableResponse response = RestAssured.given() //
                 .contentType(ContentType.XML)
                 .body(msg)
@@ -46,15 +46,14 @@ class FopTest {
                 .extract();
 
         PDDocument document = getDocumentFrom(response.asInputStream());
-        //        document.save("/home/jondruse/work/2020-08-31_CQ1642_FOP-native/tmp/fromQuarkus.pdf");
         String content = extractTextFrom(document);
-        assertEquals("FF Hello camel-quarkus!", content);
+        assertEquals("Hello camel-quarkus!", content);
 
     }
 
     @Test
     public void convertToPdfWithCustomFont() throws IOException {
-        final String msg = decorateTextWithXSLFO("FF Hello camel-quarkus!");
+        final String msg = decorateTextWithXSLFO("Hello camel-quarkus!", "FreeMono");
         String cofigFile = "file:" + getClass().getResource("/mycfg.xml").getFile();
         ExtractableResponse response = RestAssured.given()
                 .queryParam("userConfigURL", cofigFile)
@@ -66,13 +65,14 @@ class FopTest {
                 .extract();
 
         PDDocument document = getDocumentFrom(response.asInputStream());
-        document.save("/home/jondruse/work/2020-08-31_CQ1642_FOP-native/success/fromQuarkus.pdf");
         String content = extractTextFrom(document);
-        assertEquals("FF Hello camel-quarkus!", content);
+        assertEquals("Hello camel-quarkus!", content);
 
     }
 
-    public static String decorateTextWithXSLFO(String text) {
+    public static String decorateTextWithXSLFO(String text, String font) {
+        String body = font == null ? "      <fo:block>" + text + "</fo:block>\n"
+                : "      <fo:block font-family=\"" + font + "\">" + text + "</fo:block>\n";
         return "<fo:root xmlns:fo=\"http://www.w3.org/1999/XSL/Format\">\n"
                 + "  <fo:layout-master-set>\n"
                 + "    <fo:simple-page-master master-name=\"only\">\n"
@@ -83,8 +83,7 @@ class FopTest {
                 + "    </fo:layout-master-set>\n"
                 + "    <fo:page-sequence master-reference=\"only\">\n"
                 + "      <fo:flow flow-name=\"xsl-region-body\">\n"
-                //                + "      <fo:block>" + text + "</fo:block>\n"
-                + "      <fo:block font-family=\"FreeMono\">" + text + "</fo:block>\n"
+                + body
                 + "    </fo:flow>\n"
                 + "  </fo:page-sequence>\n"
                 + "</fo:root>";
