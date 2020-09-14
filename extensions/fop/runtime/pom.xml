@@ -73,18 +73,6 @@
                     <groupId>xml-apis</groupId>
                     <artifactId>xml-apis</artifactId>
                 </exclusion>
-<!--                <exclusion>-->
-<!--                    <artifactId>fop-core</artifactId>-->
-<!--                    <groupId>org.apache.xmlgraphics</groupId>-->
-<!--                </exclusion>-->
-                <!--<exclusion>
-                    <artifactId>batik-anim</artifactId>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>batik-awt-util</artifactId>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                </exclusion>-->
             </exclusions>
         </dependency>
         <dependency>
@@ -92,10 +80,6 @@
             <artifactId>svm</artifactId>
             <scope>provided</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>io.quarkus</groupId>-->
-<!--            <artifactId>quarkus-jaxb-deployment</artifactId>-->
-<!--        </dependency>-->
 
     </dependencies>
 
