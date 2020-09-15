@@ -20,11 +20,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.function.Function;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.ExtractableResponse;
+import io.restassured.specification.RequestSpecification;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.Test;
@@ -36,31 +38,24 @@ class FopTest {
 
     public static final String MSG = "hello";
 
-    //    @Test
+    @Test
     public void convertToPdf() throws IOException {
-        final String msg = decorateTextWithXSLFO(MSG, null);
-        ExtractableResponse response = RestAssured.given() //
-                .contentType(ContentType.XML)
-                .body(msg)
-                .post("/fop/post") //
-                .then()
-                .statusCode(201)
-                .extract();
-
-        PDDocument document = getDocumentFrom(response.asInputStream());
-        String content = extractTextFrom(document);
-        assertEquals(MSG, content);
-
+        convertToPdf(msg -> decorateTextWithXSLFO(msg, null), null);
     }
 
     @Test
     public void convertToPdfWithCustomFont() throws IOException {
-        final String msg = decorateTextWithXSLFO(MSG, "Freedom");
-        String cofigFile = "file:" + getClass().getResource("/mycfg.xml").getFile();
-        ExtractableResponse response = RestAssured.given()
-                .queryParam("userConfigURL", cofigFile)
-                .contentType(ContentType.XML)
-                .body(msg)
+        convertToPdf(msg -> decorateTextWithXSLFO(msg, "Freedom"), "/mycfg.xml");
+    }
+
+    private void convertToPdf(Function<String, String> msgCreator, String userConfigFile) throws IOException {
+        RequestSpecification requestSpecification = RestAssured.given()
+                .contentType(ContentType.XML);
+        if (userConfigFile != null) {
+            requestSpecification.queryParam("userConfigURL", "file:" + getClass().getResource(userConfigFile).getFile());
+        }
+        ExtractableResponse response = requestSpecification
+                .body(msgCreator.apply(MSG))
                 .post("/fop/post") //
                 .then()
                 .statusCode(201)
@@ -69,11 +64,10 @@ class FopTest {
         PDDocument document = getDocumentFrom(response.asInputStream());
         String content = extractTextFrom(document);
         assertEquals(MSG, content);
-
     }
 
     public static String decorateTextWithXSLFO(String text, String font) {
-        String body = font == null ? "      <fo:block>" + text + "</fo:block>\n"
+        String foBlock = font == null ? "      <fo:block>" + text + "</fo:block>\n"
                 : "      <fo:block font-family=\"" + font + "\">" + text + "</fo:block>\n";
         return "<fo:root xmlns:fo=\"http://www.w3.org/1999/XSL/Format\">\n"
                 + "  <fo:layout-master-set>\n"
@@ -85,7 +79,7 @@ class FopTest {
                 + "    </fo:layout-master-set>\n"
                 + "    <fo:page-sequence master-reference=\"only\">\n"
                 + "      <fo:flow flow-name=\"xsl-region-body\">\n"
-                + body
+                + foBlock
                 + "    </fo:flow>\n"
                 + "  </fo:page-sequence>\n"
                 + "</fo:root>";

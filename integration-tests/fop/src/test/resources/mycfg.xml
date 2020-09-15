@@ -2,7 +2,6 @@
     <use-cache>false</use-cache>
     <renderers>
         <renderer mime="application/pdf">
-            <disable-srgb-colorspace>true</disable-srgb-colorspace>
             <fonts>
                 <font
                         kerning="yes"
