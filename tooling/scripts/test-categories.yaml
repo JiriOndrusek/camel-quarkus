@@ -92,6 +92,7 @@ messaging-networking1:
   - vertx-websocket
 misc:
   - braintree
+  - fop
   - jolt
   - mustache
   - pdf

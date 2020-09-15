@@ -1,0 +1,15 @@
+<fop version="1.0">
+    <use-cache>false</use-cache>
+    <renderers>
+        <renderer mime="application/pdf">
+            <fonts>
+                <font
+                        kerning="yes"
+                        embed-url="Freedom-10eM.ttf">
+                    <font-triplet name="Freedom" style="normal" weight="normal" />
+                </font>
+            </fonts>
+        </renderer>
+    </renderers>
+
+</fop>
