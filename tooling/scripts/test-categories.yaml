@@ -102,6 +102,7 @@ misc:
   - mustache
   - pdf
   - qute
+  - shiro
   - stringtemplate
   - tika
   - velocity
