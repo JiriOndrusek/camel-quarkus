@@ -25,22 +25,39 @@ import org.junit.jupiter.api.Test;
 @QuarkusTest
 class ShiroTest {
 
+    private static ShiroSecurityToken CORRECT_TOKEN = new ShiroSecurityToken("sheldon", "earth2");
+    private static ShiroSecurityToken WRONG_TOKEN = new ShiroSecurityToken("sheldon", "wrong");
+
+    @Test
+    public void testHeaders() {
+        testCorrectAndWrongAccess("headers");
+    }
+
+    @Test
+    public void testToken() {
+        testCorrectAndWrongAccess("token");
+    }
+
     @Test
     public void testBase64() {
+        testCorrectAndWrongAccess("token");
+    }
+
+    private void testCorrectAndWrongAccess(String path) {
 
         RestAssured.given()
                 .queryParam("expectSuccess", true)
                 .contentType(ContentType.JSON)
-                .body(new ShiroSecurityToken("ringo", "starr"))
-                .post("/shiro/base64")
+                .body(CORRECT_TOKEN)
+                .post("/shiro/" + path)
                 .then()
                 .statusCode(204);
 
         RestAssured.given()
                 .queryParam("expectSuccess", false)
                 .contentType(ContentType.JSON)
-                .body(new ShiroSecurityToken("ringo", "wrong"))
-                .post("/shiro/base64")
+                .body(WRONG_TOKEN)
+                .post("/shiro/" + path)
                 .then()
                 .statusCode(204);
     }

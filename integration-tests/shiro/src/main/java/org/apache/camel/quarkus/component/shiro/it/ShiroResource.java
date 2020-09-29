@@ -25,8 +25,10 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.component.shiro.security.ShiroSecurityConstants;
 import org.apache.camel.component.shiro.security.ShiroSecurityToken;
 import org.apache.camel.component.shiro.security.ShiroSecurityTokenInjector;
 import org.jboss.logging.Logger;
@@ -49,25 +51,40 @@ public class ShiroResource {
     @Inject
     CamelContext context;
 
-    //    @Inject
-    //    ConsumerTemplate consumerTemplate;
-    //
-    //    @Path("/get")
-    //    @GET
-    //    @Produces(MediaType.TEXT_PLAIN)
-    //    public String get() throws Exception {
-    //        final String message = consumerTemplate.receiveBodyNoWait("shiro:--fix-me--", String.class);
-    //        LOG.infof("Received from shiro: %s", message);
-    //        return message;
-    //    }
+    @Path("/headers")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void headers(ShiroSecurityToken shiroSecurityToken, @QueryParam("expectSuccess") boolean expextSuccess)
+            throws Exception {
+        verifyMock(expextSuccess, exchange -> {
+            exchange.getIn().setHeader(ShiroSecurityConstants.SHIRO_SECURITY_USERNAME, shiroSecurityToken.getUsername());
+            exchange.getIn().setHeader(ShiroSecurityConstants.SHIRO_SECURITY_PASSWORD, shiroSecurityToken.getPassword());
+        });
+    }
+
+    @Path("/token")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void token(ShiroSecurityToken shiroSecurityToken, @QueryParam("expectSuccess") boolean expextSuccess)
+            throws Exception {
+
+        verifyMock(expextSuccess,
+                exchange -> exchange.getIn().setHeader(ShiroSecurityConstants.SHIRO_SECURITY_TOKEN, shiroSecurityToken));
+    }
 
     @Path("/base64")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public void post(ShiroSecurityToken shiroSecurityToken, @QueryParam("expectSuccess") boolean expextSuccess)
+    public void base64(ShiroSecurityToken shiroSecurityToken, @QueryParam("expectSuccess") boolean expextSuccess)
             throws Exception {
-        TestShiroSecurityTokenInjector shiroSecurityTokenInjector = new TestShiroSecurityTokenInjector(shiroSecurityToken,
+        ShiroSecurityTokenInjector shiroSecurityTokenInjector = new ShiroSecurityTokenInjector(shiroSecurityToken,
                 passPhrase);
+        shiroSecurityTokenInjector.setBase64(true);
+
+        verifyMock(expextSuccess, shiroSecurityTokenInjector);
+    }
+
+    public void verifyMock(boolean expectSuccess, Processor processor) throws Exception {
 
         MockEndpoint mockEndpointSuccess = context.getEndpoint("mock:success", MockEndpoint.class);
         MockEndpoint mockEndpointFailure = context.getEndpoint("mock:authenticationException", MockEndpoint.class);
@@ -75,20 +92,19 @@ public class ShiroResource {
         mockEndpointSuccess.reset();
         mockEndpointFailure.reset();
 
-        mockEndpointSuccess.expectedMessageCount(expextSuccess ? 1 : 0);
-        mockEndpointFailure.expectedMessageCount(expextSuccess ? 0 : 1);
+        mockEndpointSuccess.expectedMessageCount(expectSuccess ? 1 : 0);
+        mockEndpointFailure.expectedMessageCount(expectSuccess ? 0 : 1);
 
-        producerTemplate.send("direct:secureEndpoint", shiroSecurityTokenInjector);
+        try {
+            producerTemplate.send("direct:secureEndpoint", processor);
+        } catch (Exception e) {
+            if (expectSuccess) {
+                throw e;
+            }
+        }
 
         mockEndpointSuccess.assertIsSatisfied();
         mockEndpointFailure.assertIsSatisfied();
     }
 
-    private static class TestShiroSecurityTokenInjector extends ShiroSecurityTokenInjector {
-
-        TestShiroSecurityTokenInjector(ShiroSecurityToken shiroSecurityToken, byte[] bytes) {
-            super(shiroSecurityToken, bytes);
-            setBase64(true);
-        }
-    }
 }
