@@ -25,38 +25,69 @@ import org.junit.jupiter.api.Test;
 @QuarkusTest
 class ShiroTest {
 
-    private static ShiroSecurityToken CORRECT_TOKEN = new ShiroSecurityToken("sheldon", "earth2");
+    enum AUTHORIZATION {
+        none(ShiroRouteBuilder.DIRECT_SECURE_ENDPOINT),
+        roles(ShiroRouteBuilder.DIRECT_SECURE_WITH_ROLES),
+        permissions(ShiroRouteBuilder.DIRECT_SECURE_WITH_PERMISSIONS);
+
+        private String path;
+
+        AUTHORIZATION(String path) {
+            this.path = path;
+        }
+
+        public String getPath() {
+            return path;
+        }
+    }
+
+    static ShiroSecurityToken SHELDON_TOKEN = new ShiroSecurityToken("sheldon", "earth2");
+    private static ShiroSecurityToken IRMA_TOKEN = new ShiroSecurityToken("irma", "password");
+    private static ShiroSecurityToken FRED_TOKEN = new ShiroSecurityToken("fred", "fred");
+    private static ShiroSecurityToken SEC_LEVEL1 = SHELDON_TOKEN;
+    private static ShiroSecurityToken SEC_LEVEL2 = IRMA_TOKEN;
+    private static ShiroSecurityToken SEC_LEVEL3 = FRED_TOKEN;
     private static ShiroSecurityToken WRONG_TOKEN = new ShiroSecurityToken("sheldon", "wrong");
 
-    @Test
-    public void testHeaders() {
-        testCorrectAndWrongAccess("headers");
-    }
+    //    @Test
+    //    public void testHeaders() {
+    //        test("headers", SHELDON_TOKEN, AUTHORIZATION.none, true);
+    //        //        test("headers", WRONG_TOKEN, AUTHORIZATION.none, false);
+    //    }
 
+    //    @Test
+    //    public void testToken() {
+    //        test("token", IRMA_TOKEN, AUTHORIZATION.none, true);
+    //        test("token", WRONG_TOKEN, AUTHORIZATION.none, false);
+    //    }
+    //
+    //    @Test
+    //    public void testBase64() {
+    //        test("base64", FRED_TOKEN, AUTHORIZATION.none, true);
+    //        test("base64", WRONG_TOKEN, AUTHORIZATION.none, false);
+    //    }
+    //
     @Test
-    public void testToken() {
-        testCorrectAndWrongAccess("token");
+    public void testTokenWithRoles() {
+        test("headers", SEC_LEVEL1, AUTHORIZATION.roles, false);
+        //            test("token", SEC_LEVEL2, AUTHORIZATION.roles, true);
+        //            test("token", SEC_LEVEL3, AUTHORIZATION.roles, true);
     }
+    //
+    //    @Test
+    //    public void testTokenWithPermissions() {
+    //        test("token", SEC_LEVEL1, AUTHORIZATION.permissions, false);
+    //        test("headers", SEC_LEVEL2, AUTHORIZATION.permissions, false);
+    //        test("headers", SEC_LEVEL3, AUTHORIZATION.permissions, true);
+    //    }
 
-    @Test
-    public void testBase64() {
-        testCorrectAndWrongAccess("token");
-    }
-
-    private void testCorrectAndWrongAccess(String path) {
+    void test(String path, ShiroSecurityToken token, AUTHORIZATION authorization, boolean expectSuccess) {
 
         RestAssured.given()
-                .queryParam("expectSuccess", true)
+                .queryParam("expectSuccess", expectSuccess)
+                .queryParam("path", authorization.getPath())
                 .contentType(ContentType.JSON)
-                .body(CORRECT_TOKEN)
-                .post("/shiro/" + path)
-                .then()
-                .statusCode(204);
-
-        RestAssured.given()
-                .queryParam("expectSuccess", false)
-                .contentType(ContentType.JSON)
-                .body(WRONG_TOKEN)
+                .body(token)
                 .post("/shiro/" + path)
                 .then()
                 .statusCode(204);

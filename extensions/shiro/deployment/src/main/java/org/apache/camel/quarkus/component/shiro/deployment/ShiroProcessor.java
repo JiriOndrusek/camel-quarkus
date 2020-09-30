@@ -16,8 +16,14 @@
  */
 package org.apache.camel.quarkus.component.shiro.deployment;
 
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import org.apache.camel.CamelAuthorizationException;
+import org.jboss.jandex.IndexView;
 
 class ShiroProcessor {
 
@@ -26,5 +32,43 @@ class ShiroProcessor {
     @BuildStep
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
+    }
+
+    @BuildStep
+    ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
+        IndexView index = combinedIndex.getIndex();
+
+        String[] dtos = index.getKnownClasses().stream()
+                .map(ci -> ci.name().toString())
+                .filter(n -> (n.startsWith("org.apache.shiro.auth") && n.endsWith("Exception")))
+                .sorted()
+                .peek(System.out::println)
+                .toArray(String[]::new);
+
+        return new ReflectiveClassBuildItem(false, false, dtos);
+    }
+
+    @BuildStep
+    ReflectiveClassBuildItem registerForReflection() {
+        return new ReflectiveClassBuildItem(false, false, CamelAuthorizationException.class.getName());
+    }
+
+    @BuildStep
+    IndexDependencyBuildItem registerDependencyForIndex() {
+        return new IndexDependencyBuildItem("org.apache.shiro", "shiro-core");
+    }
+
+    //
+    //    @BuildStep
+    //    public void registerRuntimeInitializedClasses(BuildProducer<RuntimeInitializedClassBuildItem> resource) {
+    //        resource.produce(new RuntimeInitializedClassBuildItem("java.lang.Float"));
+    //    }
+
+    @BuildStep
+    public void reflectiveClasses(BuildProducer<ReflectiveClassBuildItem> reflectiveClasses) {
+        reflectiveClasses.produce(ReflectiveClassBuildItem
+                .builder("java.lang.Float[]",
+                        "java.util.Date[]")
+                .build());
     }
 }

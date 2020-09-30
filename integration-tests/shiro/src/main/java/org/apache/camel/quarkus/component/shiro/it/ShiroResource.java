@@ -54,9 +54,10 @@ public class ShiroResource {
     @Path("/headers")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public void headers(ShiroSecurityToken shiroSecurityToken, @QueryParam("expectSuccess") boolean expextSuccess)
+    public void headers(ShiroSecurityToken shiroSecurityToken, @QueryParam("expectSuccess") boolean expectSuccess,
+            @QueryParam("path") String path)
             throws Exception {
-        verifyMock(expextSuccess, exchange -> {
+        verifyMock(path, expectSuccess, exchange -> {
             exchange.getIn().setHeader(ShiroSecurityConstants.SHIRO_SECURITY_USERNAME, shiroSecurityToken.getUsername());
             exchange.getIn().setHeader(ShiroSecurityConstants.SHIRO_SECURITY_PASSWORD, shiroSecurityToken.getPassword());
         });
@@ -65,26 +66,28 @@ public class ShiroResource {
     @Path("/token")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public void token(ShiroSecurityToken shiroSecurityToken, @QueryParam("expectSuccess") boolean expextSuccess)
+    public void token(ShiroSecurityToken shiroSecurityToken, @QueryParam("expectSuccess") boolean expectSuccess,
+            @QueryParam("path") String path)
             throws Exception {
 
-        verifyMock(expextSuccess,
+        verifyMock(path, expectSuccess,
                 exchange -> exchange.getIn().setHeader(ShiroSecurityConstants.SHIRO_SECURITY_TOKEN, shiroSecurityToken));
     }
 
     @Path("/base64")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public void base64(ShiroSecurityToken shiroSecurityToken, @QueryParam("expectSuccess") boolean expextSuccess)
+    public void base64(ShiroSecurityToken shiroSecurityToken, @QueryParam("expectSuccess") boolean expectSuccess,
+            @QueryParam("path") String path)
             throws Exception {
         ShiroSecurityTokenInjector shiroSecurityTokenInjector = new ShiroSecurityTokenInjector(shiroSecurityToken,
                 passPhrase);
         shiroSecurityTokenInjector.setBase64(true);
 
-        verifyMock(expextSuccess, shiroSecurityTokenInjector);
+        verifyMock(path, expectSuccess, shiroSecurityTokenInjector);
     }
 
-    public void verifyMock(boolean expectSuccess, Processor processor) throws Exception {
+    public void verifyMock(String path, boolean expectSuccess, Processor processor) throws Exception {
 
         MockEndpoint mockEndpointSuccess = context.getEndpoint("mock:success", MockEndpoint.class);
         MockEndpoint mockEndpointFailure = context.getEndpoint("mock:authenticationException", MockEndpoint.class);
@@ -96,7 +99,7 @@ public class ShiroResource {
         mockEndpointFailure.expectedMessageCount(expectSuccess ? 0 : 1);
 
         try {
-            producerTemplate.send("direct:secureEndpoint", processor);
+            producerTemplate.send(path, processor);
         } catch (Exception e) {
             if (expectSuccess) {
                 throw e;
