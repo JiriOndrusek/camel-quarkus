@@ -49,37 +49,37 @@ class ShiroTest {
     private static ShiroSecurityToken SEC_LEVEL3 = FRED_TOKEN;
     private static ShiroSecurityToken WRONG_TOKEN = new ShiroSecurityToken("sheldon", "wrong");
 
-    //    @Test
-    //    public void testHeaders() {
-    //        test("headers", SHELDON_TOKEN, AUTHORIZATION.none, true);
-    //        //        test("headers", WRONG_TOKEN, AUTHORIZATION.none, false);
-    //    }
+    @Test
+    public void testHeaders() {
+        test("headers", SHELDON_TOKEN, AUTHORIZATION.none, true);
+        test("headers", WRONG_TOKEN, AUTHORIZATION.none, false);
+    }
 
-    //    @Test
-    //    public void testToken() {
-    //        test("token", IRMA_TOKEN, AUTHORIZATION.none, true);
-    //        test("token", WRONG_TOKEN, AUTHORIZATION.none, false);
-    //    }
-    //
-    //    @Test
-    //    public void testBase64() {
-    //        test("base64", FRED_TOKEN, AUTHORIZATION.none, true);
-    //        test("base64", WRONG_TOKEN, AUTHORIZATION.none, false);
-    //    }
-    //
+    @Test
+    public void testToken() {
+        test("token", IRMA_TOKEN, AUTHORIZATION.none, true);
+        test("token", WRONG_TOKEN, AUTHORIZATION.none, false);
+    }
+
+    @Test
+    public void testBase64() {
+        test("base64", FRED_TOKEN, AUTHORIZATION.none, true);
+        test("base64", WRONG_TOKEN, AUTHORIZATION.none, false);
+    }
+
     @Test
     public void testTokenWithRoles() {
         test("headers", SEC_LEVEL1, AUTHORIZATION.roles, false);
-        //            test("token", SEC_LEVEL2, AUTHORIZATION.roles, true);
-        //            test("token", SEC_LEVEL3, AUTHORIZATION.roles, true);
+        test("token", SEC_LEVEL2, AUTHORIZATION.roles, true);
+        test("token", SEC_LEVEL3, AUTHORIZATION.roles, true);
     }
-    //
-    //    @Test
-    //    public void testTokenWithPermissions() {
-    //        test("token", SEC_LEVEL1, AUTHORIZATION.permissions, false);
-    //        test("headers", SEC_LEVEL2, AUTHORIZATION.permissions, false);
-    //        test("headers", SEC_LEVEL3, AUTHORIZATION.permissions, true);
-    //    }
+
+    @Test
+    public void testTokenWithPermissions() {
+        test("token", SEC_LEVEL1, AUTHORIZATION.permissions, false);
+        test("headers", SEC_LEVEL2, AUTHORIZATION.permissions, true);
+        test("headers", SEC_LEVEL3, AUTHORIZATION.permissions, true);
+    }
 
     void test(String path, ShiroSecurityToken token, AUTHORIZATION authorization, boolean expectSuccess) {
 

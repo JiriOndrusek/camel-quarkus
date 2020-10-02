@@ -40,7 +40,8 @@ class ShiroProcessor {
 
         String[] dtos = index.getKnownClasses().stream()
                 .map(ci -> ci.name().toString())
-                .filter(n -> (n.startsWith("org.apache.shiro.auth") && n.endsWith("Exception")))
+                .filter(n -> (n.startsWith("org.apache.shiro.auth") && n.endsWith("Exception"))
+                        /*|| n.startsWith("org.apache.commons.configuration2")*/)
                 .sorted()
                 .peek(System.out::println)
                 .toArray(String[]::new);
@@ -57,6 +58,11 @@ class ShiroProcessor {
     IndexDependencyBuildItem registerDependencyForIndex() {
         return new IndexDependencyBuildItem("org.apache.shiro", "shiro-core");
     }
+
+    //    @BuildStep
+    //    IndexDependencyBuildItem registerDependencyForIndex2() {
+    //        return new IndexDependencyBuildItem("org.apache.commons", "commons-configuration2");
+    //    }
 
     //
     //    @BuildStep
