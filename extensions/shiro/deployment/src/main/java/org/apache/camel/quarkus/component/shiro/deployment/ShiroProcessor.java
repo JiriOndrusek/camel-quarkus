@@ -41,7 +41,7 @@ class ShiroProcessor {
         String[] dtos = index.getKnownClasses().stream()
                 .map(ci -> ci.name().toString())
                 .filter(n -> (n.startsWith("org.apache.shiro.auth") && n.endsWith("Exception"))
-                        /*|| n.startsWith("org.apache.commons.configuration2")*/)
+                /*|| n.startsWith("org.apache.commons.configuration2")*/)
                 .sorted()
                 .peek(System.out::println)
                 .toArray(String[]::new);
