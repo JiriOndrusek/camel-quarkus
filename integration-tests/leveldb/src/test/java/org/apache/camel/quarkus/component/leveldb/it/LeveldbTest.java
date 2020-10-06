@@ -16,30 +16,52 @@
  */
 package org.apache.camel.quarkus.component.leveldb.it;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import org.junit.jupiter.api.Assertions;
+import org.apache.camel.Exchange;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 class LeveldbTest {
 
     @Test
-    public void test() {
-        final String msg = java.util.UUID.randomUUID().toString().replace("-", "");
-        RestAssured.given() //
-                .contentType(ContentType.TEXT)
-                .body(msg)
-                .post("/leveldb/post") //
-                .then()
-                .statusCode(201);
+    public void testAggregate() {
+        Map headers = testAggregate(LeveldbRouteBuilder.DIRECT_START,
+                Arrays.asList(new String[] { "S", "H", "E", "L", "D", "O", "N" }));
 
-        Assertions.fail("Add some assertions to " + getClass().getName());
-
-        RestAssured.get("/leveldb/get")
-                .then()
-                .statusCode(200);
+        assertEquals("direct://start", headers.get("fromEndpoint"));
     }
+
+    @Test
+    public void testAggregateRecovery() {
+        Map headers = testAggregate(LeveldbRouteBuilder.DIRECT_START_WITH_FAILURE,
+                Arrays.asList(new String[] { "S", "H", "E", "L", "D", "O", "N" }));
+
+        assertEquals(Boolean.TRUE, headers.get(Exchange.REDELIVERED));
+        assertEquals(2, headers.get(Exchange.REDELIVERY_COUNTER));
+        assertEquals("direct://startWithFailure", headers.get("fromEndpoint"));
+
+    }
+
+    private Map testAggregate(String path, List<String> messages) {
+        return RestAssured.given()
+                .queryParam("path", path)
+                .contentType(ContentType.JSON)
+                .body(messages)
+                .post("/leveldb/aggregate")
+                .then()
+                .statusCode(201)
+                .extract().as(Map.class);
+
+    }
+
+    //todo clear db files
 
 }

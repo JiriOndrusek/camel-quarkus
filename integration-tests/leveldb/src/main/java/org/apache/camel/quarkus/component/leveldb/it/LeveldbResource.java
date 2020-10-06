@@ -17,19 +17,23 @@
 package org.apache.camel.quarkus.component.leveldb.it;
 
 import java.net.URI;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.camel.ConsumerTemplate;
+import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.component.mock.MockEndpoint;
 import org.jboss.logging.Logger;
 
 @Path("/leveldb")
@@ -42,28 +46,29 @@ public class LeveldbResource {
     ProducerTemplate producerTemplate;
 
     @Inject
-    ConsumerTemplate consumerTemplate;
+    CamelContext context;
 
-    @Path("/get")
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public String get() throws Exception {
-        final String message = consumerTemplate.receiveBodyNoWait("leveldb:--fix-me--", String.class);
-        LOG.infof("Received from leveldb: %s", message);
-        return message;
-    }
-
-    @Path("/post")
+    @Path("/aggregate")
     @POST
-    @Consumes(MediaType.TEXT_PLAIN)
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response post(String message) throws Exception {
-        LOG.infof("Sending to leveldb: %s", message);
-        final String response = producerTemplate.requestBody("leveldb:--fix-me--", message, String.class);
-        LOG.infof("Got response from leveldb: %s", response);
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response aggregateTest(List<String> messages, @QueryParam("path") String path) throws Exception {
+        MockEndpoint mock = context.getEndpoint(LeveldbRouteBuilder.MOCK_RESULT, MockEndpoint.class);
+        mock.reset();
+        mock.expectedBodiesReceived("SHELDON");
+
+        for (String message : messages) {
+            producerTemplate.sendBodyAndHeader(path, message, "id", 123);
+        }
+
+        mock.assertIsSatisfied(context, 30, TimeUnit.SECONDS);
+
+        Map<String, Object> headers = mock.getReceivedExchanges().get(0).getIn().getHeaders();
+        headers.put("fromEndpoint", mock.getReceivedExchanges().get(0).getFromEndpoint().getEndpointUri());
+
         return Response
                 .created(new URI("https://camel.apache.org/"))
-                .entity(response)
+                .entity(headers)
                 .build();
     }
 }
