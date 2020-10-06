@@ -48,6 +48,7 @@ database:
   - jdbc
   - jpa
   - kudu
+  - leveldb
   - mongodb
   - sql
   - arangodb
