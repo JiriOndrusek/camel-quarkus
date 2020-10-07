@@ -29,8 +29,10 @@ import org.apache.camel.component.leveldb.LevelDBAggregationRepository;
 public class LeveldbRouteBuilder extends RouteBuilder {
     public static final String DIRECT_START = "direct:start";
     public static final String DIRECT_START_WITH_FAILURE = "direct:startWithFailure";
+    public static final String DIRECT_START_DEAD_LETTER = "direct:startDeadLetter";
     public static final String MOCK_AGGREGATED = "mock:aggregated";
     public static final String MOCK_RESULT = "mock:result";
+    public static final String MOCK_DEAD = "mock:dead";
 
     private static AtomicInteger counter = new AtomicInteger(0);
 
@@ -72,6 +74,29 @@ public class LeveldbRouteBuilder extends RouteBuilder {
                     }
                 })
                 .log("result exchange id ${exchangeId} with ${body}")
+                .to(MOCK_RESULT)
+                .end();
+
+        LevelDBAggregationRepository repoDeadLetter = new LevelDBAggregationRepository("repoDeadLetter",
+                "target/data/leveldbDeadLetter.dat");
+
+        repoDeadLetter.setUseRecovery(true);
+        repoDeadLetter.setRecoveryInterval(500, TimeUnit.MILLISECONDS);
+        repoDeadLetter.setMaximumRedeliveries(3);
+        repoDeadLetter.setDeadLetterUri(MOCK_DEAD);
+
+        from(DIRECT_START_DEAD_LETTER)
+                .log("XXX: sending exchange id ${exchangeId} with ${body}")
+                .aggregate(header("id"), new MyAggregationStrategy())
+                .completionSize(5).aggregationRepository(repoDeadLetter)
+                .to(MOCK_AGGREGATED)
+                .log("XXX: aggregated exchange id ${exchangeId} with ${body}")
+                // simulate errors the first two times
+                .process(e -> {
+                    System.out.println("XXX: failure");
+                    throw new IllegalArgumentException("Damn");
+                })
+                .log("XXX: result exchange id ${exchangeId} with ${body}")
                 .to(MOCK_RESULT)
                 .end();
     }

@@ -17,13 +17,16 @@
 package org.apache.camel.quarkus.component.leveldb.it;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -35,6 +38,8 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.jboss.logging.Logger;
+
+import static java.util.stream.Collectors.joining;
 
 @Path("/leveldb")
 @ApplicationScoped
@@ -52,23 +57,48 @@ public class LeveldbResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response aggregateTest(List<String> messages, @QueryParam("path") String path) throws Exception {
-        MockEndpoint mock = context.getEndpoint(LeveldbRouteBuilder.MOCK_RESULT, MockEndpoint.class);
-        mock.reset();
-        mock.expectedBodiesReceived("SHELDON");
+    public Response aggregateTest(List<String> messages,
+            @QueryParam("path") String path,
+            @DefaultValue(LeveldbRouteBuilder.MOCK_RESULT) @QueryParam("mocks") String mockNames) throws Exception {
+
+        String[] mockNamesArray = mockNames.split(",");
+        MockEndpoint[] mocks = new MockEndpoint[mockNamesArray.length];
+
+        for (int i = 0; i < mocks.length; i++) {
+            mocks[i] = context.getEndpoint(mockNamesArray[i], MockEndpoint.class);
+            mocks[i].reset();
+
+            if (i == 0) {
+                mocks[i].expectedBodiesReceived(messages.stream().sequential().collect(joining()));
+            }
+        }
 
         for (String message : messages) {
             producerTemplate.sendBodyAndHeader(path, message, "id", 123);
         }
 
-        mock.assertIsSatisfied(context, 30, TimeUnit.SECONDS);
+        mocks[0].assertIsSatisfied(context, 30, TimeUnit.SECONDS);
 
-        Map<String, Object> headers = mock.getReceivedExchanges().get(0).getIn().getHeaders();
-        headers.put("fromEndpoint", mock.getReceivedExchanges().get(0).getFromEndpoint().getEndpointUri());
+        Map<String, List<Map<String, Object>>> data = new HashMap();
+        for (int i = 0; i < mocks.length; i++) {
+            data.put(mockNamesArray[i], extractDataFromMock(mocks[i]));
+        }
 
         return Response
                 .created(new URI("https://camel.apache.org/"))
-                .entity(headers)
+                .entity(data)
                 .build();
+    }
+
+    private List<Map<String, Object>> extractDataFromMock(MockEndpoint mockEndpoint) {
+        List<Map<String, Object>> data = mockEndpoint.getReceivedExchanges().stream().sequential()
+                .map(exchange -> {
+                    Map<String, Object> map = new HashMap<>(exchange.getIn().getHeaders());
+                    map.put("fromEndpoint", exchange.getFromEndpoint().getEndpointUri());
+                    map.put("body", String.valueOf(exchange.getIn().getBody()));
+                    return map;
+                })
+                .collect(Collectors.toList());
+        return data;
     }
 }

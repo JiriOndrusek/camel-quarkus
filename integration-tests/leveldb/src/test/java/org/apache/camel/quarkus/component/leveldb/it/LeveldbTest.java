@@ -23,37 +23,83 @@ import java.util.Map;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import io.restassured.specification.RequestSpecification;
 import org.apache.camel.Exchange;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
 class LeveldbTest {
 
     @Test
     public void testAggregate() {
-        Map headers = testAggregate(LeveldbRouteBuilder.DIRECT_START,
+        Map<String, List<Map<String, Object>>> data = testAggregate(LeveldbRouteBuilder.DIRECT_START,
                 Arrays.asList(new String[] { "S", "H", "E", "L", "D", "O", "N" }));
 
-        assertEquals("direct://start", headers.get("fromEndpoint"));
+        List<Map<String, Object>> resultData = data.get(LeveldbRouteBuilder.MOCK_RESULT);
+
+        assertEquals("direct://start", resultData.get(0).get("fromEndpoint"));
     }
 
-    @Test
+    //    @Test
     public void testAggregateRecovery() {
-        Map headers = testAggregate(LeveldbRouteBuilder.DIRECT_START_WITH_FAILURE,
+        Map<String, List<Map<String, Object>>> data = testAggregate(LeveldbRouteBuilder.DIRECT_START_WITH_FAILURE,
                 Arrays.asList(new String[] { "S", "H", "E", "L", "D", "O", "N" }));
 
-        assertEquals(Boolean.TRUE, headers.get(Exchange.REDELIVERED));
-        assertEquals(2, headers.get(Exchange.REDELIVERY_COUNTER));
-        assertEquals("direct://startWithFailure", headers.get("fromEndpoint"));
+        List<Map<String, Object>> resultData = data.get(LeveldbRouteBuilder.MOCK_RESULT);
+
+        assertEquals(Boolean.TRUE, resultData.get(0).get(Exchange.REDELIVERED));
+        assertEquals(2, resultData.get(0).get(Exchange.REDELIVERY_COUNTER));
+        assertEquals("direct://startWithFailure", resultData.get(0).get("fromEndpoint"));
 
     }
 
-    private Map testAggregate(String path, List<String> messages) {
-        return RestAssured.given()
-                .queryParam("path", path)
-                .contentType(ContentType.JSON)
+    //    @Test
+    public void testDeadLetter() {
+        Map<String, List<Map<String, Object>>> data = testAggregate(LeveldbRouteBuilder.DIRECT_START_DEAD_LETTER,
+                Arrays.asList(new String[] { "A", "B", "C", "D", "E" }),
+                LeveldbRouteBuilder.MOCK_DEAD + "," + LeveldbRouteBuilder.MOCK_RESULT + ","
+                        + LeveldbRouteBuilder.MOCK_AGGREGATED);
+
+        List<Map<String, Object>> deadData = data.get(LeveldbRouteBuilder.MOCK_DEAD);
+        List<Map<String, Object>> resultData = data.get(LeveldbRouteBuilder.MOCK_RESULT);
+        List<Map<String, Object>> agreggatedData = data.get(LeveldbRouteBuilder.MOCK_AGGREGATED);
+
+        assertTrue(resultData.isEmpty());
+
+        assertFalse(agreggatedData.get(0).containsKey(Exchange.REDELIVERED));
+        assertEquals(Boolean.TRUE, agreggatedData.get(1).containsKey(Exchange.REDELIVERED));
+        assertEquals(1, agreggatedData.get(1).get(Exchange.REDELIVERY_COUNTER));
+        assertEquals(3, agreggatedData.get(1).get(Exchange.REDELIVERY_MAX_COUNTER));
+        assertEquals(Boolean.TRUE, agreggatedData.get(2).containsKey(Exchange.REDELIVERED));
+        assertEquals(2, agreggatedData.get(2).get(Exchange.REDELIVERY_COUNTER));
+        assertEquals(3, agreggatedData.get(2).get(Exchange.REDELIVERY_MAX_COUNTER));
+        assertEquals(Boolean.TRUE, agreggatedData.get(3).containsKey(Exchange.REDELIVERED));
+        assertEquals(3, agreggatedData.get(3).get(Exchange.REDELIVERY_COUNTER));
+        assertEquals(3, agreggatedData.get(3).get(Exchange.REDELIVERY_MAX_COUNTER));
+
+        assertEquals("ABCDE", deadData.get(0).get("body"));
+        assertEquals(Boolean.TRUE, deadData.get(0).containsKey(Exchange.REDELIVERED));
+        assertEquals(3, deadData.get(0).get(Exchange.REDELIVERY_COUNTER));
+        assertFalse(deadData.get(0).containsKey(Exchange.REDELIVERY_MAX_COUNTER));
+    }
+
+    private Map<String, List<Map<String, Object>>> testAggregate(String path, List<String> messages) {
+        return testAggregate(path, messages, null);
+    }
+
+    private Map<String, List<Map<String, Object>>> testAggregate(String path, List<String> messages, String mocks) {
+        RequestSpecification rs = RestAssured.given()
+                .queryParam("path", path);
+
+        if (mocks != null) {
+            rs = rs.queryParam("mocks", mocks);
+        }
+
+        return (Map<String, List<Map<String, Object>>>) rs.contentType(ContentType.JSON)
                 .body(messages)
                 .post("/leveldb/aggregate")
                 .then()
