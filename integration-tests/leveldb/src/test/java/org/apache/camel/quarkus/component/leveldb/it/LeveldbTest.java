@@ -16,6 +16,7 @@
  */
 package org.apache.camel.quarkus.component.leveldb.it;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,8 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import org.apache.camel.Exchange;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -109,5 +112,15 @@ class LeveldbTest {
     }
 
     //todo clear db files
+
+    @AfterAll
+    public static void afterAll() throws Exception {
+        File data = new File("target/data");
+        System.out.println("************************** datata exists:" + data.exists() + "is folder: " + data.isDirectory()
+                + "****************");
+        FileUtils.deleteDirectory(data);
+        System.out.println("************************** datata exists:" + data.exists() + "is folder: " + data.isDirectory()
+                + "****************");
+    }
 
 }

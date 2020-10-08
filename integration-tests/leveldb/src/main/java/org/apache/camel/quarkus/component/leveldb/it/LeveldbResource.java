@@ -69,7 +69,7 @@ public class LeveldbResource {
             mocks[i].reset();
 
             if (i == 0) {
-                mocks[i].expectedBodiesReceived(messages.stream().sequential().collect(joining()));
+                mocks[i].expectedBodiesReceived(messages.stream().sequential().collect(joining("+")));
             }
         }
 

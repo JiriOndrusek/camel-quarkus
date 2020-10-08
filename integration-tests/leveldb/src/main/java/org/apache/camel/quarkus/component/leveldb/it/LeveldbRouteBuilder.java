@@ -42,10 +42,12 @@ public class LeveldbRouteBuilder extends RouteBuilder {
         LevelDBAggregationRepository repo = new LevelDBAggregationRepository("repo", "target/data/leveldb.dat");
 
         from(DIRECT_START)
+                .log("XXX: sending exchange id ${exchangeId} with ${body}")
                 .aggregate(header("id"), new MyAggregationStrategy())
-                .log("aggregated exchange id ${exchangeId} with ${body}")
+                .log("XXX: sending exchange after aggregate id ${exchangeId} with ${body}")
                 // use our created leveldb repo as aggregation repository
                 .completionSize(7).aggregationRepository(repo)
+                .log("XXX: aggregated exchange id ${exchangeId} with ${body}")
                 .to(MOCK_RESULT);
 
         LevelDBAggregationRepository repoWithFailure = new LevelDBAggregationRepository("repoWithFailure",
@@ -111,7 +113,7 @@ public class LeveldbRouteBuilder extends RouteBuilder {
             String body1 = oldExchange.getIn().getBody(String.class);
             String body2 = newExchange.getIn().getBody(String.class);
 
-            oldExchange.getIn().setBody(body1 + body2);
+            oldExchange.getIn().setBody(body1 + "+" + body2);
             return oldExchange;
         }
     }
