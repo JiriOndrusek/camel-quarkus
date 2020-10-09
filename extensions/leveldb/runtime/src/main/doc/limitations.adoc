@@ -1,3 +1,3 @@
 1 uses ava impl of db https://github.com/dain/leveldb#leveldb-in-java (Jni is not supported in quarkus)
 2 Invoke with MethodHandle iss not supported https://github.com/oracle/graal/issues/2761, 2 subs have to be added, impact ??
-3 uses jsonb instead of serializatio, which could have some performance impact
+3 uses jsonb instead of serialization, which could have some performance impact

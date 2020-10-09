@@ -41,8 +41,8 @@ class LeveldbProcessor {
     }
 
     @BuildStep
-    ReflectiveClassBuildItem registerForReflection2() {
-        return new ReflectiveClassBuildItem(true, true, new String[] {
+    ReflectiveClassBuildItem registerForReflectionWithFields() {
+        return new ReflectiveClassBuildItem(false, true, new String[] {
                 DefaultExchangeHolder.class.getName(),
         });
     }
@@ -52,28 +52,5 @@ class LeveldbProcessor {
         resource.produce(new RuntimeInitializedClassBuildItem(
                 org.iq80.leveldb.table.Table.class.getName()));
     }
-    //
-    //    @BuildStep
-    //    public void registerRuntimeInitializedClasses2(BuildProducer<RuntimeInitializedClassBuildItem> resource) {
-    //        resource.produce(new RuntimeInitializedClassBuildItem(
-    //                MMapTable.class.getName()));
-    //    }
 
-    //    @BuildStep
-    //    public void registerRuntimeInitializedClasses3(BuildProducer<RuntimeInitializedClassBuildItem> resource) {
-    //        resource.produce(new RuntimeInitializedClassBuildItem(
-    //                MMapLogWriter.class.getName()));
-    //    }
-
-    //    @BuildStep
-    //    public void registerRuntimeInitializedClasses4(BuildProducer<RuntimeInitializedClassBuildItem> resource) {
-    //        resource.produce(new RuntimeInitializedClassBuildItem(
-    //                org.iq80.leveldb.table.MMapTable.Closer.class.getName()));
-    //    }
-    //
-    //    @BuildStep
-    //    public void registerRuntimeInitializedClasses5(BuildProducer<RuntimeInitializedClassBuildItem> resource) {
-    //        resource.produce(new RuntimeInitializedClassBuildItem(
-    //                org.iq80.leveldb.util.ByteBufferSupport.class.getName()));
-    //    }
 }

@@ -67,12 +67,6 @@
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-leveldb</artifactId>
-            <exclusions> <!-- TODO remove and use refle. item -->
-                <exclusion>
-                    <artifactId>leveldbjni-all</artifactId>
-                    <groupId>org.fusesource.leveldbjni</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>

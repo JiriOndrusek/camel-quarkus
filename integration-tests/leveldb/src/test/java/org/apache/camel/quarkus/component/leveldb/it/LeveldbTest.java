@@ -44,10 +44,10 @@ class LeveldbTest {
 
         List<Map<String, Object>> resultData = data.get(LeveldbRouteBuilder.MOCK_RESULT);
 
-        assertEquals("direct://start", resultData.get(0).get("fromEndpoint"));
+        assertEquals("direct://start", resultData.get(0).get(LeveldbResource.PARAMETER_FROM_ENDPOINT));
     }
 
-    //    @Test
+    @Test
     public void testAggregateRecovery() {
         Map<String, List<Map<String, Object>>> data = testAggregate(LeveldbRouteBuilder.DIRECT_START_WITH_FAILURE,
                 Arrays.asList(new String[] { "S", "H", "E", "L", "D", "O", "N" }));
@@ -56,14 +56,13 @@ class LeveldbTest {
 
         assertEquals(Boolean.TRUE, resultData.get(0).get(Exchange.REDELIVERED));
         assertEquals(2, resultData.get(0).get(Exchange.REDELIVERY_COUNTER));
-        assertEquals("direct://startWithFailure", resultData.get(0).get("fromEndpoint"));
-
+        assertEquals("direct://startWithFailure", resultData.get(0).get(LeveldbResource.PARAMETER_FROM_ENDPOINT));
     }
 
-    //    @Test
+    @Test
     public void testDeadLetter() {
         Map<String, List<Map<String, Object>>> data = testAggregate(LeveldbRouteBuilder.DIRECT_START_DEAD_LETTER,
-                Arrays.asList(new String[] { "A", "B", "C", "D", "E" }),
+                Arrays.asList(new String[] { "S", "H", "E", "L", "D", "O", "N" }),
                 LeveldbRouteBuilder.MOCK_DEAD + "," + LeveldbRouteBuilder.MOCK_RESULT + ","
                         + LeveldbRouteBuilder.MOCK_AGGREGATED);
 
@@ -84,7 +83,6 @@ class LeveldbTest {
         assertEquals(3, agreggatedData.get(3).get(Exchange.REDELIVERY_COUNTER));
         assertEquals(3, agreggatedData.get(3).get(Exchange.REDELIVERY_MAX_COUNTER));
 
-        assertEquals("ABCDE", deadData.get(0).get("body"));
         assertEquals(Boolean.TRUE, deadData.get(0).containsKey(Exchange.REDELIVERED));
         assertEquals(3, deadData.get(0).get(Exchange.REDELIVERY_COUNTER));
         assertFalse(deadData.get(0).containsKey(Exchange.REDELIVERY_MAX_COUNTER));
@@ -108,19 +106,12 @@ class LeveldbTest {
                 .then()
                 .statusCode(201)
                 .extract().as(Map.class);
-
     }
-
-    //todo clear db files
 
     @AfterAll
     public static void afterAll() throws Exception {
-        File data = new File("target/data");
-        System.out.println("************************** datata exists:" + data.exists() + "is folder: " + data.isDirectory()
-                + "****************");
+        File data = new File(LeveldbRouteBuilder.DATA_FOLDER);
         FileUtils.deleteDirectory(data);
-        System.out.println("************************** datata exists:" + data.exists() + "is folder: " + data.isDirectory()
-                + "****************");
     }
 
 }

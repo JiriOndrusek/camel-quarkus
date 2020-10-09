@@ -5,7 +5,7 @@ import com.oracle.svm.core.annotate.TargetClass;
 import org.iq80.leveldb.impl.MMapLogWriter;
 
 /**
- * TODO work-around because of https://github.com/oracle/graal/issues/2761
+ * Workaround for https://github.com/oracle/graal/issues/2761
  */
 @TargetClass(value = MMapLogWriter.class)
 final class MMapLogWriterSubstitute {

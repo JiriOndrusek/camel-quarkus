@@ -37,7 +37,6 @@ import javax.ws.rs.core.Response;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.jboss.logging.Logger;
 
 import static java.util.stream.Collectors.joining;
 
@@ -45,7 +44,9 @@ import static java.util.stream.Collectors.joining;
 @ApplicationScoped
 public class LeveldbResource {
 
-    private static final Logger LOG = Logger.getLogger(LeveldbResource.class);
+    public static String PARAMETER_BODY = "body";
+    public static String PARAMETER_FROM_ENDPOINT = "fromEndpoint";
+    public static String MOCKS_DELIMITER = ",";
 
     @Inject
     ProducerTemplate producerTemplate;
@@ -61,7 +62,7 @@ public class LeveldbResource {
             @QueryParam("path") String path,
             @DefaultValue(LeveldbRouteBuilder.MOCK_RESULT) @QueryParam("mocks") String mockNames) throws Exception {
 
-        String[] mockNamesArray = mockNames.split(",");
+        String[] mockNamesArray = mockNames.split(MOCKS_DELIMITER);
         MockEndpoint[] mocks = new MockEndpoint[mockNamesArray.length];
 
         for (int i = 0; i < mocks.length; i++) {
@@ -94,8 +95,8 @@ public class LeveldbResource {
         List<Map<String, Object>> data = mockEndpoint.getReceivedExchanges().stream().sequential()
                 .map(exchange -> {
                     Map<String, Object> map = new HashMap<>(exchange.getIn().getHeaders());
-                    map.put("fromEndpoint", exchange.getFromEndpoint().getEndpointUri());
-                    map.put("body", String.valueOf(exchange.getIn().getBody()));
+                    map.put(PARAMETER_FROM_ENDPOINT, exchange.getFromEndpoint().getEndpointUri());
+                    map.put(PARAMETER_BODY, String.valueOf(exchange.getIn().getBody()));
                     return map;
                 })
                 .collect(Collectors.toList());
