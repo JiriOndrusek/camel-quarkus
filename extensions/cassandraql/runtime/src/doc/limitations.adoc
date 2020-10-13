@@ -1,0 +1,19 @@
+== Additional Camel Quarkus configuration
+
+todo was in marge
+
+[width="100%",cols="80,5,15",options="header"]
+|===
+| Configuration property | Type | Default
+
+
+|icon:lock[title=Fixed at build time] [[quarkus.cassandra.init.eager-session-init]]`link:#quarkus.cassandra.init.eager-session-init[quarkus.cassandra.init.eager-session-init]`
+
+Reads configuration of cassandra-quarkus init property eager-session-init.
+| `java.lang.Boolean`
+| 
+|===
+
+[.configuration-legend]
+icon:lock[title=Fixed at build time] Configuration property fixed at build time. All other configuration properties are overridable at runtime.
+
