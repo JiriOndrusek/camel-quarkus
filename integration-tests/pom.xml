@@ -68,6 +68,7 @@
         <module>aws</module>
         <module>aws2</module>
         <module>azure</module>
+        <module>barcode</module>
         <module>base64</module>
         <module>bean</module>
         <module>bean-validator</module>
