@@ -16,19 +16,20 @@
  */
 package org.apache.camel.quarkus.component.barcode.it;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.net.URI;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
 import org.jboss.logging.Logger;
 
@@ -41,29 +42,29 @@ public class BarcodeResource {
     @Inject
     ProducerTemplate producerTemplate;
 
-    @Inject
-    ConsumerTemplate consumerTemplate;
-
-    @Path("/get")
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public String get() throws Exception {
-        final String message = consumerTemplate.receiveBodyNoWait("barcode:--fix-me--", String.class);
-        LOG.infof("Received from barcode: %s", message);
-        return message;
-    }
-
-    @Path("/post")
+    @Path("/marshall")
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response post(String message) throws Exception {
-        LOG.infof("Sending to barcode: %s", message);
-        final String response = producerTemplate.requestBody("barcode:--fix-me--", message, String.class);
-        LOG.infof("Got response from barcode: %s", response);
-        return Response
-                .created(new URI("https://camel.apache.org/"))
-                .entity(response)
-                .build();
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response marshal(String message) throws Exception {
+        try (InputStream response = producerTemplate.requestBody("direct:barcode-marshal-jpg", message, InputStream.class)) {
+            LOG.info("Got response from fop.");
+            return Response
+                    .created(new URI("https://camel.apache.org/"))
+                    .entity(response)
+                    .build();
+        }
     }
+
+    @Path("/unmarshall")
+    @POST
+    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Produces(MediaType.TEXT_PLAIN)
+    public String unmarshal(byte[] bytes) throws Exception {
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+                BufferedInputStream bis = new BufferedInputStream(bais)) {
+            return producerTemplate.requestBody("direct:barcode-unmarshal-jpg", bis, String.class);
+        }
+    }
+
 }
