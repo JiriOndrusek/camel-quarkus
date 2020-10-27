@@ -27,6 +27,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -46,9 +47,9 @@ public class BarcodeResource {
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response marshal(String message) throws Exception {
-        try (InputStream response = producerTemplate.requestBody("direct:barcode-marshal-jpg", message, InputStream.class)) {
-            LOG.info("Got response from fop.");
+    public Response marshall(@QueryParam("type") String type, String message) throws Exception {
+        try (InputStream response = producerTemplate.requestBody("direct:barcode-marshall-" + type, message,
+                InputStream.class)) {
             return Response
                     .created(new URI("https://camel.apache.org/"))
                     .entity(response)
@@ -60,10 +61,10 @@ public class BarcodeResource {
     @POST
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.TEXT_PLAIN)
-    public String unmarshal(byte[] bytes) throws Exception {
+    public String unmarshall(@QueryParam("type") String type, byte[] bytes) throws Exception {
         try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
                 BufferedInputStream bis = new BufferedInputStream(bais)) {
-            return producerTemplate.requestBody("direct:barcode-unmarshal-jpg", bis, String.class);
+            return producerTemplate.requestBody("direct:barcode-unmarshall-" + type, bis, String.class);
         }
     }
 

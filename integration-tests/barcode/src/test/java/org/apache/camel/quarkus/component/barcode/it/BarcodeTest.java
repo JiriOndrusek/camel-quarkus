@@ -36,14 +36,24 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @QuarkusTest
 class BarcodeTest {
 
-    private static String MSQ = "Hello camel-quarkus!";
+    private static String MSG = "Hello camel-quarkus!";
 
     @Test
-    public void testMarshallJpg() throws IOException {
+    public void testJpg() throws IOException {
+        test("jpg", "JPEG");
+    }
+
+    @Test
+    public void testPng() throws IOException {
+        test("png", "png");
+    }
+
+    public void test(String type, String detectedType) throws IOException {
         byte[] bytes;
         try (InputStream is = RestAssured.given()
                 .contentType(ContentType.TEXT)
-                .body(MSQ)
+                .queryParam("type", type)
+                .body(MSG)
                 .post("/barcode/marshall")
                 .then()
                 .statusCode(201)
@@ -53,16 +63,16 @@ class BarcodeTest {
             is.read(bytes);
         }
 
-        assertType(bytes, "JPEG");
+        assertType(bytes, detectedType);
 
         RestAssured.given()
+                .queryParam("type", type)
                 .contentType(ContentType.BINARY)
                 .body(bytes)
                 .post("/barcode/unmarshall")
                 .then()
                 .statusCode(200)
-                .body(is(MSQ));
-
+                .body(is(MSG));
     }
 
     private void assertType(byte[] bytes, String expectedFormat) throws IOException {

@@ -25,7 +25,7 @@ import org.apache.camel.dataformat.barcode.BarcodeDataFormat;
 import org.apache.camel.dataformat.barcode.BarcodeImageType;
 import org.apache.camel.spi.DataFormat;
 
-public class BarcodeMarshalRoute extends RouteBuilder {
+public class BarcodeMarshallRoute extends RouteBuilder {
 
     @Override
     public void configure() {
@@ -33,11 +33,10 @@ public class BarcodeMarshalRoute extends RouteBuilder {
 
         testDataformats.put("jpg", new BarcodeDataFormat(200, 200, BarcodeImageType.JPG, BarcodeFormat.PDF_417));
         testDataformats.put("png", new BarcodeDataFormat(200, 200, BarcodeImageType.PNG, BarcodeFormat.AZTEC));
-        testDataformats.put("gif", new BarcodeDataFormat(200, 200, BarcodeImageType.GIF, BarcodeFormat.CODABAR));
 
         for (Map.Entry<String, DataFormat> testDataformat : testDataformats.entrySet()) {
-            from("direct:barcode-marshal-" + testDataformat.getKey()).marshal(testDataformat.getValue());
-            from("direct:barcode-unmarshal-" + testDataformat.getKey()).unmarshal(testDataformat.getValue());
+            from("direct:barcode-marshall-" + testDataformat.getKey()).marshal(testDataformat.getValue());
+            from("direct:barcode-unmarshall-" + testDataformat.getKey()).unmarshal(testDataformat.getValue());
         }
     }
 
