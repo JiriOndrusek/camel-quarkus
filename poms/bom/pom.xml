@@ -1254,6 +1254,11 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.camel</groupId>
+                <artifactId>camel-jsonb</artifactId>
+                <version>${camel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel</groupId>
                 <artifactId>camel-jsonpath</artifactId>
                 <version>${camel.version}</version>
             </dependency>
@@ -3687,6 +3692,16 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.camel.quarkus</groupId>
+                <artifactId>camel-quarkus-jsonb</artifactId>
+                <version>${camel-quarkus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel.quarkus</groupId>
+                <artifactId>camel-quarkus-jsonb-deployment</artifactId>
+                <version>${camel-quarkus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel.quarkus</groupId>
                 <artifactId>camel-quarkus-jsonpath</artifactId>
                 <version>${camel-quarkus.version}</version>
             </dependency>
@@ -5510,6 +5525,11 @@
                 <groupId>org.apache.htrace</groupId>
                 <artifactId>htrace-core4</artifactId>
                 <version>${htrace.version}</version>
+            </dependency>
+            <dependency>
+		<groupId>org.apache.johnzon</groupId>
+		<artifactId>johnzon-jsonb</artifactId>
+		<version>${johnzon.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.kafka</groupId>

@@ -1,0 +1,3 @@
+Classes used for marshalling/unmarshalling has to be registered for reflection.
+
+Refer to the https://quarkus.io/guides/writing-native-applications-tips#register-reflection[documentation] to see more details.
