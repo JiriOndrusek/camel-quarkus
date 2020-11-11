@@ -16,27 +16,21 @@
  */
 package org.apache.camel.quarkus.component.avro.rpc.it;
 
-import java.net.URI;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
-import org.jboss.logging.Logger;
 
 @Path("/avro-rpc")
 @ApplicationScoped
 public class AvroRpcResource {
 
-    private static final Logger LOG = Logger.getLogger(AvroRpcResource.class);
+    public static String REFLECTIVE_SERVER_PORT_PARAM = "camel.avro-rpc.test.serverReflection.port";
 
     @Inject
     ProducerTemplate producerTemplate;
@@ -44,26 +38,14 @@ public class AvroRpcResource {
     @Inject
     ConsumerTemplate consumerTemplate;
 
-    @Path("/get")
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public String get() throws Exception {
-        final String message = consumerTemplate.receiveBodyNoWait("avro-rpc:--fix-me--", String.class);
-        LOG.infof("Received from avro-rpc: %s", message);
-        return message;
-    }
-
-    @Path("/post")
+    @Path("/reflectionProducer")
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response post(String message) throws Exception {
-        LOG.infof("Sending to avro-rpc: %s", message);
-        final String response = producerTemplate.requestBody("avro-rpc:--fix-me--", message, String.class);
-        LOG.infof("Got response from avro-rpc: %s", response);
-        return Response
-                .created(new URI("https://camel.apache.org/"))
-                .entity(response)
-                .build();
+    public void reflectionProducer(String name) throws Exception {
+        Object[] request = { name };
+        producerTemplate.requestBody(String.format(
+                "avro:http:localhost:{{%s}}/setName?protocolClassName=org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestReflection&singleParameter=true",
+                REFLECTIVE_SERVER_PORT_PARAM), request);
+
     }
 }

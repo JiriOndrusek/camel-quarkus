@@ -16,30 +16,34 @@
  */
 package org.apache.camel.quarkus.component.avro.rpc.it;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import org.junit.jupiter.api.Assertions;
+import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestReflection;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @QuarkusTest
+@QuarkusTestResource(AvroRpcTestResource.class)
 class AvroRpcTest {
 
+    private TestReflection testReflection;
+
     @Test
-    public void test() {
-        final String msg = java.util.UUID.randomUUID().toString().replace("-", "");
-        RestAssured.given() //
+    public void testInOnlyReflection() {
+        String name = "Sheldon";
+        RestAssured.given()
                 .contentType(ContentType.TEXT)
-                .body(msg)
-                .post("/avro-rpc/post") //
+                .body(name)
+                .post("/avro-rpc/reflectionProducer") //
                 .then()
-                .statusCode(201);
-
-        Assertions.fail("Add some assertions to " + getClass().getName());
-
-        RestAssured.get("/avro-rpc/get")
-                .then()
-                .statusCode(200);
+                .statusCode(204);
+        assertEquals(name, testReflection.getName());
     }
 
+    public void setTestReflection(TestReflection testReflection) {
+        this.testReflection = testReflection;
+    }
 }

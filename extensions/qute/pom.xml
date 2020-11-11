@@ -30,9 +30,5 @@
     <name>Camel Quarkus :: Qute</name>
     <packaging>pom</packaging>
 
-    <modules>
-        <module>component</module>
-        <module>deployment</module>
-        <module>runtime</module>
-    </modules>
+
 </project>
