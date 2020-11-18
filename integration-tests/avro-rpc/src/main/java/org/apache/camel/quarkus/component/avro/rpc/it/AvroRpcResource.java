@@ -19,18 +19,26 @@ package org.apache.camel.quarkus.component.avro.rpc.it;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestPojo;
+import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestReflection;
+import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestReflectionImpl;
 
 @Path("/avro-rpc")
 @ApplicationScoped
 public class AvroRpcResource {
 
-    public static String REFLECTIVE_SERVER_PORT_PARAM = "camel.avro-rpc.test.serverReflection.port";
+    public static final String REFLECTIVE_HTTP_SERVER_PORT_PARAM = "camel.avro-rpc.test.httpServerReflection.port";
+    public static final String REFLECTIVE_NETTY_SERVER_PORT_PARAM = "camel.avro-rpc.test.nettyServerReflection.port";
+    public static final String REFLECTIVE_HTTP_CONSUMER_PORT_PARAM = "camel.avro-rpc.test.nettyConsumerReflection.port";
 
     @Inject
     ProducerTemplate producerTemplate;
@@ -38,14 +46,29 @@ public class AvroRpcResource {
     @Inject
     ConsumerTemplate consumerTemplate;
 
+    @Inject
+    AvroRpcRouteBuilder avroRpcRouteBuilder;
+
+
     @Path("/reflectionProducer")
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
-    public void reflectionProducer(String name) throws Exception {
+    public void reflectionProducer(@QueryParam("protocol") ProtocolType protocol, String name) throws Exception {
         Object[] request = { name };
         producerTemplate.requestBody(String.format(
-                "avro:http:localhost:{{%s}}/setName?protocolClassName=org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestReflection&singleParameter=true",
-                REFLECTIVE_SERVER_PORT_PARAM), request);
-
+                "avro:%s:localhost:{{%s}}/setName?protocolClassName=%s&singleParameter=true",
+                protocol,
+                protocol == ProtocolType.http ? REFLECTIVE_HTTP_SERVER_PORT_PARAM : REFLECTIVE_NETTY_SERVER_PORT_PARAM,
+                TestReflection.class.getCanonicalName()), request);
     }
+
+    @Path("/reflectionConsumer")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public TestPojo reflectionConsumer() throws Exception {
+        Thread.sleep(5000);
+        return avroRpcRouteBuilder.testReflection.getTestPojo();
+    }
+
+
 }

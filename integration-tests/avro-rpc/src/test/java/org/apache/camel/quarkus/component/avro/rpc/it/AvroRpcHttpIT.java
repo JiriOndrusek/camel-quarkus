@@ -19,6 +19,6 @@ package org.apache.camel.quarkus.component.avro.rpc.it;
 import io.quarkus.test.junit.NativeImageTest;
 
 @NativeImageTest
-class AvroRpcIT extends AvroRpcTest {
+class AvroRpcHttpIT extends AvroRpcHttpTest {
 
 }

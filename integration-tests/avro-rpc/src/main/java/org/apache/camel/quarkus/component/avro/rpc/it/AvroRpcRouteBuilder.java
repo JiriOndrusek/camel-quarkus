@@ -14,36 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.camel.quarkus.component.avro.rpc.it;
 
-import io.quarkus.test.common.QuarkusTestResource;
-import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.quarkus.component.avro.rpc.it.reflection.ReflectionProcessor;
 import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestReflection;
-import org.junit.jupiter.api.Test;
+import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestReflectionImpl;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
-@QuarkusTest
-@QuarkusTestResource(AvroRpcTestResource.class)
-class AvroRpcTest {
+@ApplicationScoped
+public class AvroRpcRouteBuilder extends RouteBuilder {
+    public static final String DIRECT_START = "direct:start";
 
-    private TestReflection testReflection;
+    @ConfigProperty(name = AvroRpcResource.REFLECTIVE_HTTP_CONSUMER_PORT_PARAM)
+    Integer port;
 
-    @Test
-    public void testInOnlyReflection() {
-        String name = "Sheldon";
-        RestAssured.given()
-                .contentType(ContentType.TEXT)
-                .body(name)
-                .post("/avro-rpc/reflectionProducer") //
-                .then()
-                .statusCode(204);
-        assertEquals(name, testReflection.getName());
-    }
+    TestReflection testReflection = new TestReflectionImpl();
 
-    public void setTestReflection(TestReflection testReflection) {
-        this.testReflection = testReflection;
+    @Override
+    public void configure() throws Exception {
+
+        from(String.format("avro:http:localhost:"+port+"/setTestPojo?protocolClassName=%s&singleParameter=true", TestReflection.class.getCanonicalName()))
+                .process(new ReflectionProcessor(testReflection));
+
+
+
     }
 }
