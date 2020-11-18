@@ -27,6 +27,7 @@ import org.apache.avro.ipc.Server;
 import org.apache.avro.ipc.Transceiver;
 import org.apache.avro.ipc.jetty.HttpServer;
 import org.apache.avro.ipc.netty.NettyServer;
+import org.apache.avro.ipc.netty.NettyTransceiver;
 import org.apache.avro.ipc.reflect.ReflectRequestor;
 import org.apache.avro.ipc.reflect.ReflectResponder;
 import org.apache.avro.ipc.specific.SpecificRequestor;
@@ -43,8 +44,8 @@ public class AvroRpcTestResource implements QuarkusTestResourceLifecycleManager 
     //avro servers listening on localhost
     Server httpServerReflection, nettyServerReflection;
 
-    SpecificRequestor reflectRequestor;
-    Transceiver reflectTransceiver;
+    SpecificRequestor nettyReflectRequestor, httpReflectRequestor;
+    Transceiver httpReflectTransceiver, nettyReflectTransceiver;
 
     @Override
     public Map<String, String> start() {
@@ -62,12 +63,17 @@ public class AvroRpcTestResource implements QuarkusTestResourceLifecycleManager 
             httpServerReflection.start();
 
             final int httpTranscieverPort = AvailablePortFinder.getNextAvailable();
-            reflectTransceiver = new HttpTransceiver(new URL("http://localhost:" + httpTranscieverPort));
-            reflectRequestor = new ReflectRequestor(TestReflection.class, reflectTransceiver);
+            httpReflectTransceiver = new HttpTransceiver(new URL("http://localhost:" + httpTranscieverPort));
+            httpReflectRequestor = new ReflectRequestor(TestReflection.class, httpReflectTransceiver);
+
+            final int nettyTranscieverPort = AvailablePortFinder.getNextAvailable();
+            nettyReflectTransceiver = new NettyTransceiver(new InetSocketAddress("localhost", nettyTranscieverPort));
+            nettyReflectRequestor = new ReflectRequestor(TestReflection.class, nettyReflectTransceiver);
 
             return CollectionHelper.mapOf(AvroRpcResource.REFLECTIVE_HTTP_SERVER_PORT_PARAM, String.valueOf(httpPort),
                     AvroRpcResource.REFLECTIVE_NETTY_SERVER_PORT_PARAM, String.valueOf(nettyPort),
-                    AvroRpcResource.REFLECTIVE_HTTP_CONSUMER_PORT_PARAM, String.valueOf(httpTranscieverPort));
+                    AvroRpcResource.REFLECTIVE_HTTP_CONSUMER_PORT_PARAM, String.valueOf(httpTranscieverPort),
+                    AvroRpcResource.REFLECTIVE_NETTY_CONSUMER_PORT_PARAM, String.valueOf(nettyTranscieverPort));
         } catch (Exception e) {
             throw new RuntimeException("Could not start avro-rpc server", e);
         }
@@ -75,24 +81,33 @@ public class AvroRpcTestResource implements QuarkusTestResourceLifecycleManager 
 
     @Override
     public void stop() {
-        if(httpServerReflection != null) {
+        if (httpServerReflection != null) {
             httpServerReflection.close();
         }
-        if(nettyServerReflection != null) {
+        if (nettyServerReflection != null) {
             nettyServerReflection.close();
         }
-        if (reflectTransceiver != null) {
+        if (nettyReflectTransceiver != null) {
             try {
-                reflectTransceiver.close();
+                nettyReflectTransceiver.close();
             } catch (IOException e) {
-               //ignore
+                //ignore
+            }
+        }
+        if (httpReflectTransceiver != null) {
+            try {
+                httpReflectTransceiver.close();
+            } catch (IOException e) {
+                //ignore
             }
         }
     }
 
     @Override
     public void inject(Object testInstance) {
+        AvroRpcTestSupport testSupport = (AvroRpcTestSupport) testInstance;
         ((AvroRpcTestSupport) testInstance).setTestReflection(testReflection);
-        ((AvroRpcTestSupport) testInstance).setReflectRequestor(reflectRequestor);
+        ((AvroRpcTestSupport) testInstance)
+                .setReflectRequestor(testSupport.isHttp() ? httpReflectRequestor : nettyReflectRequestor);
     }
 }

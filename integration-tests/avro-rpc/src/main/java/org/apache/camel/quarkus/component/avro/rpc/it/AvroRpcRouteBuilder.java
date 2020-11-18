@@ -17,31 +17,37 @@
 
 package org.apache.camel.quarkus.component.avro.rpc.it;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.quarkus.component.avro.rpc.it.reflection.ReflectionProcessor;
 import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestReflection;
-import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestReflectionImpl;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 
 @ApplicationScoped
 public class AvroRpcRouteBuilder extends RouteBuilder {
     public static final String DIRECT_START = "direct:start";
 
     @ConfigProperty(name = AvroRpcResource.REFLECTIVE_HTTP_CONSUMER_PORT_PARAM)
-    Integer port;
+    Integer httpPort;
 
-    TestReflection testReflection = new TestReflectionImpl();
+    @ConfigProperty(name = AvroRpcResource.REFLECTIVE_NETTY_CONSUMER_PORT_PARAM)
+    Integer nettyPort;
+
+    @Inject
+    AvroRpcResource avroRpcResource;
 
     @Override
     public void configure() throws Exception {
 
-        from(String.format("avro:http:localhost:"+port+"/setTestPojo?protocolClassName=%s&singleParameter=true", TestReflection.class.getCanonicalName()))
-                .process(new ReflectionProcessor(testReflection));
+        from(String.format("avro:http:localhost:%d/setTestPojo?protocolClassName=%s&singleParameter=true", httpPort,
+                TestReflection.class.getCanonicalName()))
+                        .process(new ReflectionProcessor(avroRpcResource.getTestReflection(ProtocolType.http)));
 
-
+        from(String.format("avro:netty:localhost:%d/setTestPojo?protocolClassName=%s&singleParameter=true", nettyPort,
+                TestReflection.class.getCanonicalName()))
+                        .process(new ReflectionProcessor(avroRpcResource.getTestReflection(ProtocolType.netty)));
 
     }
 }

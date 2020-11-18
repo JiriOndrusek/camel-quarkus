@@ -20,13 +20,11 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.avro.ipc.Requestor;
-import org.apache.avro.ipc.Transceiver;
-import org.apache.avro.ipc.reflect.ReflectRequestor;
-import org.apache.avro.ipc.specific.SpecificRequestor;
 import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestPojo;
 import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestReflection;
 import org.junit.jupiter.api.Test;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTestResource(AvroRpcTestResource.class)
@@ -63,19 +61,21 @@ abstract class AvroRpcTestSupport {
         Object[] request = { testPojo };
         reflectRequestor.request("setTestPojo", request);
 
-        TestPojo reveived = RestAssured.get("/avro-rpc/reflectionConsumer")
+        RestAssured.get("/avro-rpc/reflectionConsumer")
                 .then()
-                .statusCode(204)
-                .extract().as(TestPojo.class);
-
-        assertEquals(NAME, reveived.getPojoName());
+                .statusCode(200)
+                .body(is(NAME));
     }
 
-    public void setTestReflection(TestReflection testReflection) {
+    void setTestReflection(TestReflection testReflection) {
         this.testReflection = testReflection;
     }
 
-    public void setReflectRequestor(Requestor reflectRequestor) {
+    void setReflectRequestor(Requestor reflectRequestor) {
         this.reflectRequestor = reflectRequestor;
+    }
+
+    boolean isHttp() {
+        return ProtocolType.http == protocol;
     }
 }

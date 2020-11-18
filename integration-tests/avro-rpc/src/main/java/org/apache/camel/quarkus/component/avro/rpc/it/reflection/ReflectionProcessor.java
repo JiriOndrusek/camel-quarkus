@@ -28,13 +28,13 @@ public class ReflectionProcessor implements Processor {
     }
 
     @Override
-    public void process(Exchange exchange)  {
+    public void process(Exchange exchange) {
         Object body = exchange.getIn().getBody();
         if (body instanceof TestPojo) {
-            exchange.getMessage().setBody(testReflection.getTestPojo());
+            testReflection.setTestPojo((TestPojo) body);
         }
-//       todo remove else if (body instanceof Object) {
-//            exchange.getMessage().setBody(testReflection.increaseAge((Integer) body));
-//        }
+        //       todo remove else if (body instanceof Object) {
+        //            exchange.getMessage().setBody(testReflection.increaseAge((Integer) body));
+        //        }
     }
 }

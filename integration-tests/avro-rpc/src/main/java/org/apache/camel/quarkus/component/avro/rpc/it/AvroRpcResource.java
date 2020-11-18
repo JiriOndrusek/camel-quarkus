@@ -28,7 +28,6 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestPojo;
 import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestReflection;
 import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestReflectionImpl;
 
@@ -38,7 +37,10 @@ public class AvroRpcResource {
 
     public static final String REFLECTIVE_HTTP_SERVER_PORT_PARAM = "camel.avro-rpc.test.httpServerReflection.port";
     public static final String REFLECTIVE_NETTY_SERVER_PORT_PARAM = "camel.avro-rpc.test.nettyServerReflection.port";
-    public static final String REFLECTIVE_HTTP_CONSUMER_PORT_PARAM = "camel.avro-rpc.test.nettyConsumerReflection.port";
+    public static final String REFLECTIVE_HTTP_CONSUMER_PORT_PARAM = "camel.avro-rpc.test.httpConsumerReflection.port";
+    public static final String REFLECTIVE_NETTY_CONSUMER_PORT_PARAM = "camel.avro-rpc.test.nettyConsumerReflection.port";
+    private static TestReflection httpTtestReflection = new TestReflectionImpl(),
+            nettyTestReflection = new TestReflectionImpl();
 
     @Inject
     ProducerTemplate producerTemplate;
@@ -48,7 +50,6 @@ public class AvroRpcResource {
 
     @Inject
     AvroRpcRouteBuilder avroRpcRouteBuilder;
-
 
     @Path("/reflectionProducer")
     @POST
@@ -64,11 +65,12 @@ public class AvroRpcResource {
 
     @Path("/reflectionConsumer")
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public TestPojo reflectionConsumer() throws Exception {
-        Thread.sleep(5000);
-        return avroRpcRouteBuilder.testReflection.getTestPojo();
+    @Produces(MediaType.TEXT_PLAIN)
+    public String reflectionConsumer(@QueryParam("protocol") ProtocolType protocol) throws Exception {
+        return getTestReflection(protocol).getTestPojo().getPojoName();
     }
 
-
+    public TestReflection getTestReflection(ProtocolType protocol) {
+        return protocol == ProtocolType.http ? httpTtestReflection : nettyTestReflection;
+    }
 }
