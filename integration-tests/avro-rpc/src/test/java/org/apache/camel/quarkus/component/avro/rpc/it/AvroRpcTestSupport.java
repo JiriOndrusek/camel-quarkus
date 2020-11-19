@@ -20,6 +20,10 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.avro.ipc.Requestor;
+import org.apache.camel.quarkus.component.avro.rpc.it.generated.Key;
+import org.apache.camel.quarkus.component.avro.rpc.it.generated.KeyValueProtocol;
+import org.apache.camel.quarkus.component.avro.rpc.it.generated.Value;
+import org.apache.camel.quarkus.component.avro.rpc.it.impl.KeyValueProtocolImpl;
 import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestPojo;
 import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestReflection;
 import org.junit.jupiter.api.Test;
@@ -33,6 +37,8 @@ abstract class AvroRpcTestSupport {
     private final String NAME = "Sheldon";
 
     private TestReflection testReflection;
+
+    private KeyValueProtocol keyValueProtocol;
 
     private final ProtocolType protocol;
 
@@ -48,20 +54,48 @@ abstract class AvroRpcTestSupport {
                 .contentType(ContentType.TEXT)
                 .queryParam("protocol", protocol)
                 .body(NAME)
-                .post("/avro-rpc/reflectionProducer") //
+                .post("/avro-rpc/reflectionProducer")
                 .then()
                 .statusCode(204);
         assertEquals(NAME, testReflection.getName());
     }
 
     @Test
-    public void testReflectionConsumer() throws Exception {
+    public void testGeneratedProducer() throws InterruptedException {
+        Key key = Key.newBuilder().setKey("1").build();
+        Value value = Value.newBuilder().setValue(NAME).build();
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .queryParam("protocol", protocol)
+                .queryParam("key", key.getKey().toString())
+                .body(value.getValue().toString())
+                .post("/avro-rpc/generatedProducerPut")
+                .then()
+                .statusCode(204);
+
+        assertEquals(value, ((KeyValueProtocolImpl) keyValueProtocol).getStore().get(key));
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .queryParam("protocol", protocol)
+                .body(key.getKey().toString())
+                .post("/avro-rpc/generatedProducerGet")
+                .then()
+                .statusCode(200)
+                .body(is("{\"value\": \"" + NAME + "\"}"));
+    }
+
+    void testReflectionConsumer() throws Exception {
         TestPojo testPojo = new TestPojo();
         testPojo.setPojoName(NAME);
         Object[] request = { testPojo };
         reflectRequestor.request("setTestPojo", request);
 
-        RestAssured.get("/avro-rpc/reflectionConsumer")
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .body(protocol)
+                .post("/avro-rpc/reflectionConsumer")
                 .then()
                 .statusCode(200)
                 .body(is(NAME));
@@ -69,6 +103,10 @@ abstract class AvroRpcTestSupport {
 
     void setTestReflection(TestReflection testReflection) {
         this.testReflection = testReflection;
+    }
+
+    public void setKeyValueProtocol(KeyValueProtocol keyValueProtocol) {
+        this.keyValueProtocol = keyValueProtocol;
     }
 
     void setReflectRequestor(Requestor reflectRequestor) {

@@ -19,24 +19,27 @@ package org.apache.camel.quarkus.component.avro.rpc.it;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
-import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.quarkus.component.avro.rpc.it.generated.Key;
+import org.apache.camel.quarkus.component.avro.rpc.it.generated.KeyValueProtocol;
+import org.apache.camel.quarkus.component.avro.rpc.it.generated.Value;
+import org.apache.camel.quarkus.component.avro.rpc.it.impl.TestReflectionImpl;
 import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestReflection;
-import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestReflectionImpl;
 
 @Path("/avro-rpc")
 @ApplicationScoped
 public class AvroRpcResource {
 
-    public static final String REFLECTIVE_HTTP_SERVER_PORT_PARAM = "camel.avro-rpc.test.httpServerReflection.port";
-    public static final String REFLECTIVE_NETTY_SERVER_PORT_PARAM = "camel.avro-rpc.test.nettyServerReflection.port";
+    public static final String REFLECTIVE_HTTP_SERVER_PORT_PARAM = "camel.avro-rpc.test.reflective.httpServerReflection.port";
+    public static final String REFLECTIVE_NETTY_SERVER_PORT_PARAM = "camel.avro-rpc.test.reflective.nettyServerReflection.port";
+    public static final String GENERATED_HTTP_SERVER_PORT_PARAM = "camel.avro-rpc.test.generated.httpServerReflection.port";
+    public static final String GENERATED_NETTY_SERVER_PORT_PARAM = "camel.avro-rpc.test.generated.nettyServerReflection.port";
     public static final String REFLECTIVE_HTTP_CONSUMER_PORT_PARAM = "camel.avro-rpc.test.httpConsumerReflection.port";
     public static final String REFLECTIVE_NETTY_CONSUMER_PORT_PARAM = "camel.avro-rpc.test.nettyConsumerReflection.port";
     private static TestReflection httpTtestReflection = new TestReflectionImpl(),
@@ -44,12 +47,6 @@ public class AvroRpcResource {
 
     @Inject
     ProducerTemplate producerTemplate;
-
-    @Inject
-    ConsumerTemplate consumerTemplate;
-
-    @Inject
-    AvroRpcRouteBuilder avroRpcRouteBuilder;
 
     @Path("/reflectionProducer")
     @POST
@@ -63,10 +60,42 @@ public class AvroRpcResource {
                 TestReflection.class.getCanonicalName()), request);
     }
 
-    @Path("/reflectionConsumer")
-    @GET
+    @Path("/generatedProducerPut")
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
+    public void generatedProducerPut(@QueryParam("protocol") ProtocolType protocol, @QueryParam("key") String key, String value)
+            throws Exception {
+        Key k = Key.newBuilder().setKey(key).build();
+        Value v = Value.newBuilder().setValue(value).build();
+
+        Object[] request = { k, v };
+        producerTemplate.requestBody(String.format(
+                "avro:%s:localhost:{{%s}}/put?protocolClassName=%s",
+                protocol,
+                protocol == ProtocolType.http ? GENERATED_HTTP_SERVER_PORT_PARAM : GENERATED_NETTY_SERVER_PORT_PARAM,
+                KeyValueProtocol.class.getCanonicalName()), request);
+    }
+
+    @Path("/generatedProducerGet")
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
-    public String reflectionConsumer(@QueryParam("protocol") ProtocolType protocol) throws Exception {
+    public String generatedProducerGet(@QueryParam("protocol") ProtocolType protocol, String key) throws Exception {
+        Key k = Key.newBuilder().setKey(key).build();
+
+        Object[] request = { k };
+        return producerTemplate.requestBody(String.format(
+                "avro:%s:localhost:{{%s}}/get?protocolClassName=%s&singleParameter=true",
+                protocol,
+                protocol == ProtocolType.http ? GENERATED_HTTP_SERVER_PORT_PARAM : GENERATED_NETTY_SERVER_PORT_PARAM,
+                KeyValueProtocol.class.getCanonicalName()), request, String.class);
+    }
+
+    @Path("/reflectionConsumer")
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.TEXT_PLAIN)
+    public String reflectionConsumer(ProtocolType protocol) throws Exception {
         return getTestReflection(protocol).getTestPojo().getPojoName();
     }
 
