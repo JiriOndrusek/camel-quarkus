@@ -42,7 +42,8 @@ public class AvroRpcResource {
     public static final String GENERATED_NETTY_SERVER_PORT_PARAM = "camel.avro-rpc.test.generated.nettyServerReflection.port";
     public static final String REFLECTIVE_HTTP_CONSUMER_PORT_PARAM = "camel.avro-rpc.test.httpConsumerReflection.port";
     public static final String REFLECTIVE_NETTY_CONSUMER_PORT_PARAM = "camel.avro-rpc.test.nettyConsumerReflection.port";
-    private static TestReflection httpTtestReflection = new TestReflectionImpl(),
+
+    private TestReflection httpTtestReflection = new TestReflectionImpl(),
             nettyTestReflection = new TestReflectionImpl();
 
     @Inject

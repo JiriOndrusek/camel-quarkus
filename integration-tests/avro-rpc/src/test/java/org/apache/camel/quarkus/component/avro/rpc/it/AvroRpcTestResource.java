@@ -16,18 +16,14 @@
  */
 package org.apache.camel.quarkus.component.avro.rpc.it;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.URL;
 import java.util.Map;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
-import org.apache.avro.ipc.HttpTransceiver;
 import org.apache.avro.ipc.Server;
 import org.apache.avro.ipc.Transceiver;
 import org.apache.avro.ipc.jetty.HttpServer;
 import org.apache.avro.ipc.netty.NettyServer;
-import org.apache.avro.ipc.reflect.ReflectRequestor;
 import org.apache.avro.ipc.reflect.ReflectResponder;
 import org.apache.avro.ipc.specific.SpecificRequestor;
 import org.apache.avro.ipc.specific.SpecificResponder;
@@ -82,8 +78,8 @@ public class AvroRpcTestResource implements QuarkusTestResourceLifecycleManager 
             //----------- consumers ----------------------------------
 
             final int httpTranscieverPort = AvailablePortFinder.getNextAvailable();
-            httpReflectTransceiver = new HttpTransceiver(new URL("http://localhost:" + httpTranscieverPort));
-            httpReflectRequestor = new ReflectRequestor(TestReflection.class, httpReflectTransceiver);
+            //            httpReflectTransceiver = new HttpTransceiver(new URL("http://localhost:" + httpTranscieverPort));
+            //            httpReflectRequestor = new ReflectRequestor(TestReflection.class, httpReflectTransceiver);
 
             final int nettyTranscieverPort = AvailablePortFinder.getNextAvailable();
             //            nettyReflectTransceiver = new NettyTransceiver(new InetSocketAddress("localhost", nettyTranscieverPort));
@@ -114,20 +110,6 @@ public class AvroRpcTestResource implements QuarkusTestResourceLifecycleManager 
         if (nettyServerGenerated != null) {
             nettyServerGenerated.close();
         }
-        if (nettyReflectTransceiver != null) {
-            try {
-                nettyReflectTransceiver.close();
-            } catch (IOException e) {
-                //ignore
-            }
-        }
-        if (httpReflectTransceiver != null) {
-            try {
-                httpReflectTransceiver.close();
-            } catch (IOException e) {
-                //ignore
-            }
-        }
     }
 
     @Override
@@ -135,6 +117,5 @@ public class AvroRpcTestResource implements QuarkusTestResourceLifecycleManager 
         AvroRpcTestSupport testSupport = (AvroRpcTestSupport) testInstance;
         testSupport.setTestReflection(testReflection);
         testSupport.setKeyValueProtocol(keyValue);
-        testSupport.setReflectRequestor(testSupport.isHttp() ? httpReflectRequestor : nettyReflectRequestor);
     }
 }

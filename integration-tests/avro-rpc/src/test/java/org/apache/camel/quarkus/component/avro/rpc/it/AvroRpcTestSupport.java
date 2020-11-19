@@ -16,10 +16,17 @@
  */
 package org.apache.camel.quarkus.component.avro.rpc.it;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.URL;
+
 import io.quarkus.test.common.QuarkusTestResource;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import org.apache.avro.ipc.HttpTransceiver;
 import org.apache.avro.ipc.Requestor;
+import org.apache.avro.ipc.netty.NettyTransceiver;
+import org.apache.avro.ipc.reflect.ReflectRequestor;
 import org.apache.camel.quarkus.component.avro.rpc.it.generated.Key;
 import org.apache.camel.quarkus.component.avro.rpc.it.generated.KeyValueProtocol;
 import org.apache.camel.quarkus.component.avro.rpc.it.generated.Value;
@@ -86,11 +93,12 @@ abstract class AvroRpcTestSupport {
                 .body(is("{\"value\": \"" + NAME + "\"}"));
     }
 
-    void testReflectionConsumer() throws Exception {
+    @Test
+    public void testReflectionConsumer() throws Exception {
         TestPojo testPojo = new TestPojo();
         testPojo.setPojoName(NAME);
         Object[] request = { testPojo };
-        reflectRequestor.request("setTestPojo", request);
+        getReflectRequestor().request("setTestPojo", request);
 
         RestAssured.given()
                 .contentType(ContentType.TEXT)
@@ -109,11 +117,23 @@ abstract class AvroRpcTestSupport {
         this.keyValueProtocol = keyValueProtocol;
     }
 
-    void setReflectRequestor(Requestor reflectRequestor) {
-        this.reflectRequestor = reflectRequestor;
-    }
-
     boolean isHttp() {
         return ProtocolType.http == protocol;
+    }
+
+    private Requestor getReflectRequestor() throws IOException {
+        if (reflectRequestor == null) {
+            if (isHttp()) {
+                String port = System.getProperty(AvroRpcResource.REFLECTIVE_HTTP_CONSUMER_PORT_PARAM);
+                reflectRequestor = new ReflectRequestor(TestReflection.class,
+                        new HttpTransceiver(new URL("http://localhost:" + port)));
+            } else {
+                String port = System.getProperty(AvroRpcResource.REFLECTIVE_NETTY_CONSUMER_PORT_PARAM);
+                reflectRequestor = new ReflectRequestor(TestReflection.class,
+                        new NettyTransceiver(new InetSocketAddress(Integer.parseInt(port))));
+            }
+        }
+
+        return reflectRequestor;
     }
 }
