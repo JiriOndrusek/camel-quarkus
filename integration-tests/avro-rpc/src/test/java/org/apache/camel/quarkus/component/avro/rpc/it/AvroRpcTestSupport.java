@@ -106,7 +106,7 @@ abstract class AvroRpcTestSupport {
                 .body(is("{\"value\": \"" + NAME + "\"}"));
     }
 
-    //    @Test
+    @Test
     public void testReflectionConsumer() throws Exception {
         TestPojo testPojo = new TestPojo();
         testPojo.setPojoName(NAME);
@@ -124,7 +124,7 @@ abstract class AvroRpcTestSupport {
                 .body(is(NAME));
     }
 
-    //    @Test
+    @Test
     public void testSpecificConsumer() throws Exception {
         Key key = Key.newBuilder().setKey("2").build();
         Value value = Value.newBuilder().setValue(NAME).build();

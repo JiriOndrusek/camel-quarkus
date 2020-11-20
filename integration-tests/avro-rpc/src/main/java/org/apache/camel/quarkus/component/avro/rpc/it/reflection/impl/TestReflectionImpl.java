@@ -3,7 +3,6 @@ package org.apache.camel.quarkus.component.avro.rpc.it.reflection.impl;
 import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestPojo;
 import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestReflection;
 
-//@RegisterForReflection(methods = true)
 public class TestReflectionImpl implements TestReflection {
 
     String name = "";

@@ -33,8 +33,5 @@ public class ReflectionProcessor implements Processor {
         if (body instanceof TestPojo) {
             testReflection.setTestPojo((TestPojo) body);
         }
-        //       todo remove else if (body instanceof Object) {
-        //            exchange.getMessage().setBody(testReflection.increaseAge((Integer) body));
-        //        }
     }
 }

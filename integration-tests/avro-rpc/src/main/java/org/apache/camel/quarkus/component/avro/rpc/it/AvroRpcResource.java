@@ -26,6 +26,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestPojo;
 import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestReflection;
 import org.apache.camel.quarkus.component.avro.rpc.it.reflection.impl.TestReflectionImpl;
 import org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.Key;
@@ -114,7 +115,8 @@ public class AvroRpcResource {
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
     public String reflectionConsumerGet(ProtocolType protocol) throws Exception {
-        return getTestReflection(protocol).getTestPojo().getPojoName();
+        TestPojo testPojo = getTestReflection(protocol).getTestPojo();
+        return testPojo != null ? testPojo.getPojoName() : null;
     }
 
     @Path("/specificConsumerGet")

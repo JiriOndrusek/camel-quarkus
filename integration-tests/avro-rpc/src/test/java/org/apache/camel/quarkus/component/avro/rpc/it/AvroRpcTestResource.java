@@ -82,10 +82,9 @@ public class AvroRpcTestResource implements QuarkusTestResourceLifecycleManager 
                     AvroRpcResource.SPECIFIC_HTTP_SERVER_PORT_PARAM, String.valueOf(specificHttpPort),
                     AvroRpcResource.SPECIFIC_NETTY_SERVER_PORT_PARAM, String.valueOf(specificNettyPort),
                     AvroRpcResource.REFLECTIVE_HTTP_TRANSCEIVER_PORT_PARAM, String.valueOf(reflectiveHttpTransceiverPort),
-                    /*AvroRpcResource.REFLECTIVE_NETTY_TRANSCEIVER_PORT_PARAM, String.valueOf(reflectiveNettyTransceiverPort),*/
-                    AvroRpcResource.SPECIFIC_HTTP_TRANSCEIVER_PORT_PARAM, String.valueOf(
-                            specificHttpTransceiverPort)/*,
-                                                        AvroRpcResource.SPECIFIC_NETTY_TRANSCEIVER_PORT_PARAM, String.valueOf(specificNettyTransceiverPort)*/);
+                    AvroRpcResource.REFLECTIVE_NETTY_TRANSCEIVER_PORT_PARAM, String.valueOf(reflectiveNettyTransceiverPort),
+                    AvroRpcResource.SPECIFIC_HTTP_TRANSCEIVER_PORT_PARAM, String.valueOf(specificHttpTransceiverPort),
+                    AvroRpcResource.SPECIFIC_NETTY_TRANSCEIVER_PORT_PARAM, String.valueOf(specificNettyTransceiverPort));
         } catch (Exception e) {
             throw new RuntimeException("Could not start avro-rpc server", e);
         }
