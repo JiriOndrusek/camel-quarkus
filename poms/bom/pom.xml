@@ -5688,11 +5688,6 @@
                 <artifactId>xercesImpl</artifactId>
                 <version>${xerces.version}</version>
             </dependency>
-            <dependency>
-                <artifactId>avro</artifactId>
-                <groupId>org.apache.avro</groupId>
-                <version>1.9.1</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 

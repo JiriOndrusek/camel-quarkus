@@ -16,8 +16,16 @@
  */
 package org.apache.camel.quarkus.component.avro.rpc.deployment;
 
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import org.apache.avro.ipc.HandshakeMatch;
+import org.apache.avro.ipc.HandshakeRequest;
+import org.apache.avro.ipc.HandshakeResponse;
+import org.jboss.jandex.IndexView;
 
 class AvroRpcProcessor {
 
@@ -26,5 +34,38 @@ class AvroRpcProcessor {
     @BuildStep
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
+    }
+
+    @BuildStep
+    ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
+        IndexView index = combinedIndex.getIndex();
+        //
+        //        Collection<AnnotationInstance> annotations = indexBuildItem.getIndex()
+        //                .getAnnotations(DotName.createSimple(AvroGenerated.class.getName()));
+        //        for (AnnotationInstance annotation : annotations) {
+        //            if (annotation.target().kind() == AnnotationTarget.Kind.CLASS) {
+        //                String className = annotation.target().asClass().name().toString();
+        //                builder.addRuntimeInitializedClass(className);
+        //                reflectiveClass.produce(new ReflectiveClassBuildItem(true, true, true, className));
+        //            }
+        //        }
+        //        String[] dtos = index.getAnnotations(DotName.createSimple(AvroGenerated.class.getName())).stream()
+        //                .filter(a -> a.target().kind() == AnnotationTarget.Kind.CLASS)
+        //                .map(a -> a.target().asClass().name().toString())
+        //                //                .map(ci -> ci.name().toString())
+        //                .sorted() //todo remove
+        //                .peek(System.out::println) //todo remove
+        //                .toArray(String[]::new);
+
+        //        return new ReflectiveClassBuildItem(true, true, dtos);
+
+        return new ReflectiveClassBuildItem(true, true, HandshakeMatch.class, HandshakeRequest.class, HandshakeResponse.class);
+
+    }
+
+    @BuildStep
+    void registerDependencyForIndex(BuildProducer<IndexDependencyBuildItem> indexDependency) {
+        indexDependency.produce(new IndexDependencyBuildItem("org.apache.avro", "avro-ipc-netty"));
+        indexDependency.produce(new IndexDependencyBuildItem("org.apache.avro", "avro-ipc-jetty"));
     }
 }
