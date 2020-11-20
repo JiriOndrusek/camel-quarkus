@@ -3,7 +3,7 @@
  *
  * DO NOT EDIT DIRECTLY
  */
-package org.apache.camel.quarkus.component.avro.rpc.it.generated;
+package org.apache.camel.quarkus.component.avro.rpc.it.specific.generated;
 
 import org.apache.avro.message.BinaryMessageDecoder;
 import org.apache.avro.message.BinaryMessageEncoder;
@@ -12,10 +12,10 @@ import org.apache.avro.specific.SpecificData;
 import org.apache.avro.util.Utf8;
 
 @org.apache.avro.specific.AvroGenerated
-public class Key extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-    private static final long serialVersionUID = -7540040743185428729L;
+public class Value extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
+    private static final long serialVersionUID = 6804416544463210058L;
     public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse(
-            "{\"type\":\"record\",\"name\":\"Key\",\"namespace\":\"org.apache.camel.quarkus.component.avro.rpc.it.generated\",\"fields\":[{\"name\":\"key\",\"type\":\"string\"}]}");
+            "{\"type\":\"record\",\"name\":\"Value\",\"namespace\":\"org.apache.camel.quarkus.component.avro.rpc.it.specific.generated\",\"fields\":[{\"name\":\"value\",\"type\":\"string\"}]}");
 
     public static org.apache.avro.Schema getClassSchema() {
         return SCHEMA$;
@@ -23,16 +23,16 @@ public class Key extends org.apache.avro.specific.SpecificRecordBase implements 
 
     private static SpecificData MODEL$ = new SpecificData();
 
-    private static final BinaryMessageEncoder<Key> ENCODER = new BinaryMessageEncoder<Key>(MODEL$, SCHEMA$);
+    private static final BinaryMessageEncoder<Value> ENCODER = new BinaryMessageEncoder<Value>(MODEL$, SCHEMA$);
 
-    private static final BinaryMessageDecoder<Key> DECODER = new BinaryMessageDecoder<Key>(MODEL$, SCHEMA$);
+    private static final BinaryMessageDecoder<Value> DECODER = new BinaryMessageDecoder<Value>(MODEL$, SCHEMA$);
 
     /**
      * Return the BinaryMessageEncoder instance used by this class.
      * 
      * @return the message encoder used by this class
      */
-    public static BinaryMessageEncoder<Key> getEncoder() {
+    public static BinaryMessageEncoder<Value> getEncoder() {
         return ENCODER;
     }
 
@@ -41,7 +41,7 @@ public class Key extends org.apache.avro.specific.SpecificRecordBase implements 
      * 
      * @return the message decoder used by this class
      */
-    public static BinaryMessageDecoder<Key> getDecoder() {
+    public static BinaryMessageDecoder<Value> getDecoder() {
         return DECODER;
     }
 
@@ -51,12 +51,12 @@ public class Key extends org.apache.avro.specific.SpecificRecordBase implements 
      * @param  resolver a {@link SchemaStore} used to find schemas by fingerprint
      * @return          a BinaryMessageDecoder instance for this class backed by the given SchemaStore
      */
-    public static BinaryMessageDecoder<Key> createDecoder(SchemaStore resolver) {
-        return new BinaryMessageDecoder<Key>(MODEL$, SCHEMA$, resolver);
+    public static BinaryMessageDecoder<Value> createDecoder(SchemaStore resolver) {
+        return new BinaryMessageDecoder<Value>(MODEL$, SCHEMA$, resolver);
     }
 
     /**
-     * Serializes this Key to a ByteBuffer.
+     * Serializes this Value to a ByteBuffer.
      * 
      * @return                     a buffer holding the serialized data for this instance
      * @throws java.io.IOException if this instance could not be serialized
@@ -66,35 +66,35 @@ public class Key extends org.apache.avro.specific.SpecificRecordBase implements 
     }
 
     /**
-     * Deserializes a Key from a ByteBuffer.
+     * Deserializes a Value from a ByteBuffer.
      * 
      * @param  b                   a byte buffer holding serialized data for an instance of this class
-     * @return                     a Key instance decoded from the given buffer
+     * @return                     a Value instance decoded from the given buffer
      * @throws java.io.IOException if the given bytes could not be deserialized into an instance of this class
      */
-    public static Key fromByteBuffer(
+    public static Value fromByteBuffer(
             java.nio.ByteBuffer b) throws java.io.IOException {
         return DECODER.decode(b);
     }
 
     @Deprecated
-    public java.lang.CharSequence key;
+    public java.lang.CharSequence value;
 
     /**
      * Default constructor. Note that this does not initialize fields
      * to their default values from the schema. If that is desired then
      * one should use <code>newBuilder()</code>.
      */
-    public Key() {
+    public Value() {
     }
 
     /**
      * All-args constructor.
      * 
-     * @param key The new value for key
+     * @param value The new value for value
      */
-    public Key(java.lang.CharSequence key) {
-        this.key = key;
+    public Value(java.lang.CharSequence value) {
+        this.value = value;
     }
 
     public org.apache.avro.specific.SpecificData getSpecificData() {
@@ -109,7 +109,7 @@ public class Key extends org.apache.avro.specific.SpecificRecordBase implements 
     public java.lang.Object get(int field$) {
         switch (field$) {
         case 0:
-            return key;
+            return value;
         default:
             throw new org.apache.avro.AvroRuntimeException("Bad index");
         }
@@ -120,7 +120,7 @@ public class Key extends org.apache.avro.specific.SpecificRecordBase implements 
     public void put(int field$, java.lang.Object value$) {
         switch (field$) {
         case 0:
-            key = (java.lang.CharSequence) value$;
+            value = (java.lang.CharSequence) value$;
             break;
         default:
             throw new org.apache.avro.AvroRuntimeException("Bad index");
@@ -128,69 +128,69 @@ public class Key extends org.apache.avro.specific.SpecificRecordBase implements 
     }
 
     /**
-     * Gets the value of the 'key' field.
+     * Gets the value of the 'value' field.
      * 
-     * @return The value of the 'key' field.
+     * @return The value of the 'value' field.
      */
-    public java.lang.CharSequence getKey() {
-        return key;
+    public java.lang.CharSequence getValue() {
+        return value;
     }
 
     /**
-     * Sets the value of the 'key' field.
+     * Sets the value of the 'value' field.
      * 
      * @param value the value to set.
      */
-    public void setKey(java.lang.CharSequence value) {
-        this.key = value;
+    public void setValue(java.lang.CharSequence value) {
+        this.value = value;
     }
 
     /**
-     * Creates a new Key RecordBuilder.
+     * Creates a new Value RecordBuilder.
      * 
-     * @return A new Key RecordBuilder
+     * @return A new Value RecordBuilder
      */
-    public static org.apache.camel.quarkus.component.avro.rpc.it.generated.Key.Builder newBuilder() {
-        return new org.apache.camel.quarkus.component.avro.rpc.it.generated.Key.Builder();
+    public static org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.Value.Builder newBuilder() {
+        return new org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.Value.Builder();
     }
 
     /**
-     * Creates a new Key RecordBuilder by copying an existing Builder.
+     * Creates a new Value RecordBuilder by copying an existing Builder.
      * 
      * @param  other The existing builder to copy.
-     * @return       A new Key RecordBuilder
+     * @return       A new Value RecordBuilder
      */
-    public static org.apache.camel.quarkus.component.avro.rpc.it.generated.Key.Builder newBuilder(
-            org.apache.camel.quarkus.component.avro.rpc.it.generated.Key.Builder other) {
+    public static org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.Value.Builder newBuilder(
+            org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.Value.Builder other) {
         if (other == null) {
-            return new org.apache.camel.quarkus.component.avro.rpc.it.generated.Key.Builder();
+            return new org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.Value.Builder();
         } else {
-            return new org.apache.camel.quarkus.component.avro.rpc.it.generated.Key.Builder(other);
+            return new org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.Value.Builder(other);
         }
     }
 
     /**
-     * Creates a new Key RecordBuilder by copying an existing Key instance.
+     * Creates a new Value RecordBuilder by copying an existing Value instance.
      * 
      * @param  other The existing instance to copy.
-     * @return       A new Key RecordBuilder
+     * @return       A new Value RecordBuilder
      */
-    public static org.apache.camel.quarkus.component.avro.rpc.it.generated.Key.Builder newBuilder(
-            org.apache.camel.quarkus.component.avro.rpc.it.generated.Key other) {
+    public static org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.Value.Builder newBuilder(
+            org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.Value other) {
         if (other == null) {
-            return new org.apache.camel.quarkus.component.avro.rpc.it.generated.Key.Builder();
+            return new org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.Value.Builder();
         } else {
-            return new org.apache.camel.quarkus.component.avro.rpc.it.generated.Key.Builder(other);
+            return new org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.Value.Builder(other);
         }
     }
 
     /**
-     * RecordBuilder for Key instances.
+     * RecordBuilder for Value instances.
      */
-    public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<Key>
-            implements org.apache.avro.data.RecordBuilder<Key> {
+    public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<Value>
+            implements org.apache.avro.data.RecordBuilder<Value> {
 
-        private java.lang.CharSequence key;
+        private java.lang.CharSequence value;
 
         /** Creates a new Builder */
         private Builder() {
@@ -202,75 +202,76 @@ public class Key extends org.apache.avro.specific.SpecificRecordBase implements 
          * 
          * @param other The existing Builder to copy.
          */
-        private Builder(org.apache.camel.quarkus.component.avro.rpc.it.generated.Key.Builder other) {
+        private Builder(org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.Value.Builder other) {
             super(other);
-            if (isValidValue(fields()[0], other.key)) {
-                this.key = data().deepCopy(fields()[0].schema(), other.key);
+            if (isValidValue(fields()[0], other.value)) {
+                this.value = data().deepCopy(fields()[0].schema(), other.value);
                 fieldSetFlags()[0] = other.fieldSetFlags()[0];
             }
         }
 
         /**
-         * Creates a Builder by copying an existing Key instance
+         * Creates a Builder by copying an existing Value instance
          * 
          * @param other The existing instance to copy.
          */
-        private Builder(org.apache.camel.quarkus.component.avro.rpc.it.generated.Key other) {
+        private Builder(org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.Value other) {
             super(SCHEMA$);
-            if (isValidValue(fields()[0], other.key)) {
-                this.key = data().deepCopy(fields()[0].schema(), other.key);
+            if (isValidValue(fields()[0], other.value)) {
+                this.value = data().deepCopy(fields()[0].schema(), other.value);
                 fieldSetFlags()[0] = true;
             }
         }
 
         /**
-         * Gets the value of the 'key' field.
+         * Gets the value of the 'value' field.
          * 
          * @return The value.
          */
-        public java.lang.CharSequence getKey() {
-            return key;
+        public java.lang.CharSequence getValue() {
+            return value;
         }
 
         /**
-         * Sets the value of the 'key' field.
+         * Sets the value of the 'value' field.
          * 
-         * @param  value The value of 'key'.
+         * @param  value The value of 'value'.
          * @return       This builder.
          */
-        public org.apache.camel.quarkus.component.avro.rpc.it.generated.Key.Builder setKey(java.lang.CharSequence value) {
+        public org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.Value.Builder setValue(
+                java.lang.CharSequence value) {
             validate(fields()[0], value);
-            this.key = value;
+            this.value = value;
             fieldSetFlags()[0] = true;
             return this;
         }
 
         /**
-         * Checks whether the 'key' field has been set.
+         * Checks whether the 'value' field has been set.
          * 
-         * @return True if the 'key' field has been set, false otherwise.
+         * @return True if the 'value' field has been set, false otherwise.
          */
-        public boolean hasKey() {
+        public boolean hasValue() {
             return fieldSetFlags()[0];
         }
 
         /**
-         * Clears the value of the 'key' field.
+         * Clears the value of the 'value' field.
          * 
          * @return This builder.
          */
-        public org.apache.camel.quarkus.component.avro.rpc.it.generated.Key.Builder clearKey() {
-            key = null;
+        public org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.Value.Builder clearValue() {
+            value = null;
             fieldSetFlags()[0] = false;
             return this;
         }
 
         @Override
         @SuppressWarnings("unchecked")
-        public Key build() {
+        public Value build() {
             try {
-                Key record = new Key();
-                record.key = fieldSetFlags()[0] ? this.key : (java.lang.CharSequence) defaultValue(fields()[0]);
+                Value record = new Value();
+                record.value = fieldSetFlags()[0] ? this.value : (java.lang.CharSequence) defaultValue(fields()[0]);
                 return record;
             } catch (org.apache.avro.AvroMissingFieldException e) {
                 throw e;
@@ -281,7 +282,7 @@ public class Key extends org.apache.avro.specific.SpecificRecordBase implements 
     }
 
     @SuppressWarnings("unchecked")
-    private static final org.apache.avro.io.DatumWriter<Key> WRITER$ = (org.apache.avro.io.DatumWriter<Key>) MODEL$
+    private static final org.apache.avro.io.DatumWriter<Value> WRITER$ = (org.apache.avro.io.DatumWriter<Value>) MODEL$
             .createDatumWriter(SCHEMA$);
 
     @Override
@@ -291,7 +292,7 @@ public class Key extends org.apache.avro.specific.SpecificRecordBase implements 
     }
 
     @SuppressWarnings("unchecked")
-    private static final org.apache.avro.io.DatumReader<Key> READER$ = (org.apache.avro.io.DatumReader<Key>) MODEL$
+    private static final org.apache.avro.io.DatumReader<Value> READER$ = (org.apache.avro.io.DatumReader<Value>) MODEL$
             .createDatumReader(SCHEMA$);
 
     @Override
@@ -308,7 +309,7 @@ public class Key extends org.apache.avro.specific.SpecificRecordBase implements 
     @Override
     public void customEncode(org.apache.avro.io.Encoder out)
             throws java.io.IOException {
-        out.writeString(this.key);
+        out.writeString(this.value);
 
     }
 
@@ -317,13 +318,13 @@ public class Key extends org.apache.avro.specific.SpecificRecordBase implements 
             throws java.io.IOException {
         org.apache.avro.Schema.Field[] fieldOrder = in.readFieldOrderIfDiff();
         if (fieldOrder == null) {
-            this.key = in.readString(this.key instanceof Utf8 ? (Utf8) this.key : null);
+            this.value = in.readString(this.value instanceof Utf8 ? (Utf8) this.value : null);
 
         } else {
             for (int i = 0; i < 1; i++) {
                 switch (fieldOrder[i].pos()) {
                 case 0:
-                    this.key = in.readString(this.key instanceof Utf8 ? (Utf8) this.key : null);
+                    this.value = in.readString(this.value instanceof Utf8 ? (Utf8) this.value : null);
                     break;
 
                 default:

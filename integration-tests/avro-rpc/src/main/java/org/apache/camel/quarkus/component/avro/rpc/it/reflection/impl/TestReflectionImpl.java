@@ -1,4 +1,4 @@
-package org.apache.camel.quarkus.component.avro.rpc.it.impl;
+package org.apache.camel.quarkus.component.avro.rpc.it.reflection.impl;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestPojo;
@@ -19,22 +19,6 @@ public class TestReflectionImpl implements TestReflection {
     @Override
     public void setName(String name) {
         this.name = name;
-    }
-
-    @Override
-    public int getAge() {
-        return this.age;
-    }
-
-    @Override
-    public void setAge(int age) {
-        this.age = age;
-    }
-
-    @Override
-    public int increaseAge(int age) {
-        this.age = ++age;
-        return this.age;
     }
 
     @Override

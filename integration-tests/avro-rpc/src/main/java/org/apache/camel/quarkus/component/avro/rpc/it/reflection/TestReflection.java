@@ -6,12 +6,6 @@ public interface TestReflection {
 
     void setName(String name);
 
-    int getAge();
-
-    void setAge(int age);
-
-    int increaseAge(int age);
-
     void setTestPojo(TestPojo testPojo);
 
     TestPojo getTestPojo();

@@ -1,11 +1,11 @@
-package org.apache.camel.quarkus.component.avro.rpc.it.impl;
+package org.apache.camel.quarkus.component.avro.rpc.it.specific.impl;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.camel.quarkus.component.avro.rpc.it.generated.Key;
-import org.apache.camel.quarkus.component.avro.rpc.it.generated.KeyValueProtocol;
-import org.apache.camel.quarkus.component.avro.rpc.it.generated.Value;
+import org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.Key;
+import org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.KeyValueProtocol;
+import org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.Value;
 
 public class KeyValueProtocolImpl implements KeyValueProtocol {
 

@@ -25,14 +25,17 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.avro.ipc.HttpTransceiver;
 import org.apache.avro.ipc.Requestor;
+import org.apache.avro.ipc.Transceiver;
 import org.apache.avro.ipc.netty.NettyTransceiver;
 import org.apache.avro.ipc.reflect.ReflectRequestor;
-import org.apache.camel.quarkus.component.avro.rpc.it.generated.Key;
-import org.apache.camel.quarkus.component.avro.rpc.it.generated.KeyValueProtocol;
-import org.apache.camel.quarkus.component.avro.rpc.it.generated.Value;
-import org.apache.camel.quarkus.component.avro.rpc.it.impl.KeyValueProtocolImpl;
+import org.apache.avro.ipc.specific.SpecificRequestor;
 import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestPojo;
 import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestReflection;
+import org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.Key;
+import org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.KeyValueProtocol;
+import org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.Value;
+import org.apache.camel.quarkus.component.avro.rpc.it.specific.impl.KeyValueProtocolImpl;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.is;
@@ -41,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @QuarkusTestResource(AvroRpcTestResource.class)
 abstract class AvroRpcTestSupport {
 
-    private final String NAME = "Sheldon";
+    private final static String NAME = "Sheldon";
 
     private TestReflection testReflection;
 
@@ -49,7 +52,8 @@ abstract class AvroRpcTestSupport {
 
     private final ProtocolType protocol;
 
-    private Requestor reflectRequestor;
+    private Requestor reflectRequestor, specificRequestor;
+    private Transceiver reflectTransceiver, specificTransceiver;
 
     public AvroRpcTestSupport(ProtocolType protocol) {
         this.protocol = protocol;
@@ -61,14 +65,23 @@ abstract class AvroRpcTestSupport {
                 .contentType(ContentType.TEXT)
                 .queryParam("protocol", protocol)
                 .body(NAME)
-                .post("/avro-rpc/reflectionProducer")
+                .post("/avro-rpc/reflectionProducerSet")
                 .then()
                 .statusCode(204);
+
         assertEquals(NAME, testReflection.getName());
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .body(protocol)
+                .post("/avro-rpc/reflectionProducerGet")
+                .then()
+                .statusCode(200)
+                .body(is(NAME));
     }
 
     @Test
-    public void testGeneratedProducer() throws InterruptedException {
+    public void testSpecificProducer() throws InterruptedException {
         Key key = Key.newBuilder().setKey("1").build();
         Value value = Value.newBuilder().setValue(NAME).build();
 
@@ -77,7 +90,7 @@ abstract class AvroRpcTestSupport {
                 .queryParam("protocol", protocol)
                 .queryParam("key", key.getKey().toString())
                 .body(value.getValue().toString())
-                .post("/avro-rpc/generatedProducerPut")
+                .post("/avro-rpc/specificProducerPut")
                 .then()
                 .statusCode(204);
 
@@ -87,7 +100,7 @@ abstract class AvroRpcTestSupport {
                 .contentType(ContentType.TEXT)
                 .queryParam("protocol", protocol)
                 .body(key.getKey().toString())
-                .post("/avro-rpc/generatedProducerGet")
+                .post("/avro-rpc/specificProducerGet")
                 .then()
                 .statusCode(200)
                 .body(is("{\"value\": \"" + NAME + "\"}"));
@@ -98,15 +111,35 @@ abstract class AvroRpcTestSupport {
         TestPojo testPojo = new TestPojo();
         testPojo.setPojoName(NAME);
         Object[] request = { testPojo };
-        getReflectRequestor().request("setTestPojo", request);
+
+        initReflectRequestor();
+        reflectRequestor.request("setTestPojo", request);
 
         RestAssured.given()
                 .contentType(ContentType.TEXT)
                 .body(protocol)
-                .post("/avro-rpc/reflectionConsumer")
+                .post("/avro-rpc/reflectionConsumerGet")
                 .then()
                 .statusCode(200)
                 .body(is(NAME));
+    }
+
+    @Test
+    public void testSpecificConsumer() throws Exception {
+        Key key = Key.newBuilder().setKey("2").build();
+        Value value = Value.newBuilder().setValue(NAME).build();
+
+        initSpecificRequestor();
+        specificRequestor.request("put", new Object[] { key, value });
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .queryParam("protocol", protocol)
+                .body(key.getKey().toString())
+                .post("/avro-rpc/specificConsumerGet")
+                .then()
+                .statusCode(200)
+                .body(is("{\"value\": \"" + NAME + "\"}"));
     }
 
     void setTestReflection(TestReflection testReflection) {
@@ -121,19 +154,50 @@ abstract class AvroRpcTestSupport {
         return ProtocolType.http == protocol;
     }
 
-    private Requestor getReflectRequestor() throws IOException {
+    private void initReflectRequestor() throws IOException {
         if (reflectRequestor == null) {
             if (isHttp()) {
-                String port = System.getProperty(AvroRpcResource.REFLECTIVE_HTTP_CONSUMER_PORT_PARAM);
-                reflectRequestor = new ReflectRequestor(TestReflection.class,
-                        new HttpTransceiver(new URL("http://localhost:" + port)));
+                reflectTransceiver = new HttpTransceiver(
+                        new URL("http://localhost:"
+                                + System.getProperty(AvroRpcResource.REFLECTIVE_HTTP_TRANSCEIVER_PORT_PARAM)));
             } else {
-                String port = System.getProperty(AvroRpcResource.REFLECTIVE_NETTY_CONSUMER_PORT_PARAM);
-                reflectRequestor = new ReflectRequestor(TestReflection.class,
-                        new NettyTransceiver(new InetSocketAddress(Integer.parseInt(port))));
+                reflectTransceiver = new NettyTransceiver(
+                        new InetSocketAddress(
+                                Integer.parseInt(System.getProperty(AvroRpcResource.REFLECTIVE_NETTY_TRANSCEIVER_PORT_PARAM))));
             }
+            reflectRequestor = new ReflectRequestor(TestReflection.class, reflectTransceiver);
+        }
+    }
+
+    private void initSpecificRequestor() throws IOException {
+        if (specificRequestor == null) {
+            if (isHttp()) {
+                specificTransceiver = new HttpTransceiver(
+                        new URL("http://localhost:"
+                                + System.getProperty(AvroRpcResource.SPECIFIC_HTTP_TRANSCEIVER_PORT_PARAM)));
+            } else {
+                specificTransceiver = new NettyTransceiver(
+                        new InetSocketAddress(
+                                Integer.parseInt(System.getProperty(AvroRpcResource.SPECIFIC_NETTY_TRANSCEIVER_PORT_PARAM))));
+            }
+            specificRequestor = new SpecificRequestor(KeyValueProtocol.class, specificTransceiver);
+        }
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+
+        if (specificTransceiver != null) {
+            specificTransceiver.close();
+            specificTransceiver = null;
+            specificRequestor = null;
         }
 
-        return reflectRequestor;
+        if (reflectTransceiver != null) {
+            reflectTransceiver.close();
+            reflectTransceiver = null;
+            reflectRequestor = null;
+        }
     }
+
 }

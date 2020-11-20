@@ -1,4 +1,4 @@
-{"namespace": "org.apache.camel.quarkus.component.avro.rpc.it.generated",
+{"namespace": "org.apache.camel.quarkus.component.avro.rpc.it.specific.generated",
  "protocol": "KeyValueProtocol",
 
  "types": [
