@@ -80,7 +80,7 @@ abstract class AvroRpcTestSupport {
                 .body(is(NAME));
     }
 
-    //    @Test
+    @Test
     public void testSpecificProducer() throws InterruptedException {
         Key key = Key.newBuilder().setKey("1").build();
         Value value = Value.newBuilder().setValue(NAME).build();

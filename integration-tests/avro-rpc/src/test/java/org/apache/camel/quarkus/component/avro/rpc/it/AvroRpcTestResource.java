@@ -16,14 +16,18 @@
  */
 package org.apache.camel.quarkus.component.avro.rpc.it;
 
+import java.net.InetSocketAddress;
 import java.util.Map;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.apache.avro.ipc.Server;
 import org.apache.avro.ipc.jetty.HttpServer;
+import org.apache.avro.ipc.netty.NettyServer;
 import org.apache.avro.ipc.reflect.ReflectResponder;
+import org.apache.avro.ipc.specific.SpecificResponder;
 import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestReflection;
 import org.apache.camel.quarkus.component.avro.rpc.it.reflection.impl.TestReflectionImpl;
+import org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.KeyValueProtocol;
 import org.apache.camel.quarkus.component.avro.rpc.it.specific.impl.KeyValueProtocolImpl;
 import org.apache.camel.quarkus.test.AvailablePortFinder;
 import org.apache.camel.util.CollectionHelper;
@@ -49,22 +53,22 @@ public class AvroRpcTestResource implements QuarkusTestResourceLifecycleManager 
             reflectHttpServer.start();
 
             final int reflectiveNettyPort = AvailablePortFinder.getNextAvailable();
-            //            reflectNettyServer = new NettyServer(
-            //                    new ReflectResponder(TestReflection.class, testReflection),
-            //                    new InetSocketAddress(reflectiveNettyPort));
-            //            reflectNettyServer.start();
+            reflectNettyServer = new NettyServer(
+                    new ReflectResponder(TestReflection.class, testReflection),
+                    new InetSocketAddress(reflectiveNettyPort));
+            reflectNettyServer.start();
 
             final int specificHttpPort = AvailablePortFinder.getNextAvailable();
-            //            specificHttpServer = new HttpServer(
-            //                    new SpecificResponder(KeyValueProtocol.class, keyValue),
-            //                    specificHttpPort);
-            //            specificHttpServer.start();
+            specificHttpServer = new HttpServer(
+                    new SpecificResponder(KeyValueProtocol.class, keyValue),
+                    specificHttpPort);
+            specificHttpServer.start();
 
-            //            final int specificNettyPort = AvailablePortFinder.getNextAvailable();
-            //            specificNettyServer = new NettyServer(
-            //                    new SpecificResponder(KeyValueProtocol.class, keyValue),
-            //                    new InetSocketAddress(specificNettyPort));
-            //            specificNettyServer.start();
+            final int specificNettyPort = AvailablePortFinder.getNextAvailable();
+            specificNettyServer = new NettyServer(
+                    new SpecificResponder(KeyValueProtocol.class, keyValue),
+                    new InetSocketAddress(specificNettyPort));
+            specificNettyServer.start();
 
             //----------- consumers ----------------------------------
 
@@ -74,9 +78,9 @@ public class AvroRpcTestResource implements QuarkusTestResourceLifecycleManager 
             final int specificNettyTransceiverPort = AvailablePortFinder.getNextAvailable();
 
             return CollectionHelper.mapOf(AvroRpcResource.REFLECTIVE_HTTP_SERVER_PORT_PARAM, String.valueOf(reflectiveHttpPort),
-                    /*AvroRpcResource.REFLECTIVE_NETTY_SERVER_PORT_PARAM, String.valueOf(reflectiveNettyPort),*/
+                    AvroRpcResource.REFLECTIVE_NETTY_SERVER_PORT_PARAM, String.valueOf(reflectiveNettyPort),
                     AvroRpcResource.SPECIFIC_HTTP_SERVER_PORT_PARAM, String.valueOf(specificHttpPort),
-                    /*AvroRpcResource.SPECIFIC_NETTY_SERVER_PORT_PARAM, String.valueOf(specificNettyPort),*/
+                    AvroRpcResource.SPECIFIC_NETTY_SERVER_PORT_PARAM, String.valueOf(specificNettyPort),
                     AvroRpcResource.REFLECTIVE_HTTP_TRANSCEIVER_PORT_PARAM, String.valueOf(reflectiveHttpTransceiverPort),
                     /*AvroRpcResource.REFLECTIVE_NETTY_TRANSCEIVER_PORT_PARAM, String.valueOf(reflectiveNettyTransceiverPort),*/
                     AvroRpcResource.SPECIFIC_HTTP_TRANSCEIVER_PORT_PARAM, String.valueOf(
