@@ -5497,6 +5497,16 @@
                 <version>${antlr3.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro-ipc-netty</artifactId>
+                <version>${avro-ipc-netty-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro-ipc-jetty</artifactId>
+                <version>${avro-ipc-jetty-version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-math3</artifactId>
                 <version>${commons-math3.version}</version>

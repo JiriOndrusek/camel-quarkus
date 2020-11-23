@@ -59,7 +59,7 @@
             <artifactId>camel-avro-rpc</artifactId>
             <exclusions>
                 <exclusion>
-                    <artifactId>avro</artifactId>
+                    <artifactId>*</artifactId>
                     <groupId>org.apache.avro</groupId>
                 </exclusion>
             </exclusions>
@@ -67,6 +67,14 @@
         <dependency>
             <artifactId>quarkus-avro</artifactId>
             <groupId>io.quarkus</groupId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro-ipc-netty</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro-ipc-jetty</artifactId>
         </dependency>
         <dependency>
             <groupId>org.graalvm.nativeimage</groupId>

@@ -1,8 +1,10 @@
 package org.apache.camel.quarkus.component.avro.rpc.it.reflection.impl;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestPojo;
 import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestReflection;
 
+@RegisterForReflection
 public class TestReflectionImpl implements TestReflection {
 
     String name = "";

@@ -7,11 +7,9 @@ import com.oracle.svm.core.annotate.Alias;
 import com.oracle.svm.core.annotate.Inject;
 import com.oracle.svm.core.annotate.RecomputeFieldValue;
 import com.oracle.svm.core.annotate.Substitute;
-import com.oracle.svm.core.annotate.TargetClass;
 import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericDatumReader;
 
-@TargetClass(value = GenericDatumReader.class)
+//@TargetClass(value = GenericDatumReader.class)
 public final class GenericDatumReaderSubstitute {
 
     @Inject

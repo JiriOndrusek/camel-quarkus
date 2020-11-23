@@ -64,8 +64,23 @@ class AvroRpcProcessor {
     }
 
     @BuildStep
+    ReflectiveClassBuildItem registerForReflection2(CombinedIndexBuildItem combinedIndex) {
+        IndexView index = combinedIndex.getIndex();
+
+        String[] dtos = index.getKnownClasses().stream()
+                .map(ci -> ci.name().toString())
+                .filter(n -> n.contains("avro"))
+                .sorted()
+                .peek(System.out::println)
+                .toArray(String[]::new);
+
+        return new ReflectiveClassBuildItem(true, true, dtos);
+    }
+
+    @BuildStep
     void registerDependencyForIndex(BuildProducer<IndexDependencyBuildItem> indexDependency) {
         indexDependency.produce(new IndexDependencyBuildItem("org.apache.avro", "avro-ipc-netty"));
         indexDependency.produce(new IndexDependencyBuildItem("org.apache.avro", "avro-ipc-jetty"));
+        indexDependency.produce(new IndexDependencyBuildItem("org.apache.avro", "avro-ipc"));
     }
 }

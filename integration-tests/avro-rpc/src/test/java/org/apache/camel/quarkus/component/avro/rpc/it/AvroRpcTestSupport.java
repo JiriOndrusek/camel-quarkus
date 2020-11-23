@@ -59,7 +59,7 @@ abstract class AvroRpcTestSupport {
         this.protocol = protocol;
     }
 
-    @Test
+    //    @Test
     public void testReflectionProducer() {
         RestAssured.given()
                 .contentType(ContentType.TEXT)
