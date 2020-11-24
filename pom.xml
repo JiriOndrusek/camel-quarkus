@@ -41,6 +41,8 @@
         <ahc.version>2.12.1</ahc.version>
         <animal-sniffer.version>1.18</animal-sniffer.version>
         <antlr3.version>3.5.2</antlr3.version><!-- Spark, Stringtemplate and probably others -->
+	    <avro-ipc-jetty-version>1.10.0</avro-ipc-jetty-version>
+        <avro-ipc-netty-version>1.10.0</avro-ipc-netty-version>
         <awssdk1.version>1.11.714</awssdk1.version>
         <awssdk1-swf-libs.version>1.11.22</awssdk1-swf-libs.version>
         <awssdk2.version>2.14.3</awssdk2.version>
@@ -411,25 +413,6 @@
                         <failIfUnknown>true</failIfUnknown>
                         <header>header.txt</header>
                         <excludes>
-                            <exclude>**/*.adoc</exclude>
-                            <exclude>**/*.avsc</exclude>
-                            <exclude>**/*.bin</exclude>
-                            <exclude>**/*.cnf</exclude>
-                            <exclude>**/*.conf</exclude>
-                            <exclude>**/*.csv</exclude>
-                            <exclude>**/*.ftl</exclude>
-                            <exclude>**/*.graphql</exclude>
-                            <exclude>**/*.ics</exclude>
-                            <exclude>**/*.jks</exclude>
-                            <exclude>**/*.lock</exclude>
-                            <exclude>**/*.mp3</exclude>
-                            <exclude>**/*.mp4</exclude>
-                            <exclude>**/*.mvel</exclude>
-                            <exclude>**/*.p12</exclude>
-                            <exclude>**/*.pem</exclude>
-                            <exclude>**/*.pgp</exclude>
-                            <exclude>**/*.proto</exclude>
-                            <exclude>**/*.txt</exclude>
                             <exclude>**/.factorypath</exclude>
                             <exclude>**/LICENSE.txt</exclude>
                             <exclude>**/LICENSE</exclude>
@@ -460,8 +443,6 @@
                             <Jenkinsfile.quarkus>SLASHSTAR_STYLE</Jenkinsfile.quarkus>
                             <properties>CAMEL_PROPERTIES_STYLE</properties>
                             <rnc>SCRIPT_STYLE</rnc>
-                            <ini>SCRIPT_STYLE</ini>
-                            <rng>XML_STYLE</rng>
                             <spring.factories>CAMEL_PROPERTIES_STYLE</spring.factories>
                             <spring.provides>CAMEL_PROPERTIES_STYLE</spring.provides>
                             <tm>CAMEL_PROPERTIES_STYLE</tm>
