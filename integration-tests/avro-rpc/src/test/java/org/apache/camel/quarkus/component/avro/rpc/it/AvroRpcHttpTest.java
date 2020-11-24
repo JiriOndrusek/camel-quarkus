@@ -8,4 +8,5 @@ public class AvroRpcHttpTest extends AvroRpcTestSupport {
     public AvroRpcHttpTest() {
         super(ProtocolType.http);
     }
+
 }

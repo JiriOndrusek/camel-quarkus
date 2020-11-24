@@ -35,8 +35,10 @@ import org.apache.camel.util.CollectionHelper;
 public class AvroRpcTestResource implements QuarkusTestResourceLifecycleManager {
 
     //server implementations
-    TestReflection testReflection = new TestReflectionImpl();
-    KeyValueProtocolImpl keyValue = new KeyValueProtocolImpl();
+    TestReflection httpTestReflection = new TestReflectionImpl();
+    TestReflection nettyTestReflection = new TestReflectionImpl();
+    KeyValueProtocolImpl httpKeyValue = new KeyValueProtocolImpl();
+    KeyValueProtocolImpl nettyKeyValue = new KeyValueProtocolImpl();
 
     //avro servers listening on localhost
     Server reflectHttpServer, reflectNettyServer, specificHttpServer, specificNettyServer;
@@ -48,25 +50,25 @@ public class AvroRpcTestResource implements QuarkusTestResourceLifecycleManager 
             // ---------------- producers ---------------
             final int reflectiveHttpPort = AvailablePortFinder.getNextAvailable();
             reflectHttpServer = new HttpServer(
-                    new ReflectResponder(TestReflection.class, testReflection),
+                    new ReflectResponder(TestReflection.class, httpTestReflection),
                     reflectiveHttpPort);
             reflectHttpServer.start();
 
             final int reflectiveNettyPort = AvailablePortFinder.getNextAvailable();
             reflectNettyServer = new NettyServer(
-                    new ReflectResponder(TestReflection.class, testReflection),
+                    new ReflectResponder(TestReflection.class, nettyTestReflection),
                     new InetSocketAddress(reflectiveNettyPort));
             reflectNettyServer.start();
 
             final int specificHttpPort = AvailablePortFinder.getNextAvailable();
             specificHttpServer = new HttpServer(
-                    new SpecificResponder(KeyValueProtocol.class, keyValue),
+                    new SpecificResponder(KeyValueProtocol.class, httpKeyValue),
                     specificHttpPort);
             specificHttpServer.start();
 
             final int specificNettyPort = AvailablePortFinder.getNextAvailable();
             specificNettyServer = new NettyServer(
-                    new SpecificResponder(KeyValueProtocol.class, keyValue),
+                    new SpecificResponder(KeyValueProtocol.class, nettyKeyValue),
                     new InetSocketAddress(specificNettyPort));
             specificNettyServer.start();
 
@@ -109,7 +111,12 @@ public class AvroRpcTestResource implements QuarkusTestResourceLifecycleManager 
     @Override
     public void inject(Object testInstance) {
         AvroRpcTestSupport testSupport = (AvroRpcTestSupport) testInstance;
-        testSupport.setTestReflection(testReflection);
-        testSupport.setKeyValueProtocol(keyValue);
+        if (testSupport.isHttp()) {
+            testSupport.setKeyValueProtocol(httpKeyValue);
+            testSupport.setTestReflection(httpTestReflection);
+        } else {
+            testSupport.setKeyValueProtocol(nettyKeyValue);
+            testSupport.setTestReflection(nettyTestReflection);
+        }
     }
 }

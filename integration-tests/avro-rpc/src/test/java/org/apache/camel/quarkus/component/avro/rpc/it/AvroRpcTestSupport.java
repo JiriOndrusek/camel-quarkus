@@ -44,22 +44,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @QuarkusTestResource(AvroRpcTestResource.class)
 abstract class AvroRpcTestSupport {
 
-    private final static String NAME = "Sheldon";
+    final static String NAME = "Sheldon";
 
-    private TestReflection testReflection;
+    TestReflection testReflection;
 
-    private KeyValueProtocol keyValueProtocol;
+    KeyValueProtocol keyValueProtocol;
 
-    private final ProtocolType protocol;
+    final ProtocolType protocol;
 
-    private Requestor reflectRequestor, specificRequestor;
-    private Transceiver reflectTransceiver, specificTransceiver;
+    Requestor reflectRequestor, specificRequestor;
+    Transceiver reflectTransceiver, specificTransceiver;
 
-    public AvroRpcTestSupport(ProtocolType protocol) {
-        this.protocol = protocol;
-    }
-
-    //    @Test
+    @Test
     public void testReflectionProducer() {
         RestAssured.given()
                 .contentType(ContentType.TEXT)
@@ -142,7 +138,11 @@ abstract class AvroRpcTestSupport {
                 .body(is("{\"value\": \"" + NAME + "\"}"));
     }
 
-    void setTestReflection(TestReflection testReflection) {
+    public AvroRpcTestSupport(ProtocolType protocol) {
+        this.protocol = protocol;
+    }
+
+    public void setTestReflection(TestReflection testReflection) {
         this.testReflection = testReflection;
     }
 
@@ -154,7 +154,7 @@ abstract class AvroRpcTestSupport {
         return ProtocolType.http == protocol;
     }
 
-    private void initReflectRequestor() throws IOException {
+    void initReflectRequestor() throws IOException {
         if (reflectRequestor == null) {
             if (isHttp()) {
                 reflectTransceiver = new HttpTransceiver(
@@ -169,7 +169,7 @@ abstract class AvroRpcTestSupport {
         }
     }
 
-    private void initSpecificRequestor() throws IOException {
+    void initSpecificRequestor() throws IOException {
         if (specificRequestor == null) {
             if (isHttp()) {
                 specificTransceiver = new HttpTransceiver(
