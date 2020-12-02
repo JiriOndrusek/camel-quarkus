@@ -20,9 +20,11 @@ package org.apache.camel.quarkus.component.debezium.common.it.mongodb;
 import org.apache.camel.quarkus.component.debezium.common.it.AbstractDebeziumTestResource;
 import org.apache.camel.quarkus.component.debezium.common.it.Type;
 import org.jboss.logging.Logger;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.utility.DockerImageName;
 
-public class DebeziumMongodbTestResource extends AbstractDebeziumTestResource<MongoDBContainer> {
+public class DebeziumMongodbTestResource extends AbstractDebeziumTestResource<GenericContainer> {
     private static final Logger LOG = Logger.getLogger(DebeziumMongodbTestResource.class);
 
     private static final String DB_USERNAME = "user";
@@ -35,15 +37,21 @@ public class DebeziumMongodbTestResource extends AbstractDebeziumTestResource<Mo
     }
 
     @Override
-    protected MongoDBContainer createContainer() {
-        return new MongoDBContainer().withEnv("MONGO_DATABASE_USERNAME", DB_USERNAME).withEnv("MONGO_DATABASE_PASSWORD",
-                DB_PASSWORD);
+    protected GenericContainer createContainer() {
+        return new GenericContainer(DockerImageName.parse("mongo:latest"))
+                .withEnv("MONGO_INITDB_ROOT_USERNAME", DB_USERNAME)
+                .withEnv("MONGO_INITDB_ROOT_PASSWORD", DB_PASSWORD)
+                .withEnv("MONGO_INITDB_DATABASE", "test")
+                .withExposedPorts(DB_PORT);
+//        return new MongoDBContainer("mongo:latest").withEnv("MONGO_DATABASE_USERNAME", DB_USERNAME).withEnv("MONGO_DATABASE_PASSWORD",
+//                DB_PASSWORD);
 
     }
 
     @Override
     protected String getJdbcUrl() {
-        final String jdbcUrl = container.getReplicaSetUrl();
+        final String jdbcUrl = "mongodb://" + DB_USERNAME + ":" + DB_PASSWORD + "@localhost:" + container.getMappedPort(DB_PORT) + "/test";
+        //((MongoDBContainer)container).getReplicaSetUrl();
 
         return jdbcUrl;
     }

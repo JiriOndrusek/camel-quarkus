@@ -5517,11 +5517,6 @@
                 <version>${jodatime.version}</version>
             </dependency>
             <dependency>
-                    <artifactId>mongodb-driver</artifactId>
-                    <groupId>org.mongodb</groupId>
-                    <version>3.12.3</version> <!--todo jondruse test-->
-            </dependency>
-            <dependency>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr</artifactId>
                 <version>${antlr3.version}</version>

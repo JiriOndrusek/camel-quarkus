@@ -64,9 +64,9 @@ class DebeziumMongodbTest extends AbstractDebeziumTest {
             LOG.warn("Container is not running. Connection is not created.");
         }
 
-        //create companies table
-        MongoDatabase db = mongoClient.getDatabase("test");
-        db.createCollection("companies");
+//        //create companies table
+//        MongoDatabase db = mongoClient.getDatabase("test");
+//        db.createCollection("companies");
     }
 
     @Before
