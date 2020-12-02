@@ -16,9 +16,7 @@
  */
 package org.apache.camel.quarkus.component.debezium.common.it.mysql;
 
-import io.quarkus.test.junit.NativeImageTest;
-
-@NativeImageTest
+//@NativeImageTest
 class DebeziumMysqlIT extends DebeziumMysqlTest {
 
 }

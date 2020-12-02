@@ -39,16 +39,20 @@ import static org.hamcrest.Matchers.is;
 public abstract class AbstractDebeziumTest {
     private static final Logger LOG = Logger.getLogger(AbstractDebeziumTest.class);
 
-    private static String COMPANY_1 = "Best Company";
-    private static String COMPANY_2 = "Even Better Company";
-    private static String CITY_1 = "Prague";
-    private static String CITY_2 = "Paris";
+    protected static String COMPANY_1 = "Best Company";
+    protected static String COMPANY_2 = "Even Better Company";
+    protected static String CITY_1 = "Prague";
+    protected static String CITY_2 = "Paris";
     public static int REPEAT_COUNT = 3;
 
     /**
-     * Each impleentation is responsible for connection creation and its closure.
+     * Each implementation is responsible for connection creation and its closure.
      */
     protected abstract Connection getConnection();
+
+    protected boolean isInitialized() {
+        return getConnection() != null;
+    };
 
     private final Type type;
 
@@ -63,7 +67,7 @@ public abstract class AbstractDebeziumTest {
     @Test
     @Order(1)
     public void testInsert() throws SQLException {
-        if (getConnection() == null) {
+        if (!isInitialized()) {
             LOG.warn("Test 'testInsert' is skipped, because container is not running.");
             return;
         }
@@ -71,8 +75,7 @@ public abstract class AbstractDebeziumTest {
         int i = 0;
 
         while (i++ < REPEAT_COUNT) {
-            executeUpdate(String.format("INSERT INTO %s (name, city) VALUES ('%s', '%s')", getCompanyTableName(),
-                    COMPANY_1 + "_" + i, CITY_1));
+            insertCompany(i);
 
             Response response = receiveResponse();
 
@@ -92,6 +95,11 @@ public abstract class AbstractDebeziumTest {
 
         Assert.assertTrue("Debezium does not respond (consider changing timeout in AbstractDebeziumResource).",
                 i < REPEAT_COUNT);
+    }
+
+    protected void insertCompany(int i) throws SQLException {
+        executeUpdate(String.format("INSERT INTO %s (name, city) VALUES ('%s', '%s')", getCompanyTableName(),
+                COMPANY_1 + "_" + i, CITY_1));
     }
 
     @Test

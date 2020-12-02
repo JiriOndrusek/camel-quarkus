@@ -16,9 +16,7 @@
  */
 package org.apache.camel.quarkus.component.debezium.common.it.postgres;
 
-import io.quarkus.test.junit.NativeImageTest;
-
-@NativeImageTest
+//@NativeImageTest
 class DebeziumPostgresIT extends DebeziumPostgresTest {
 
 }
