@@ -1,0 +1,653 @@
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running org.apache.camel.quarkus.component.debezium.common.it.mongodb.DebeziumMongodbTest
++++++++++++++++MongoDB shell version v4.2.11
+
+connecting to: mongodb://127.0.0.1:27017/?compressors=disabled&gssapiServiceName=mongodb
+
+Implicit session: session { "id" : UUID("27e665b1-5f26-4985-9d9c-6aeddebefcfc") }
+
+MongoDB server version: 4.2.11
+
+{
+	"operationTime" : Timestamp(1607082370, 7),
+	"ok" : 0,
+	"errmsg" : "already initialized",
+	"code" : 23,
+	"codeName" : "AlreadyInitialized",
+	"$clusterTime" : {
+		"clusterTime" : Timestamp(1607082370, 7),
+		"signature" : {
+			"hash" : BinData(0,"AAAAAAAAAAAAAAAAAAAAAAAAAAA="),
+			"keyId" : NumberLong(0)
+		}
+	}
+}
+
++++++++++++++++MongoDB shell version v4.2.11
+
+connecting to: mongodb://127.0.0.1:27017/?compressors=disabled&gssapiServiceName=mongodb
+
+Implicit session: session { "id" : UUID("37f94ede-122b-4aff-936a-93b0a08eb03f") }
+
+MongoDB server version: 4.2.11
+
+Successfully added user: {
+	"user" : "debezium",
+	"roles" : [
+		{
+			"role" : "userAdminAnyDatabase",
+			"db" : "admin"
+		},
+		{
+			"role" : "dbAdminAnyDatabase",
+			"db" : "admin"
+		},
+		{
+			"role" : "readWriteAnyDatabase",
+			"db" : "admin"
+		},
+		{
+			"role" : "clusterAdmin",
+			"db" : "admin"
+		}
+	]
+}
+
++++++++++++++++MongoDB shell version v4.2.11
+
+connecting to: mongodb://127.0.0.1:27017/?compressors=disabled&gssapiServiceName=mongodb
+
+Implicit session: session { "id" : UUID("6fc64d2e-f1f3-4787-9f94-7cb7a5d28105") }
+
+MongoDB server version: 4.2.11
+
+test
+
+2020-12-04 12:46:05,632 INFO  [io.qua.arc.pro.BeanProcessor] (build-18) Found unrecommended usage of private members (use package-private instead) in application beans:
+	- @Inject field org.apache.camel.quarkus.component.debezium.common.it.AbstractDebeziumResource#TIMEOUT,
+	- @Inject field org.apache.camel.quarkus.component.debezium.common.it.AbstractDebeziumResource#TIMEOUT,
+	- @Inject field org.apache.camel.quarkus.component.debezium.common.it.AbstractDebeziumResource#TIMEOUT,
+	- @Inject field org.apache.camel.quarkus.component.debezium.common.it.AbstractDebeziumResource#TIMEOUT
+2020-12-04 12:46:05,970 INFO  [org.apa.cam.qua.com.deb.com.it.AbstractDebeziumTestResource] (main) TestcontainersConfiguration(userProperties={docker.client.strategy=org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy}, classpathProperties={pull.pause.timeout=120}, environment={PATH=/home/jondruse/.cargo/bin:/home/jondruse/.sdkman/candidates/groovy/current/bin:/home/jondruse/.sdkman/candidates/gradle/current/bin:/home/jondruse/.local/bin:/home/jondruse/bin:/home/jondruse/dev/mvnd/mvnd-0.0.4-linux-amd64/bin:/home/jondruse/dev/graal/graalvm-ce-java11-20.2.0/bin:/home/jondruse/dev/ant/apache-ant-1.10.7/bin/:/home/jondruse/.minishift/cache/oc/v3.11.0/linux/:/home/jondruse/dev/minishift/minishift_from_old_nb-1.33.0-linux-amd64/:/home/jondruse/dev/postman/Postman//:/home/jondruse/dev/maven/apache-maven-3.6.3//bin:/home/jondruse/dev/java/jdk-11.0.6//bin:/usr/share/Modules/bin:/home/jondruse/.cargo/bin:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/var/lib/snapd/snap/bin, IMSETTINGS_MODULE=none, XAUTHORITY=/run/user/1000/gdm/Xauthority, SDKMAN_VERSION=5.9.0+555, HISTCONTROL=ignoredups, XMODIFIERS=@im=none, GDMSESSION=cinnamon, XDG_DATA_DIRS=/home/jondruse/.local/share/flatpak/exports/share/:/var/lib/flatpak/exports/share/:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop, MODULEPATH=/etc/scl/modulefiles:/etc/scl/modulefiles:/usr/share/Modules/modulefiles:/etc/modulefiles:/usr/share/modulefiles, DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus, XDG_CURRENT_DESKTOP=X-Cinnamon, MAVEN_HOME=/home/jondruse/dev/maven/apache-maven-3.6.3, MAIL=/var/spool/mail/jondruse, SSH_AGENT_PID=2486, COLORTERM=truecolor, SDKMAN_DIR=/home/jondruse/.sdkman, USERNAME=jondruse, GRAALVM_HOME=/home/jondruse/dev/graal/graalvm-ce-java11-20.2.0, SESSION_MANAGER=local/unix:@/tmp/.ICE-unix/2320,unix/unix:/tmp/.ICE-unix/2320, LOGNAME=jondruse, PWD=/home/jondruse/git/camel-quarkus/integration-tests/debezium, GJS_DEBUG_TOPICS=JS ERROR;JS LOG, LESSOPEN=||/usr/bin/lesspipe.sh %s, SHELL=/bin/bash, GIO_LAUNCHED_DESKTOP_FILE=/usr/share/applications/terminator.desktop, SDKMAN_CANDIDATES_API=https://api.sdkman.io/2, GOPATH=/home/jondruse/go, OLDPWD=/home/jondruse/git/camel-quarkus/integration-tests/debezium, BASH_FUNC_scl%%=() {  if [ "$1" = "load" -o "$1" = "unload" ]; then
+ eval "module $@";
+ else
+ /usr/bin/scl "$@";
+ fi
+}, GNOME_DESKTOP_SESSION_ID=this-is-deprecated, MODULEPATH_modshare=/usr/share/modulefiles:1:/usr/share/Modules/modulefiles:1:/etc/modulefiles:1, IMSETTINGS_INTEGRATE_DESKTOP=yes, LS_COLORS=rs=0:di=38;5;33:ln=38;5;51:mh=00:pi=40;38;5;11:so=38;5;13:do=38;5;5:bd=48;5;232;38;5;11:cd=48;5;232;38;5;3:or=48;5;232;38;5;9:mi=01;37;41:su=48;5;196;38;5;15:sg=48;5;11;38;5;16:ca=48;5;196;38;5;226:tw=48;5;10;38;5;16:ow=48;5;10;38;5;21:st=48;5;21;38;5;15:ex=38;5;40:*.tar=38;5;9:*.tgz=38;5;9:*.arc=38;5;9:*.arj=38;5;9:*.taz=38;5;9:*.lha=38;5;9:*.lz4=38;5;9:*.lzh=38;5;9:*.lzma=38;5;9:*.tlz=38;5;9:*.txz=38;5;9:*.tzo=38;5;9:*.t7z=38;5;9:*.zip=38;5;9:*.z=38;5;9:*.dz=38;5;9:*.gz=38;5;9:*.lrz=38;5;9:*.lz=38;5;9:*.lzo=38;5;9:*.xz=38;5;9:*.zst=38;5;9:*.tzst=38;5;9:*.bz2=38;5;9:*.bz=38;5;9:*.tbz=38;5;9:*.tbz2=38;5;9:*.tz=38;5;9:*.deb=38;5;9:*.rpm=38;5;9:*.jar=38;5;9:*.war=38;5;9:*.ear=38;5;9:*.sar=38;5;9:*.rar=38;5;9:*.alz=38;5;9:*.ace=38;5;9:*.zoo=38;5;9:*.cpio=38;5;9:*.7z=38;5;9:*.rz=38;5;9:*.cab=38;5;9:*.wim=38;5;9:*.swm=38;5;9:*.dwm=38;5;9:*.esd=38;5;9:*.jpg=38;5;13:*.jpeg=38;5;13:*.mjpg=38;5;13:*.mjpeg=38;5;13:*.gif=38;5;13:*.bmp=38;5;13:*.pbm=38;5;13:*.pgm=38;5;13:*.ppm=38;5;13:*.tga=38;5;13:*.xbm=38;5;13:*.xpm=38;5;13:*.tif=38;5;13:*.tiff=38;5;13:*.png=38;5;13:*.svg=38;5;13:*.svgz=38;5;13:*.mng=38;5;13:*.pcx=38;5;13:*.mov=38;5;13:*.mpg=38;5;13:*.mpeg=38;5;13:*.m2v=38;5;13:*.mkv=38;5;13:*.webm=38;5;13:*.ogm=38;5;13:*.mp4=38;5;13:*.m4v=38;5;13:*.mp4v=38;5;13:*.vob=38;5;13:*.qt=38;5;13:*.nuv=38;5;13:*.wmv=38;5;13:*.asf=38;5;13:*.rm=38;5;13:*.rmvb=38;5;13:*.flc=38;5;13:*.avi=38;5;13:*.fli=38;5;13:*.flv=38;5;13:*.gl=38;5;13:*.dl=38;5;13:*.xcf=38;5;13:*.xwd=38;5;13:*.yuv=38;5;13:*.cgm=38;5;13:*.emf=38;5;13:*.ogv=38;5;13:*.ogx=38;5;13:*.aac=38;5;45:*.au=38;5;45:*.flac=38;5;45:*.m4a=38;5;45:*.mid=38;5;45:*.midi=38;5;45:*.mka=38;5;45:*.mp3=38;5;45:*.mpc=38;5;45:*.ogg=38;5;45:*.ra=38;5;45:*.wav=38;5;45:*.oga=38;5;45:*.opus=38;5;45:*.spx=38;5;45:*.xspf=38;5;45:, XDG_SESSION_DESKTOP=cinnamon, SHLVL=1, LOADEDMODULES=, MANPATH=:, QT_IM_MODULE=xim, HISTSIZE=1000, JAVA_HOME=/home/jondruse/dev/java/jdk-11.0.6/, TERM=xterm-256color, LANG=en_US.UTF-8, XDG_SESSION_ID=2, MODULES_RUN_QUARANTINE=LD_LIBRARY_PATH, XDG_SESSION_TYPE=x11, GRADLE_HOME=/home/jondruse/.sdkman/candidates/gradle/current, BASH_FUNC_switchml%%=() {  typeset swfound=1;
+ if [ "${MODULES_USE_COMPAT_VERSION:-0}" = '1' ]; then
+ typeset swname='main';
+ if [ -e /usr/share/Modules/libexec/modulecmd.tcl ]; then
+ typeset swfound=0;
+ unset MODULES_USE_COMPAT_VERSION;
+ fi;
+ else
+ typeset swname='compatibility';
+ if [ -e /usr/share/Modules/libexec/modulecmd-compat ]; then
+ typeset swfound=0;
+ MODULES_USE_COMPAT_VERSION=1;
+ export MODULES_USE_COMPAT_VERSION;
+ fi;
+ fi;
+ if [ $swfound -eq 0 ]; then
+ echo "Switching to Modules $swname version";
+ source /usr/share/Modules/init/bash;
+ else
+ echo "Cannot switch to Modules $swname version, command not found";
+ return 1;
+ fi
+}, DISPLAY=:0, GROOVY_HOME=/home/jondruse/.sdkman/candidates/groovy/current, BASH_FUNC_module%%=() {  _module_raw "$@" 2>&1
+}, CINNAMON_VERSION=4.4.8, MAVEN_CMD_LINE_ARGS= clean install -f integration-tests/debezium -Dtest=DebeziumMongodbTest#testInsert, _=/home/jondruse/dev/java/jdk-11.0.6/bin/java, XDG_SESSION_CLASS=user, SDKMAN_CANDIDATES_DIR=/home/jondruse/.sdkman/candidates, GDM_LANG=en_US.UTF-8, DESKTOP_SESSION=cinnamon, MAVEN_PROJECTBASEDIR=/home/jondruse/git/camel-quarkus, SDKMAN_PLATFORM=Linux64, USER=jondruse, GIO_LAUNCHED_DESKTOP_FILE_PID=40421, VTE_VERSION=5803, WINDOWPATH=2, GJS_DEBUG_OUTPUT=stderr, TERMINATOR_UUID=urn:uuid:f73dff37-fd6a-474a-a6dd-15108e97e459, XDG_SEAT=seat0, SSH_AUTH_SOCK=/run/user/1000/keyring/ssh, GTK_OVERLAY_SCROLLING=0, HOSTNAME=localhost.localdomain, MODULESHOME=/usr/share/Modules, BASH_FUNC__module_raw%%=() {  unset _mlshdbg;
+ if [ "${MODULES_SILENT_SHELL_DEBUG:-0}" = '1' ]; then
+ case "$-" in 
+ *v*x*)
+ set +vx;
+ _mlshdbg='vx'
+ ;;
+ *v*)
+ set +v;
+ _mlshdbg='v'
+ ;;
+ *x*)
+ set +x;
+ _mlshdbg='x'
+ ;;
+ *)
+ _mlshdbg=''
+ ;;
+ esac;
+ fi;
+ unset _mlre _mlIFS;
+ if [ -n "${IFS+x}" ]; then
+ _mlIFS=$IFS;
+ fi;
+ IFS=' ';
+ for _mlv in ${MODULES_RUN_QUARANTINE:-};
+ do
+ if [ "${_mlv}" = "${_mlv##*[!A-Za-z0-9_]}" -a "${_mlv}" = "${_mlv#[0-9]}" ]; then
+ if [ -n "`eval 'echo ${'$_mlv'+x}'`" ]; then
+ _mlre="${_mlre:-}${_mlv}_modquar='`eval 'echo ${'$_mlv'}'`' ";
+ fi;
+ _mlrv="MODULES_RUNENV_${_mlv}";
+ _mlre="${_mlre:-}${_mlv}='`eval 'echo ${'$_mlrv':-}'`' ";
+ fi;
+ done;
+ if [ -n "${_mlre:-}" ]; then
+ eval `eval ${_mlre}/usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash '"$@"'`;
+ else
+ eval `/usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash "$@"`;
+ fi;
+ _mlstatus=$?;
+ if [ -n "${_mlIFS+x}" ]; then
+ IFS=$_mlIFS;
+ else
+ unset IFS;
+ fi;
+ unset _mlre _mlv _mlrv _mlIFS;
+ if [ -n "${_mlshdbg:-}" ]; then
+ set -$_mlshdbg;
+ fi;
+ unset _mlshdbg;
+ return $_mlstatus
+}, MODULES_CMD=/usr/share/Modules/libexec/modulecmd.tcl, KDEDIRS=/usr, XDG_RUNTIME_DIR=/run/user/1000, XDG_VTNR=2, HOME=/home/jondruse})
+2020-12-04 12:46:05,993 INFO  [org.tes.uti.ImageNameSubstitutor] (main) Image name substitution will be performed by: DefaultImageNameSubstitutor (ConfigurationFileImageNameSubstitutor)
+2020-12-04 12:46:06,025 INFO  [org.tes.doc.DockerClientProviderStrategy] (main) Loaded org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy from ~/.testcontainers.properties, will try it first
+2020-12-04 12:46:06,616 INFO  [org.tes.doc.DockerClientProviderStrategy] (main) Found Docker environment with Environment variables, system properties and defaults. Resolved dockerHost=unix:///var/run/docker.sock
+2020-12-04 12:46:06,617 INFO  [org.tes.DockerClientFactory] (main) Docker host IP address is localhost
+2020-12-04 12:46:06,655 INFO  [org.tes.DockerClientFactory] (main) Connected to docker: 
+  Server Version: 19.03.6
+  API Version: 1.40
+  Operating System: Fedora 31 (Workstation Edition)
+  Total Memory: 31730 MB
+2020-12-04 12:46:08,078 INFO  [org.tes.DockerClientFactory] (main) Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+2020-12-04 12:46:08,079 INFO  [org.tes.DockerClientFactory] (main) Checking the system...
+2020-12-04 12:46:08,079 INFO  [org.tes.DockerClientFactory] (main) ✔︎ Docker server version should be at least 1.6.0
+2020-12-04 12:46:08,529 INFO  [org.tes.DockerClientFactory] (main) ✔︎ Docker environment should have more than 2GB free disk space
+2020-12-04 12:46:08,545 INFO  [🐳 .2]] (main) Creating container for image: mongo:4.2
+2020-12-04 12:46:08,620 INFO  [🐳 .2]] (main) Starting container with ID: a8dae496021d0d4d21b3096efe60e6e3290ff46d7fb89bee793e19250767e2b2
+2020-12-04 12:46:09,231 INFO  [🐳 .2]] (main) Container mongo:4.2 is starting: a8dae496021d0d4d21b3096efe60e6e3290ff46d7fb89bee793e19250767e2b2
+2020-12-04 12:46:10,120 INFO  [🐳 .2]] (main) Container mongo:4.2 started in PT4.129281S
+2020-12-04 12:46:13,261 INFO  [org.mon.dri.cluster] (main) Cluster created with settings {hosts=[127.0.0.1:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms'}
+2020-12-04 12:46:13,305 INFO  [org.mon.dri.cluster] (main) Cluster created with settings {hosts=[127.0.0.1:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms'}
+2020-12-04 12:46:13,361 INFO  [org.mon.dri.connection] (cluster-ClusterId{value='5fca218526362e5b1ee8966f', description='null'}-127.0.0.1:27017) Opened connection [connectionId{localValue:1, serverValue:3}] to 127.0.0.1:27017
+2020-12-04 12:46:13,362 INFO  [org.mon.dri.connection] (cluster-ClusterId{value='5fca218526362e5b1ee89670', description='null'}-127.0.0.1:27017) Opened connection [connectionId{localValue:3, serverValue:4}] to 127.0.0.1:27017
+2020-12-04 12:46:13,365 INFO  [org.mon.dri.connection] (cluster-rtt-ClusterId{value='5fca218526362e5b1ee89670', description='null'}-127.0.0.1:27017) Opened connection [connectionId{localValue:4, serverValue:5}] to 127.0.0.1:27017
+2020-12-04 12:46:13,379 INFO  [org.mon.dri.connection] (cluster-rtt-ClusterId{value='5fca218526362e5b1ee8966f', description='null'}-127.0.0.1:27017) Opened connection [connectionId{localValue:2, serverValue:2}] to 127.0.0.1:27017
+2020-12-04 12:46:13,381 INFO  [org.mon.dri.cluster] (cluster-ClusterId{value='5fca218526362e5b1ee89670', description='null'}-127.0.0.1:27017) Monitor thread successfully connected to server with description ServerDescription{address=127.0.0.1:27017, type=REPLICA_SET_PRIMARY, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=9, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=25572023, setName='my-mongo-set', canonicalAddress=0119e054194d:27017, hosts=[0119e054194d:27017], passives=[], arbiters=[], primary='0119e054194d:27017', tagSet=TagSet{[]}, electionId=7fffffff0000000000000001, setVersion=1, topologyVersion=TopologyVersion{processId=5fca211b73a881828f0b3c35, counter=6}, lastWriteDate=Fri Dec 04 12:46:09 CET 2020, lastUpdateTimeNanos=16024566477207}
+2020-12-04 12:46:13,379 INFO  [org.mon.dri.cluster] (cluster-ClusterId{value='5fca218526362e5b1ee8966f', description='null'}-127.0.0.1:27017) Monitor thread successfully connected to server with description ServerDescription{address=127.0.0.1:27017, type=REPLICA_SET_PRIMARY, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=9, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=46260289, setName='my-mongo-set', canonicalAddress=0119e054194d:27017, hosts=[0119e054194d:27017], passives=[], arbiters=[], primary='0119e054194d:27017', tagSet=TagSet{[]}, electionId=7fffffff0000000000000001, setVersion=1, topologyVersion=TopologyVersion{processId=5fca211b73a881828f0b3c35, counter=6}, lastWriteDate=Fri Dec 04 12:46:09 CET 2020, lastUpdateTimeNanos=16024566477347}
+2020-12-04 12:46:13,501 INFO  [org.apa.cam.qua.cor.CamelBootstrapRecorder] (main) bootstrap runtime: org.apache.camel.quarkus.core.CamelContextRuntime
+2020-12-04 12:46:13,528 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (main) Apache Camel 3.6.0 (camel-1) is starting
+2020-12-04 12:46:13,530 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (main) StreamCaching is not in use. If using streams then its recommended to enable stream caching. See more details at http://camel.apache.org/stream-caching.html
+2020-12-04 12:46:13,533 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (main) Total 0 routes, of which 0 are started
+2020-12-04 12:46:13,533 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (main) Apache Camel 3.6.0 (camel-1) started in 0.005 seconds
+2020-12-04 12:46:13,640 INFO  [io.quarkus] (main) Quarkus 1.10.1.Final on JVM started in 9.618s. Listening on: http://0.0.0.0:46445
+2020-12-04 12:46:13,640 INFO  [io.quarkus] (main) Profile test activated. 
+2020-12-04 12:46:13,640 INFO  [io.quarkus] (main) Installed features: [camel-core, camel-debezium-mongodb, camel-debezium-mysql, camel-debezium-postgres, camel-debezium-sqlserver, camel-mongodb, camel-support-common, camel-support-debezium, camel-support-mongodb, cdi, jdbc-mssql, jdbc-mysql, jdbc-postgresql, mongodb-client, mutiny, resteasy, resteasy-jackson, smallrye-context-propagation]
+2020-12-04 12:46:13,667 INFO  [org.mon.dri.cluster] (main) Cluster created with settings {hosts=[localhost:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms'}
+2020-12-04 12:46:13,672 INFO  [org.mon.dri.connection] (cluster-ClusterId{value='5fca218526362e5b1ee89671', description='null'}-localhost:27017) Opened connection [connectionId{localValue:5, serverValue:6}] to localhost:27017
+2020-12-04 12:46:13,672 INFO  [org.mon.dri.cluster] (cluster-ClusterId{value='5fca218526362e5b1ee89671', description='null'}-localhost:27017) Monitor thread successfully connected to server with description ServerDescription{address=localhost:27017, type=REPLICA_SET_PRIMARY, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=9, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=2045763, setName='my-mongo-set', canonicalAddress=0119e054194d:27017, hosts=[0119e054194d:27017], passives=[], arbiters=[], primary='0119e054194d:27017', tagSet=TagSet{[]}, electionId=7fffffff0000000000000001, setVersion=1, topologyVersion=TopologyVersion{processId=5fca211b73a881828f0b3c35, counter=6}, lastWriteDate=Fri Dec 04 12:46:09 CET 2020, lastUpdateTimeNanos=16024877556938}
+2020-12-04 12:46:13,683 INFO  [org.mon.dri.connection] (cluster-rtt-ClusterId{value='5fca218526362e5b1ee89671', description='null'}-localhost:27017) Opened connection [connectionId{localValue:6, serverValue:7}] to localhost:27017
+**********************************
+****** insert ********************
+2020-12-04 12:46:14,365 INFO  [org.mon.dri.connection] (main) Opened connection [connectionId{localValue:7, serverValue:8}] to localhost:27017
+****** done ********************
+**********************************
+2020-12-04 12:46:15,257 INFO  [org.apa.kaf.con.jso.JsonConverterConfig] (executor-thread-1) JsonConverterConfig values: 
+	converter.type = key
+	decimal.format = BASE64
+	schemas.cache.size = 1000
+	schemas.enable = true
+
+2020-12-04 12:46:15,260 INFO  [org.apa.kaf.con.jso.JsonConverterConfig] (executor-thread-1) JsonConverterConfig values: 
+	converter.type = value
+	decimal.format = BASE64
+	schemas.cache.size = 1000
+	schemas.enable = false
+
+2020-12-04 12:46:15,265 INFO  [io.deb.emb.EmbeddedEngine$EmbeddedConfig] (executor-thread-1) EmbeddedConfig values: 
+	access.control.allow.methods = 
+	access.control.allow.origin = 
+	admin.listeners = null
+	bootstrap.servers = [localhost:9092]
+	client.dns.lookup = default
+	config.providers = []
+	connector.client.config.override.policy = None
+	header.converter = class org.apache.kafka.connect.storage.SimpleHeaderConverter
+	internal.key.converter = class org.apache.kafka.connect.json.JsonConverter
+	internal.value.converter = class org.apache.kafka.connect.json.JsonConverter
+	key.converter = class org.apache.kafka.connect.json.JsonConverter
+	listeners = null
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	offset.flush.interval.ms = 60000
+	offset.flush.timeout.ms = 5000
+	offset.storage.file.filename = /tmp/DebeziumMongodbTestResource-store-15693254307133597971
+	offset.storage.partitions = 0
+	offset.storage.replication.factor = 0
+	offset.storage.topic = 
+	plugin.path = null
+	rest.advertised.host.name = null
+	rest.advertised.listener = null
+	rest.advertised.port = null
+	rest.extension.classes = []
+	rest.host.name = null
+	rest.port = 8083
+	ssl.client.auth = none
+	task.shutdown.graceful.timeout.ms = 5000
+	topic.tracking.allow.reset = true
+	topic.tracking.enable = true
+	value.converter = class org.apache.kafka.connect.json.JsonConverter
+
+2020-12-04 12:46:15,265 INFO  [org.apa.kaf.con.run.WorkerConfig] (executor-thread-1) Worker configuration property 'internal.key.converter' is deprecated and may be removed in an upcoming release. The specified value 'org.apache.kafka.connect.json.JsonConverter' matches the default, so this property can be safely removed from the worker configuration.
+2020-12-04 12:46:15,265 INFO  [org.apa.kaf.con.run.WorkerConfig] (executor-thread-1) Worker configuration property 'internal.value.converter' is deprecated and may be removed in an upcoming release. The specified value 'org.apache.kafka.connect.json.JsonConverter' matches the default, so this property can be safely removed from the worker configuration.
+2020-12-04 12:46:15,270 INFO  [org.apa.kaf.con.sto.FileOffsetBackingStore] (Camel (camel-1) thread #0 - DebeziumConsumer) Starting FileOffsetBackingStore with file /tmp/DebeziumMongodbTestResource-store-15693254307133597971
+2020-12-04 12:46:15,317 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "database.whitelist" is deprecated and will be removed in future versions. Please use "database.include.list" instead.
+2020-12-04 12:46:15,317 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "database.blacklist" is deprecated and will be removed in future versions. Please use "database.exclude.list" instead.
+2020-12-04 12:46:15,317 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "database.whitelist" is deprecated and will be removed in future versions. Please use "database.include.list" instead.
+2020-12-04 12:46:15,317 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "database.blacklist" is deprecated and will be removed in future versions. Please use "database.exclude.list" instead.
+2020-12-04 12:46:15,318 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "collection.whitelist" is deprecated and will be removed in future versions. Please use "collection.include.list" instead.
+2020-12-04 12:46:15,318 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "collection.blacklist" is deprecated and will be removed in future versions. Please use "collection.exclude.list" instead.
+2020-12-04 12:46:15,318 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "collection.whitelist" is deprecated and will be removed in future versions. Please use "collection.include.list" instead.
+2020-12-04 12:46:15,318 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "collection.blacklist" is deprecated and will be removed in future versions. Please use "collection.exclude.list" instead.
+2020-12-04 12:46:15,322 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "database.whitelist" is deprecated and will be removed in future versions. Please use "database.include.list" instead.
+2020-12-04 12:46:15,323 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "database.blacklist" is deprecated and will be removed in future versions. Please use "database.exclude.list" instead.
+2020-12-04 12:46:15,323 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "collection.whitelist" is deprecated and will be removed in future versions. Please use "collection.include.list" instead.
+2020-12-04 12:46:15,323 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "collection.blacklist" is deprecated and will be removed in future versions. Please use "collection.exclude.list" instead.
+2020-12-04 12:46:15,326 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "field.blacklist" is deprecated and will be removed in future versions. Please use "field.exclude.list" instead.
+2020-12-04 12:46:15,358 INFO  [io.deb.con.mon.MongoDbConnector] (Camel (camel-1) thread #0 - DebeziumConsumer) Starting MongoDB connector and discovering replica set(s) at localhost:27017
+2020-12-04 12:46:15,360 INFO  [io.deb.uti.Threads] (Camel (camel-1) thread #0 - DebeziumConsumer) Requested thread factory for connector MongoDbConnector, id = test named = replica-set-monitor
+2020-12-04 12:46:15,363 INFO  [io.deb.uti.Threads] (Camel (camel-1) thread #0 - DebeziumConsumer) Creating thread debezium-mongodbconnector-test-replica-set-monitor
+2020-12-04 12:46:15,363 INFO  [io.deb.con.mon.MongoDbConnector] (Camel (camel-1) thread #0 - DebeziumConsumer) Successfully started MongoDB connector, and continuing to discover changes in replica set(s) at localhost:27017
+2020-12-04 12:46:15,366 INFO  [org.mon.dri.cluster] (debezium-mongodbconnector-test-replica-set-monitor) Cluster created with settings {hosts=[localhost:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms'}
+2020-12-04 12:46:15,370 INFO  [org.mon.dri.connection] (cluster-rtt-ClusterId{value='5fca218726362e5b1ee89673', description='null'}-localhost:27017) Opened connection [connectionId{localValue:9, serverValue:9}] to localhost:27017
+2020-12-04 12:46:15,373 INFO  [org.mon.dri.cluster] (debezium-mongodbconnector-test-replica-set-monitor) Cluster description not yet available. Waiting for 30000 ms before timing out
+2020-12-04 12:46:15,374 INFO  [org.mon.dri.connection] (cluster-ClusterId{value='5fca218726362e5b1ee89673', description='null'}-localhost:27017) Opened connection [connectionId{localValue:8, serverValue:10}] to localhost:27017
+2020-12-04 12:46:15,376 INFO  [org.mon.dri.cluster] (cluster-ClusterId{value='5fca218726362e5b1ee89673', description='null'}-localhost:27017) Monitor thread successfully connected to server with description ServerDescription{address=localhost:27017, type=REPLICA_SET_PRIMARY, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=9, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=1539214, setName='my-mongo-set', canonicalAddress=0119e054194d:27017, hosts=[0119e054194d:27017], passives=[], arbiters=[], primary='0119e054194d:27017', tagSet=TagSet{[]}, electionId=7fffffff0000000000000001, setVersion=1, topologyVersion=TopologyVersion{processId=5fca211b73a881828f0b3c35, counter=6}, lastWriteDate=Fri Dec 04 12:46:14 CET 2020, lastUpdateTimeNanos=16026580287340}
+2020-12-04 12:46:15,440 INFO  [org.mon.dri.connection] (debezium-mongodbconnector-test-replica-set-monitor) Opened connection [connectionId{localValue:10, serverValue:11}] to localhost:27017
+2020-12-04 12:46:15,447 INFO  [io.deb.con.mon.ReplicaSetDiscovery] (debezium-mongodbconnector-test-replica-set-monitor) Checking current members of replica set at localhost:27017
+2020-12-04 12:46:15,447 INFO  [io.deb.con.mon.MongoDbConnector] (debezium-mongodbconnector-test-replica-set-monitor) Requesting task reconfiguration due to new/removed replica set(s) for MongoDB with seeds localhost:27017
+2020-12-04 12:46:15,448 INFO  [io.deb.con.mon.MongoDbConnector] (Camel (camel-1) thread #0 - DebeziumConsumer) Subdividing 1 MongoDB replica set(s) into at most 1 task(s)
+2020-12-04 12:46:15,448 INFO  [io.deb.con.mon.MongoDbConnector] (debezium-mongodbconnector-test-replica-set-monitor) New replica sets include:
+2020-12-04 12:46:15,461 INFO  [io.deb.con.mon.MongoDbConnector] (Camel (camel-1) thread #0 - DebeziumConsumer) Configuring MongoDB connector task 0 to capture events for replica set(s) at my-mongo-set/localhost:27017
+2020-12-04 12:46:15,461 INFO  [io.deb.con.mon.MongoDbConnector] (debezium-mongodbconnector-test-replica-set-monitor)   my-mongo-set/localhost:27017
+2020-12-04 12:46:15,466 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "database.whitelist" is deprecated and will be removed in future versions. Please use "database.include.list" instead.
+2020-12-04 12:46:15,467 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "database.blacklist" is deprecated and will be removed in future versions. Please use "database.exclude.list" instead.
+2020-12-04 12:46:15,467 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "database.whitelist" is deprecated and will be removed in future versions. Please use "database.include.list" instead.
+2020-12-04 12:46:15,467 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "database.blacklist" is deprecated and will be removed in future versions. Please use "database.exclude.list" instead.
+2020-12-04 12:46:15,467 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "collection.whitelist" is deprecated and will be removed in future versions. Please use "collection.include.list" instead.
+2020-12-04 12:46:15,467 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "collection.blacklist" is deprecated and will be removed in future versions. Please use "collection.exclude.list" instead.
+2020-12-04 12:46:15,468 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "collection.whitelist" is deprecated and will be removed in future versions. Please use "collection.include.list" instead.
+2020-12-04 12:46:15,468 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "collection.blacklist" is deprecated and will be removed in future versions. Please use "collection.exclude.list" instead.
+2020-12-04 12:46:15,468 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer) Starting MongoDbConnectorTask with configuration:
+2020-12-04 12:46:15,469 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    connector.class = io.debezium.connector.mongodb.MongoDbConnector
+2020-12-04 12:46:15,469 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    max.queue.size = 8192
+2020-12-04 12:46:15,470 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    mongodb.password = ********
+2020-12-04 12:46:15,470 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    query.fetch.size = 0
+2020-12-04 12:46:15,470 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    retriable.restart.connector.wait.ms = 10000
+2020-12-04 12:46:15,470 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    snapshot.delay.ms = 0
+2020-12-04 12:46:15,470 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    provide.transaction.metadata = false
+2020-12-04 12:46:15,470 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    tombstones.on.delete = false
+2020-12-04 12:46:15,470 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    mongodb.ssl.enabled = false
+2020-12-04 12:46:15,471 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    offset.storage.file.filename = /tmp/DebeziumMongodbTestResource-store-15693254307133597971
+2020-12-04 12:46:15,471 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    mongodb.members.auto.discover = true
+2020-12-04 12:46:15,471 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    mongodb.task.id = 0
+2020-12-04 12:46:15,471 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    mongodb.server.selection.timeout.ms = 30000
+2020-12-04 12:46:15,471 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    poll.interval.ms = 500
+2020-12-04 12:46:15,471 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    offset.storage.partitions = 0
+2020-12-04 12:46:15,472 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    mongodb.authsource = admin
+2020-12-04 12:46:15,472 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    heartbeat.topics.prefix = __debezium-heartbeat
+2020-12-04 12:46:15,472 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    mongodb.connect.timeout.ms = 10000
+2020-12-04 12:46:15,472 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    snapshot.fetch.size = 0
+2020-12-04 12:46:15,472 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    connect.backoff.initial.delay.ms = 1000
+2020-12-04 12:46:15,472 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    mongodb.hosts = my-mongo-set/localhost:27017
+2020-12-04 12:46:15,473 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    offset.commit.policy = io.debezium.engine.spi.OffsetCommitPolicy$PeriodicCommitOffsetPolicy
+2020-12-04 12:46:15,473 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    mongodb.poll.interval.ms = 3000
+2020-12-04 12:46:15,473 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    sanitize.field.names = false
+2020-12-04 12:46:15,473 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    offset.storage = org.apache.kafka.connect.storage.FileOffsetBackingStore
+2020-12-04 12:46:15,473 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    connect.max.attempts = 16
+2020-12-04 12:46:15,473 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    max.queue.size.in.bytes = 0
+2020-12-04 12:46:15,474 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    mongodb.user = debezium
+2020-12-04 12:46:15,474 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    offset.flush.timeout.ms = 5000
+2020-12-04 12:46:15,474 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    source.struct.version = v2
+2020-12-04 12:46:15,474 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    event.processing.failure.handling.mode = fail
+2020-12-04 12:46:15,474 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    heartbeat.interval.ms = 0
+2020-12-04 12:46:15,474 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    mongodb.socket.timeout.ms = 0
+2020-12-04 12:46:15,474 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    snapshot.max.threads = 1
+2020-12-04 12:46:15,475 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    mongodb.name = test
+2020-12-04 12:46:15,475 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    connect.backoff.max.delay.ms = 120000
+2020-12-04 12:46:15,475 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    offset.flush.interval.ms = 60000
+2020-12-04 12:46:15,475 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    internal.key.converter = org.apache.kafka.connect.json.JsonConverter
+2020-12-04 12:46:15,475 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    internal.value.converter = org.apache.kafka.connect.json.JsonConverter
+2020-12-04 12:46:15,475 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    name = 127.0.0.1
+2020-12-04 12:46:15,475 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    offset.storage.replication.factor = 0
+2020-12-04 12:46:15,476 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    mongodb.ssl.invalid.hostname.allowed = false
+2020-12-04 12:46:15,476 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    max.batch.size = 2048
+2020-12-04 12:46:15,476 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer)    snapshot.mode = initial
+2020-12-04 12:46:15,482 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "database.whitelist" is deprecated and will be removed in future versions. Please use "database.include.list" instead.
+2020-12-04 12:46:15,482 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "database.blacklist" is deprecated and will be removed in future versions. Please use "database.exclude.list" instead.
+2020-12-04 12:46:15,482 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "collection.whitelist" is deprecated and will be removed in future versions. Please use "collection.include.list" instead.
+2020-12-04 12:46:15,482 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "collection.blacklist" is deprecated and will be removed in future versions. Please use "collection.exclude.list" instead.
+2020-12-04 12:46:15,482 WARN  [io.deb.con.Configuration] (Camel (camel-1) thread #0 - DebeziumConsumer) Using configuration property "field.blacklist" is deprecated and will be removed in future versions. Please use "field.exclude.list" instead.
+2020-12-04 12:46:15,520 INFO  [io.deb.uti.Threads] (Camel (camel-1) thread #0 - DebeziumConsumer) Requested thread factory for connector MongoDbConnector, id = test named = change-event-source-coordinator
+2020-12-04 12:46:15,540 INFO  [io.deb.uti.Threads] (Camel (camel-1) thread #0 - DebeziumConsumer) Creating thread debezium-mongodbconnector-test-change-event-source-coordinator
+2020-12-04 12:46:15,596 INFO  [io.deb.pip.ChangeEventSourceCoordinator] (debezium-mongodbconnector-test-change-event-source-coordinator) Metrics registered
+2020-12-04 12:46:15,597 INFO  [io.deb.pip.ChangeEventSourceCoordinator] (debezium-mongodbconnector-test-change-event-source-coordinator) Context created
+2020-12-04 12:46:15,600 INFO  [io.deb.con.mon.MongoDbSnapshotChangeEventSource] (debezium-mongodbconnector-test-change-event-source-coordinator) No previous offset has been found
+2020-12-04 12:46:15,601 INFO  [io.deb.con.mon.MongoDbSnapshotChangeEventSource] (debezium-mongodbconnector-test-change-event-source-coordinator) Snapshot step 1 - Preparing
+2020-12-04 12:46:15,601 INFO  [io.deb.con.mon.MongoDbSnapshotChangeEventSource] (debezium-mongodbconnector-test-change-event-source-coordinator) Snapshot step 2 - Determining snapshot offsets
+2020-12-04 12:46:15,602 INFO  [io.deb.con.mon.MongoDbSnapshotChangeEventSource] (debezium-mongodbconnector-test-change-event-source-coordinator) Determine Snapshot Offset for replica-set my-mongo-set
+2020-12-04 12:46:15,605 INFO  [org.mon.dri.cluster] (debezium-mongodbconnector-test-change-event-source-coordinator) Cluster created with settings {hosts=[localhost:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms'}
+2020-12-04 12:46:15,607 INFO  [org.mon.dri.cluster] (debezium-mongodbconnector-test-change-event-source-coordinator) Cluster created with settings {hosts=[127.0.0.1:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms'}
+2020-12-04 12:46:15,608 INFO  [org.mon.dri.connection] (cluster-ClusterId{value='5fca218726362e5b1ee89674', description='null'}-localhost:27017) Opened connection [connectionId{localValue:11, serverValue:12}] to localhost:27017
+2020-12-04 12:46:15,609 INFO  [org.mon.dri.cluster] (cluster-ClusterId{value='5fca218726362e5b1ee89674', description='null'}-localhost:27017) Monitor thread successfully connected to server with description ServerDescription{address=localhost:27017, type=REPLICA_SET_PRIMARY, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=9, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=1678085, setName='my-mongo-set', canonicalAddress=0119e054194d:27017, hosts=[0119e054194d:27017], passives=[], arbiters=[], primary='0119e054194d:27017', tagSet=TagSet{[]}, electionId=7fffffff0000000000000001, setVersion=1, topologyVersion=TopologyVersion{processId=5fca211b73a881828f0b3c35, counter=6}, lastWriteDate=Fri Dec 04 12:46:14 CET 2020, lastUpdateTimeNanos=16026814082358}
+2020-12-04 12:46:15,611 INFO  [org.mon.dri.connection] (cluster-rtt-ClusterId{value='5fca218726362e5b1ee89674', description='null'}-localhost:27017) Opened connection [connectionId{localValue:12, serverValue:13}] to localhost:27017
+2020-12-04 12:46:15,618 INFO  [org.mon.dri.connection] (cluster-ClusterId{value='5fca218726362e5b1ee89675', description='null'}-127.0.0.1:27017) Opened connection [connectionId{localValue:13, serverValue:14}] to 127.0.0.1:27017
+2020-12-04 12:46:15,618 INFO  [org.mon.dri.cluster] (cluster-ClusterId{value='5fca218726362e5b1ee89675', description='null'}-127.0.0.1:27017) Monitor thread successfully connected to server with description ServerDescription{address=127.0.0.1:27017, type=REPLICA_SET_PRIMARY, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=9, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=3295691, setName='my-mongo-set', canonicalAddress=0119e054194d:27017, hosts=[0119e054194d:27017], passives=[], arbiters=[], primary='0119e054194d:27017', tagSet=TagSet{[]}, electionId=7fffffff0000000000000001, setVersion=1, topologyVersion=TopologyVersion{processId=5fca211b73a881828f0b3c35, counter=6}, lastWriteDate=Fri Dec 04 12:46:14 CET 2020, lastUpdateTimeNanos=16026823618080}
+2020-12-04 12:46:15,623 INFO  [org.mon.dri.connection] (cluster-rtt-ClusterId{value='5fca218726362e5b1ee89675', description='null'}-127.0.0.1:27017) Opened connection [connectionId{localValue:14, serverValue:15}] to 127.0.0.1:27017
+2020-12-04 12:46:15,672 INFO  [org.mon.dri.connection] (debezium-mongodbconnector-test-change-event-source-coordinator) Opened connection [connectionId{localValue:15, serverValue:16}] to 127.0.0.1:27017
+2020-12-04 12:46:15,678 INFO  [io.deb.con.mon.MongoDbSnapshotChangeEventSource] (debezium-mongodbconnector-test-change-event-source-coordinator) Stopping primary client
+2020-12-04 12:46:15,681 INFO  [io.deb.uti.Threads] (debezium-mongodbconnector-test-change-event-source-coordinator) Requested thread factory for connector MongoDbConnector, id = test named = replicator-snapshot
+2020-12-04 12:46:15,681 INFO  [io.deb.con.mon.MongoDbSnapshotChangeEventSource] (debezium-mongodbconnector-test-change-event-source-coordinator) Ignoring unnamed replica sets: []
+2020-12-04 12:46:15,682 INFO  [io.deb.con.mon.MongoDbSnapshotChangeEventSource] (debezium-mongodbconnector-test-change-event-source-coordinator) Starting 1 thread(s) to snapshot replica sets: [my-mongo-set/localhost:27017]
+2020-12-04 12:46:15,682 INFO  [io.deb.con.mon.MongoDbSnapshotChangeEventSource] (debezium-mongodbconnector-test-change-event-source-coordinator) Snapshot step 3 - Snapshotting data
+2020-12-04 12:46:15,684 INFO  [io.deb.uti.Threads] (debezium-mongodbconnector-test-change-event-source-coordinator) Creating thread debezium-mongodbconnector-test-replicator-snapshot-0
+2020-12-04 12:46:15,688 INFO  [io.deb.con.mon.MongoDbSnapshotChangeEventSource] (debezium-mongodbconnector-test-replicator-snapshot-0) Beginning snapshot of 'my-mongo-set' at {sec=1607082374, ord=2, initsync=true, h=null, stxnid=e182fdb8-f721-39a4-b329-405b5d341ee1:1}
+2020-12-04 12:46:15,689 INFO  [org.mon.dri.cluster] (debezium-mongodbconnector-test-replicator-snapshot-0) Cluster created with settings {hosts=[0119e054194d:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms'}
+2020-12-04 12:46:15,691 INFO  [org.mon.dri.cluster] (debezium-mongodbconnector-test-replicator-snapshot-0) Cluster description not yet available. Waiting for 30000 ms before timing out
+2020-12-04 12:46:15,752 INFO  [org.mon.dri.cluster] (cluster-ClusterId{value='5fca218726362e5b1ee89676', description='null'}-0119e054194d:27017) Exception in monitor thread while connecting to server 0119e054194d:27017: com.mongodb.MongoSocketException: 0119e054194d: Name or service not known
+	at com.mongodb.ServerAddress.getSocketAddresses(ServerAddress.java:211)
+	at com.mongodb.internal.connection.SocketStream.initializeSocket(SocketStream.java:75)
+	at com.mongodb.internal.connection.SocketStream.open(SocketStream.java:65)
+	at com.mongodb.internal.connection.InternalStreamConnection.open(InternalStreamConnection.java:143)
+	at com.mongodb.internal.connection.DefaultServerMonitor$ServerMonitorRunnable.lookupServerDescription(DefaultServerMonitor.java:188)
+	at com.mongodb.internal.connection.DefaultServerMonitor$ServerMonitorRunnable.run(DefaultServerMonitor.java:144)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+Caused by: java.net.UnknownHostException: 0119e054194d: Name or service not known
+	at java.base/java.net.Inet6AddressImpl.lookupAllHostAddr(Native Method)
+	at java.base/java.net.InetAddress$PlatformNameService.lookupAllHostAddr(InetAddress.java:929)
+	at java.base/java.net.InetAddress.getAddressesFromNameService(InetAddress.java:1515)
+	at java.base/java.net.InetAddress$NameServiceAddresses.get(InetAddress.java:848)
+	at java.base/java.net.InetAddress.getAllByName0(InetAddress.java:1505)
+	at java.base/java.net.InetAddress.getAllByName(InetAddress.java:1364)
+	at java.base/java.net.InetAddress.getAllByName(InetAddress.java:1298)
+	at com.mongodb.ServerAddress.getSocketAddresses(ServerAddress.java:203)
+	... 6 more
+
+2020-12-04 12:46:16,255 INFO  [org.mon.dri.cluster] (cluster-ClusterId{value='5fca218726362e5b1ee89676', description='null'}-0119e054194d:27017) Exception in monitor thread while connecting to server 0119e054194d:27017: com.mongodb.MongoSocketException: 0119e054194d
+	at com.mongodb.ServerAddress.getSocketAddresses(ServerAddress.java:211)
+	at com.mongodb.internal.connection.SocketStream.initializeSocket(SocketStream.java:75)
+	at com.mongodb.internal.connection.SocketStream.open(SocketStream.java:65)
+	at com.mongodb.internal.connection.InternalStreamConnection.open(InternalStreamConnection.java:143)
+	at com.mongodb.internal.connection.DefaultServerMonitor$ServerMonitorRunnable.lookupServerDescription(DefaultServerMonitor.java:188)
+	at com.mongodb.internal.connection.DefaultServerMonitor$ServerMonitorRunnable.run(DefaultServerMonitor.java:144)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+Caused by: java.net.UnknownHostException: 0119e054194d
+	at java.base/java.net.InetAddress$CachedAddresses.get(InetAddress.java:797)
+	at java.base/java.net.InetAddress.getAllByName0(InetAddress.java:1505)
+	at java.base/java.net.InetAddress.getAllByName(InetAddress.java:1364)
+	at java.base/java.net.InetAddress.getAllByName(InetAddress.java:1298)
+	at com.mongodb.ServerAddress.getSocketAddresses(ServerAddress.java:203)
+	... 6 more
+
+2020-12-04 12:46:18,365 INFO  [io.deb.con.mon.ReplicaSetDiscovery] (debezium-mongodbconnector-test-replica-set-monitor) Checking current members of replica set at localhost:27017
+2020-12-04 12:46:21,366 INFO  [io.deb.con.mon.ReplicaSetDiscovery] (debezium-mongodbconnector-test-replica-set-monitor) Checking current members of replica set at localhost:27017
+2020-12-04 12:46:24,365 INFO  [io.deb.con.mon.ReplicaSetDiscovery] (debezium-mongodbconnector-test-replica-set-monitor) Checking current members of replica set at localhost:27017
+2020-12-04 12:46:27,365 INFO  [io.deb.con.mon.ReplicaSetDiscovery] (debezium-mongodbconnector-test-replica-set-monitor) Checking current members of replica set at localhost:27017
+2020-12-04 12:46:30,365 INFO  [io.deb.con.mon.ReplicaSetDiscovery] (debezium-mongodbconnector-test-replica-set-monitor) Checking current members of replica set at localhost:27017
+2020-12-04 12:46:33,365 INFO  [io.deb.con.mon.ReplicaSetDiscovery] (debezium-mongodbconnector-test-replica-set-monitor) Checking current members of replica set at localhost:27017
+**********************************
+****** insert ********************
+****** done ********************
+**********************************
+2020-12-04 12:46:36,365 INFO  [io.deb.con.mon.ReplicaSetDiscovery] (debezium-mongodbconnector-test-replica-set-monitor) Checking current members of replica set at localhost:27017
+2020-12-04 12:46:39,365 INFO  [io.deb.con.mon.ReplicaSetDiscovery] (debezium-mongodbconnector-test-replica-set-monitor) Checking current members of replica set at localhost:27017
+2020-12-04 12:46:42,365 INFO  [io.deb.con.mon.ReplicaSetDiscovery] (debezium-mongodbconnector-test-replica-set-monitor) Checking current members of replica set at localhost:27017
+2020-12-04 12:46:45,365 INFO  [io.deb.con.mon.ReplicaSetDiscovery] (debezium-mongodbconnector-test-replica-set-monitor) Checking current members of replica set at localhost:27017
+2020-12-04 12:46:45,692 ERROR [io.deb.con.mon.MongoDbSnapshotChangeEventSource] (debezium-mongodbconnector-test-replicator-snapshot-0) Error while attempting to get database names: : com.mongodb.MongoTimeoutException: Timed out after 30000 ms while waiting to connect. Client view of cluster state is {type=UNKNOWN, servers=[{address=0119e054194d:27017, type=UNKNOWN, state=CONNECTING, exception={com.mongodb.MongoSocketException: 0119e054194d}, caused by {java.net.UnknownHostException: 0119e054194d}}]
+	at com.mongodb.internal.connection.BaseCluster.getDescription(BaseCluster.java:177)
+	at com.mongodb.internal.connection.SingleServerCluster.getDescription(SingleServerCluster.java:42)
+	at com.mongodb.client.internal.MongoClientDelegate.getConnectedClusterDescription(MongoClientDelegate.java:135)
+	at com.mongodb.client.internal.MongoClientDelegate.createClientSession(MongoClientDelegate.java:95)
+	at com.mongodb.client.internal.MongoClientDelegate$DelegateOperationExecutor.getClientSession(MongoClientDelegate.java:266)
+	at com.mongodb.client.internal.MongoClientDelegate$DelegateOperationExecutor.execute(MongoClientDelegate.java:170)
+	at com.mongodb.client.internal.MongoIterableImpl.execute(MongoIterableImpl.java:135)
+	at com.mongodb.client.internal.MongoIterableImpl.iterator(MongoIterableImpl.java:92)
+	at com.mongodb.client.internal.MappingIterable.iterator(MappingIterable.java:39)
+	at io.debezium.connector.mongodb.MongoUtil.forEach(MongoUtil.java:106)
+	at io.debezium.connector.mongodb.MongoUtil.forEachDatabaseName(MongoUtil.java:84)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.lambda$databaseNames$2(ConnectionContext.java:376)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.execute(ConnectionContext.java:319)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.databaseNames(ConnectionContext.java:373)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.lambda$collections$4(ConnectionContext.java:401)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.execute(ConnectionContext.java:319)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.collections(ConnectionContext.java:399)
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.createDataEventsForReplicaSet(MongoDbSnapshotChangeEventSource.java:347)
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.createDataEvents(MongoDbSnapshotChangeEventSource.java:323)
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.snapshotReplicaSet(MongoDbSnapshotChangeEventSource.java:221)
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.lambda$doExecute$0(MongoDbSnapshotChangeEventSource.java:117)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+
+2020-12-04 12:46:45,693 ERROR [io.deb.con.mon.MongoDbSnapshotChangeEventSource] (debezium-mongodbconnector-test-replicator-snapshot-0) Error while attempting to get collections in databases: : org.apache.kafka.connect.errors.ConnectException: Error while attempting to get database names
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.lambda$establishConnectionToPrimary$3(MongoDbSnapshotChangeEventSource.java:240)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.execute(ConnectionContext.java:322)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.databaseNames(ConnectionContext.java:373)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.lambda$collections$4(ConnectionContext.java:401)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.execute(ConnectionContext.java:319)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.collections(ConnectionContext.java:399)
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.createDataEventsForReplicaSet(MongoDbSnapshotChangeEventSource.java:347)
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.createDataEvents(MongoDbSnapshotChangeEventSource.java:323)
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.snapshotReplicaSet(MongoDbSnapshotChangeEventSource.java:221)
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.lambda$doExecute$0(MongoDbSnapshotChangeEventSource.java:117)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+Caused by: com.mongodb.MongoTimeoutException: Timed out after 30000 ms while waiting to connect. Client view of cluster state is {type=UNKNOWN, servers=[{address=0119e054194d:27017, type=UNKNOWN, state=CONNECTING, exception={com.mongodb.MongoSocketException: 0119e054194d}, caused by {java.net.UnknownHostException: 0119e054194d}}]
+	at com.mongodb.internal.connection.BaseCluster.getDescription(BaseCluster.java:177)
+	at com.mongodb.internal.connection.SingleServerCluster.getDescription(SingleServerCluster.java:42)
+	at com.mongodb.client.internal.MongoClientDelegate.getConnectedClusterDescription(MongoClientDelegate.java:135)
+	at com.mongodb.client.internal.MongoClientDelegate.createClientSession(MongoClientDelegate.java:95)
+	at com.mongodb.client.internal.MongoClientDelegate$DelegateOperationExecutor.getClientSession(MongoClientDelegate.java:266)
+	at com.mongodb.client.internal.MongoClientDelegate$DelegateOperationExecutor.execute(MongoClientDelegate.java:170)
+	at com.mongodb.client.internal.MongoIterableImpl.execute(MongoIterableImpl.java:135)
+	at com.mongodb.client.internal.MongoIterableImpl.iterator(MongoIterableImpl.java:92)
+	at com.mongodb.client.internal.MappingIterable.iterator(MappingIterable.java:39)
+	at io.debezium.connector.mongodb.MongoUtil.forEach(MongoUtil.java:106)
+	at io.debezium.connector.mongodb.MongoUtil.forEachDatabaseName(MongoUtil.java:84)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.lambda$databaseNames$2(ConnectionContext.java:376)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.execute(ConnectionContext.java:319)
+	... 13 more
+
+2020-12-04 12:46:45,693 ERROR [io.deb.con.mon.MongoDbSnapshotChangeEventSource] (debezium-mongodbconnector-test-replicator-snapshot-0) Snapshot for replica set my-mongo-set failed: org.apache.kafka.connect.errors.ConnectException: Error while attempting to get collections in databases
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.lambda$establishConnectionToPrimary$3(MongoDbSnapshotChangeEventSource.java:240)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.execute(ConnectionContext.java:322)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.collections(ConnectionContext.java:399)
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.createDataEventsForReplicaSet(MongoDbSnapshotChangeEventSource.java:347)
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.createDataEvents(MongoDbSnapshotChangeEventSource.java:323)
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.snapshotReplicaSet(MongoDbSnapshotChangeEventSource.java:221)
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.lambda$doExecute$0(MongoDbSnapshotChangeEventSource.java:117)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+Caused by: org.apache.kafka.connect.errors.ConnectException: Error while attempting to get database names
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.lambda$establishConnectionToPrimary$3(MongoDbSnapshotChangeEventSource.java:240)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.execute(ConnectionContext.java:322)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.databaseNames(ConnectionContext.java:373)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.lambda$collections$4(ConnectionContext.java:401)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.execute(ConnectionContext.java:319)
+	... 10 more
+Caused by: com.mongodb.MongoTimeoutException: Timed out after 30000 ms while waiting to connect. Client view of cluster state is {type=UNKNOWN, servers=[{address=0119e054194d:27017, type=UNKNOWN, state=CONNECTING, exception={com.mongodb.MongoSocketException: 0119e054194d}, caused by {java.net.UnknownHostException: 0119e054194d}}]
+	at com.mongodb.internal.connection.BaseCluster.getDescription(BaseCluster.java:177)
+	at com.mongodb.internal.connection.SingleServerCluster.getDescription(SingleServerCluster.java:42)
+	at com.mongodb.client.internal.MongoClientDelegate.getConnectedClusterDescription(MongoClientDelegate.java:135)
+	at com.mongodb.client.internal.MongoClientDelegate.createClientSession(MongoClientDelegate.java:95)
+	at com.mongodb.client.internal.MongoClientDelegate$DelegateOperationExecutor.getClientSession(MongoClientDelegate.java:266)
+	at com.mongodb.client.internal.MongoClientDelegate$DelegateOperationExecutor.execute(MongoClientDelegate.java:170)
+	at com.mongodb.client.internal.MongoIterableImpl.execute(MongoIterableImpl.java:135)
+	at com.mongodb.client.internal.MongoIterableImpl.iterator(MongoIterableImpl.java:92)
+	at com.mongodb.client.internal.MappingIterable.iterator(MappingIterable.java:39)
+	at io.debezium.connector.mongodb.MongoUtil.forEach(MongoUtil.java:106)
+	at io.debezium.connector.mongodb.MongoUtil.forEachDatabaseName(MongoUtil.java:84)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.lambda$databaseNames$2(ConnectionContext.java:376)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.execute(ConnectionContext.java:319)
+	... 13 more
+
+2020-12-04 12:46:45,694 ERROR [io.deb.pip.ErrorHandler] (debezium-mongodbconnector-test-replicator-snapshot-0) Producer failure: org.apache.kafka.connect.errors.ConnectException: Error while attempting to get collections in databases
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.lambda$establishConnectionToPrimary$3(MongoDbSnapshotChangeEventSource.java:240)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.execute(ConnectionContext.java:322)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.collections(ConnectionContext.java:399)
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.createDataEventsForReplicaSet(MongoDbSnapshotChangeEventSource.java:347)
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.createDataEvents(MongoDbSnapshotChangeEventSource.java:323)
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.snapshotReplicaSet(MongoDbSnapshotChangeEventSource.java:221)
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.lambda$doExecute$0(MongoDbSnapshotChangeEventSource.java:117)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+Caused by: org.apache.kafka.connect.errors.ConnectException: Error while attempting to get database names
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.lambda$establishConnectionToPrimary$3(MongoDbSnapshotChangeEventSource.java:240)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.execute(ConnectionContext.java:322)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.databaseNames(ConnectionContext.java:373)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.lambda$collections$4(ConnectionContext.java:401)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.execute(ConnectionContext.java:319)
+	... 10 more
+Caused by: com.mongodb.MongoTimeoutException: Timed out after 30000 ms while waiting to connect. Client view of cluster state is {type=UNKNOWN, servers=[{address=0119e054194d:27017, type=UNKNOWN, state=CONNECTING, exception={com.mongodb.MongoSocketException: 0119e054194d}, caused by {java.net.UnknownHostException: 0119e054194d}}]
+	at com.mongodb.internal.connection.BaseCluster.getDescription(BaseCluster.java:177)
+	at com.mongodb.internal.connection.SingleServerCluster.getDescription(SingleServerCluster.java:42)
+	at com.mongodb.client.internal.MongoClientDelegate.getConnectedClusterDescription(MongoClientDelegate.java:135)
+	at com.mongodb.client.internal.MongoClientDelegate.createClientSession(MongoClientDelegate.java:95)
+	at com.mongodb.client.internal.MongoClientDelegate$DelegateOperationExecutor.getClientSession(MongoClientDelegate.java:266)
+	at com.mongodb.client.internal.MongoClientDelegate$DelegateOperationExecutor.execute(MongoClientDelegate.java:170)
+	at com.mongodb.client.internal.MongoIterableImpl.execute(MongoIterableImpl.java:135)
+	at com.mongodb.client.internal.MongoIterableImpl.iterator(MongoIterableImpl.java:92)
+	at com.mongodb.client.internal.MappingIterable.iterator(MappingIterable.java:39)
+	at io.debezium.connector.mongodb.MongoUtil.forEach(MongoUtil.java:106)
+	at io.debezium.connector.mongodb.MongoUtil.forEachDatabaseName(MongoUtil.java:84)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.lambda$databaseNames$2(ConnectionContext.java:376)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.execute(ConnectionContext.java:319)
+	... 13 more
+
+2020-12-04 12:46:45,694 INFO  [io.deb.con.mon.MongoDbSnapshotChangeEventSource] (debezium-mongodbconnector-test-change-event-source-coordinator) Stopping mongodb connections
+2020-12-04 12:46:45,694 INFO  [io.deb.con.mon.ConnectionContext] (debezium-mongodbconnector-test-change-event-source-coordinator) Closing all connections to my-mongo-set/localhost:27017
+2020-12-04 12:46:45,697 INFO  [org.mon.dri.connection] (debezium-mongodbconnector-test-change-event-source-coordinator) Closed connection [connectionId{localValue:15, serverValue:16}] to 127.0.0.1:27017 because the pool has been closed.
+2020-12-04 12:46:45,700 INFO  [io.deb.pip.sou.AbstractSnapshotChangeEventSource] (debezium-mongodbconnector-test-change-event-source-coordinator) Snapshot - Final stage
+2020-12-04 12:46:45,701 INFO  [io.deb.pip.ChangeEventSourceCoordinator] (debezium-mongodbconnector-test-change-event-source-coordinator) Snapshot ended with SnapshotResult [status=COMPLETED, offset=MongoDbOffsetContext [sourceInfo=io.debezium.connector.mongodb.SourceInfo@46b7006e]]
+2020-12-04 12:46:45,701 WARN  [io.deb.con.mon.MongoDbSchema] (debezium-mongodbconnector-test-change-event-source-coordinator) After applying the include/exclude list filters, no changes will be captured. Please check your configuration!
+2020-12-04 12:46:45,702 INFO  [io.deb.pip.met.StreamingChangeEventSourceMetrics] (debezium-mongodbconnector-test-change-event-source-coordinator) Connected metrics set to 'true'
+2020-12-04 12:46:45,703 INFO  [io.deb.pip.ChangeEventSourceCoordinator] (debezium-mongodbconnector-test-change-event-source-coordinator) Starting streaming
+2020-12-04 12:46:45,704 INFO  [org.mon.dri.cluster] (debezium-mongodbconnector-test-change-event-source-coordinator) Cluster created with settings {hosts=[localhost:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms'}
+2020-12-04 12:46:45,704 INFO  [org.mon.dri.cluster] (debezium-mongodbconnector-test-change-event-source-coordinator) Cluster created with settings {hosts=[127.0.0.1:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms'}
+2020-12-04 12:46:45,705 INFO  [io.deb.con.mon.MongoDbStreamingChangeEventSource] (debezium-mongodbconnector-test-change-event-source-coordinator) Reading oplog for 'my-mongo-set/localhost:27017' primary 127.0.0.1:27017 starting at Timestamp{value=6902366238308040706, seconds=1607082374, inc=2}
+2020-12-04 12:46:45,705 INFO  [io.deb.con.mon.MongoDbStreamingChangeEventSource] (debezium-mongodbconnector-test-change-event-source-coordinator) The last event processed was not transactional, resuming at the oplog event after 'Timestamp{value=6902366238308040706, seconds=1607082374, inc=2}'
+2020-12-04 12:46:45,708 INFO  [org.mon.dri.cluster] (debezium-mongodbconnector-test-change-event-source-coordinator) Cluster description not yet available. Waiting for 30000 ms before timing out
+2020-12-04 12:46:45,707 INFO  [org.mon.dri.connection] (cluster-rtt-ClusterId{value='5fca21a526362e5b1ee89678', description='null'}-localhost:27017) Opened connection [connectionId{localValue:81, serverValue:19}] to localhost:27017
+2020-12-04 12:46:45,708 INFO  [org.mon.dri.connection] (cluster-ClusterId{value='5fca21a526362e5b1ee89679', description='null'}-127.0.0.1:27017) Opened connection [connectionId{localValue:80, serverValue:18}] to 127.0.0.1:27017
+2020-12-04 12:46:45,708 INFO  [org.mon.dri.cluster] (cluster-ClusterId{value='5fca21a526362e5b1ee89679', description='null'}-127.0.0.1:27017) Monitor thread successfully connected to server with description ServerDescription{address=127.0.0.1:27017, type=REPLICA_SET_PRIMARY, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=9, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=2175001, setName='my-mongo-set', canonicalAddress=0119e054194d:27017, hosts=[0119e054194d:27017], passives=[], arbiters=[], primary='0119e054194d:27017', tagSet=TagSet{[]}, electionId=7fffffff0000000000000001, setVersion=1, topologyVersion=TopologyVersion{processId=5fca211b73a881828f0b3c35, counter=6}, lastWriteDate=Fri Dec 04 12:46:35 CET 2020, lastUpdateTimeNanos=16056913414197}
+2020-12-04 12:46:45,711 INFO  [org.mon.dri.connection] (cluster-rtt-ClusterId{value='5fca21a526362e5b1ee89679', description='null'}-127.0.0.1:27017) Opened connection [connectionId{localValue:82, serverValue:20}] to 127.0.0.1:27017
+2020-12-04 12:46:45,713 INFO  [org.mon.dri.connection] (cluster-ClusterId{value='5fca21a526362e5b1ee89678', description='null'}-localhost:27017) Opened connection [connectionId{localValue:79, serverValue:17}] to localhost:27017
+2020-12-04 12:46:45,714 INFO  [org.mon.dri.cluster] (cluster-ClusterId{value='5fca21a526362e5b1ee89678', description='null'}-localhost:27017) Monitor thread successfully connected to server with description ServerDescription{address=localhost:27017, type=REPLICA_SET_PRIMARY, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=9, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=6453854, setName='my-mongo-set', canonicalAddress=0119e054194d:27017, hosts=[0119e054194d:27017], passives=[], arbiters=[], primary='0119e054194d:27017', tagSet=TagSet{[]}, electionId=7fffffff0000000000000001, setVersion=1, topologyVersion=TopologyVersion{processId=5fca211b73a881828f0b3c35, counter=6}, lastWriteDate=Fri Dec 04 12:46:35 CET 2020, lastUpdateTimeNanos=16056917556442}
+2020-12-04 12:46:45,739 INFO  [org.mon.dri.connection] (debezium-mongodbconnector-test-change-event-source-coordinator) Opened connection [connectionId{localValue:83, serverValue:21}] to 127.0.0.1:27017
+=======================================================
+=========== event received     =======================
+2020-12-04 12:46:46,014 INFO  [io.deb.con.com.BaseSourceTask] (Camel (camel-1) thread #0 - DebeziumConsumer) Stopping down connector
+2020-12-04 12:46:46,109 INFO  [org.mon.dri.connection] (main) Closed connection [connectionId{localValue:7, serverValue:8}] to localhost:27017 because the pool has been closed.
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 45.949 s - in org.apache.camel.quarkus.component.debezium.common.it.mongodb.DebeziumMongodbTest
+2020-12-04 12:46:46,134 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (main) Apache Camel 3.6.0 (camel-1) is shutting down
+2020-12-04 12:46:46,136 INFO  [io.deb.emb.EmbeddedEngine] (main) Stopping the embedded engine
+2020-12-04 12:46:46,137 INFO  [io.deb.emb.EmbeddedEngine] (main) Waiting for PT5M for connector to stop
+2020-12-04 12:46:46,753 INFO  [io.deb.con.mon.ConnectionContext] (debezium-mongodbconnector-test-change-event-source-coordinator) Closing all connections to my-mongo-set/localhost:27017
+2020-12-04 12:46:46,753 INFO  [org.mon.dri.connection] (debezium-mongodbconnector-test-change-event-source-coordinator) Closed connection [connectionId{localValue:83, serverValue:21}] to 127.0.0.1:27017 because the pool has been closed.
+2020-12-04 12:46:46,755 INFO  [io.deb.pip.ChangeEventSourceCoordinator] (debezium-mongodbconnector-test-change-event-source-coordinator) Finished streaming
+2020-12-04 12:46:46,755 INFO  [io.deb.pip.met.StreamingChangeEventSourceMetrics] (debezium-mongodbconnector-test-change-event-source-coordinator) Connected metrics set to 'false'
+2020-12-04 12:46:46,759 INFO  [org.apa.kaf.con.sto.FileOffsetBackingStore] (Camel (camel-1) thread #0 - DebeziumConsumer) Stopped FileOffsetBackingStore
+2020-12-04 12:46:46,759 INFO  [io.deb.con.mon.MongoDbConnector] (Camel (camel-1) thread #0 - DebeziumConsumer) Stopping MongoDB connector
+2020-12-04 12:46:46,759 INFO  [io.deb.con.mon.ConnectionContext] (Camel (camel-1) thread #0 - DebeziumConsumer) Closing all connections to localhost:27017
+2020-12-04 12:46:46,760 INFO  [org.mon.dri.connection] (Camel (camel-1) thread #0 - DebeziumConsumer) Closed connection [connectionId{localValue:10, serverValue:11}] to localhost:27017 because the pool has been closed.
+2020-12-04 12:46:46,760 INFO  [io.deb.con.mon.MongoDbConnector] (Camel (camel-1) thread #0 - DebeziumConsumer) Stopped MongoDB connector
+2020-12-04 12:46:46,761 ERROR [io.deb.emb.EmbeddedEngine] (Camel (camel-1) thread #0 - DebeziumConsumer) Error while trying to run connector class 'io.debezium.connector.mongodb.MongoDbConnector': org.apache.kafka.connect.errors.ConnectException: An exception occurred in the change event producer. This connector will be stopped.
+	at io.debezium.pipeline.ErrorHandler.setProducerThrowable(ErrorHandler.java:42)
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.lambda$doExecute$0(MongoDbSnapshotChangeEventSource.java:128)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+Caused by: org.apache.kafka.connect.errors.ConnectException: Error while attempting to get collections in databases
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.lambda$establishConnectionToPrimary$3(MongoDbSnapshotChangeEventSource.java:240)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.execute(ConnectionContext.java:322)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.collections(ConnectionContext.java:399)
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.createDataEventsForReplicaSet(MongoDbSnapshotChangeEventSource.java:347)
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.createDataEvents(MongoDbSnapshotChangeEventSource.java:323)
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.snapshotReplicaSet(MongoDbSnapshotChangeEventSource.java:221)
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.lambda$doExecute$0(MongoDbSnapshotChangeEventSource.java:117)
+	... 5 more
+Caused by: org.apache.kafka.connect.errors.ConnectException: Error while attempting to get database names
+	at io.debezium.connector.mongodb.MongoDbSnapshotChangeEventSource.lambda$establishConnectionToPrimary$3(MongoDbSnapshotChangeEventSource.java:240)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.execute(ConnectionContext.java:322)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.databaseNames(ConnectionContext.java:373)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.lambda$collections$4(ConnectionContext.java:401)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.execute(ConnectionContext.java:319)
+	... 10 more
+Caused by: com.mongodb.MongoTimeoutException: Timed out after 30000 ms while waiting to connect. Client view of cluster state is {type=UNKNOWN, servers=[{address=0119e054194d:27017, type=UNKNOWN, state=CONNECTING, exception={com.mongodb.MongoSocketException: 0119e054194d}, caused by {java.net.UnknownHostException: 0119e054194d}}]
+	at com.mongodb.internal.connection.BaseCluster.getDescription(BaseCluster.java:177)
+	at com.mongodb.internal.connection.SingleServerCluster.getDescription(SingleServerCluster.java:42)
+	at com.mongodb.client.internal.MongoClientDelegate.getConnectedClusterDescription(MongoClientDelegate.java:135)
+	at com.mongodb.client.internal.MongoClientDelegate.createClientSession(MongoClientDelegate.java:95)
+	at com.mongodb.client.internal.MongoClientDelegate$DelegateOperationExecutor.getClientSession(MongoClientDelegate.java:266)
+	at com.mongodb.client.internal.MongoClientDelegate$DelegateOperationExecutor.execute(MongoClientDelegate.java:170)
+	at com.mongodb.client.internal.MongoIterableImpl.execute(MongoIterableImpl.java:135)
+	at com.mongodb.client.internal.MongoIterableImpl.iterator(MongoIterableImpl.java:92)
+	at com.mongodb.client.internal.MappingIterable.iterator(MappingIterable.java:39)
+	at io.debezium.connector.mongodb.MongoUtil.forEach(MongoUtil.java:106)
+	at io.debezium.connector.mongodb.MongoUtil.forEachDatabaseName(MongoUtil.java:84)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.lambda$databaseNames$2(ConnectionContext.java:376)
+	at io.debezium.connector.mongodb.ConnectionContext$MongoPrimary.execute(ConnectionContext.java:319)
+	... 13 more
+
+2020-12-04 12:46:46,764 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (main) Apache Camel 3.6.0 (camel-1) uptime 33.235 seconds
+2020-12-04 12:46:46,764 INFO  [org.apa.cam.imp.eng.AbstractCamelContext] (main) Apache Camel 3.6.0 (camel-1) is shutdown in 0.630 seconds
+2020-12-04 12:46:46,779 INFO  [io.quarkus] (main) Quarkus stopped in 0.667s
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- maven-jar-plugin:3.2.0:jar (default-jar) @ camel-quarkus-integration-test-debezium ---
+[INFO] Building jar: /home/jondruse/git/camel-quarkus/integration-tests/debezium/target/camel-quarkus-integration-test-debezium-1.5.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-jar-plugin:3.2.0:test-jar (default) @ camel-quarkus-integration-test-debezium ---
+[INFO] Building jar: /home/jondruse/git/camel-quarkus/integration-tests/debezium/target/camel-quarkus-integration-test-debezium-1.5.0-SNAPSHOT-tests.jar
+[INFO] 
+[INFO] --- quarkus-maven-plugin:1.10.1.Final:build (quarkus-build) @ camel-quarkus-integration-test-debezium ---
+[INFO] [org.jboss.threads] JBoss Threads version 3.1.1.Final
+[INFO] [io.quarkus.arc.processor.BeanProcessor] Found unrecommended usage of private members (use package-private instead) in application beans:
+	- @Inject field org.apache.camel.quarkus.component.debezium.common.it.AbstractDebeziumResource#TIMEOUT,
+	- @Inject field org.apache.camel.quarkus.component.debezium.common.it.AbstractDebeziumResource#TIMEOUT,
+	- @Inject field org.apache.camel.quarkus.component.debezium.common.it.AbstractDebeziumResource#TIMEOUT
+	- and 1 more - please enable debug logging to see the full list
+[INFO] [io.quarkus.deployment.pkg.steps.JarResultBuildStep] Building thin jar: /home/jondruse/git/camel-quarkus/integration-tests/debezium/target/camel-quarkus-integration-test-debezium-1.5.0-SNAPSHOT-runner.jar
+[INFO] [io.quarkus.deployment.QuarkusAugmentor] Quarkus augmentation completed in 1477ms
+[INFO] 
+[INFO] --- maven-install-plugin:2.5.2:install (default-install) @ camel-quarkus-integration-test-debezium ---
+[INFO] Installing /home/jondruse/git/camel-quarkus/integration-tests/debezium/target/camel-quarkus-integration-test-debezium-1.5.0-SNAPSHOT.jar to /home/jondruse/.m2/repository/org/apache/camel/quarkus/camel-quarkus-integration-test-debezium/1.5.0-SNAPSHOT/camel-quarkus-integration-test-debezium-1.5.0-SNAPSHOT.jar
+[INFO] Installing /home/jondruse/git/camel-quarkus/integration-tests/debezium/pom.xml to /home/jondruse/.m2/repository/org/apache/camel/quarkus/camel-quarkus-integration-test-debezium/1.5.0-SNAPSHOT/camel-quarkus-integration-test-debezium-1.5.0-SNAPSHOT.pom
+[INFO] Installing /home/jondruse/git/camel-quarkus/integration-tests/debezium/target/camel-quarkus-integration-test-debezium-1.5.0-SNAPSHOT-tests.jar to /home/jondruse/.m2/repository/org/apache/camel/quarkus/camel-quarkus-integration-test-debezium/1.5.0-SNAPSHOT/camel-quarkus-integration-test-debezium-1.5.0-SNAPSHOT-tests.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  01:03 min
+[INFO] Finished at: 2020-12-04T12:46:50+01:00
+[INFO] ------------------------------------------------------------------------
+[jondruse@localhost camel-quarkus]$ 

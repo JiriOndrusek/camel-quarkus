@@ -57,11 +57,12 @@ public class DebeziumMongodbResource extends AbstractDebeziumResource {
     @Override
     String getEndpoinUrl(String hostname, String port, String username, String password, String databaseServerName,
             String offsetStorageFileName) {
-        return Type.mongodb.getComponent() + ":localhost?"
+        return Type.mongodb.getComponent() + ":NAME_OF_ENDPOINT?"
                 + "offsetStorageFileName=" + offsetStorageFileName
                 + "&mongodbUser=" + System.getProperty(Type.mongodb.getPropertyUsername())
                 + "&mongodbPassword=" + System.getProperty(Type.mongodb.getPropertyPassword())
-                + "&mongodbName=docker-rs"
-                + "&mongodbHosts=" + hostname + ":" + port;
+                + "&mongodbPollIntervalMs=3000"
+                + "&mongodbName=test" //todo jondruse
+                + "&mongodbHosts=rso/" + hostname + ":" + port;
     }
 }

@@ -29,7 +29,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
  * To change parameters in endpoint url, please override getEndpoinUrl method and change parameters there.
  */
 public abstract class AbstractDebeziumResource {
-    @ConfigProperty(name = "test.debezium.timeout", defaultValue = "10000")
+    @ConfigProperty(name = "test.debezium.timeout", defaultValue = "20000")
     private long TIMEOUT;
 
     private final Type type;

@@ -1,0 +1,90 @@
+db.adminCommand( { replSetGetStatus : 1 } )
+{
+	"set" : "docker-rs",
+	"date" : ISODate("2020-12-04T12:42:25.665Z"),
+	"myState" : 1,
+	"term" : NumberLong(1),
+	"syncingTo" : "",
+	"syncSourceHost" : "",
+	"syncSourceId" : -1,
+	"heartbeatIntervalMillis" : NumberLong(2000),
+	"majorityVoteCount" : 1,
+	"writeMajorityCount" : 1,
+	"optimes" : {
+		"lastCommittedOpTime" : {
+			"ts" : Timestamp(1607085739, 1),
+			"t" : NumberLong(1)
+		},
+		"lastCommittedWallTime" : ISODate("2020-12-04T12:42:19.688Z"),
+		"readConcernMajorityOpTime" : {
+			"ts" : Timestamp(1607085739, 1),
+			"t" : NumberLong(1)
+		},
+		"readConcernMajorityWallTime" : ISODate("2020-12-04T12:42:19.688Z"),
+		"appliedOpTime" : {
+			"ts" : Timestamp(1607085739, 1),
+			"t" : NumberLong(1)
+		},
+		"durableOpTime" : {
+			"ts" : Timestamp(1607085739, 1),
+			"t" : NumberLong(1)
+		},
+		"lastAppliedWallTime" : ISODate("2020-12-04T12:42:19.688Z"),
+		"lastDurableWallTime" : ISODate("2020-12-04T12:42:19.688Z")
+	},
+	"lastStableRecoveryTimestamp" : Timestamp(1607085719, 1),
+	"lastStableCheckpointTimestamp" : Timestamp(1607085719, 1),
+	"electionCandidateMetrics" : {
+		"lastElectionReason" : "electionTimeout",
+		"lastElectionDate" : ISODate("2020-12-04T12:39:59.655Z"),
+		"electionTerm" : NumberLong(1),
+		"lastCommittedOpTimeAtElection" : {
+			"ts" : Timestamp(0, 0),
+			"t" : NumberLong(-1)
+		},
+		"lastSeenOpTimeAtElection" : {
+			"ts" : Timestamp(1607085599, 1),
+			"t" : NumberLong(-1)
+		},
+		"numVotesNeeded" : 1,
+		"priorityAtElection" : 1,
+		"electionTimeoutMillis" : NumberLong(10000),
+		"newTermStartDate" : ISODate("2020-12-04T12:39:59.684Z"),
+		"wMajorityWriteAvailabilityDate" : ISODate("2020-12-04T12:39:59.705Z")
+	},
+	"members" : [
+		{
+			"_id" : 0,
+			"name" : "49578d533b63:27017",
+			"health" : 1,
+			"state" : 1,
+			"stateStr" : "PRIMARY",
+			"uptime" : 147,
+			"optime" : {
+				"ts" : Timestamp(1607085739, 1),
+				"t" : NumberLong(1)
+			},
+			"optimeDate" : ISODate("2020-12-04T12:42:19Z"),
+			"syncingTo" : "",
+			"syncSourceHost" : "",
+			"syncSourceId" : -1,
+			"infoMessage" : "",
+			"electionTime" : Timestamp(1607085599, 2),
+			"electionDate" : ISODate("2020-12-04T12:39:59Z"),
+			"configVersion" : 1,
+			"self" : true,
+			"lastHeartbeatMessage" : ""
+		}
+	],
+	"ok" : 1,
+	"$clusterTime" : {
+		"clusterTime" : Timestamp(1607085739, 1),
+		"signature" : {
+			"hash" : BinData(0,"AAAAAAAAAAAAAAAAAAAAAAAAAAA="),
+			"keyId" : NumberLong(0)
+		}
+	},
+	"operationTime" : Timestamp(1607085739, 1)
+}
+docker-rs:PRIMARY> 
+

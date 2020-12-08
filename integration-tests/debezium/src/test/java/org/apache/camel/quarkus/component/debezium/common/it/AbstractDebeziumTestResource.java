@@ -33,11 +33,11 @@ import org.testcontainers.utility.TestcontainersConfiguration;
  * Parent starts using abstract method.
  */
 public abstract class AbstractDebeziumTestResource<T extends GenericContainer> implements ContainerResourceLifecycleManager {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDebeziumTestResource.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractDebeziumTestResource.class);
 
     protected T container;
-    private Path storeFile;
-    private final Type type;
+    protected Path storeFile;
+    protected final Type type;
 
     public AbstractDebeziumTestResource(Type type) {
         this.type = type;
@@ -61,10 +61,12 @@ public abstract class AbstractDebeziumTestResource<T extends GenericContainer> i
 
             container = createContainer();
 
-            container.start();
+            //            container.start();
 
             Map<String, String> map = CollectionHelper.mapOf(
                     type.getPropertyHostname(), container.getContainerIpAddress(),
+                    //                    type.getPropertyPort(),  "30001",
+                    //                    type.getPropertyPort(), "27017",
                     type.getPropertyPort(), container.getMappedPort(getPort()) + "",
                     type.getPropertyUsername(), getUsername(),
                     type.getPropertyPassword(), getPassword(),

@@ -31,6 +31,7 @@ import org.apache.camel.quarkus.component.debezium.common.it.Type;
 import org.bson.Document;
 import org.jboss.logging.Logger;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -56,17 +57,29 @@ class DebeziumMongodbTest extends AbstractDebeziumTest {
 
     @BeforeAll
     public static void setUp() throws SQLException {
-        final String mongoUrl = System.getProperty(Type.mongodb.getPropertyJdbc());
+        String mongoUrl = System.getProperty(Type.mongodb.getPropertyJdbc());
+        //        mongoUrl = "mongodb://debezium:dbz@127.0.0.1:27017";
 
         if (mongoUrl != null) {
+
+            //            ServerAddress serverAddress = new ServerAddress("localhost", Integer.parseInt(mongoUrl));
+            //            MongoCredential credential = MongoCredential.createCredential("user", "test", "changeit".toCharArray());
+            //            MongoClientOptions options = MongoClientOptions.builder().build();
+            //
+            //            mongoClient = MongoClients.create().create(serverAddress, credential, options);
+            //            MongoDatabase database = mongoClient.getDatabase(TEST_DATABASE);
+            //            MongoCollection<Document> collection = database.getCollection(TEST_COLLECTION);
+
             mongoClient = MongoClients.create(mongoUrl);
         } else {
             LOG.warn("Container is not running. Connection is not created.");
         }
 
-//        //create companies table
-//        MongoDatabase db = mongoClient.getDatabase("test");
-//        db.createCollection("companies");
+        //create companies table
+        //        MongoDatabase db = mongoClient.getDatabase("test");
+        //        db.createCollection("companies");
+        //        MongoCollection cust = db.getCollection("customers");
+        //        System.out.println(cust);
     }
 
     @Before
@@ -96,16 +109,16 @@ class DebeziumMongodbTest extends AbstractDebeziumTest {
         return "Test." + super.getCompanyTableName();
     }
 
-    @Test
+    //    @Test
     @Order(0)
     @EnabledIfSystemProperty(named = PROPERTY_JDBC, matches = ".*")
     public void testReceiveInitCompany() {
-        MongoDatabase db = mongoClient.getDatabase("test");
+        MongoDatabase db = mongoClient.getDatabase("inventory");
 
-        MongoCollection companies = db.getCollection("companies");
+        MongoCollection companies = db.getCollection("customers");
         Document doc = new Document();
         doc.put("name", "company01");
-        companies.insertOne(doc);
+        //        companies.insertOne(doc);
 
         Response response = receiveResponse();
         System.out.println(response.getStatusCode());
@@ -119,7 +132,12 @@ class DebeziumMongodbTest extends AbstractDebeziumTest {
         Document doc = new Document();
         doc.put("name", COMPANY_1 + "_" + i);
         doc.put("city", CITY_1);
+        System.out.println("**********************************");
+        System.out.println("****** insert ********************");
         companies.insertOne(doc);
+
+        System.out.println("****** done ********************");
+        System.out.println("**********************************");
     }
 
     //fromexample
@@ -127,13 +145,14 @@ class DebeziumMongodbTest extends AbstractDebeziumTest {
     //fom debug
     //debezium-mongodb:localhost?offsetStorageFileName=/tmp/DebeziumMongodbTestResource-store-2800689676957064560&mongodbPassword=changeit&mongodbName=docker-rs&mongodbHosts=localhost:32821
 
-    @Test
+    @Ignore
     @Order(2)
     @EnabledIfSystemProperty(named = PROPERTY_JDBC, matches = ".*")
     public void testUpdate() throws SQLException {
-        super.testUpdate();
+
     }
 
+    @Ignore
     @Test
     @Order(3)
     @EnabledIfSystemProperty(named = PROPERTY_JDBC, matches = ".*")
