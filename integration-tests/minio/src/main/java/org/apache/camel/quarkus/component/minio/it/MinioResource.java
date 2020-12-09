@@ -38,6 +38,11 @@ public class MinioResource {
 
     private static final Logger LOG = Logger.getLogger(MinioResource.class);
 
+    public static final String SERVER_ACCESS_KEY = "testAccessKey";
+    public static final String SERVER_SECRET_KEY = "testSecretKey";
+    public static final String PARAM_SERVER_HOST = MinioResource.class.getSimpleName() + "_serverHost";
+    public static final String PARAM_SERVER_PORT = MinioResource.class.getSimpleName() + "_serverPort";
+
     @Inject
     ProducerTemplate producerTemplate;
 
@@ -65,5 +70,21 @@ public class MinioResource {
                 .created(new URI("https://camel.apache.org/"))
                 .entity(response)
                 .build();
+    }
+
+
+    @Path("/consumer")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String consumer() {
+
+        String serverUrl = "http://" +System.getProperty(PARAM_SERVER_HOST) + ":" + System.getProperty(PARAM_SERVER_PORT);
+
+        final String message = consumerTemplate.receiveBody("minio://mycamel?moveAfterRead=true&destinationBucketName=camel-kafka-connector&autoCreateBucket=true"
+                + "&accessKey=" + SERVER_ACCESS_KEY
+                + "&secretKey=RAW(" + SERVER_SECRET_KEY + ")"
+                + "&endpoint=" + serverUrl, 5000, String.class);
+        LOG.infof("Received from minio: %s", message);
+        return message;
     }
 }
