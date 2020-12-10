@@ -59,6 +59,7 @@ public class DebeziumMongodbResource extends AbstractDebeziumResource {
             String offsetStorageFileName) {
         return Type.mongodb.getComponent() + ":localhost?"
                 + "offsetStorageFileName=" + offsetStorageFileName
+                + "&mongodbUser=" + System.getProperty(Type.mongodb.getPropertyUsername())
                 + "&mongodbPassword=" + System.getProperty(Type.mongodb.getPropertyPassword())
                 + "&mongodbName=docker-rs"
                 + "&mongodbHosts=" + hostname + ":" + port;

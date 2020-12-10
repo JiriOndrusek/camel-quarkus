@@ -61,7 +61,7 @@ public abstract class AbstractDebeziumTestResource<T extends GenericContainer> i
 
             container = createContainer();
 
-            container.start();
+            startContainer();
 
             Map<String, String> map = CollectionHelper.mapOf(
                     type.getPropertyHostname(), container.getContainerIpAddress(),
@@ -80,6 +80,10 @@ public abstract class AbstractDebeziumTestResource<T extends GenericContainer> i
             LOGGER.error("Container does not start", e);
             throw new RuntimeException(e);
         }
+    }
+
+    protected void startContainer() {
+        container.start();
     }
 
     @Override

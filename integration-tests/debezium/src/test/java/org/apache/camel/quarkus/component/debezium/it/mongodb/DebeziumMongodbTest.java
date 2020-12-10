@@ -25,11 +25,11 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.response.Response;
 import org.apache.camel.quarkus.component.debezium.it.AbstractDebeziumTest;
 import org.apache.camel.quarkus.component.debezium.it.Type;
 import org.bson.Document;
 import org.jboss.logging.Logger;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -39,16 +39,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
+import static org.hamcrest.Matchers.containsString;
+
 @QuarkusTest
 @QuarkusTestResource(DebeziumMongodbTestResource.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class DebeziumMongodbTest extends AbstractDebeziumTest {
     private static final Logger LOG = Logger.getLogger(DebeziumMongodbTest.class);
 
-    //has to be constant and has to be equal to Type.mysql.getJdbcProperty
+    //has to be constant and has to be equal to Type.mongodb.getJdbcProperty
     public static final String PROPERTY_JDBC = "mongodb_jdbc";
 
     private static MongoClient mongoClient;
+
+    private static MongoCollection companies;
 
     public DebeziumMongodbTest() {
         super(Type.mongodb);
@@ -63,6 +67,12 @@ class DebeziumMongodbTest extends AbstractDebeziumTest {
         } else {
             LOG.warn("Container is not running. Connection is not created.");
         }
+
+        org.junit.Assume.assumeTrue(mongoClient != null);
+
+        MongoDatabase db = mongoClient.getDatabase("test");
+
+        companies = db.getCollection("companies");
     }
 
     @Before
@@ -90,17 +100,24 @@ class DebeziumMongodbTest extends AbstractDebeziumTest {
     @Test
     @Order(0)
     @EnabledIfSystemProperty(named = PROPERTY_JDBC, matches = ".*")
-    public void testReceiveInitCompany() {
-        MongoDatabase db = mongoClient.getDatabase("test");
-        db.createCollection("companies");
+    public void testReceiveInit() {
+        receiveResponse()
+                .then()
+                .statusCode(200)
+                .body(containsString("init"));
+    }
 
-        MongoCollection companies = db.getCollection("companies");
+    @Override
+    protected void insertCompany(String name, String city) throws SQLException {
         Document doc = new Document();
-        doc.put("name", "company01");
+        doc.put("name", name);
+        doc.put("city", city);
         companies.insertOne(doc);
+    }
 
-        Response response = receiveResponse();
-        System.out.println(response.getStatusCode());
+    @Override
+    protected void inInitialized(String s) {
+        Assert.assertNotNull(s, mongoClient);
     }
 
     @Test
@@ -114,14 +131,14 @@ class DebeziumMongodbTest extends AbstractDebeziumTest {
     @Order(2)
     @EnabledIfSystemProperty(named = PROPERTY_JDBC, matches = ".*")
     public void testUpdate() throws SQLException {
-        super.testUpdate();
+
     }
 
     @Test
     @Order(3)
     @EnabledIfSystemProperty(named = PROPERTY_JDBC, matches = ".*")
     public void testDelete() throws SQLException {
-        super.testDelete();
+
     }
 
 }

@@ -26,6 +26,7 @@ import org.hamcrest.Matcher;
 import org.jboss.logging.Logger;
 import org.junit.Assert;
 import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyOrNullString;
@@ -59,16 +60,15 @@ public abstract class AbstractDebeziumTest {
         return "COMPANY";
     }
 
-    //    @Test
+    @Test
     @Order(1)
     public void testInsert() throws SQLException {
-        Assert.assertNotNull("Test 'testInsert' is skipped, because container is not running.", getConnection());
+        inInitialized("Test 'testInsert' is skipped, because container is not running.");
 
         int i = 0;
 
         while (i++ < REPEAT_COUNT) {
-            executeUpdate(String.format("INSERT INTO %s (name, city) VALUES ('%s', '%s')", getCompanyTableName(),
-                    COMPANY_1 + "_" + i, CITY_1));
+            insertCompany(COMPANY_1 + "_" + i, CITY_1);
 
             Response response = receiveResponse();
 
@@ -90,10 +90,19 @@ public abstract class AbstractDebeziumTest {
                 i < REPEAT_COUNT);
     }
 
-    //    @Test
+    protected void inInitialized(String s) {
+        Assert.assertNotNull(s, getConnection());
+    }
+
+    protected void insertCompany(String name, String city) throws SQLException {
+        executeUpdate(String.format("INSERT INTO %s (name, city) VALUES ('%s', '%s')", getCompanyTableName(),
+                name, city));
+    }
+
+    @Test
     @Order(2)
     public void testUpdate() throws SQLException {
-        Assert.assertNotNull("Test 'testUpdate' is skipped, because container is not running.", getConnection());
+        inInitialized("Test 'testUpdate' is skipped, because container is not running.");
 
         executeUpdate(String.format("INSERT INTO %s (name, city) VALUES ('%s', '%s')", getCompanyTableName(),
                 COMPANY_2, CITY_2));
@@ -110,10 +119,10 @@ public abstract class AbstractDebeziumTest {
         receiveResponse(200, containsString(COMPANY_2 + "_changed"));
     }
 
-    //    @Test
+    @Test
     @Order(3)
     public void testDelete() throws SQLException {
-        Assert.assertNotNull("Test 'testDelete' is skipped, because container is not running.", getConnection());
+        inInitialized("Test 'testDelete' is skipped, because container is not running.");
 
         int res = executeUpdate("DELETE FROM " + getCompanyTableName());
         int i = 0;

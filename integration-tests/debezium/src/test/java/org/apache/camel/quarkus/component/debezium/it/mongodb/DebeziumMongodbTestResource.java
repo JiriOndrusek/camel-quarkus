@@ -17,17 +17,26 @@
 
 package org.apache.camel.quarkus.component.debezium.it.mongodb;
 
+import java.time.Duration;
+import java.util.function.Consumer;
+
+import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Ports;
 import org.apache.camel.quarkus.component.debezium.it.AbstractDebeziumTestResource;
 import org.apache.camel.quarkus.component.debezium.it.Type;
 import org.jboss.logging.Logger;
-import org.testcontainers.containers.MongoDBContainer;
+import org.junit.Assert;
+import org.testcontainers.containers.Container;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
-public class DebeziumMongodbTestResource extends AbstractDebeziumTestResource<MongoDBContainer> {
+public class DebeziumMongodbTestResource extends AbstractDebeziumTestResource<GenericContainer> {
     private static final Logger LOG = Logger.getLogger(DebeziumMongodbTestResource.class);
 
-    private static final String DB_USERNAME = "user";
-    private static final String DB_PASSWORD = "changeit";
-
+    private static final String DB_USERNAME = "debezium";
+    private static final String DB_PASSWORD = "dbz";
     private static int DB_PORT = 27017;
 
     public DebeziumMongodbTestResource() {
@@ -35,15 +44,60 @@ public class DebeziumMongodbTestResource extends AbstractDebeziumTestResource<Mo
     }
 
     @Override
-    protected MongoDBContainer createContainer() {
-        return new MongoDBContainer().withEnv("MONGO_DATABASE_USERNAME", DB_USERNAME).withEnv("MONGO_DATABASE_PASSWORD",
-                DB_PASSWORD);
+    protected GenericContainer createContainer() {
+        return new GenericContainer("mongo")
+                .withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) cmd -> {
+                    cmd.withPortBindings(new PortBinding(Ports.Binding.bindPort(DB_PORT), new ExposedPort(DB_PORT)));
+                })
+                .withCommand("--replSet", "my-mongo-set")
+                .waitingFor(new HttpWaitStrategy()
+                        .forPath("/minio/health/ready")
+                        .forPort(DB_PORT)
+                        .withStartupTimeout(Duration.ofSeconds(10)));
 
     }
 
     @Override
+    protected void startContainer() {
+        super.startContainer();
+
+        try {
+            //intialize mongodb replica set
+            Container.ExecResult er = container.execInContainer(new String[] { "mongo", "--eval",
+                    "rs.initiate( {\"_id\" : \"my-mongo-set\",\t\"members\" : [{\"_id\" : 0, \"host\" : \""
+                            + container.getContainerInfo().getNetworkSettings().getIpAddress()
+                            + ":27017\", \"priority\": 1}] })" });
+            System.out.println("========= " + er.getExitCode());
+            er = container.execInContainer(new String[] { "mongo", "--eval",
+                    "rs.initiate()" });
+            System.out.println("========= " + er.getExitCode());
+            er = container.execInContainer(new String[] { "mongo", "--eval",
+                    "db.getSiblingDB('admin').runCommand({ createRole: \"listDatabases\",\n" +
+                            "    privileges: [\n" +
+                            "        { resource: { cluster : true }, actions: [\"listDatabases\"]}\n" +
+                            "    ],\n" +
+                            "    roles: []\n" +
+                            "})" });
+            System.out.println("========= " + er.getExitCode());
+            er = container.execInContainer(new String[] { "mongo", "--eval",
+                    "db.getSiblingDB('admin').createUser({ user: \"debezium\", pwd:\"dbz\", roles: [  {role: \"userAdminAnyDatabase\", db: \"admin\" }, {role: \"listDatabases\", db: \"admin\" }, { role: \"dbAdminAnyDatabase\", db: \"admin\" },  { role: \"readWriteAnyDatabase\", db:\"admin\" },  { role: \"clusterAdmin\",  db: \"admin\" }]});" });
+            System.out.println("========= " + er.getExitCode());
+            er = container.execInContainer(new String[] { "mongo", "--eval",
+                    "rs.status();sh.addShard(\"my-mongo-set/" + container.getContainerInfo().getNetworkSettings().getIpAddress()
+                            + ":27017\")" });
+            System.out.println("========= " + er.getExitCode());
+            //initial insert, without it no events will be received (it won't be present on replica list dbs)
+            er = container.execInContainer(new String[] { "mongo", "--eval",
+                    "db.test.insert({\"name\":\"init\"})" });
+            System.out.println("========= " + er.getExitCode());
+        } catch (Exception e) {
+            Assert.fail("Initialization failed" + e.getMessage());
+        }
+    }
+
+    @Override
     protected String getJdbcUrl() {
-        final String jdbcUrl = container.getReplicaSetUrl();
+        final String jdbcUrl = "mongodb://" + DB_USERNAME + ":" + DB_PASSWORD + "@localhost:" + DB_PORT;
 
         return jdbcUrl;
     }
