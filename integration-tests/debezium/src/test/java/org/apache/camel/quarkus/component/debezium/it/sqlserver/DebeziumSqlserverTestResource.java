@@ -47,7 +47,7 @@ public class DebeziumSqlserverTestResource extends AbstractDebeziumTestResource<
         return new MSSQLServerContainer<>().withEnv(Collections.singletonMap("MSSQL_AGENT_ENABLED", "True"))
                 .withInitScript("initSqlserver.sql")
                 .waitingFor(
-                        Wait.forLogMessage(".*Container is started.*", 1));
+                        Wait.forLogMessage(".*xp_sqlagent_notify.*", 1));
     }
 
     @Override
