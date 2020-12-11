@@ -69,12 +69,6 @@ public abstract class AbstractDebeziumTestResource<T extends GenericContainer> i
                     type.getPropertyOffsetFileName(), storeFile.toString(),
                     type.getPropertyJdbc(), getJdbcUrl());
 
-            //            Map<String, String> map = CollectionHelper.mapOf(
-            //                    type.getPropertyHostname(), "localhost",
-            //                    type.getPropertyPort(), "30001",
-            //                    type.getPropertyOffsetFileName(), storeFile.toString(),
-            //                    type.getPropertyJdbc(), getJdbcUrl());
-
             if (getUsername() != null) {
                 map.put(type.getPropertyUsername(), getUsername());
                 map.put(type.getPropertyPassword(), getPassword());

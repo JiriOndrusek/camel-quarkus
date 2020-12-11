@@ -46,12 +46,19 @@ public class DebeziumMongodbResource extends AbstractDebeziumResource {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String receive() {
-        Record record = super.receiveAsRecord();
-        //mssql return empty Strring instead of nulls, wich leads to different status code 200 vs 204
-        if (record == null || ("d".equals(record.getOperation()) && "".equals(record.getValue()))) {
+        return super.receive();
+    }
+
+    @Path("/receiveOperation")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String receiveOperation() {
+        Record record = receiveAsRecord();
+
+        if (record == null) {
             return null;
         }
-        return record.getValue();
+        return record.getOperation();
     }
 
     @Override

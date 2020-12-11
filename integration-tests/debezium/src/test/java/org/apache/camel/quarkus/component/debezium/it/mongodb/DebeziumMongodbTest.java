@@ -23,6 +23,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.result.DeleteResult;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.camel.quarkus.component.debezium.it.AbstractDebeziumTest;
@@ -40,6 +41,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 
 @QuarkusTest
 @QuarkusTestResource(DebeziumMongodbTestResource.class)
@@ -116,7 +118,7 @@ class DebeziumMongodbTest extends AbstractDebeziumTest {
     }
 
     @Override
-    protected void inInitialized(String s) {
+    protected void isInitialized(String s) {
         Assert.assertNotNull(s, mongoClient);
     }
 
@@ -131,14 +133,29 @@ class DebeziumMongodbTest extends AbstractDebeziumTest {
     @Order(2)
     @EnabledIfSystemProperty(named = PROPERTY_JDBC, matches = ".*")
     public void testUpdate() throws SQLException {
+        Document doc = new Document().append("name", COMPANY_2).append("city", CITY_2);
+        companies.insertOne(doc);
 
+        //validate that event is in queue
+        receiveResponse(200, containsString(COMPANY_2));
+
+        Document searchQuery = new Document().append("name", COMPANY_2);
+        Document updateQuery = new Document().append("$set", new Document().append("city", CITY_2 + "_changed"));
+        companies.updateMany(searchQuery, updateQuery);
+
+        //validate that event for create is in queue
+        receiveResponse(200, containsString(CITY_2 + "_changed"));
     }
 
     @Test
     @Order(3)
     @EnabledIfSystemProperty(named = PROPERTY_JDBC, matches = ".*")
     public void testDelete() throws SQLException {
+        DeleteResult dr = companies.deleteMany(new Document().append("name", COMPANY_2));
+        Assert.assertEquals("Only one company should be deleted.", 1, dr.getDeletedCount());
 
+        //validate that event for delete is in queue
+        receiveResponse(200, equalTo("d"), "/receiveOperation");
     }
 
 }

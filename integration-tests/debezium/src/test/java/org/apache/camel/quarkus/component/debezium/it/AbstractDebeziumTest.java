@@ -39,10 +39,10 @@ import static org.hamcrest.Matchers.is;
 public abstract class AbstractDebeziumTest {
     private static final Logger LOG = Logger.getLogger(AbstractDebeziumTest.class);
 
-    private static String COMPANY_1 = "Best Company";
-    private static String COMPANY_2 = "Even Better Company";
-    private static String CITY_1 = "Prague";
-    private static String CITY_2 = "Paris";
+    protected static String COMPANY_1 = "Best Company";
+    protected static String COMPANY_2 = "Even Better Company";
+    protected static String CITY_1 = "Prague";
+    protected static String CITY_2 = "Paris";
     private static int REPEAT_COUNT = 3;
 
     /**
@@ -63,7 +63,7 @@ public abstract class AbstractDebeziumTest {
     @Test
     @Order(1)
     public void testInsert() throws SQLException {
-        inInitialized("Test 'testInsert' is skipped, because container is not running.");
+        isInitialized("Test 'testInsert' is skipped, because container is not running.");
 
         int i = 0;
 
@@ -90,7 +90,7 @@ public abstract class AbstractDebeziumTest {
                 i < REPEAT_COUNT);
     }
 
-    protected void inInitialized(String s) {
+    protected void isInitialized(String s) {
         Assert.assertNotNull(s, getConnection());
     }
 
@@ -102,7 +102,7 @@ public abstract class AbstractDebeziumTest {
     @Test
     @Order(2)
     public void testUpdate() throws SQLException {
-        inInitialized("Test 'testUpdate' is skipped, because container is not running.");
+        isInitialized("Test 'testUpdate' is skipped, because container is not running.");
 
         executeUpdate(String.format("INSERT INTO %s (name, city) VALUES ('%s', '%s')", getCompanyTableName(),
                 COMPANY_2, CITY_2));
@@ -122,7 +122,7 @@ public abstract class AbstractDebeziumTest {
     @Test
     @Order(3)
     public void testDelete() throws SQLException {
-        inInitialized("Test 'testDelete' is skipped, because container is not running.");
+        isInitialized("Test 'testDelete' is skipped, because container is not running.");
 
         int res = executeUpdate("DELETE FROM " + getCompanyTableName());
         int i = 0;
@@ -143,6 +143,12 @@ public abstract class AbstractDebeziumTest {
 
     protected void receiveResponse(int statusCode, Matcher<String> stringMatcher) {
         receiveResponse().then()
+                .statusCode(statusCode)
+                .body(stringMatcher);
+    }
+
+    protected void receiveResponse(int statusCode, Matcher<String> stringMatcher, String methodName) {
+        receiveResponse(methodName).then()
                 .statusCode(statusCode)
                 .body(stringMatcher);
     }

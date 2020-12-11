@@ -30,7 +30,6 @@ public class DebeziumMongodbTestResource extends AbstractDebeziumTestResource<Ge
     private static final String DB_USERNAME = "debezium";
     private static final String DB_PASSWORD = "dbz";
     private static int DB_PORT = 27017;
-    //    private static int DB_PORT = 30001;
 
     public DebeziumMongodbTestResource() {
         super(Type.mongodb);
@@ -76,7 +75,6 @@ public class DebeziumMongodbTestResource extends AbstractDebeziumTestResource<Ge
 
     @Override
     protected String getJdbcUrl() {
-        //        final String jdbcUrl = "mongodb://" + DB_USERNAME + ":" + DB_PASSWORD + "@localhost:" + DB_PORT;
         final String jdbcUrl = "mongodb://" + DB_USERNAME + ":" + DB_PASSWORD + "@localhost:"
                 + container.getMappedPort(DB_PORT);
 
