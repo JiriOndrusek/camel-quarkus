@@ -82,7 +82,7 @@ public abstract class AbstractDebeziumTestResource<T extends GenericContainer> i
         }
     }
 
-    protected void startContainer() {
+    protected void startContainer() throws Exception {
         container.start();
     }
 

@@ -49,7 +49,7 @@ import static org.hamcrest.Matchers.equalTo;
 class DebeziumMongodbTest extends AbstractDebeziumTest {
     private static final Logger LOG = Logger.getLogger(DebeziumMongodbTest.class);
 
-    //has to be constant and has to be equal to Type.mongodb.getJdbcProperty
+    //constant with value of Type.mongodb.getJdbcProperty
     public static final String PROPERTY_JDBC = "mongodb_jdbc";
 
     private static MongoClient mongoClient;
@@ -157,5 +157,4 @@ class DebeziumMongodbTest extends AbstractDebeziumTest {
         //validate that event for delete is in queue
         receiveResponse(200, equalTo("d"), "/receiveOperation");
     }
-
 }

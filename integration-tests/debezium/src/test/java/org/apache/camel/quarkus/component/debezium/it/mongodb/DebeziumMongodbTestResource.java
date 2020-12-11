@@ -17,16 +17,21 @@
 
 package org.apache.camel.quarkus.component.debezium.it.mongodb;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 import org.apache.camel.quarkus.component.debezium.it.AbstractDebeziumTestResource;
 import org.apache.camel.quarkus.component.debezium.it.Type;
 import org.jboss.logging.Logger;
-import org.junit.Assert;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 public class DebeziumMongodbTestResource extends AbstractDebeziumTestResource<GenericContainer> {
     private static final Logger LOG = Logger.getLogger(DebeziumMongodbTestResource.class);
 
+    private static final String PRIVATE_HOST = "mongodb_private";
     private static final String DB_USERNAME = "debezium";
     private static final String DB_PASSWORD = "dbz";
     private static int DB_PORT = 27017;
@@ -35,48 +40,40 @@ public class DebeziumMongodbTestResource extends AbstractDebeziumTestResource<Ge
         super(Type.mongodb);
     }
 
+    private Network net = Network.newNetwork();;
+
     @Override
     protected GenericContainer createContainer() {
         return new GenericContainer("mongo")
                 .withExposedPorts(DB_PORT)
                 .withCommand("--replSet", "my-mongo-set")
+                .withNetwork(net)
+                .withNetworkAliases(PRIVATE_HOST)
                 .waitingFor(
                         Wait.forLogMessage(".*Waiting for connections.*", 1));
 
     }
 
     @Override
-    protected void startContainer() {
+    protected void startContainer() throws Exception {
         super.startContainer();
 
-        try {
-            //intialize mongodb replica set
-            container.execInContainer(new String[] { "mongo", "--eval",
-                    "rs.initiate( {\"_id\" : \"my-mongo-set\",\t\"members\" : [{\"_id\" : 0, \"host\" : \""
-                            + container.getContainerInfo().getNetworkSettings().getIpAddress()
-                            + ":27017\", \"priority\": 2}] })" });
-            container.execInContainer(new String[] { "mongo", "--eval",
-                    "rs.status()" });
-            container.execInContainer(new String[] { "mongo", "--eval",
-                    "db.getSiblingDB('admin').runCommand({ createRole: \"listDatabases\",\n" +
-                            "    privileges: [\n" +
-                            "        { resource: { cluster : true }, actions: [\"listDatabases\"]}\n" +
-                            "    ],\n" +
-                            "    roles: []\n" +
-                            "})" });
-            container.execInContainer(new String[] { "mongo", "--eval",
-                    "db.getSiblingDB('admin').createUser({ user: \"debezium\", pwd:\"dbz\", roles: [  {role: \"userAdminAnyDatabase\", db: \"admin\" }, {role: \"listDatabases\", db: \"admin\" }, { role: \"dbAdminAnyDatabase\", db: \"admin\" },  { role: \"readWriteAnyDatabase\", db:\"admin\" },  { role: \"clusterAdmin\",  db: \"admin\" }]});" });
-            container.execInContainer(new String[] { "mongo", "--eval",
-                    "db.test.insert({\"name\":\"init\"})" });
-        } catch (Exception e) {
-            Assert.fail("Initialization failed" + e.getMessage());
+        execScriptInContainer("initMongodb.txt");
+    }
+
+    private void execScriptInContainer(String script) throws Exception {
+        String cmd = new String(Files.readAllBytes(Paths.get(getClass().getResource("/" + script).toURI())));
+        String[] cmds = cmd.split("\\n\\n");
+
+        for (int i = 0; i < cmds.length; i++) {
+            Container.ExecResult er = container.execInContainer(new String[] { "mongo", "--eval", cmds[i] });
         }
     }
 
     @Override
     protected String getJdbcUrl() {
-        final String jdbcUrl = "mongodb://" + DB_USERNAME + ":" + DB_PASSWORD + "@localhost:"
-                + container.getMappedPort(DB_PORT);
+        final String jdbcUrl = String.format("mongodb://%s:%s@%s:%d", DB_USERNAME, DB_PASSWORD, container.getHost(),
+                container.getMappedPort(DB_PORT));
 
         return jdbcUrl;
     }
