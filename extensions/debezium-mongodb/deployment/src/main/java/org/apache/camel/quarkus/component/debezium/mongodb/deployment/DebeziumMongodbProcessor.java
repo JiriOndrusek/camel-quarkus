@@ -16,10 +16,13 @@
  */
 package org.apache.camel.quarkus.component.debezium.mongodb.deployment;
 
+import io.debezium.connector.mongodb.MongoDbConnector;
+import io.debezium.connector.mongodb.MongoDbConnectorTask;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 
 class DebeziumMongodbProcessor {
 
@@ -31,8 +34,9 @@ class DebeziumMongodbProcessor {
     }
 
     @BuildStep
-    void addDependencies(BuildProducer<IndexDependencyBuildItem> indexDependency) {
-        indexDependency.produce(new IndexDependencyBuildItem("io.debezium", "debezium-connector-mongodb"));
-        //        indexDependency.produce(new IndexDependencyBuildItem("org.mongodb", "mongodb-driver"));
+    ReflectiveClassBuildItem reflectiveClasses() {
+        return new ReflectiveClassBuildItem(false, false,
+                new String[] { MongoDbConnector.class.getName(),
+                        MongoDbConnectorTask.class.getName() });
     }
 }
