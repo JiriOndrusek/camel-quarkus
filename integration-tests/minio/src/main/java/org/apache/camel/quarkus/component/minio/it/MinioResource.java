@@ -70,7 +70,8 @@ public class MinioResource {
                 "minio://mycamel?moveAfterRead=true&destinationBucketName=camel-kafka-connector&autoCreateBucket=true"
                         + "&accessKey=" + SERVER_ACCESS_KEY
                         + "&secretKey=RAW(" + SERVER_SECRET_KEY + ")"
-                        + "&endpoint=" + serverUrl,
+                        + "&endpoint=" + serverUrl
+                        + "&secure=true",
                 5000, String.class);
         return message;
     }

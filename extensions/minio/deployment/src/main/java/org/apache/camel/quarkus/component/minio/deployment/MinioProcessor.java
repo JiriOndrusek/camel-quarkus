@@ -16,13 +16,19 @@
  */
 package org.apache.camel.quarkus.component.minio.deployment;
 
+import io.minio.BaseArgs;
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.annotations.ExecutionTime;
-import io.quarkus.deployment.annotations.Record;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
-import io.quarkus.deployment.pkg.steps.NativeBuild;
-import org.apache.camel.quarkus.core.JvmOnlyRecorder;
-import org.jboss.logging.Logger;
+import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.NativeImageConfigBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.NativeImageSystemPropertyBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
+import org.simpleframework.xml.Root;
 
 class MinioProcessor {
 
@@ -31,5 +37,73 @@ class MinioProcessor {
     @BuildStep
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
+    }
+
+    //    @BuildStep
+    //    ReflectiveClassBuildItem reflectiveClasses() {
+    //        return new ReflectiveClassBuildItem(false, false,
+    //                new Class[] { BucketExistsArgs.class }
+    //                );
+    //    }
+
+    @BuildStep
+    ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
+        IndexView index = combinedIndex.getIndex();
+
+        String[] dtos = index.getAllKnownSubclasses(DotName.createSimple(BaseArgs.class.getName())).stream()
+                .map(ci -> ci.name().toString())
+                .sorted()
+                .peek(System.out::println)
+                .toArray(String[]::new);
+
+        return new ReflectiveClassBuildItem(true, true, dtos);
+    }
+
+    @BuildStep
+    IndexDependencyBuildItem registerDependencyForIndex() {
+        return new IndexDependencyBuildItem("io.minio", "minio");
+    }
+    //
+    //    @BuildStep
+    //    void addDependencies(BuildProducer<IndexDependencyBuildItem> indexDependency) {
+    //        indexDependency.produce(new IndexDependencyBuildItem("org.jboss.logging", "commons-logging-jboss-logging"));
+    //        indexDependency.produce(new IndexDependencyBuildItem("org.apache.xmlgraphics", "fop"));
+
+    @BuildStep
+    ReflectiveClassBuildItem registerForReflection2(CombinedIndexBuildItem combinedIndex,
+            BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
+            BuildProducer<NativeImageSystemPropertyBuildItem> sys,
+            BuildProducer<NativeImageConfigBuildItem> conf) {
+        IndexView index = combinedIndex.getIndex();
+
+        //        NativeImageConfigBuildItem.Builder builder = NativeImageConfigBuildItem.builder();
+        //        Collection<AnnotationInstance> annotations = index
+        //                .getAnnotations(DotName.createSimple(Root.class.getName()));
+        //                for (AnnotationInstance annotation : annotations) {
+        //                    if (annotation.target().kind() == AnnotationTarget.Kind.CLASS) {
+        //                        String className = annotation.target().asClass().name().toString();
+        //                        builder.addRuntimeInitializedClass(className);
+        //                        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true, true, className));
+        //                    }
+        //                }
+        String[] dtos = index.getAnnotations(DotName.createSimple(Root.class.getName())).stream()
+                .filter(a -> a.target().kind() == AnnotationTarget.Kind.CLASS)
+                .map(a -> a.target().asClass().name().toString())
+                //                .map(ci -> ci.name().toString())
+                .sorted() //todo remove
+                .peek(o -> System.out.println("-- " + o)) //todo remove
+                .toArray(String[]::new);
+
+        //                return new ReflectiveClassBuildItem(true, true, dtos);
+
+        return new ReflectiveClassBuildItem(true, true, dtos);
+
+    }
+
+    @BuildStep
+    ReflectiveClassBuildItem registerForReflection3() {
+        return new ReflectiveClassBuildItem(true, false, new String[] {
+                "org.simpleframework.xml.core.ElementLabel"
+        });
     }
 }
