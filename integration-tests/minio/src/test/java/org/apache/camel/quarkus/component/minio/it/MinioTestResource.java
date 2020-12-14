@@ -1,12 +1,12 @@
 package org.apache.camel.quarkus.component.minio.it;
 
+import java.time.Duration;
+import java.util.Map;
+
 import org.apache.camel.quarkus.testcontainers.ContainerResourceLifecycleManager;
 import org.apache.camel.util.CollectionHelper;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
-
-import java.time.Duration;
-import java.util.Map;
 
 public class MinioTestResource implements ContainerResourceLifecycleManager {
 
@@ -14,14 +14,14 @@ public class MinioTestResource implements ContainerResourceLifecycleManager {
     private final int BROKER_PORT = 9000;
 
     private GenericContainer minioServer = new GenericContainer(CONTAINER_IMAGE)/*.withNetworkAliases(CONTAINER_NAME)*/
-                .withEnv("MINIO_ACCESS_KEY", MinioResource.SERVER_ACCESS_KEY)
-                .withEnv("MINIO_SECRET_KEY", MinioResource.SERVER_SECRET_KEY)
-                .withCommand("server /data")
-                .withExposedPorts(BROKER_PORT)
-                .waitingFor(new HttpWaitStrategy()
-                        .forPath("/minio/health/ready")
-                        .forPort(BROKER_PORT)
-                        .withStartupTimeout(Duration.ofSeconds(10)));;
+            .withEnv("MINIO_ACCESS_KEY", MinioResource.SERVER_ACCESS_KEY)
+            .withEnv("MINIO_SECRET_KEY", MinioResource.SERVER_SECRET_KEY)
+            .withCommand("server /data")
+            .withExposedPorts(BROKER_PORT)
+            .waitingFor(new HttpWaitStrategy()
+                    .forPath("/minio/health/ready")
+                    .forPort(BROKER_PORT)
+                    .withStartupTimeout(Duration.ofSeconds(10)));;
 
     @Override
     public Map<String, String> start() {
@@ -34,7 +34,7 @@ public class MinioTestResource implements ContainerResourceLifecycleManager {
 
     @Override
     public void stop() {
-        if(minioServer.isRunning()) {
+        if (minioServer.isRunning()) {
             minioServer.stop();
         }
     }
