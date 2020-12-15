@@ -19,7 +19,7 @@ package org.apache.camel.quarkus.component.minio.deployment;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-import io.minio.messages.Item;
+import io.minio.BaseArgs;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
@@ -42,29 +42,30 @@ class MinioProcessor {
         return new FeatureBuildItem(FEATURE);
     }
 
-    //    @BuildStep
-    //    ReflectiveClassBuildItem reflectiveClasses() {
-    //        return new ReflectiveClassBuildItem(false, false,
-    //                new Class[] { BucketExistsArgs.class }
-    //                );
-    //    }
-
     @BuildStep
     ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
         IndexView index = combinedIndex.getIndex();
 
-        //        String[] dtos = index.getAllKnownSubclasses(DotName.createSimple(BaseArgs.class.getName())).stream()
-        //                .map(ci -> ci.name().toString())
-        //                .sorted()
-        //                .peek(System.out::println)
-        //                .toArray(String[]::new);
+        String[] dtos2 = index.getAllKnownSubclasses(DotName.createSimple(BaseArgs.class.getName())).stream()
+                .map(ci -> ci.name().toString())
+                .sorted()
+                .peek(o -> System.out.println("2- " + o))
+                .toArray(String[]::new);
 
         String[] dtos = index.getKnownClasses().stream()
                 .map(ci -> ci.name().toString())
-                .filter(n -> n.startsWith("io.minio"))
+                .filter(n -> n.startsWith("io.minio.messages"))
                 .sorted()
-                .peek(System.out::println)
+                .peek(o -> System.out.println("1- " + o))
                 .toArray(String[]::new);
+
+        return new ReflectiveClassBuildItem(true, true, Stream.concat(Arrays.stream(dtos), Arrays.stream(dtos2))
+                .toArray(String[]::new));
+    }
+
+    @BuildStep
+    ReflectiveClassBuildItem registerForReflection1(CombinedIndexBuildItem combinedIndex) {
+        IndexView index = combinedIndex.getIndex();
 
         //        String[] dtos2 = index.getKnownClasses().stream()
         //                .map(ci -> ci.name().toString())
@@ -91,8 +92,7 @@ class MinioProcessor {
         //                        index.getAllKnownImplementors(DotName.createSimple(Converter.class.getName())).stream())
         //                .toArray(String[]::new);
 
-        return new ReflectiveClassBuildItem(true, true,
-                Stream.concat(Arrays.stream(dtos), Arrays.stream(dtos2)).toArray(String[]::new));
+        return new ReflectiveClassBuildItem(true, true, dtos2);
     }
 
     @BuildStep
@@ -141,10 +141,4 @@ class MinioProcessor {
 
     }
 
-    @BuildStep
-    ReflectiveClassBuildItem registerForReflection3() {
-        return new ReflectiveClassBuildItem(true, true, new String[] {
-                Item.class.getName()
-        });
-    }
 }
