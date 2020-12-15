@@ -66,7 +66,7 @@ class MinioTest {
     private String BUCKET_NAME = MinioResource.BUCKET_NAME;
     private long PART_SIZE = 50 * 1024 * 1024;
 
-    MinioClient client = MinioClient.builder()
+    private final MinioClient client = MinioClient.builder()
             .endpoint("http://" + System.getProperty(MinioResource.PARAM_SERVER_HOST),
                     Integer.parseInt(System.getProperty(MinioResource.PARAM_SERVER_PORT)), false)
             .credentials(MinioResource.SERVER_ACCESS_KEY, MinioResource.SERVER_SECRET_KEY)

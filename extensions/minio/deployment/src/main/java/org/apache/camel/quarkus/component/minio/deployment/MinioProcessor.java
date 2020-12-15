@@ -16,22 +16,25 @@
  */
 package org.apache.camel.quarkus.component.minio.deployment;
 
-import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.google.common.collect.Streams;
 import io.minio.BaseArgs;
+import io.minio.messages.Item;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
-import io.quarkus.deployment.builditem.nativeimage.NativeImageConfigBuildItem;
-import io.quarkus.deployment.builditem.nativeimage.NativeImageSystemPropertyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.simpleframework.xml.Root;
+import org.simpleframework.xml.convert.Converter;
 
 class MinioProcessor {
 
@@ -43,102 +46,40 @@ class MinioProcessor {
     }
 
     @BuildStep
+    ReflectiveClassBuildItem registerForReflectionWithFields(CombinedIndexBuildItem combinedIndex) {
+        IndexView index = combinedIndex.getIndex();
+
+        LinkedList<String> dtos = new LinkedList();
+
+        dtos.add(Item.class.getName());
+        dtos.addAll(index.getAnnotations(DotName.createSimple(Root.class.getName())).stream()
+                .filter(a -> a.target().kind() == AnnotationTarget.Kind.CLASS)
+                .map(a -> a.target().asClass().name().toString())
+                .collect(Collectors.toList()));
+
+        return new ReflectiveClassBuildItem(false, true, dtos.toArray(new String[dtos.size()]));
+    }
+
+    @BuildStep
     ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
         IndexView index = combinedIndex.getIndex();
 
-        String[] dtos2 = index.getAllKnownSubclasses(DotName.createSimple(BaseArgs.class.getName())).stream()
+        Stream<ClassInfo> converters = index.getAllKnownImplementors(DotName.createSimple(Converter.class.getName())).stream();
+        Stream<ClassInfo> baseArgs = index.getAllKnownSubclasses(DotName.createSimple(BaseArgs.class.getName())).stream();
+        Stream<ClassInfo> labels = index.getAllKnownImplementors(DotName.createSimple("org.simpleframework.xml.core.Label"))
+                .stream();
+
+        String[] dtos = Streams.concat(labels, Stream.concat(converters, baseArgs))
                 .map(ci -> ci.name().toString())
-                .sorted()
-                .peek(o -> System.out.println("2- " + o))
                 .toArray(String[]::new);
 
-        String[] dtos = index.getKnownClasses().stream()
-                .map(ci -> ci.name().toString())
-                .filter(n -> n.startsWith("io.minio.messages"))
-                .sorted()
-                .peek(o -> System.out.println("1- " + o))
-                .toArray(String[]::new);
-
-        return new ReflectiveClassBuildItem(true, true, Stream.concat(Arrays.stream(dtos), Arrays.stream(dtos2))
-                .toArray(String[]::new));
+        return new ReflectiveClassBuildItem(false, false, dtos);
     }
 
     @BuildStep
-    ReflectiveClassBuildItem registerForReflection1(CombinedIndexBuildItem combinedIndex) {
-        IndexView index = combinedIndex.getIndex();
-
-        //        String[] dtos2 = index.getKnownClasses().stream()
-        //                .map(ci -> ci.name().toString())
-        //                .filter(n -> n.startsWith("org.simpleframework.xml"))
-        //                .sorted()
-        //                .peek(System.out::println)
-        //                .toArray(String[]::new);
-
-        String[] dtos2 = index.getAllKnownImplementors(DotName.createSimple("org.simpleframework.xml.core.Label")).stream()
-                .map(ci -> ci.name().toString())
-                .sorted()
-                .peek(System.out::println)
-                .toArray(String[]::new);
-
-        //
-        //        String[] dtos2 = index.getAllKnownImplementors(DotName.createSimple(Converter.class.getName())).stream()
-        //                .map(ci -> ci.name().toString())
-        //                .sorted()
-        //                .peek(System.out::println)
-        //                .toArray(String[]::new);
-
-        //        String[] dtos = Stream
-        //                .concat(index.getAllKnownSubclasses(DotName.createSimple(BaseArgs.class.getName())).stream(),
-        //                        index.getAllKnownImplementors(DotName.createSimple(Converter.class.getName())).stream())
-        //                .toArray(String[]::new);
-
-        return new ReflectiveClassBuildItem(true, true, dtos2);
-    }
-
-    @BuildStep
-    IndexDependencyBuildItem registerDependencyForIndex() {
-        return new IndexDependencyBuildItem("io.minio", "minio");
-    }
-
-    @BuildStep
-    IndexDependencyBuildItem registerDependencyForIndex2() {
-        return new IndexDependencyBuildItem("com.carrotsearch.thirdparty", "simple-xml-safe");
-    }
-    //
-    //    @BuildStep
-    //    void addDependencies(BuildProducer<IndexDependencyBuildItem> indexDependency) {
-    //        indexDependency.produce(new IndexDependencyBuildItem("org.jboss.logging", "commons-logging-jboss-logging"));
-    //        indexDependency.produce(new IndexDependencyBuildItem("org.apache.xmlgraphics", "fop"));
-
-    @BuildStep
-    ReflectiveClassBuildItem registerForReflection2(CombinedIndexBuildItem combinedIndex,
-            BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
-            BuildProducer<NativeImageSystemPropertyBuildItem> sys,
-            BuildProducer<NativeImageConfigBuildItem> conf) {
-        IndexView index = combinedIndex.getIndex();
-
-        //        NativeImageConfigBuildItem.Builder builder = NativeImageConfigBuildItem.builder();
-        //        Collection<AnnotationInstance> annotations = index
-        //                .getAnnotations(DotName.createSimple(Root.class.getName()));
-        //                for (AnnotationInstance annotation : annotations) {
-        //                    if (annotation.target().kind() == AnnotationTarget.Kind.CLASS) {
-        //                        String className = annotation.target().asClass().name().toString();
-        //                        builder.addRuntimeInitializedClass(className);
-        //                        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true, true, className));
-        //                    }
-        //                }
-        String[] dtos = index.getAnnotations(DotName.createSimple(Root.class.getName())).stream()
-                .filter(a -> a.target().kind() == AnnotationTarget.Kind.CLASS)
-                .map(a -> a.target().asClass().name().toString())
-                //                .map(ci -> ci.name().toString())
-                .sorted() //todo remove
-                .peek(o -> System.out.println("-- " + o)) //todo remove
-                .toArray(String[]::new);
-
-        //                return new ReflectiveClassBuildItem(true, true, dtos);
-
-        return new ReflectiveClassBuildItem(true, true, dtos);
-
+    void addDependencies(BuildProducer<IndexDependencyBuildItem> indexDependency) {
+        indexDependency.produce(new IndexDependencyBuildItem("io.minio", "minio"));
+        indexDependency.produce(new IndexDependencyBuildItem("com.carrotsearch.thirdparty", "simple-xml-safe"));
     }
 
 }
