@@ -16,7 +16,10 @@
  */
 package org.apache.camel.quarkus.component.minio.deployment;
 
-import io.minio.BaseArgs;
+import java.util.Arrays;
+import java.util.stream.Stream;
+
+import io.minio.messages.Item;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
@@ -50,18 +53,56 @@ class MinioProcessor {
     ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
         IndexView index = combinedIndex.getIndex();
 
-        String[] dtos = index.getAllKnownSubclasses(DotName.createSimple(BaseArgs.class.getName())).stream()
+        //        String[] dtos = index.getAllKnownSubclasses(DotName.createSimple(BaseArgs.class.getName())).stream()
+        //                .map(ci -> ci.name().toString())
+        //                .sorted()
+        //                .peek(System.out::println)
+        //                .toArray(String[]::new);
+
+        String[] dtos = index.getKnownClasses().stream()
+                .map(ci -> ci.name().toString())
+                .filter(n -> n.startsWith("io.minio"))
+                .sorted()
+                .peek(System.out::println)
+                .toArray(String[]::new);
+
+        //        String[] dtos2 = index.getKnownClasses().stream()
+        //                .map(ci -> ci.name().toString())
+        //                .filter(n -> n.startsWith("org.simpleframework.xml"))
+        //                .sorted()
+        //                .peek(System.out::println)
+        //                .toArray(String[]::new);
+
+        String[] dtos2 = index.getAllKnownImplementors(DotName.createSimple("org.simpleframework.xml.core.Label")).stream()
                 .map(ci -> ci.name().toString())
                 .sorted()
                 .peek(System.out::println)
                 .toArray(String[]::new);
 
-        return new ReflectiveClassBuildItem(true, true, dtos);
+        //
+        //        String[] dtos2 = index.getAllKnownImplementors(DotName.createSimple(Converter.class.getName())).stream()
+        //                .map(ci -> ci.name().toString())
+        //                .sorted()
+        //                .peek(System.out::println)
+        //                .toArray(String[]::new);
+
+        //        String[] dtos = Stream
+        //                .concat(index.getAllKnownSubclasses(DotName.createSimple(BaseArgs.class.getName())).stream(),
+        //                        index.getAllKnownImplementors(DotName.createSimple(Converter.class.getName())).stream())
+        //                .toArray(String[]::new);
+
+        return new ReflectiveClassBuildItem(true, true,
+                Stream.concat(Arrays.stream(dtos), Arrays.stream(dtos2)).toArray(String[]::new));
     }
 
     @BuildStep
     IndexDependencyBuildItem registerDependencyForIndex() {
         return new IndexDependencyBuildItem("io.minio", "minio");
+    }
+
+    @BuildStep
+    IndexDependencyBuildItem registerDependencyForIndex2() {
+        return new IndexDependencyBuildItem("com.carrotsearch.thirdparty", "simple-xml-safe");
     }
     //
     //    @BuildStep
@@ -102,8 +143,8 @@ class MinioProcessor {
 
     @BuildStep
     ReflectiveClassBuildItem registerForReflection3() {
-        return new ReflectiveClassBuildItem(true, false, new String[] {
-                "org.simpleframework.xml.core.ElementLabel"
+        return new ReflectiveClassBuildItem(true, true, new String[] {
+                Item.class.getName()
         });
     }
 }
