@@ -17,9 +17,9 @@
 
 package org.apache.camel.quarkus.component.spring.rabbitmq.it;
 
-import org.apache.camel.builder.RouteBuilder;
-
 import javax.enterprise.context.ApplicationScoped;
+
+import org.apache.camel.builder.RouteBuilder;
 
 @ApplicationScoped
 public class SpringRabbitmqRouteBuilder extends RouteBuilder {
@@ -27,9 +27,14 @@ public class SpringRabbitmqRouteBuilder extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
-        from("spring-rabbitmq:cheese?queues=myqueue&routingKey=foo.bar&connectionFactory=#connectionFactory&autoDeclare=true")
-                .to("mock:input")
-                .transform(body().prepend("Hello "));
+//        from("spring-rabbitmq:cheese?queues=myqueue&routingKey=foo.bar&connectionFactory=#connectionFactory&autoDeclare=true")
+//                .transform(body().prepend("Hello "))
+//                .to("direct:result");
+
+        from("direct:start").log("Sending ${body} to myqueue").to("spring-rabbitmq:foo?routingKey=mykey&autoDeclare=true");
+
+        from("spring-rabbitmq:foo?queues=myqueue2&routingKey=mykey2&autoDeclare=true").log("Received ${body} from myqueue2")
+                .to("direct:result");
 
     }
 }

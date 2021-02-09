@@ -83,7 +83,7 @@
 
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
-            <artifactId>camel-quarkus-mock</artifactId>
+            <artifactId>camel-quarkus-direct</artifactId>
             <scope>test</scope>
         </dependency>
 

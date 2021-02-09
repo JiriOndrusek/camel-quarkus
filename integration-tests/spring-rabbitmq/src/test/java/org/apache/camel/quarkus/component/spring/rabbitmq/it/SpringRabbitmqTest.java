@@ -22,30 +22,102 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.amqp.core.AmqpAdmin;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.DirectExchange;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
+
+import static org.hamcrest.Matchers.is;
 
 @QuarkusTest
 @QuarkusTestResource(SpringRabbitmqTestResource.class)
 class SpringRabbitmqTest {
 
     @Test
-    public void test() {
-        final String msg = java.util.UUID.randomUUID().toString().replace("-", "");
+    public void testInOut() {
+        //direct has to be empty
+        RestAssured.get("/spring-rabbitmq/get")
+                .then()
+                .statusCode(204);
+
         RestAssured.given() //
                 .contentType(ContentType.TEXT)
-                .body(msg)
+                .body("Sheldon")
                 .post("/spring-rabbitmq/post") //
                 .then()
-                .statusCode(201);
-
-        Assertions.fail("Add some assertions to " + getClass().getName());
+                .statusCode(204);
 
         RestAssured.get("/spring-rabbitmq/get")
                 .then()
-                .statusCode(200);
+                .statusCode(200)
+                .body(is("Hello Sheldon"));
+
+    }
+    @Test
+    public void testPolling() throws InterruptedException {
+        String hostname = System.getProperty(SpringRabbitmqResource.PARAMETER_HOSTNAME);
+        String port = System.getProperty(SpringRabbitmqResource.PARAMETER_PORT);
+        String usernane = System.getProperty(SpringRabbitmqResource.PARAMETER_USERNAME);
+        String password = System.getProperty(SpringRabbitmqResource.PARAMETER_PASSWORD);
+
+
+        CachingConnectionFactory cf = new CachingConnectionFactory();
+        cf.setUri(String.format("amqp://%s:%s", hostname, port));
+        cf.setUsername(usernane);
+        cf.setPassword(password);
+
+        Queue q = new Queue("myqueue", false);
+        DirectExchange t = new DirectExchange("foo");
+        AmqpAdmin admin = new RabbitAdmin(cf);
+        admin.declareQueue(q);
+        admin.declareExchange(t);
+        admin.declareBinding(BindingBuilder.bind(q).to(t).with("mykey"));
+
+
+//
+//
+//        Queue q = new Queue("myqueue");
+//        TopicExchange t = new TopicExchange("cheese");
+//
+//        AmqpAdmin admin = new RabbitAdmin(cf);
+//        admin.declareQueue(q);
+//        admin.declareExchange(t);
+//        admin.declareBinding(BindingBuilder.bind(q).to(t).with("foo.bar.#"));
+        
+        //direct has to be empty
+        RestAssured.get("/spring-rabbitmq/get2")
+                .then()
+                .statusCode(204);
+
+//        RestAssured.given() //
+//                .contentType(ContentType.TEXT)
+//                .body("Sheldon")
+//                .post("/spring-rabbitmq/post") //
+//                .then()
+//                .statusCode(204);
+
+        // wait a little to demonstrate we can start poll before we have a msg on the queue
+        Thread.sleep(500);
+
+        RestAssured.given() //
+                .contentType(ContentType.TEXT)
+                .body("Sheldon")
+                .post("/spring-rabbitmq/start");
+
+        Thread.sleep(1000);
+
+        RestAssured.get("/spring-rabbitmq/get")
+                .then()
+                .statusCode(204)
+                .body(is("Hello Sheldon"));
+
     }
 
-    @Test
-    public void testInOut() throws Exception {
+//    @Test
+//    public void testInOut() throws Exception {
 
         //       //wait for the result from the server
         //       await().atMost(10L, TimeUnit.SECONDS).untilAsserted(() -> {
@@ -55,14 +127,14 @@ class SpringRabbitmqTest {
         ////           Assertions.assertEquals("Hello", result);
         //       });
 
-        RestAssured.given() //
-                .contentType(ContentType.TEXT)
-                .body("Hello")
-                .post("/spring-rabbitmq/post") //
-                .then()
-                .statusCode(201);
-
-    }
+//        RestAssured.given() //
+//                .contentType(ContentType.TEXT)
+//                .body("Hello")
+//                .post("/spring-rabbitmq/post") //
+//                .then()
+//                .statusCode(201);
+//
+//    }
 
     @Test
     public void testProducerWithHeader() throws Exception {

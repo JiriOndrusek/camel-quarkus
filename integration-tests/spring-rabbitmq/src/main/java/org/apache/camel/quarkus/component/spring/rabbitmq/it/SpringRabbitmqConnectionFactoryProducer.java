@@ -21,13 +21,8 @@ import javax.inject.Named;
 import javax.ws.rs.Produces;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.springframework.amqp.core.AmqpAdmin;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.core.RabbitAdmin;
 
 public class SpringRabbitmqConnectionFactoryProducer {
 
@@ -46,20 +41,11 @@ public class SpringRabbitmqConnectionFactoryProducer {
     @Produces
     @ApplicationScoped
     @Named("connectionFactory")
-    public ConnectionFactory produceMinioClient() {
+    public ConnectionFactory produceConnectionFactory() {
         CachingConnectionFactory cf = new CachingConnectionFactory();
         cf.setUri(String.format("amqp://%s:%d", hostname, port));
         cf.setUsername(usernane);
         cf.setPassword(password);
-
-//        Queue q = new Queue("myqueue");
-//        TopicExchange t = new TopicExchange("foo");
-//
-//        AmqpAdmin admin = new RabbitAdmin(cf);
-//        admin.declareQueue(q);
-//        admin.declareExchange(t);
-//        admin.declareBinding(BindingBuilder.bind(q).to(t).with("foo.bar.#"));
-
         return cf;
     }
 }
