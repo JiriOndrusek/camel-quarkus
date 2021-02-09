@@ -27,9 +27,9 @@ public class SpringRabbitmqRouteBuilder extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
-//        from("spring-rabbitmq:cheese?queues=myqueue&routingKey=foo.bar&connectionFactory=#connectionFactory&autoDeclare=true")
-//                .transform(body().prepend("Hello "))
-//                .to("direct:result");
+        from("spring-rabbitmq:cheese?queues=myqueue&routingKey=foo.bar&connectionFactory=#connectionFactory&autoDeclare=true")
+                .transform(body().prepend("Hello "))
+                .to("direct:result");
 
         from("direct:start").log("Sending ${body} to myqueue").to("spring-rabbitmq:foo?routingKey=mykey&autoDeclare=true");
 
