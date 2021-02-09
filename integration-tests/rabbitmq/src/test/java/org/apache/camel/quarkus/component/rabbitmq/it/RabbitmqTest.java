@@ -28,6 +28,8 @@ import static org.hamcrest.core.Is.is;
 @QuarkusTestResource(RabbitmqTestResource.class)
 class RabbitmqTest {
 
+
+
     @Test
     public void testAmqpComponent() {
         String message = "Hello Camel Quarkus RabbitMQ";
