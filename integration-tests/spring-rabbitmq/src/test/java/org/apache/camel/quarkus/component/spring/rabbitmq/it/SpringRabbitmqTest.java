@@ -76,28 +76,12 @@ class SpringRabbitmqTest {
         admin.declareExchange(t);
         admin.declareBinding(BindingBuilder.bind(q).to(t).with("mykey"));
 
-
-//
-//
-//        Queue q = new Queue("myqueue");
-//        TopicExchange t = new TopicExchange("cheese");
-//
-//        AmqpAdmin admin = new RabbitAdmin(cf);
-//        admin.declareQueue(q);
-//        admin.declareExchange(t);
-//        admin.declareBinding(BindingBuilder.bind(q).to(t).with("foo.bar.#"));
         
         //direct has to be empty
-        RestAssured.get("/spring-rabbitmq/get2")
+        RestAssured.get("/spring-rabbitmq/startPolling")
                 .then()
                 .statusCode(204);
 
-//        RestAssured.given() //
-//                .contentType(ContentType.TEXT)
-//                .body("Sheldon")
-//                .post("/spring-rabbitmq/post") //
-//                .then()
-//                .statusCode(204);
 
         // wait a little to demonstrate we can start poll before we have a msg on the queue
         Thread.sleep(500);
@@ -109,54 +93,11 @@ class SpringRabbitmqTest {
 
         Thread.sleep(1000);
 
-        RestAssured.get("/spring-rabbitmq/get")
+        RestAssured.get("/spring-rabbitmq/getWait")
                 .then()
-                .statusCode(204)
-                .body(is("Hello Sheldon"));
+                .statusCode(200)
+                .body(is("Polling Hello Sheldon"));
 
-    }
-
-//    @Test
-//    public void testInOut() throws Exception {
-
-        //       //wait for the result from the server
-        //       await().atMost(10L, TimeUnit.SECONDS).untilAsserted(() -> {
-        //           String result = RestAssured.get("/spring-rabbitmq/get")
-        //                   .then()
-        //                   .extract().asString();
-        ////           Assertions.assertEquals("Hello", result);
-        //       });
-
-//        RestAssured.given() //
-//                .contentType(ContentType.TEXT)
-//                .body("Hello")
-//                .post("/spring-rabbitmq/post") //
-//                .then()
-//                .statusCode(201);
-//
-//    }
-
-    @Test
-    public void testProducerWithHeader() throws Exception {
-        //        ConnectionFactory cf = context.getRegistry().lookupByNameAndType("myCF", ConnectionFactory.class);
-        //
-        //        Queue q = new Queue("myqueue");
-        //        TopicExchange t = new TopicExchange("foo");
-        //
-        //        AmqpAdmin admin = new RabbitAdmin(cf);
-        //        admin.declareQueue(q);
-        //        admin.declareExchange(t);
-        //        admin.declareBinding(BindingBuilder.bind(q).to(t).with("foo.bar.#"));
-
-        RestAssured.given() //
-                .contentType(ContentType.TEXT)
-                .body("Hello")
-                .post("/spring-rabbitmq/post");
-
-        //        AmqpTemplate template = new RabbitTemplate(cf);
-        //        Message out = template.receive("myqueue");
-        //        Assertions.assertEquals("Hello World", new String(out.getBody()));
-        //        Assertions.assertEquals("gouda", out.getMessageProperties().getHeader("cheese"));
     }
 
 }

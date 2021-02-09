@@ -82,6 +82,17 @@ public class SpringRabbitmqResource {
         return message;
     }
 
+    @Path("/getWait")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String getWait() throws Exception {
+        final String message = consumerTemplate.receiveBody(
+                "direct:result2",
+                1000,
+                String.class);
+        return message;
+    }
+
     @Path("/post")
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
@@ -98,10 +109,10 @@ public class SpringRabbitmqResource {
         producerTemplate.sendBody("direct:start", message);
     }
 
-    @Path("/get2")
+    @Path("/startPolling")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public String get2() throws Exception {
+    public String startPolling() throws Exception {
 //        CachingConnectionFactory cf = new CachingConnectionFactory();
 //        cf.setUri(String.format("amqp://%s:%d", hostname, port));
 //        cf.setUsername(usernane);
@@ -126,7 +137,7 @@ public class SpringRabbitmqResource {
         Executors.newSingleThreadExecutor().execute(() -> {
             String body = consumerTemplate.receiveBody("spring-rabbitmq:foo?queues=myqueue&routingKey=mykey", String.class);
             System.out.println("received " + body);
-            producerTemplate.sendBody("spring-rabbitmq:foo?routingKey=mykey2", body + " Claus");
+            producerTemplate.sendBody("spring-rabbitmq:foo?routingKey=mykey2", "Polling Hello " + body);
         });
 
 

@@ -34,7 +34,7 @@ public class SpringRabbitmqRouteBuilder extends RouteBuilder {
         from("direct:start").log("Sending ${body} to myqueue").to("spring-rabbitmq:foo?routingKey=mykey&autoDeclare=true");
 
         from("spring-rabbitmq:foo?queues=myqueue2&routingKey=mykey2&autoDeclare=true").log("Received ${body} from myqueue2")
-                .to("direct:result");
+                .to("direct:result2");
 
     }
 }
