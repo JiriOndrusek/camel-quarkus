@@ -26,18 +26,12 @@ public class SpringRabbitmqRouteBuilder extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
+        String url = String.format(
+                "spring-rabbitmq:%s?queues=myqueue&routingKey=%s&connectionFactory=#connectionFactory&autoDeclare=true",
+                SpringRabbitmqResource.EXCHANGE_IN_OUT, SpringRabbitmqResource.ROUTING_KEY_IN_OUT);
 
-        from("spring-rabbitmq:cheese?queues=myqueue&routingKey=foo.bar&connectionFactory=#connectionFactory&autoDeclare=true")
+        from(url)
                 .transform(body().prepend("Hello "))
                 .to(SpringRabbitmqResource.DIRECT_IN_OUT);
-
-        //        //todo use producer instead route
-        //        from("direct:start").log("Sending ${body} to pollingqueueu")
-        //                .to("spring-rabbitmq:foo?routingKey=mykey&autoDeclare=true");
-
-        //        from("spring-rabbitmq:foo?queues=pollingqueueu2&routingKey=mykey2&autoDeclare=true")
-        //                .log("Received ${body} from pollingqueueu2")
-        //                .to("direct:result2");
-
     }
 }

@@ -63,8 +63,8 @@ public class SpringRabbitmqTestResource implements QuarkusTestResourceLifecycleM
     }
 
     public void inject(Object testInstance) {
-        if(testInstance instanceof SpringRabbitmqTest) {
-            SpringRabbitmqTest test = (SpringRabbitmqTest)testInstance;
+        if (testInstance instanceof SpringRabbitmqTest) {
+            SpringRabbitmqTest test = (SpringRabbitmqTest) testInstance;
 
             CachingConnectionFactory cf = new CachingConnectionFactory();
             cf.setUri(String.format("amqp://%s:%d", container.getHost(), container.getMappedPort(RABBITMQ_PORT)));

@@ -19,7 +19,7 @@ package org.apache.camel.quarkus.component.spring.rabbitmq.it;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.core.BindingBuilder;
@@ -34,33 +34,20 @@ import static org.hamcrest.Matchers.is;
 @QuarkusTestResource(SpringRabbitmqTestResource.class)
 class SpringRabbitmqTest {
 
-    private final static String EXCHANGE_FOO = "foo";
+    private final static String EXCHANGE_POLLING = "polling";
     private final static String ROUTING_KEY_POLLING = "pollingKey";
     private ConnectionFactory connectionFactory;
-
 
     @Test
     public void testInOut() {
         //direct has to be empty
-//        RestAssured.get("/spring-rabbitmq/get")
-//                .then()
-//                .statusCode(204);
-        RestAssured.given()
-                .queryParam(SpringRabbitmqResource.QUERY_DIRECT, SpringRabbitmqResource.DIRECT_IN_OUT)
-                .queryParam(SpringRabbitmqResource.QUERY_TIMEOUT, 0)
-                .post("/spring-rabbitmq/getWait");
-
-        RestAssured.given() //
-                .contentType(ContentType.TEXT)
-                .body("Sheldon")
-                .post("/spring-rabbitmq/post") //
+        getFromDirect(SpringRabbitmqResource.DIRECT_IN_OUT)
                 .then()
                 .statusCode(204);
 
-        RestAssured.given()
-                .queryParam(SpringRabbitmqResource.QUERY_DIRECT, SpringRabbitmqResource.DIRECT_IN_OUT)
-                .queryParam(SpringRabbitmqResource.QUERY_TIMEOUT, 0)
-                .post("/spring-rabbitmq/getWait")
+        sendToExchange(SpringRabbitmqResource.EXCHANGE_IN_OUT, SpringRabbitmqResource.ROUTING_KEY_IN_OUT, "Sheldon");
+
+        getFromDirect(SpringRabbitmqResource.DIRECT_IN_OUT)
                 .then()
                 .statusCode(200)
                 .body(is("Hello Sheldon"));
@@ -70,33 +57,44 @@ class SpringRabbitmqTest {
     @Test
     public void testPolling() throws InterruptedException {
 
-        bindQueue(SpringRabbitmqResource.POLLING_QUEUE_NAME, EXCHANGE_FOO, ROUTING_KEY_POLLING);
+        bindQueue(SpringRabbitmqResource.POLLING_QUEUE_NAME, EXCHANGE_POLLING, ROUTING_KEY_POLLING);
 
-        //start thread with poling consumer from exchange "foo", polling queueu, routing "mykey", result is sent to polling direct
+        //start thread with poling consumer from exchange "foo", polling queue, routing "mykey", result is sent to polling direct
         RestAssured.given()
-                .queryParam(SpringRabbitmqResource.QUERY_EXCHANGE, EXCHANGE_FOO)
-                .queryParam(SpringRabbitmqResource.QUERY_QUEUE, SpringRabbitmqResource.POLLING_QUEUE_NAME)
+                .queryParam(SpringRabbitmqResource.QUERY_EXCHANGE, EXCHANGE_POLLING)
                 .queryParam(SpringRabbitmqResource.QUERY_ROUTING_KEY, ROUTING_KEY_POLLING)
-                .queryParam(SpringRabbitmqResource.QUERY_DIRECT, SpringRabbitmqResource.DIRECT_POLLING)
                 .post("/spring-rabbitmq/startPolling");
 
         // wait a little to demonstrate we can start poll before we have a msg on the queue
         Thread.sleep(500);
 
-        RestAssured.given()
-                .queryParam(SpringRabbitmqResource.QUERY_ROUTING_KEY, ROUTING_KEY_POLLING)
-                .body("Sheldon")
-                .post("/spring-rabbitmq/send");
+        sendToExchange(EXCHANGE_POLLING, ROUTING_KEY_POLLING, "Sheldon");
 
         //get result from direct (for pooling) with timeout
-        RestAssured.given()
-                .queryParam(SpringRabbitmqResource.QUERY_DIRECT, SpringRabbitmqResource.DIRECT_POLLING)
-                .queryParam(SpringRabbitmqResource.QUERY_TIMEOUT, 1000)
-                .post("/spring-rabbitmq/getWait")
+        getFromDirect(SpringRabbitmqResource.DIRECT_POLLING, 1000)
                 .then()
                 .statusCode(200)
                 .body(is("Polling Hello Sheldon"));
 
+    }
+
+    private void sendToExchange(String exchange, String routingKey, String body) {
+        RestAssured.given()
+                .queryParam(SpringRabbitmqResource.QUERY_EXCHANGE, exchange)
+                .queryParam(SpringRabbitmqResource.QUERY_ROUTING_KEY, routingKey)
+                .body(body)
+                .post("/spring-rabbitmq/send");
+    }
+
+    private Response getFromDirect(String direct) {
+        return getFromDirect(direct, 0);
+    }
+
+    private Response getFromDirect(String direct, int timeout) {
+        return RestAssured.given()
+                .queryParam(SpringRabbitmqResource.QUERY_DIRECT, direct)
+                .queryParam(SpringRabbitmqResource.QUERY_TIMEOUT, timeout)
+                .post("/spring-rabbitmq/getFromDirect");
     }
 
     private void bindQueue(String queue, String exchange, String routingKey) {
