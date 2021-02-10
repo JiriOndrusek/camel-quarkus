@@ -18,6 +18,8 @@ package org.apache.camel.quarkus.component.spring.rabbitmq.deployment;
 
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.NativeImageProxyDefinitionBuildItem;
+import org.springframework.amqp.rabbit.connection.ChannelProxy;
 
 class SpringRabbitmqProcessor {
 
@@ -26,5 +28,10 @@ class SpringRabbitmqProcessor {
     @BuildStep
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
+    }
+
+    @BuildStep
+    NativeImageProxyDefinitionBuildItem initProxies() {
+        return new NativeImageProxyDefinitionBuildItem(ChannelProxy.class.getCanonicalName());
     }
 }

@@ -20,16 +20,12 @@ import java.util.Map;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.apache.camel.util.CollectionHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.testcontainers.containers.RabbitMQContainer;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 public class SpringRabbitmqTestResource implements QuarkusTestResourceLifecycleManager {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SpringRabbitmqTestResource.class);
     private static final String RABBITMQ_IMAGE = "rabbitmq:3.7.25-management-alpine";
     private static final int RABBITMQ_PORT = 5672;
     private static final String RABBITMQ_USERNAME = "guest";
@@ -43,13 +39,7 @@ public class SpringRabbitmqTestResource implements QuarkusTestResourceLifecycleM
         try {
             container = new RabbitMQContainer(RABBITMQ_IMAGE)
                     .withExposedPorts(RABBITMQ_PORT)
-                    .withLogConsumer(new Slf4jLogConsumer(LOGGER))
                     .waitingFor(Wait.forListeningPort());
-            //                    .withExchange("foo", "direct")
-            //                                .withQueue("pollingqueueu")
-            //                                .withBinding("pollingqueueu", "foo", Collections.emptyMap(), "foo.bar.#", "queue");
-
-            //                    .withQueue("queue-two", false, true, ImmutableMap.of("x-message-ttl", 1000));
             container.start();
 
             return CollectionHelper.mapOf(
