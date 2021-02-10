@@ -16,7 +16,6 @@
  */
 package org.apache.camel.quarkus.component.spring.rabbitmq.it;
 
-import java.util.Collections;
 import java.util.Map;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
@@ -26,11 +25,10 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
-import org.testcontainers.utility.TestcontainersConfiguration;
 
 public class SpringRabbitmqTestResource implements QuarkusTestResourceLifecycleManager {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpringRabbitmqTestResource.class);
     private static final String RABBITMQ_IMAGE = "rabbitmq:3.7.25-management-alpine";
     private static final int RABBITMQ_PORT = 5672;
     private static final String RABBITMQ_USERNAME = "guest";
@@ -44,12 +42,13 @@ public class SpringRabbitmqTestResource implements QuarkusTestResourceLifecycleM
         try {
             container = new RabbitMQContainer(RABBITMQ_IMAGE)
                     .withExposedPorts(RABBITMQ_PORT)
+                    .withLogConsumer(new Slf4jLogConsumer(LOGGER))
                     .waitingFor(Wait.forListeningPort());
-//                    .withExchange("cheese", "topic")
-//                    .withQueue("myqueue")
-//                    .withBinding("cheese", "myqueue", Collections.emptyMap(), "foo.bar.#", "queue");
+            //                    .withExchange("foo", "direct")
+            //                                .withQueue("pollingqueueu")
+            //                                .withBinding("pollingqueueu", "foo", Collections.emptyMap(), "foo.bar.#", "queue");
 
-//                    .withQueue("queue-two", false, true, ImmutableMap.of("x-message-ttl", 1000));
+            //                    .withQueue("queue-two", false, true, ImmutableMap.of("x-message-ttl", 1000));
             container.start();
 
             return CollectionHelper.mapOf(

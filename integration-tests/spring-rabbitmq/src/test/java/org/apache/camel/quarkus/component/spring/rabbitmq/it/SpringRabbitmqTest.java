@@ -20,13 +20,11 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 
@@ -56,6 +54,7 @@ class SpringRabbitmqTest {
                 .body(is("Hello Sheldon"));
 
     }
+
     @Test
     public void testPolling() throws InterruptedException {
         String hostname = System.getProperty(SpringRabbitmqResource.PARAMETER_HOSTNAME);
@@ -63,25 +62,22 @@ class SpringRabbitmqTest {
         String usernane = System.getProperty(SpringRabbitmqResource.PARAMETER_USERNAME);
         String password = System.getProperty(SpringRabbitmqResource.PARAMETER_PASSWORD);
 
-
         CachingConnectionFactory cf = new CachingConnectionFactory();
         cf.setUri(String.format("amqp://%s:%s", hostname, port));
         cf.setUsername(usernane);
         cf.setPassword(password);
 
-        Queue q = new Queue("myqueue", false);
+        Queue q = new Queue("pollingqueueu", false);
         DirectExchange t = new DirectExchange("foo");
         AmqpAdmin admin = new RabbitAdmin(cf);
         admin.declareQueue(q);
         admin.declareExchange(t);
         admin.declareBinding(BindingBuilder.bind(q).to(t).with("mykey"));
 
-        
         //direct has to be empty
         RestAssured.get("/spring-rabbitmq/startPolling")
                 .then()
                 .statusCode(204);
-
 
         // wait a little to demonstrate we can start poll before we have a msg on the queue
         Thread.sleep(500);

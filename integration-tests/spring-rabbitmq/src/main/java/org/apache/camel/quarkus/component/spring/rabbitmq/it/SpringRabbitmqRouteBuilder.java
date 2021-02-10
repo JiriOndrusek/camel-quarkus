@@ -31,10 +31,13 @@ public class SpringRabbitmqRouteBuilder extends RouteBuilder {
                 .transform(body().prepend("Hello "))
                 .to("direct:result");
 
-        from("direct:start").log("Sending ${body} to myqueue").to("spring-rabbitmq:foo?routingKey=mykey&autoDeclare=true");
+        //        //todo use producer instead route
+        //        from("direct:start").log("Sending ${body} to pollingqueueu")
+        //                .to("spring-rabbitmq:foo?routingKey=mykey&autoDeclare=true");
 
-        from("spring-rabbitmq:foo?queues=myqueue2&routingKey=mykey2&autoDeclare=true").log("Received ${body} from myqueue2")
-                .to("direct:result2");
+        //        from("spring-rabbitmq:foo?queues=pollingqueueu2&routingKey=mykey2&autoDeclare=true")
+        //                .log("Received ${body} from pollingqueueu2")
+        //                .to("direct:result2");
 
     }
 }
