@@ -29,7 +29,7 @@ public class SpringRabbitmqRouteBuilder extends RouteBuilder {
 
         from("spring-rabbitmq:cheese?queues=myqueue&routingKey=foo.bar&connectionFactory=#connectionFactory&autoDeclare=true")
                 .transform(body().prepend("Hello "))
-                .to("direct:result");
+                .to(SpringRabbitmqResource.DIRECT_IN_OUT);
 
         //        //todo use producer instead route
         //        from("direct:start").log("Sending ${body} to pollingqueueu")

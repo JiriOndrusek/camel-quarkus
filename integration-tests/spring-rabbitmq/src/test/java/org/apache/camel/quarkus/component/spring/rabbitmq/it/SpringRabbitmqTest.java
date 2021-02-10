@@ -25,7 +25,7 @@ import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 
 import static org.hamcrest.Matchers.is;
@@ -34,12 +34,21 @@ import static org.hamcrest.Matchers.is;
 @QuarkusTestResource(SpringRabbitmqTestResource.class)
 class SpringRabbitmqTest {
 
+    private final static String EXCHANGE_FOO = "foo";
+    private final static String ROUTING_KEY_POLLING = "pollingKey";
+    private ConnectionFactory connectionFactory;
+
+
     @Test
     public void testInOut() {
         //direct has to be empty
-        RestAssured.get("/spring-rabbitmq/get")
-                .then()
-                .statusCode(204);
+//        RestAssured.get("/spring-rabbitmq/get")
+//                .then()
+//                .statusCode(204);
+        RestAssured.given()
+                .queryParam(SpringRabbitmqResource.QUERY_DIRECT, SpringRabbitmqResource.DIRECT_IN_OUT)
+                .queryParam(SpringRabbitmqResource.QUERY_TIMEOUT, 0)
+                .post("/spring-rabbitmq/getWait");
 
         RestAssured.given() //
                 .contentType(ContentType.TEXT)
@@ -48,7 +57,10 @@ class SpringRabbitmqTest {
                 .then()
                 .statusCode(204);
 
-        RestAssured.get("/spring-rabbitmq/get")
+        RestAssured.given()
+                .queryParam(SpringRabbitmqResource.QUERY_DIRECT, SpringRabbitmqResource.DIRECT_IN_OUT)
+                .queryParam(SpringRabbitmqResource.QUERY_TIMEOUT, 0)
+                .post("/spring-rabbitmq/getWait")
                 .then()
                 .statusCode(200)
                 .body(is("Hello Sheldon"));
@@ -57,43 +69,46 @@ class SpringRabbitmqTest {
 
     @Test
     public void testPolling() throws InterruptedException {
-        String hostname = System.getProperty(SpringRabbitmqResource.PARAMETER_HOSTNAME);
-        String port = System.getProperty(SpringRabbitmqResource.PARAMETER_PORT);
-        String usernane = System.getProperty(SpringRabbitmqResource.PARAMETER_USERNAME);
-        String password = System.getProperty(SpringRabbitmqResource.PARAMETER_PASSWORD);
 
-        CachingConnectionFactory cf = new CachingConnectionFactory();
-        cf.setUri(String.format("amqp://%s:%s", hostname, port));
-        cf.setUsername(usernane);
-        cf.setPassword(password);
+        bindQueue(SpringRabbitmqResource.POLLING_QUEUE_NAME, EXCHANGE_FOO, ROUTING_KEY_POLLING);
 
-        Queue q = new Queue("pollingqueueu", false);
-        DirectExchange t = new DirectExchange("foo");
-        AmqpAdmin admin = new RabbitAdmin(cf);
-        admin.declareQueue(q);
-        admin.declareExchange(t);
-        admin.declareBinding(BindingBuilder.bind(q).to(t).with("mykey"));
-
-        //direct has to be empty
-        RestAssured.get("/spring-rabbitmq/startPolling")
-                .then()
-                .statusCode(204);
+        //start thread with poling consumer from exchange "foo", polling queueu, routing "mykey", result is sent to polling direct
+        RestAssured.given()
+                .queryParam(SpringRabbitmqResource.QUERY_EXCHANGE, EXCHANGE_FOO)
+                .queryParam(SpringRabbitmqResource.QUERY_QUEUE, SpringRabbitmqResource.POLLING_QUEUE_NAME)
+                .queryParam(SpringRabbitmqResource.QUERY_ROUTING_KEY, ROUTING_KEY_POLLING)
+                .queryParam(SpringRabbitmqResource.QUERY_DIRECT, SpringRabbitmqResource.DIRECT_POLLING)
+                .post("/spring-rabbitmq/startPolling");
 
         // wait a little to demonstrate we can start poll before we have a msg on the queue
         Thread.sleep(500);
 
-        RestAssured.given() //
-                .contentType(ContentType.TEXT)
+        RestAssured.given()
+                .queryParam(SpringRabbitmqResource.QUERY_ROUTING_KEY, ROUTING_KEY_POLLING)
                 .body("Sheldon")
-                .post("/spring-rabbitmq/start");
+                .post("/spring-rabbitmq/send");
 
-        Thread.sleep(1000);
-
-        RestAssured.get("/spring-rabbitmq/getWait")
+        //get result from direct (for pooling) with timeout
+        RestAssured.given()
+                .queryParam(SpringRabbitmqResource.QUERY_DIRECT, SpringRabbitmqResource.DIRECT_POLLING)
+                .queryParam(SpringRabbitmqResource.QUERY_TIMEOUT, 1000)
+                .post("/spring-rabbitmq/getWait")
                 .then()
                 .statusCode(200)
                 .body(is("Polling Hello Sheldon"));
 
     }
 
+    private void bindQueue(String queue, String exchange, String routingKey) {
+        Queue q = new Queue(queue, false);
+        DirectExchange t = new DirectExchange(exchange);
+        AmqpAdmin admin = new RabbitAdmin(connectionFactory);
+        admin.declareQueue(q);
+        admin.declareExchange(t);
+        admin.declareBinding(BindingBuilder.bind(q).to(t).with(routingKey));
+    }
+
+    public void setConnectionFactory(ConnectionFactory connectionFactory) {
+        this.connectionFactory = connectionFactory;
+    }
 }

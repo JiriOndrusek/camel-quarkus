@@ -22,6 +22,7 @@ import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.apache.camel.util.CollectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -58,6 +59,19 @@ public class SpringRabbitmqTestResource implements QuarkusTestResourceLifecycleM
                     SpringRabbitmqResource.PARAMETER_PASSWORD, RABBITMQ_PASSWORD);
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public void inject(Object testInstance) {
+        if(testInstance instanceof SpringRabbitmqTest) {
+            SpringRabbitmqTest test = (SpringRabbitmqTest)testInstance;
+
+            CachingConnectionFactory cf = new CachingConnectionFactory();
+            cf.setUri(String.format("amqp://%s:%d", container.getHost(), container.getMappedPort(RABBITMQ_PORT)));
+            cf.setUsername(RABBITMQ_USERNAME);
+            cf.setPassword(RABBITMQ_PASSWORD);
+
+            test.setConnectionFactory(cf);
         }
     }
 

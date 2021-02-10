@@ -25,6 +25,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.camel.ConsumerTemplate;
@@ -42,8 +43,17 @@ public class SpringRabbitmqResource {
     public static final String PARAMETER_USERNAME = "camel.quarkus.spring-rabbitmq.test.username";
     public static final String PARAMETER_PASSWORD = "camel.quarkus.spring-rabbitmq.test.password";
 
-    public static final String URL_PARAMETER_TOPIC = "topic";
-    public static final String URL_PARAMETER_ROUTING_KEY = "routingKey";
+    public static final String IN_OUT_QUEUE_NAME = "inOutQueue";
+    public static final String POLLING_QUEUE_NAME = "pollingqueue";
+
+    public static final String DIRECT_IN_OUT = "direct:inOut";
+    public static final String DIRECT_POLLING = "direct:polling";
+
+    public static final String QUERY_ROUTING_KEY = "routingKey";
+    public static final String QUERY_DIRECT = "fromDirect";
+    public static final String QUERY_EXCHANGE = "exchange";
+    public static final String QUERY_QUEUE = "queue";
+    public static final String QUERY_TIMEOUT = "timeout";
 
     @Inject
     ProducerTemplate producerTemplate;
@@ -74,13 +84,12 @@ public class SpringRabbitmqResource {
     }
 
     @Path("/getWait")
-    @GET
+    @POST
     @Produces(MediaType.TEXT_PLAIN)
-    public String getWait() throws Exception {
-        final String message = consumerTemplate.receiveBody(
-                "direct:result2",
-                1000,
-                String.class);
+    public String getWait(@QueryParam(QUERY_DIRECT) String direct, @QueryParam(QUERY_TIMEOUT) int timeout) {
+        final String message = timeout > 0 ?
+                consumerTemplate.receiveBody(direct, timeout, String.class) :
+                consumerTemplate.receiveBodyNoWait(direct, String.class);
         return message;
     }
 
@@ -93,24 +102,26 @@ public class SpringRabbitmqResource {
                 String.class);
     }
 
-    @Path("/start")
+    @Path("/send")
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
-    public void start(String message) throws Exception {
-        producerTemplate.sendBody("spring-rabbitmq:foo?routingKey=mykey&autoDeclare=true", message);
-        //        producerTemplate.sendBody("direct:start", message);
+    public void send(String message, @QueryParam(QUERY_ROUTING_KEY) String routingKey) {
+        String url = String.format("spring-rabbitmq:foo?routingKey=%s&autoDeclare=true", routingKey);
+        producerTemplate.sendBody(url, message);
     }
 
     @Path("/startPolling")
-    @GET
-    public void startPolling() throws Exception {
+    @POST
+    public void startPolling(@QueryParam(QUERY_EXCHANGE) String exchange,
+                             @QueryParam(QUERY_ROUTING_KEY) String routingKey,
+                             @QueryParam(QUERY_QUEUE) String queue,
+                             @QueryParam(QUERY_DIRECT) String direct) throws Exception {
         // use another thread for polling consumer to demonstrate that we can wait before
         // the message is sent to the queue
         Executors.newSingleThreadExecutor().execute(() -> {
-            String body = consumerTemplate.receiveBody("spring-rabbitmq:foo?queues=pollingqueueu&routingKey=mykey",
-                    String.class);
-            System.out.println("received " + body);
-            producerTemplate.sendBody("direct:result2", "Polling Hello " + body);
+            String url = String.format("spring-rabbitmq:%s?queues=%s&routingKey=%s", exchange, queue, routingKey);
+            String body = consumerTemplate.receiveBody(url, String.class);
+            producerTemplate.sendBody(direct, "Polling Hello " + body);
         });
     }
 }
