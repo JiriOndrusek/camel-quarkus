@@ -10,5 +10,8 @@
   },
   {
     "name" : "org.dizitart.no2.internals.IndexMetaService$IndexMeta"
+  },
+  {
+    "name" : "org.apache.camel.quarkus.component.nitrite.it.Employee"
   }
 ]
