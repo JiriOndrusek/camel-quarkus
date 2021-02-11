@@ -16,8 +16,6 @@
  */
 package org.apache.camel.quarkus.component.nitrite.it;
 
-import java.net.URI;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -29,41 +27,111 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.camel.ConsumerTemplate;
-import org.apache.camel.ProducerTemplate;
+import org.apache.camel.Exchange;
+import org.apache.camel.FluentProducerTemplate;
+import org.apache.camel.Message;
+import org.apache.camel.component.nitrite.NitriteConstants;
+import org.dizitart.no2.Document;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 @Path("/nitrite")
 @ApplicationScoped
 public class NitriteResource {
-
     private static final Logger LOG = Logger.getLogger(NitriteResource.class);
 
+    public static final String PROPERTY_DB_FILE = "camel.quarkus.nitrite.test.db.file";
+
+    @ConfigProperty(name = PROPERTY_DB_FILE)
+    String dbFile;
+
     @Inject
-    ProducerTemplate producerTemplate;
+    FluentProducerTemplate producerTemplate;
 
     @Inject
     ConsumerTemplate consumerTemplate;
 
-    @Path("/get")
+    @Path("/repositoryClass")
     @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public String get() throws Exception {
-        final String message = consumerTemplate.receiveBodyNoWait("nitrite:--fix-me--", String.class);
-        LOG.infof("Received from nitrite: %s", message);
-        return message;
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getRepositoryClass() throws Exception {
+        final Exchange exchange = consumerTemplate.receiveNoWait(String.format("nitrite://%s?repositoryClass=%s",
+                dbFile, Employee.class.getName()));
+        if (exchange == null) {
+            return Response.noContent().build();
+        }
+        final Message message = exchange.getMessage();
+        return Response
+                .ok(message.getBody())
+                .header(NitriteConstants.CHANGE_TYPE, message.getHeader(NitriteConstants.CHANGE_TYPE))
+                .build();
     }
 
-    @Path("/post")
+    @Path("/repositoryClass")
     @POST
-    @Consumes(MediaType.TEXT_PLAIN)
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response post(String message) throws Exception {
-        LOG.infof("Sending to nitrite: %s", message);
-        final String response = producerTemplate.requestBody("nitrite:--fix-me--", message, String.class);
-        LOG.infof("Got response from nitrite: %s", response);
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object postRepositoryClass(Employee object) {
+        LOG.debugf("Sending to nitrite: {%s}", object);
+        return producerTemplate.toF("nitrite://%s?repositoryClass=%s",
+                dbFile, Employee.class.getName())
+                .withBody(object)
+                .withHeader(NitriteConstants.OPERATION, null)
+                .request();
+    }
+
+    @Path("/repositoryClassOperation")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object postRepositoryClassOperation(Operation operation) {
+        LOG.debugf("Sending to nitrite: {%s}", operation);
+        return producerTemplate.toF("nitrite://%s?repositoryClass=%s",
+                dbFile, Employee.class.getName())
+                .withBody(operation.getEmployee())
+                .withHeader(NitriteConstants.OPERATION, operation.toRepositoryOperation())
+                .request();
+    }
+
+    @Path("/collection")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object getCollection() throws Exception {
+        final Exchange exchange = consumerTemplate.receiveNoWait(String.format("nitrite://%s?collection=collection",
+                dbFile));
+        LOG.debugf("Received from nitrite: %s", exchange == null ? null : exchange.getIn().getBody());
+        if (exchange == null) {
+            return Response.noContent().build();
+        }
+        final Message message = exchange.getMessage();
         return Response
-                .created(new URI("https://camel.apache.org/"))
-                .entity(response)
+                .ok(message.getBody())
+                .header(NitriteConstants.CHANGE_TYPE, message.getHeader(NitriteConstants.CHANGE_TYPE))
                 .build();
+    }
+
+    @Path("/collection")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object postCollection(Document doc) {
+        LOG.debugf("Sending to nitrite: {%s}", doc);
+        return producerTemplate.toF("nitrite://%s?collection=collection", dbFile)
+                .withBody(doc)
+                .withHeader(NitriteConstants.OPERATION, null)
+                .request();
+    }
+
+    @Path("/collectionOperation")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object collectionOperation(Operation operation) {
+        LOG.debugf("Sending to nitrite: {%s}", operation);
+        return producerTemplate.toF("nitrite://%s?collection=collection",
+                dbFile)
+                .withBody(operation.getDocument())
+                .withHeader(NitriteConstants.OPERATION, operation.toCollectionOperation())
+                .request();
     }
 }
