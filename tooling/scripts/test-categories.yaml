@@ -65,6 +65,7 @@ database:
   - leveldb
   - minio
   - mongodb
+  - nitrite
   - pgevent
   - pg-replication-slot
   - sql

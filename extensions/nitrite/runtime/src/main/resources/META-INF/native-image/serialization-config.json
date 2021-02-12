@@ -1,0 +1,11 @@
+[
+  {
+    "name" : "org.dizitart.no2.NitriteId"
+  },
+  {
+    "name" : "org.dizitart.no2.Document"
+  },
+  {
+    "name" : "org.dizitart.no2.meta.Attributes"
+  }
+]
