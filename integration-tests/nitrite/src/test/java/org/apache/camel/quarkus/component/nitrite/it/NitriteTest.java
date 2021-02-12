@@ -55,11 +55,11 @@ class NitriteTest {
                 .then()
                 .statusCode(200)
                 .body("name", is("Sheldon"));
-        RestAssured.get("/nitrite/repositoryClass")
-                .then()
-                .statusCode(200)
-                .header(NitriteConstants.CHANGE_TYPE, "INSERT")
-                .body("name", is("Sheldon"));
+        //        RestAssured.get("/nitrite/repositoryClass")
+        //                .then()
+        //                .statusCode(200)
+        //                .header(NitriteConstants.CHANGE_TYPE, "INSERT")
+        //                .body("name", is("Sheldon"));
 
         //        /* Insert Leonard */
         //        RestAssured.given()

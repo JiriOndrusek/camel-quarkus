@@ -13,5 +13,20 @@
   },
   {
     "name" : "org.apache.camel.quarkus.component.nitrite.it.Employee"
+  },
+  {
+    "name" : "java.util.concurrent.ConcurrentSkipListSet"
+  },
+  {
+    "name" : "java.lang.Object"
+  },
+  {
+    "name" : "java.lang.String"
+  },
+  {
+    "name" : "java.lang.Long"
+  },
+  {
+    "name" : "java.lang.Integer"
   }
 ]
