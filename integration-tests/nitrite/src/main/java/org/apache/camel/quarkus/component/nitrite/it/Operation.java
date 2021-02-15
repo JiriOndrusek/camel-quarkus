@@ -41,7 +41,8 @@ public class Operation {
 
     private Object value;
 
-    private Employee employee;
+    private EmployeeSerializable employeeSerializable;
+    private EmployeeMappable employeeMappable;
     private Document document;
 
     public Operation() {
@@ -53,9 +54,11 @@ public class Operation {
         this.value = value;
     }
 
-    public Operation(Type type, String field, Object value, Employee employee) {
+    public Operation(Type type, String field, Object value, EmployeeSerializable employeeSerializable,
+            EmployeeMappable employeeMappable) {
         this(type, field, value);
-        this.employee = employee;
+        this.employeeSerializable = employeeSerializable;
+        this.employeeMappable = employeeMappable;
     }
 
     public Operation(Type type, String field, Object value, Document document) {
@@ -87,12 +90,20 @@ public class Operation {
         this.value = value;
     }
 
-    public Employee getEmployee() {
-        return employee;
+    public Employee getEmployeeSerializable() {
+        return employeeSerializable;
     }
 
-    public void setEmployee(Employee employee) {
-        this.employee = employee;
+    public void setEmployeeSerializable(EmployeeSerializable employeeSerializable) {
+        this.employeeSerializable = employeeSerializable;
+    }
+
+    public EmployeeMappable getEmployeeMappable() {
+        return employeeMappable;
+    }
+
+    public void setEmployeeMappable(EmployeeMappable employeeMappable) {
+        this.employeeMappable = employeeMappable;
     }
 
     public Document getDocument() {

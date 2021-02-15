@@ -12,6 +12,9 @@
     "name" : "org.dizitart.no2.internals.IndexMetaService$IndexMeta"
   },
   {
+    "name" : "org.dizitart.no2.Index"
+  },
+  {
     "name" : "java.util.concurrent.ConcurrentSkipListSet"
   },
   {
@@ -34,5 +37,8 @@
   },
   {
     "name" : "java.util.LinkedHashMap"
+  },
+  {
+    "name" : "java.util.concurrent.atomic.AtomicBoolean"
   }
 ]

@@ -19,18 +19,7 @@ package org.apache.camel.quarkus.component.nitrite.it;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.dizitart.no2.IndexType;
-import org.dizitart.no2.objects.Id;
-import org.dizitart.no2.objects.Index;
-import org.dizitart.no2.objects.Indices;
-
-@Indices({
-        @Index(value = "address", type = IndexType.NonUnique),
-        @Index(value = "name", type = IndexType.Unique)
-})
-public class Employee implements Serializable, Cloneable {
-    @Id
-    private long empId;
+public abstract class Employee implements Serializable, Cloneable {
 
     private Date joinDate;
 
@@ -42,19 +31,15 @@ public class Employee implements Serializable, Cloneable {
     }
 
     public Employee(long empId, Date joinDate, String name, String address) {
-        this.empId = empId;
+        setEmpId(empId);
         this.joinDate = joinDate;
         this.name = name;
         this.address = address;
     }
 
-    public long getEmpId() {
-        return empId;
-    }
+    public abstract long getEmpId();
 
-    public void setEmpId(long empId) {
-        this.empId = empId;
-    }
+    public abstract void setEmpId(long empId);
 
     public Date getJoinDate() {
         return joinDate;
@@ -83,7 +68,7 @@ public class Employee implements Serializable, Cloneable {
     @Override
     public String toString() {
         return "Employee{" +
-                "empId=" + empId +
+                "empId=" + getEmpId() +
                 ", joinDate=" + joinDate +
                 ", name='" + name + '\'' +
                 ", address='" + address + '\'' +

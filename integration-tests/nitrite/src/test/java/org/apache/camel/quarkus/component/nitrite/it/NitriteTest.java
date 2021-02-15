@@ -35,27 +35,57 @@ import static org.hamcrest.core.Is.is;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class NitriteTest {
 
-    private static final Employee sheldon = new Employee(1L, new GregorianCalendar(2010, 10, 1).getTime(), "Sheldon",
+    private static final EmployeeSerializable sheldon1 = new EmployeeSerializable(1L,
+            new GregorianCalendar(2010, 10, 1).getTime(),
+            "Sheldon",
             "Alpha Centauri");
-    private static final Employee leonard = new Employee(2L, new GregorianCalendar(2015, 10, 1).getTime(), "Leonard", "Earth");
-    private static final Employee irma = new Employee(3L, new GregorianCalendar(2011, 10, 1).getTime(), "Irma", "Jupiter");
-//todo try mappable employee 
+    private static final EmployeeSerializable leonard1 = new EmployeeSerializable(2L,
+            new GregorianCalendar(2015, 10, 1).getTime(),
+            "Leonard", "Earth");
+    private static final EmployeeSerializable irma1 = new EmployeeSerializable(3L, new GregorianCalendar(2011, 10, 1).getTime(),
+            "Irma",
+            "Jupiter");
+
+    private static final EmployeeMappable sheldon2 = new EmployeeMappable(1L, new GregorianCalendar(2010, 10, 1).getTime(),
+            "Sheldon",
+            "Alpha Centauri");
+    private static final EmployeeMappable leonard2 = new EmployeeMappable(2L, new GregorianCalendar(2015, 10, 1).getTime(),
+            "Leonard", "Earth");
+    private static final EmployeeMappable irma2 = new EmployeeMappable(3L, new GregorianCalendar(2011, 10, 1).getTime(), "Irma",
+            "Jupiter");
+
     @Test
-    public void repositoryClass() throws CloneNotSupportedException {
+    public void repositoryClassSerializable() throws CloneNotSupportedException {
+        testRepositoryClass(sheldon1, leonard1, irma1);
+    }
+
+    @Test
+    public void repositoryClassMappable() throws CloneNotSupportedException {
+        testRepositoryClass(sheldon2, leonard2, irma2);
+    }
+
+    private void testRepositoryClass(Employee sheldon, Employee leonard, Employee irma)
+            throws CloneNotSupportedException {
+        boolean mappable = sheldon instanceof EmployeeMappable;
         /* Make sure there is no event there before we start inserting */
-        RestAssured.get("/nitrite/repositoryClass")
+        RestAssured.given()
+                .queryParam("mappable", mappable)
+                .post("/nitrite/getRepositoryClass")
                 .then()
                 .statusCode(204);
 
         /* Insert Sheldon */
         RestAssured.given()
                 .contentType(ContentType.JSON)
+                .queryParam("mappable", mappable)
                 .body(sheldon)
                 .post("/nitrite/repositoryClass")
                 .then()
                 .statusCode(200)
                 .body("name", is("Sheldon"));
-        RestAssured.get("/nitrite/repositoryClass")
+        RestAssured.given()
+                .queryParam("mappable", mappable)
+                .post("/nitrite/getRepositoryClass")
                 .then()
                 .statusCode(200)
                 .header(NitriteConstants.CHANGE_TYPE, "INSERT")
@@ -64,12 +94,15 @@ class NitriteTest {
         /* Insert Leonard */
         RestAssured.given()
                 .contentType(ContentType.JSON)
+                .queryParam("mappable", mappable)
                 .body(leonard)
                 .post("/nitrite/repositoryClass")
                 .then()
                 .statusCode(200)
                 .body("name", is("Leonard"));
-        RestAssured.get("/nitrite/repositoryClass")
+        RestAssured.given()
+                .queryParam("mappable", mappable)
+                .post("/nitrite/getRepositoryClass")
                 .then()
                 .statusCode(200)
                 .header(NitriteConstants.CHANGE_TYPE, "INSERT")
@@ -78,28 +111,42 @@ class NitriteTest {
         /* Insert Irma */
         RestAssured.given()
                 .contentType(ContentType.JSON)
+                .queryParam("mappable", mappable)
                 .body(irma)
                 .post("/nitrite/repositoryClass")
                 .then()
                 .statusCode(200)
                 .body("name", is("Irma"));
-        RestAssured.get("/nitrite/repositoryClass")
+        RestAssured.given()
+                .queryParam("mappable", mappable)
+                .post("/nitrite/getRepositoryClass")
                 .then()
                 .statusCode(200)
                 .header(NitriteConstants.CHANGE_TYPE, "INSERT")
                 .body("name", is("Irma"));
 
-        Employee updatedSheldon = (Employee) sheldon.clone();
-        updatedSheldon.setAddress("Moon");
+        EmployeeSerializable updatedSheldon1 = null;
+        EmployeeMappable updatedSheldon2 = null;
+        if (sheldon instanceof EmployeeSerializable) {
+            updatedSheldon1 = (EmployeeSerializable) sheldon.clone();
+            updatedSheldon1.setAddress("Moon");
+        } else {
+            updatedSheldon2 = (EmployeeMappable) sheldon.clone();
+            updatedSheldon2.setAddress("Moon");
+        }
+
         RestAssured.given()
                 .contentType(ContentType.JSON)
-                .body(new Operation(Operation.Type.update, "name", "Sheldon", updatedSheldon))
+                .body(new Operation(Operation.Type.update, "name", "Sheldon", updatedSheldon1, updatedSheldon2))
+                .queryParam("mappable", mappable)
                 .post("/nitrite/repositoryClassOperation")
                 .then()
                 .body("name", is("Sheldon"),
                         "address", is("Moon"));
 
-        RestAssured.get("/nitrite/repositoryClass")
+        RestAssured.given()
+                .queryParam("mappable", mappable)
+                .post("/nitrite/getRepositoryClass")
                 .then()
                 .statusCode(200)
                 .header(NitriteConstants.CHANGE_TYPE, "UPDATE")
@@ -108,7 +155,8 @@ class NitriteTest {
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
-                .body(new Operation(Operation.Type.find, "address", (Object) "Moon", (Employee) null))
+                .body(new Operation(Operation.Type.find, "address", (Object) "Moon", null, null))
+                .queryParam("mappable", mappable)
                 .post("/nitrite/repositoryClassOperation")
                 .then()
                 .statusCode(200)
@@ -117,7 +165,8 @@ class NitriteTest {
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
-                .body(new Operation(Operation.Type.findGt, "empId", (Object) 0, (Employee) null))
+                .body(new Operation(Operation.Type.findGt, "empId", (Object) 0, null, null))
+                .queryParam("mappable", mappable)
                 .post("/nitrite/repositoryClassOperation")
                 .then()
                 .statusCode(200)
@@ -125,13 +174,16 @@ class NitriteTest {
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
-                .body(new Operation(Operation.Type.delete, "address", "Moon", (Employee) null))
+                .body(new Operation(Operation.Type.delete, "address", "Moon", null, null))
+                .queryParam("mappable", mappable)
                 .post("/nitrite/repositoryClassOperation")
                 .then()
                 .statusCode(204);
 
         RestAssured
-                .get("/nitrite/repositoryClass")
+                .given()
+                .queryParam("mappable", mappable)
+                .post("/nitrite/getRepositoryClass")
                 .then()
                 .statusCode(200)
                 .header(NitriteConstants.CHANGE_TYPE, "REMOVE")
@@ -140,7 +192,8 @@ class NitriteTest {
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
-                .body(new Operation(Operation.Type.findGt, "empId", (Object) 0, (Employee) null))
+                .body(new Operation(Operation.Type.findGt, "empId", (Object) 0, null, null))
+                .queryParam("mappable", mappable)
                 .post("/nitrite/repositoryClassOperation")
                 .then()
                 .statusCode(200)
@@ -222,7 +275,7 @@ class NitriteTest {
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
-                .body(new Operation(Operation.Type.find, "key1", (Object) "value_afterUpdate", (Document) null))
+                .body(new Operation(Operation.Type.find, "key1", (Object) "value_afterUpdate", null))
                 .post("/nitrite/collectionOperation")
                 .then()
                 .statusCode(200)

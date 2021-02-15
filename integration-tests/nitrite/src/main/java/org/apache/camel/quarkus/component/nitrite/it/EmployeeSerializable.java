@@ -16,12 +16,10 @@
  */
 package org.apache.camel.quarkus.component.nitrite.it;
 
+import java.io.Serializable;
 import java.util.Date;
 
-import org.dizitart.no2.Document;
 import org.dizitart.no2.IndexType;
-import org.dizitart.no2.mapper.Mappable;
-import org.dizitart.no2.mapper.NitriteMapper;
 import org.dizitart.no2.objects.Id;
 import org.dizitart.no2.objects.Index;
 import org.dizitart.no2.objects.Indices;
@@ -30,20 +28,16 @@ import org.dizitart.no2.objects.Indices;
         @Index(value = "address", type = IndexType.NonUnique),
         @Index(value = "name", type = IndexType.Unique)
 })
-public class EmployeeMappable extends Employee implements Mappable {
+public class EmployeeSerializable extends Employee implements Serializable {
 
     @Id
     private long empId;
 
-    public EmployeeMappable() {
+    public EmployeeSerializable() {
     }
 
-    public EmployeeMappable(long empId, Date joinDate, String name, String address) {
+    public EmployeeSerializable(long empId, Date joinDate, String name, String address) {
         super(empId, joinDate, name, address);
-    }
-
-    public EmployeeMappable(EmployeeSerializable employee) {
-        super(employee.getEmpId(), employee.getJoinDate(), employee.getName(), employee.getAddress());
     }
 
     @Override
@@ -56,24 +50,4 @@ public class EmployeeMappable extends Employee implements Mappable {
         this.empId = empId;
     }
 
-    @Override
-    public Document write(NitriteMapper nitriteMapper) {
-        Document document = new Document();
-        document.put("empId", getEmpId());
-        document.put("name", getName());
-        document.put("joiningDate", getJoinDate());
-        document.put("address", getAddress());
-
-        return document;
-    }
-
-    @Override
-    public void read(NitriteMapper nitriteMapper, Document document) {
-        if (document != null) {
-            setEmpId((Long) document.get("empId"));
-            setName((String) document.get("name"));
-            setJoinDate((Date) document.get("joiningDate"));
-            setAddress((String) document.get("address"));
-        }
-    }
 }

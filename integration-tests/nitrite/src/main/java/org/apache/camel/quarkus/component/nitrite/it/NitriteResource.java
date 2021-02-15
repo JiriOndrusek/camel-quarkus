@@ -23,6 +23,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -51,12 +52,13 @@ public class NitriteResource {
     @Inject
     ConsumerTemplate consumerTemplate;
 
-    @Path("/repositoryClass")
-    @GET
+    @Path("/getRepositoryClass")
+    @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getRepositoryClass() throws Exception {
+    public Response getRepositoryClass(@QueryParam("mappable") boolean mappable) throws Exception {
+        String className = mappable ? EmployeeMappable.class.getName() : EmployeeSerializable.class.getName();
         final Exchange exchange = consumerTemplate.receiveNoWait(String.format("nitrite://%s?repositoryClass=%s",
-                dbFile, Employee.class.getName()));
+                dbFile, className));
         if (exchange == null) {
             return Response.noContent().build();
         }
@@ -71,11 +73,17 @@ public class NitriteResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Object postRepositoryClass(Employee object) {
+    public Object postRepositoryClass(EmployeeSerializable object, @QueryParam("mappable") boolean mappable) {
+        String className = mappable ? EmployeeMappable.class.getName() : EmployeeSerializable.class.getName();
+        //if object, is mappable, construct it from serializable (it is conversion caused by tthe type in method parameter)
+        Employee employee = object;
+        if (mappable) {
+            employee = new EmployeeMappable(object);
+        }
         LOG.debugf("Sending to nitrite: {%s}", object);
         return producerTemplate.toF("nitrite://%s?repositoryClass=%s",
-                dbFile, Employee.class.getName())
-                .withBody(object)
+                dbFile, className)
+                .withBody(employee)
                 .withHeader(NitriteConstants.OPERATION, null)
                 .request();
     }
@@ -84,11 +92,12 @@ public class NitriteResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Object postRepositoryClassOperation(Operation operation) {
+    public Object postRepositoryClassOperation(Operation operation, @QueryParam("mappable") boolean mappable) {
+        String className = mappable ? EmployeeMappable.class.getName() : EmployeeSerializable.class.getName();
         LOG.debugf("Sending to nitrite: {%s}", operation);
         return producerTemplate.toF("nitrite://%s?repositoryClass=%s",
-                dbFile, Employee.class.getName())
-                .withBody(operation.getEmployee())
+                dbFile, className)
+                .withBody(mappable ? operation.getEmployeeMappable() : operation.getEmployeeSerializable())
                 .withHeader(NitriteConstants.OPERATION, operation.toRepositoryOperation())
                 .request();
     }
