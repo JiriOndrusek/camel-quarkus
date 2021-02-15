@@ -39,9 +39,6 @@
     "name" : "java.util.concurrent.atomic.AtomicBoolean"
   },
   {
-    "name" : "java.util.concurrent.ConcurrentSkipListSet"
-  },
-  {
     "name" : "java.util.concurrent.ConcurrentSkipListMap"
   }
 ]
