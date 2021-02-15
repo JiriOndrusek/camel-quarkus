@@ -17,8 +17,11 @@
 package org.apache.camel.quarkus.component.nitrite.it;
 
 import java.io.Serializable;
+import java.util.Date;
 
-public abstract class Employee implements Cloneable, Serializable {
+public abstract class Employee implements Serializable, Cloneable {
+
+    private Date joinDate;
 
     private String name;
 
@@ -27,8 +30,9 @@ public abstract class Employee implements Cloneable, Serializable {
     public Employee() {
     }
 
-    public Employee(long empId, String name, String address) {
+    public Employee(long empId, Date joinDate, String name, String address) {
         setEmpId(empId);
+        this.joinDate = joinDate;
         this.name = name;
         this.address = address;
     }
@@ -36,6 +40,14 @@ public abstract class Employee implements Cloneable, Serializable {
     public abstract long getEmpId();
 
     public abstract void setEmpId(long empId);
+
+    public Date getJoinDate() {
+        return joinDate;
+    }
+
+    public void setJoinDate(Date joinDate) {
+        this.joinDate = joinDate;
+    }
 
     public String getName() {
         return name;
@@ -57,6 +69,7 @@ public abstract class Employee implements Cloneable, Serializable {
     public String toString() {
         return "Employee{" +
                 "empId=" + getEmpId() +
+                ", joinDate=" + joinDate +
                 ", name='" + name + '\'' +
                 ", address='" + address + '\'' +
                 '}';

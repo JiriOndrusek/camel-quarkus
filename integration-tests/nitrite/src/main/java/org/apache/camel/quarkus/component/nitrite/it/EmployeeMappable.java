@@ -16,6 +16,8 @@
  */
 package org.apache.camel.quarkus.component.nitrite.it;
 
+import java.util.Date;
+
 import org.dizitart.no2.Document;
 import org.dizitart.no2.IndexType;
 import org.dizitart.no2.mapper.Mappable;
@@ -36,12 +38,12 @@ public class EmployeeMappable extends Employee implements Mappable {
     public EmployeeMappable() {
     }
 
-    public EmployeeMappable(long empId, String name, String address) {
-        super(empId, name, address);
+    public EmployeeMappable(long empId, Date joinDate, String name, String address) {
+        super(empId, joinDate, name, address);
     }
 
     public EmployeeMappable(EmployeeSerializable employee) {
-        super(employee.getEmpId(), employee.getName(), employee.getAddress());
+        super(employee.getEmpId(), employee.getJoinDate(), employee.getName(), employee.getAddress());
     }
 
     @Override
@@ -59,6 +61,7 @@ public class EmployeeMappable extends Employee implements Mappable {
         Document document = new Document();
         document.put("empId", getEmpId());
         document.put("name", getName());
+        document.put("joiningDate", getJoinDate());
         document.put("address", getAddress());
 
         return document;
@@ -69,6 +72,7 @@ public class EmployeeMappable extends Employee implements Mappable {
         if (document != null) {
             setEmpId((Long) document.get("empId"));
             setName((String) document.get("name"));
+            setJoinDate((Date) document.get("joiningDate"));
             setAddress((String) document.get("address"));
         }
     }

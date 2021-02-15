@@ -16,6 +16,8 @@
  */
 package org.apache.camel.quarkus.component.nitrite.it;
 
+import java.util.Date;
+
 import org.dizitart.no2.IndexType;
 import org.dizitart.no2.objects.Id;
 import org.dizitart.no2.objects.Index;
@@ -33,8 +35,8 @@ public class EmployeeSerializable extends Employee {
     public EmployeeSerializable() {
     }
 
-    public EmployeeSerializable(long empId, String name, String address) {
-        super(empId, name, address);
+    public EmployeeSerializable(long empId, Date joinDate, String name, String address) {
+        super(empId, joinDate, name, address);
     }
 
     @Override
