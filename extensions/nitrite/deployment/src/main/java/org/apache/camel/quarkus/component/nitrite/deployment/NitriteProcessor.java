@@ -16,6 +16,9 @@
  */
 package org.apache.camel.quarkus.component.nitrite.deployment;
 
+import java.util.Arrays;
+import java.util.List;
+
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
@@ -37,7 +40,8 @@ class NitriteProcessor {
     }
 
     @BuildStep
-    ReflectiveClassBuildItem reflectiveClasses() {
-        return new ReflectiveClassBuildItem(false, false, org.h2.store.fs.FilePathNio.class);
+    List<ReflectiveClassBuildItem> registerMetricsForReflection() {
+        return Arrays.asList(new ReflectiveClassBuildItem(false, false, org.h2.store.fs.FilePathNio.class),
+                new ReflectiveClassBuildItem(true, false, "sun.reflect.ReflectionFactory"));
     }
 }

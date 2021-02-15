@@ -15,13 +15,13 @@
     "name" : "org.dizitart.no2.Index"
   },
   {
-    "name" : "java.util.concurrent.ConcurrentSkipListSet"
-  },
-  {
     "name" : "java.lang.Object"
   },
   {
     "name" : "java.lang.String"
+  },
+  {
+    "name" : "java.lang.Boolean"
   },
   {
     "name" : "java.lang.Long"
@@ -40,5 +40,11 @@
   },
   {
     "name" : "java.util.concurrent.atomic.AtomicBoolean"
+  },
+  {
+    "name" : "java.util.concurrent.ConcurrentSkipListSet"
+  },
+  {
+    "name" : "java.util.concurrent.ConcurrentSkipListMap"
   }
 ]
