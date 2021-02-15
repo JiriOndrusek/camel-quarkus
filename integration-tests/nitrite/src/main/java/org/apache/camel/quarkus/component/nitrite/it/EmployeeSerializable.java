@@ -16,9 +16,6 @@
  */
 package org.apache.camel.quarkus.component.nitrite.it;
 
-import java.io.Serializable;
-import java.util.Date;
-
 import org.dizitart.no2.IndexType;
 import org.dizitart.no2.objects.Id;
 import org.dizitart.no2.objects.Index;
@@ -28,7 +25,7 @@ import org.dizitart.no2.objects.Indices;
         @Index(value = "address", type = IndexType.NonUnique),
         @Index(value = "name", type = IndexType.Unique)
 })
-public class EmployeeSerializable extends Employee implements Serializable {
+public class EmployeeSerializable extends Employee {
 
     @Id
     private long empId;
@@ -36,8 +33,8 @@ public class EmployeeSerializable extends Employee implements Serializable {
     public EmployeeSerializable() {
     }
 
-    public EmployeeSerializable(long empId, Date joinDate, String name, String address) {
-        super(empId, joinDate, name, address);
+    public EmployeeSerializable(long empId, String name, String address) {
+        super(empId, name, address);
     }
 
     @Override

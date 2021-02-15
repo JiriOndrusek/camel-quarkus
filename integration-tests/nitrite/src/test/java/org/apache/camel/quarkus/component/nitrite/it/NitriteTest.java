@@ -16,8 +16,6 @@
  */
 package org.apache.camel.quarkus.component.nitrite.it;
 
-import java.util.GregorianCalendar;
-
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
@@ -35,24 +33,14 @@ import static org.hamcrest.core.Is.is;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class NitriteTest {
 
-    private static final EmployeeSerializable sheldon1 = new EmployeeSerializable(1L,
-            new GregorianCalendar(2010, 10, 1).getTime(),
-            "Sheldon",
+    private static final EmployeeSerializable sheldon1 = new EmployeeSerializable(1L, "Sheldon",
             "Alpha Centauri");
-    private static final EmployeeSerializable leonard1 = new EmployeeSerializable(2L,
-            new GregorianCalendar(2015, 10, 1).getTime(),
-            "Leonard", "Earth");
-    private static final EmployeeSerializable irma1 = new EmployeeSerializable(3L, new GregorianCalendar(2011, 10, 1).getTime(),
-            "Irma",
-            "Jupiter");
+    private static final EmployeeSerializable leonard1 = new EmployeeSerializable(2L, "Leonard", "Earth");
+    private static final EmployeeSerializable irma1 = new EmployeeSerializable(3L, "Irma", "Jupiter");
 
-    private static final EmployeeMappable sheldon2 = new EmployeeMappable(1L, new GregorianCalendar(2010, 10, 1).getTime(),
-            "Sheldon",
-            "Alpha Centauri");
-    private static final EmployeeMappable leonard2 = new EmployeeMappable(2L, new GregorianCalendar(2015, 10, 1).getTime(),
-            "Leonard", "Earth");
-    private static final EmployeeMappable irma2 = new EmployeeMappable(3L, new GregorianCalendar(2011, 10, 1).getTime(), "Irma",
-            "Jupiter");
+    private static final EmployeeMappable sheldon2 = new EmployeeMappable(1L, "Sheldon", "Alpha Centauri");
+    private static final EmployeeMappable leonard2 = new EmployeeMappable(2L, "Leonard", "Earth");
+    private static final EmployeeMappable irma2 = new EmployeeMappable(3L, "Irma", "Jupiter");
 
     @Test
     public void repositoryClassSerializable() throws CloneNotSupportedException {

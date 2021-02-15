@@ -3,7 +3,25 @@
     "name" : "org.dizitart.no2.NitriteId"
   },
   {
+    "name" : "java.lang.Long"
+  },
+  {
+    "name" : "java.lang.Number"
+  },
+  {
     "name" : "org.dizitart.no2.Document"
+  },
+  {
+    "name" : "java.util.LinkedHashMap"
+  },
+  {
+    "name" : "java.util.HashMap"
+  },
+  {
+    "name" : "java.lang.String"
+  },
+  {
+    "name" : "java.lang.Integer"
   },
   {
     "name" : "org.dizitart.no2.meta.Attributes"
@@ -12,33 +30,9 @@
     "name" : "org.dizitart.no2.internals.IndexMetaService$IndexMeta"
   },
   {
-    "name" : "org.dizitart.no2.Index"
-  },
-  {
-    "name" : "java.lang.String"
-  },
-  {
-    "name" : "java.lang.Boolean"
-  },
-  {
-    "name" : "java.lang.Long"
-  },
-  {
-    "name" : "java.lang.Integer"
-  },
-  {
-    "name" : "java.lang.Number"
-  },
-  {
-    "name" : "java.util.HashMap"
-  },
-  {
-    "name" : "java.util.LinkedHashMap"
-  },
-  {
     "name" : "java.util.concurrent.atomic.AtomicBoolean"
   },
   {
-    "name" : "java.util.concurrent.ConcurrentSkipListMap"
+    "name" : "org.dizitart.no2.Index"
   }
 ]

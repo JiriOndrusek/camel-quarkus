@@ -1,0 +1,12 @@
+* If your persistance objects implement `java.io.Serializable`, you have to add configuration of all serializable classes.
+The new release of GraalVM 21.0 adds serialization support, developers can configure class
+for serialization via the serializationconfiguration file
+`-H:SerializationConfigurationResources=/path/to-serialization-config.json` option. For more
+information see https://github.com/oracle/graal/pull/2730[PR with feature].
+
+* If you persistance objects implement `org.dizitart.no2.mapper.Mappable`, it also needs to implement `java.io.Serializable`
+and has to be registered fr serialization (see previous option). But there is no need to register classes used inside
+of `Mappable` object for serialization, because serialization is done via `Mappable` implementation.
+
+
+
