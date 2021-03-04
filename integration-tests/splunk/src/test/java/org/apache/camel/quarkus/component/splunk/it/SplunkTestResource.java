@@ -21,6 +21,7 @@ import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.apache.camel.util.CollectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.ToStringConsumer;
 import org.testcontainers.containers.output.WaitingConsumer;
@@ -43,60 +44,27 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
     public Map<String, String> start() {
 
         try {
-            container = new GenericContainer("splunk/splunk:latest")
+            container = new GenericContainer("splunk/splunk:8.1.2")
                     .withExposedPorts(REMOTE_PORT)
                     .withEnv("SPLUNK_START_ARGS", "--accept-license")
                     .withEnv("SPLUNK_PASSWORD", "changeit")
 //                    .withEnv("SPLUNK_INDEXER_URL", "junit")
                     .withEnv("SPLUNK_LICENSE_URI", "Free")
-//                    .withCommand("sudo", "sed", "-i", "s/allowRemoteLogin=requireSetPassword/allowRemoteLogin=always/", "/opt/splunk/etc/system/default/server.conf")
-                    .waitingFor(Wait.forListeningPort());
-//            ;
-
-            WaitingConsumer wait = new WaitingConsumer();
-            final ToStringConsumer toString = new ToStringConsumer();
-
-//            container = new GenericContainer(
-//                    new ImageFromDockerfile()
-//                            .withDockerfileFromBuilder(builder ->
-//                                    builder
-//                                            .from("splunk/splunk:latest")
-//                                            .cmd("ls /sbin")
-//                                            .cmd("/bin/bash", "cat /opt/splunk/etc/system/default/server.conf")
-//                                            .run("echo '**********111111111111111111111*****************'")
-//                                            .run("touch", "tmp.txt")
-//                                            .run("sudo sed -i 's/allowRemoteLogin=requireSetPassword/allowRemoteLogin=always' /opt/splunk/etc/system/default/server.conf")
-//                                            .entryPoint("sudo", "sed", "-i", "s/allowRemoteLogin=requireSetPassword/allowRemoteLogin=always/", "/opt/splunk/etc/system/default/server.conf")
-//                                            .entryPoint("sudo", "sed", "-i", "s/allowRemoteLogin=requireSetPassword/allowRemoteLogin=always/", "/opt/splunk/etc/system/default/server.conf")
-//                                    entryPoint("/sbin/entrypoint.sh start")
-//                                            .entryPoint("/bin/sh", "-c",  "sudo sed -i 's/allowRemoteLogin=requireSetPassword/allowRemoteLogin=always/' /opt/splunk/etc/system/default/server.conf && /sbin/entrypoint.sh start")
-//                                            .build()))
-//                                    .withCommand("/bin/bash","touch", "tmp.txt")
-//                    .withExposedPorts(REMOTE_PORT)
-//                    .withEnv("SPLUNK_START_ARGS", "--accept-license")
-//                    .withEnv("SPLUNK_PASSWORD", "changeit")
-//                    .withEnv("SPLUNK_LICENSE_URI", "Free");
-//                    .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
-//                    .withLogConsumer(wait.andThen(toString));
+                    .waitingFor(
+                            Wait.forLogMessage(".*Ansible playbook complete.*\\n", 1)
+                    );
 
             container.start();
 
-//            container.execInContainer("sudo", "sed", "-i", "s/allowRemoteLogin=requireSetPassword/allowRemoteLogin=always/", "/opt/splunk/etc/system/default/server.conf");
             container.execInContainer("sudo", "sed", "-i", "s/allowRemoteLogin=requireSetPassword/allowRemoteLogin=always/", "/opt/splunk/etc/system/default/server.conf");
             container.execInContainer("sudo", "sed", "-i", "s/enableSplunkdSSL = true/enableSplunkdSSL = false/", "/opt/splunk/etc/system/default/server.conf");
-//            container.execInContainer("sudo", "sed", "-i", "s/allowRemoteLogin=requireSetPassword/allowRemoteLogin=always/", "/opt/splunk/etc/system/local/server.conf");
-            container.execInContainer("sudo", "./bin/splunk stop");
-            Thread.sleep(60000);
-            container.execInContainer("sudo", "./bin/splunk start");
-            Thread.sleep(60000);
-//            container.execInContainer("sudo", "/sbin/entrypoint.sh restart");
-
-//
-//            container.stop();
-//            container.start();
+            container.execInContainer("sudo", "./bin/splunk", "restart");
+            container.execInContainer("sudo", "./bin/splunk", "add", "index", "submitIndex");
 
             return CollectionHelper.mapOf(
                     "remotePort", container.getMappedPort(REMOTE_PORT).toString());
+//            return CollectionHelper.mapOf(
+//                    "remotePort", "8000");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

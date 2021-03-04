@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.component.splunk.it;
 
 import java.net.URI;
+import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -28,8 +29,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.component.splunk.SplunkComponent;
+import org.apache.camel.component.splunk.SplunkConfiguration;
+import org.apache.camel.component.splunk.event.SplunkEvent;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 @Path("/splunk")
@@ -44,6 +50,12 @@ public class SplunkResource {
     @Inject
     ConsumerTemplate consumerTemplate;
 
+    @ConfigProperty(name = "remotePort")
+    Integer port;
+
+    @Inject
+    CamelContext camelContext;
+
     @Path("/get")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
@@ -55,11 +67,19 @@ public class SplunkResource {
 
     @Path("/post")
     @POST
-    @Consumes(MediaType.TEXT_PLAIN)
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response post(String message) throws Exception {
-        LOG.infof("Sending to splunk: %s", message);
-        final String response = producerTemplate.requestBody("splunk:--fix-me--", message, String.class);
+    public Response post(Map<String, String> message) throws Exception {
+        SplunkComponent sc = camelContext.getComponent("splunk", SplunkComponent.class);
+        sc.setSplunkConfigurationFactory(parameters -> new SplunkConfiguration());
+
+        SplunkEvent se = new SplunkEvent();
+        for (Map.Entry<String, String> e : message.entrySet()) {
+            se.addPair(e.getKey(), e.getValue());
+        }
+
+        String url = String.format("splunk:submit?scheme=http&port=%d&index=submitIndex&sourceType=testSource&source=test", port);
+        final String response = producerTemplate.requestBody(url, se, String.class);
         LOG.infof("Got response from splunk: %s", response);
         return Response
                 .created(new URI("https://camel.apache.org/"))

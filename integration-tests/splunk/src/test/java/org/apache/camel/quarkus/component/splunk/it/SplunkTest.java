@@ -24,25 +24,24 @@ import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
+
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
+
 @QuarkusTest
 @QuarkusTestResource(SplunkTestResource.class)
 class SplunkTest {
 
     @Test
     public void test() {
-        final String msg = java.util.UUID.randomUUID().toString().replace("-", "");
-        RestAssured.given() //
-                .contentType(ContentType.TEXT)
-                .body(msg)
-                .post("/splunk/post") //
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(Collections.singletonMap("name", "Sheldon"))
+                .post("/splunk/post")
                 .then()
-                .statusCode(201);
-
-        Assertions.fail("Add some assertions to " + getClass().getName());
-
-        RestAssured.get("/splunk/get")
-                .then()
-                .statusCode(200);
+                .statusCode(201)
+                .body(containsString("name=\"Sheldon\""));
     }
 
 }
