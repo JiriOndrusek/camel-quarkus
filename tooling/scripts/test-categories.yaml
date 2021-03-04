@@ -69,6 +69,7 @@ database:
   - nitrite
   - pgevent
   - pg-replication-slot
+  - splunk
   - sql
 dataformats:
   - avro
