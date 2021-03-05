@@ -56,7 +56,7 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
                     "/opt/splunk/etc/system/default/server.conf");
             container.execInContainer("sudo", "./bin/splunk", "restart");
             container.execInContainer("sudo", "./bin/splunk", "add", "index", INDEX);
-            //
+            //            //
             //            int i = 0;
             //            while (i++ < 600) {
             //                System.out.println(i++ + ", r port: " + container.getMappedPort(REMOTE_PORT).toString());
@@ -66,6 +66,10 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
             return CollectionHelper.mapOf(
                     SplunkResource.PARAM_REMOTE_PORT, container.getMappedPort(REMOTE_PORT).toString(),
                     SplunkResource.PARAM_TCP_PORT, container.getMappedPort(TCP_PORT).toString());
+            //
+            //            return CollectionHelper.mapOf(
+            //                    SplunkResource.PARAM_REMOTE_PORT, "32940",
+            //                    SplunkResource.PARAM_TCP_PORT, "-1");
             //                        return CollectionHelper.mapOf(
             //                                "remotePort", "32852");
         } catch (Exception e) {

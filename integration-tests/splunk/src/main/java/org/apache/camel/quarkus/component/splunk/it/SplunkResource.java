@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.component.splunk.it;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,6 @@ import org.apache.camel.component.splunk.SplunkComponent;
 import org.apache.camel.component.splunk.SplunkConfiguration;
 import org.apache.camel.component.splunk.event.SplunkEvent;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.jboss.logging.Logger;
 
 @Path("/splunk")
 @ApplicationScoped
@@ -69,7 +69,9 @@ public class SplunkResource {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public List normal(String search) throws Exception {
-        String url = String.format("splunk://normal?scheme=http&port=%d&delay=5000&initEarliestTime=-10s&search=" + search,
+        String url = String.format(
+                "splunk://normal?username=admin&password=W3lcome!&scheme=http&port=%d&delay=5000&initEarliestTime=-10s&search="
+                        + search,
                 port);
 
         final SplunkEvent m1 = consumerTemplate.receiveBody(url, 10000, SplunkEvent.class);
@@ -88,11 +90,36 @@ public class SplunkResource {
         return result;
     }
 
+    @Path("/realtime")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public List realtime(String search) throws Exception {
+        System.out.println("**** reading ");
+        String url = String.format(
+                "splunk://realtime?username=admin&password=W3lcome!&scheme=http&port=%d&delay=5000&initEarliestTime=rt-10s&search="
+                        + search,
+                port);
+
+        final SplunkEvent m1 = consumerTemplate.receiveBody(url, 10000, SplunkEvent.class);
+
+        //        List result = Arrays.stream(new SplunkEvent[] { m1, m2, m3 })
+        //                .map(m -> m.getEventData().entrySet().stream()
+        //                        .filter(e -> !e.getKey().startsWith("_"))
+        //                        .collect(Collectors.toMap(
+        //                                Map.Entry::getKey,
+        //                                Map.Entry::getValue,
+        //                                (v1, v2) -> v1)))
+        //                .collect(Collectors.toList());
+
+        return new ArrayList();
+    }
+
     @Path("/submit")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
     public Response submit(Map<String, String> message, @QueryParam("index") String index) throws Exception {
+        System.out.println("*** submitting " + message);
         return post(message, "submit", index, null);
     }
 
@@ -109,6 +136,7 @@ public class SplunkResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
     public Response tcp(Map<String, String> message, @QueryParam("index") String index) throws Exception {
+        System.out.println("**** writing " + message);
         return post(message, "tcp", index, tcpPort);
     }
 
@@ -121,7 +149,8 @@ public class SplunkResource {
             se.addPair(e.getKey(), e.getValue());
         }
 
-        String url = String.format("splunk:%s?scheme=http&port=%d&index=%s&sourceType=%s&source=%s",
+        String url = String.format(
+                "splunk:%s?username=admin&password=W3lcome!&scheme=http&port=%d&index=%s&sourceType=%s&source=%s",
                 endpoint, port, index, SOURCE_TYPE, SOURCE);
         if (tcpPort != null) {
             url = url + "&tcpReceiverPort=" + tcpPort;
