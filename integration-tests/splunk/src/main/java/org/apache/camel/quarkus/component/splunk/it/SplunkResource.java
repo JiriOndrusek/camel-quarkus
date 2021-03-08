@@ -150,7 +150,7 @@ public class SplunkResource {
         }
 
         String url = String.format(
-                "splunk:%s?username=admin&password=W3lcome!&scheme=http&port=%d&index=%s&sourceType=%s&source=%s",
+                "splunk:%s?scheme=http&port=%d&index=%s&sourceType=%s&source=%s",
                 endpoint, port, index, SOURCE_TYPE, SOURCE);
         if (tcpPort != null) {
             url = url + "&tcpReceiverPort=" + tcpPort;

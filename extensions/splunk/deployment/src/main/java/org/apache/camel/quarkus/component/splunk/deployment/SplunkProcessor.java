@@ -16,8 +16,17 @@
  */
 package org.apache.camel.quarkus.component.splunk.deployment;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.ExtensionSslNativeSupportBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
+import org.joda.time.DateTimeZone;
 
 class SplunkProcessor {
 
@@ -27,4 +36,33 @@ class SplunkProcessor {
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
     }
+
+    @BuildStep
+    ExtensionSslNativeSupportBuildItem activateSslNativeSupport() {
+        return new ExtensionSslNativeSupportBuildItem(FEATURE);
+    }
+
+    @BuildStep
+    RuntimeInitializedClassBuildItem runtimeInitBcryptUtil() {
+        // this class uses a SecureRandom which needs to be initialised at run time
+        return new RuntimeInitializedClassBuildItem("com.splunk.HttpService");
+    }
+
+    @BuildStep
+    List<ReflectiveClassBuildItem> reflectiveClasses() {
+        return Arrays.asList(new ReflectiveClassBuildItem(false, false, "com.splunk.Index"));
+    }
+
+    @BuildStep
+    NativeImageResourceBuildItem nativeImageResources() {
+        List<String> timezones = new ArrayList<>();
+        for (String timezone : DateTimeZone.getAvailableIDs()) {
+            String[] zoneParts = timezone.split("/");
+            if (zoneParts.length == 2) {
+                timezones.add(String.format("org/joda/time/tz/data/%s/%s", zoneParts[0], zoneParts[1]));
+            }
+        }
+        return new NativeImageResourceBuildItem(timezones);
+    }
+
 }

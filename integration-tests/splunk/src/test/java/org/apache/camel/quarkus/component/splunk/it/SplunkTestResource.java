@@ -17,13 +17,11 @@
 
 package org.apache.camel.quarkus.component.splunk.it;
 
-import java.time.Duration;
 import java.util.Map;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.apache.camel.util.CollectionHelper;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
 
 public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
 
@@ -38,40 +36,38 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
     public Map<String, String> start() {
 
         try {
-            container = new GenericContainer("splunk/splunk:8.1.2")
-                    .withExposedPorts(REMOTE_PORT)
-                    .withEnv("SPLUNK_START_ARGS", "--accept-license")
-                    .withEnv("SPLUNK_PASSWORD", "changeit")
-                    //                    .withEnv("SPLUNK_INDEXER_URL", "junit")
-                    .withEnv("SPLUNK_LICENSE_URI", "Free")
-                    .withStartupTimeout(Duration.ofMinutes(2))
-                    .waitingFor(
-                            Wait.forLogMessage(".*Ansible playbook complete.*\\n", 1));
-
-            container.start();
-
-            container.execInContainer("sudo", "sed", "-i", "s/allowRemoteLogin=requireSetPassword/allowRemoteLogin=always/",
-                    "/opt/splunk/etc/system/default/server.conf");
-            container.execInContainer("sudo", "sed", "-i", "s/enableSplunkdSSL = true/enableSplunkdSSL = false/",
-                    "/opt/splunk/etc/system/default/server.conf");
-            container.execInContainer("sudo", "./bin/splunk", "restart");
-            container.execInContainer("sudo", "./bin/splunk", "add", "index", INDEX);
-            //            //
+            //            container = new GenericContainer("splunk/splunk:8.1.2")
+            //                    .withExposedPorts(REMOTE_PORT)
+            //                    .withEnv("SPLUNK_START_ARGS", "--accept-license")
+            //                    .withEnv("SPLUNK_PASSWORD", "changeit")
+            //                    //                    .withEnv("SPLUNK_INDEXER_URL", "junit")
+            //                    .withEnv("SPLUNK_LICENSE_URI", "Free")
+            //                    .withStartupTimeout(Duration.ofMinutes(2))
+            //                    .waitingFor(
+            //                            Wait.forLogMessage(".*Ansible playbook complete.*\\n", 1));
+            //
+            //            container.start();
+            //
+            //            container.execInContainer("sudo", "sed", "-i", "s/allowRemoteLogin=requireSetPassword/allowRemoteLogin=always/",
+            //                    "/opt/splunk/etc/system/default/server.conf");
+            //            container.execInContainer("sudo", "sed", "-i", "s/enableSplunkdSSL = true/enableSplunkdSSL = false/",
+            //                    "/opt/splunk/etc/system/default/server.conf");
+            //            container.execInContainer("sudo", "./bin/splunk", "restart");
+            //            container.execInContainer("sudo", "./bin/splunk", "add", "index", INDEX);
+            //
             //            int i = 0;
             //            while (i++ < 600) {
             //                System.out.println(i++ + ", r port: " + container.getMappedPort(REMOTE_PORT).toString());
             //                Thread.sleep(1000 * 60);
             //            }
             //
-            return CollectionHelper.mapOf(
-                    SplunkResource.PARAM_REMOTE_PORT, container.getMappedPort(REMOTE_PORT).toString(),
-                    SplunkResource.PARAM_TCP_PORT, container.getMappedPort(TCP_PORT).toString());
-            //
             //            return CollectionHelper.mapOf(
-            //                    SplunkResource.PARAM_REMOTE_PORT, "32940",
-            //                    SplunkResource.PARAM_TCP_PORT, "-1");
-            //                        return CollectionHelper.mapOf(
-            //                                "remotePort", "32852");
+            //                    SplunkResource.PARAM_REMOTE_PORT, container.getMappedPort(REMOTE_PORT).toString(),
+            //                    SplunkResource.PARAM_TCP_PORT, container.getMappedPort(TCP_PORT).toString());
+
+            return CollectionHelper.mapOf(
+                    SplunkResource.PARAM_REMOTE_PORT, "32893",
+                    SplunkResource.PARAM_TCP_PORT, "-1");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
