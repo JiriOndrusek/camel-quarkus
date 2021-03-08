@@ -42,11 +42,13 @@ import static org.hamcrest.Matchers.containsString;
 class SplunkTest {
 
     @Test
+    @Disabled
     public void testSubmit() {
         post(Collections.singletonMap("name", "Sheldon"), "submit", SplunkTestResource.INDEX);
     }
 
     @Test
+    @Disabled
     public void testStream() {
         post(Collections.singletonMap("name", "Irma"), "stream", SplunkTestResource.INDEX);
     }
@@ -58,6 +60,7 @@ class SplunkTest {
     }
 
     @Test
+    @Disabled
     public void testSearchNormal() {
         write();
 
@@ -67,7 +70,7 @@ class SplunkTest {
     }
 
     @Test
-    @Disabled // try indexed_realtime_use_by_defaul
+    //    @Disabled // try indexed_realtime_use_by_defaul
     public void testSearchRealtime() throws InterruptedException, ExecutionException {
         read("realtime");
 
@@ -80,11 +83,20 @@ class SplunkTest {
 
         System.out.println("**write");
         write();
-
+        Thread.sleep(10000);
         List<Map<String, String>> result = resultRead.get();
         result = read("realtime");
-
-        assertResult(result);
+        System.out.println("=============================");
+        System.out.println(result);
+        result = read("realtime");
+        System.out.println("=============================");
+        System.out.println(result);
+        result = read("realtime");
+        System.out.println("=============================");
+        System.out.println(result);
+        //
+        //
+        //        assertResult(result);
     }
 
     @Test

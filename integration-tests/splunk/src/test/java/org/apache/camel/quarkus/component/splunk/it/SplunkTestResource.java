@@ -66,7 +66,7 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
             //                    SplunkResource.PARAM_TCP_PORT, container.getMappedPort(TCP_PORT).toString());
 
             return CollectionHelper.mapOf(
-                    SplunkResource.PARAM_REMOTE_PORT, "32893",
+                    SplunkResource.PARAM_REMOTE_PORT, "32925",
                     SplunkResource.PARAM_TCP_PORT, "-1");
         } catch (Exception e) {
             throw new RuntimeException(e);

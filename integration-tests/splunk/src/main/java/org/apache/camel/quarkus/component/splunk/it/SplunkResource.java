@@ -17,8 +17,8 @@
 package org.apache.camel.quarkus.component.splunk.it;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -70,7 +70,7 @@ public class SplunkResource {
     @Produces(MediaType.APPLICATION_JSON)
     public List normal(String search) throws Exception {
         String url = String.format(
-                "splunk://normal?username=admin&password=W3lcome!&scheme=http&port=%d&delay=5000&initEarliestTime=-10s&search="
+                "splunk://normal?scheme=http&port=%d&delay=5000&initEarliestTime=-10s&search="
                         + search,
                 port);
 
@@ -96,22 +96,26 @@ public class SplunkResource {
     public List realtime(String search) throws Exception {
         System.out.println("**** reading ");
         String url = String.format(
-                "splunk://realtime?username=admin&password=W3lcome!&scheme=http&port=%d&delay=5000&initEarliestTime=rt-10s&search="
+                "splunk://realtime?scheme=http&port=%d&delay=5000&initEarliestTime=-10s&latestTime=now&search="
                         + search,
                 port);
 
+        url = "splunk://realtime?delay=5000&initEarliestTime=2021-03-07T16:11:57.992+00:00&latestTime=2021-03-09T16:11:57.992+00:00&port=32925&scheme=http&search=search+index%3Dsubmitindex+sourcetype%3DtestSource+%7C+rex+field%3D_raw+%22Name%3A+%28%3F%3Cname%3E.*%29+From%3A+%28%3F%3Cfrom%3E.*%29%22";
+
         final SplunkEvent m1 = consumerTemplate.receiveBody(url, 10000, SplunkEvent.class);
 
-        //        List result = Arrays.stream(new SplunkEvent[] { m1, m2, m3 })
-        //                .map(m -> m.getEventData().entrySet().stream()
-        //                        .filter(e -> !e.getKey().startsWith("_"))
-        //                        .collect(Collectors.toMap(
-        //                                Map.Entry::getKey,
-        //                                Map.Entry::getValue,
-        //                                (v1, v2) -> v1)))
-        //                .collect(Collectors.toList());
+        if (m1 == null)
+            return Collections.emptyList();
+        List result = Arrays.stream(new SplunkEvent[] { m1 })
+                .map(m -> m.getEventData().entrySet().stream()
+                        .filter(e -> !e.getKey().startsWith("_"))
+                        .collect(Collectors.toMap(
+                                Map.Entry::getKey,
+                                Map.Entry::getValue,
+                                (v1, v2) -> v1)))
+                .collect(Collectors.toList());
 
-        return new ArrayList();
+        return result;
     }
 
     @Path("/submit")
