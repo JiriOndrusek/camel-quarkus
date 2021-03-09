@@ -20,8 +20,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 import io.quarkus.test.common.QuarkusTestResource;
@@ -33,8 +31,6 @@ import org.junit.Assert;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import static java.lang.Thread.sleep;
-
 import static org.hamcrest.Matchers.containsString;
 
 @QuarkusTest
@@ -42,25 +38,22 @@ import static org.hamcrest.Matchers.containsString;
 class SplunkTest {
 
     @Test
-    @Disabled
     public void testSubmit() {
-        post(Collections.singletonMap("name", "Sheldon"), "submit", SplunkTestResource.INDEX);
+        write(Collections.singletonMap("name", "Sheldon"), "submit", SplunkTestResource.INDEX);
     }
 
     @Test
-    @Disabled
     public void testStream() {
-        post(Collections.singletonMap("name", "Irma"), "stream", SplunkTestResource.INDEX);
+        write(Collections.singletonMap("name", "Irma"), "stream", SplunkTestResource.INDEX);
     }
 
     @Test
-    @Disabled //needs version, which is obtained in Service.login
+    @Disabled //needs version, which is obtained in Service.login which is not called on free splunk server
     public void testTcp() {
-        post(Collections.singletonMap("name", "Leonard"), "tcp", SplunkTestResource.INDEX);
+        write(Collections.singletonMap("name", "Leonard"), "tcp", SplunkTestResource.INDEX);
     }
 
     @Test
-    @Disabled
     public void testSearchNormal() {
         write();
 
@@ -70,33 +63,12 @@ class SplunkTest {
     }
 
     @Test
-    //    @Disabled // try indexed_realtime_use_by_defaul
     public void testSearchRealtime() throws InterruptedException, ExecutionException {
+        //realtime search return all data, which are not inserted into splunk index,
+        //therefore it is not possible to simulate event which is already sent to splunk but not written into index
+        //this call just simulates execution of logic to search for such an event on splunk, in case it can cause problems
+        //in native mode
         read("realtime");
-
-        // use another thread for polling consumer to demonstrate that we can wait before
-        // the message is sent to the queue
-        Future<List<Map<String, String>>> resultRead = Executors.newSingleThreadExecutor().submit(() -> read("realtime"));
-
-        // wait a little to demonstrate we can start poll before we have a msg on the queue
-        Thread.sleep(500);
-
-        System.out.println("**write");
-        write();
-        Thread.sleep(10000);
-        List<Map<String, String>> result = resultRead.get();
-        result = read("realtime");
-        System.out.println("=============================");
-        System.out.println(result);
-        result = read("realtime");
-        System.out.println("=============================");
-        System.out.println(result);
-        result = read("realtime");
-        System.out.println("=============================");
-        System.out.println(result);
-        //
-        //
-        //        assertResult(result);
     }
 
     @Test
@@ -128,12 +100,14 @@ class SplunkTest {
     }
 
     private void write() {
-        post(CollectionHelper.mapOf("entity", "Name: Sheldon From: Alpha Centauri"), "submit", SplunkTestResource.INDEX);
-        post(CollectionHelper.mapOf("entity", "Name: Leonard From: Earth 2.0"), "submit", SplunkTestResource.INDEX);
-        post(CollectionHelper.mapOf("entity", "Name: Irma From: Earth"), "submit", SplunkTestResource.INDEX);
+        write(CollectionHelper.mapOf("entity", "Name: Sheldon From: Alpha Centauri"), "submit",
+                SplunkTestResource.INDEX);
+        write(CollectionHelper.mapOf("entity", "Name: Leonard From: Earth 2.0"), "submit",
+                SplunkTestResource.INDEX);
+        write(CollectionHelper.mapOf("entity", "Name: Irma From: Earth"), "submit", SplunkTestResource.INDEX);
     }
 
-    private void post(Map<String, String> data, String endpoint, String index) {
+    private void write(Map<String, String> data, String endpoint, String index) {
 
         String expectedResult = expectedResult(data);
 

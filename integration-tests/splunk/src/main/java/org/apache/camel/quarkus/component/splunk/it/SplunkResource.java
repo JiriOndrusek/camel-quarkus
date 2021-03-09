@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -65,10 +66,13 @@ public class SplunkResource {
     @Inject
     CamelContext camelContext;
 
+
     @Path("/normal")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public List normal(String search) throws Exception {
+        before();
+        
         String url = String.format(
                 "splunk://normal?scheme=http&port=%d&delay=5000&initEarliestTime=-10s&search="
                         + search,
@@ -94,18 +98,20 @@ public class SplunkResource {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public List realtime(String search) throws Exception {
+        before();
+
         System.out.println("**** reading ");
         String url = String.format(
-                "splunk://realtime?scheme=http&port=%d&delay=5000&initEarliestTime=-10s&latestTime=now&search="
+                "splunk://realtime?scheme=http&port=%d&delay=5000&initEarliestTime=rt-5s&search="
                         + search,
                 port);
 
-        url = "splunk://realtime?delay=5000&initEarliestTime=2021-03-07T16:11:57.992+00:00&latestTime=2021-03-09T16:11:57.992+00:00&port=32925&scheme=http&search=search+index%3Dsubmitindex+sourcetype%3DtestSource+%7C+rex+field%3D_raw+%22Name%3A+%28%3F%3Cname%3E.*%29+From%3A+%28%3F%3Cfrom%3E.*%29%22";
+        final SplunkEvent m1 = consumerTemplate.receiveBody(url, 6000, SplunkEvent.class);
 
-        final SplunkEvent m1 = consumerTemplate.receiveBody(url, 10000, SplunkEvent.class);
-
-        if (m1 == null)
+        if (m1 == null) {
             return Collections.emptyList();
+        }
+
         List result = Arrays.stream(new SplunkEvent[] { m1 })
                 .map(m -> m.getEventData().entrySet().stream()
                         .filter(e -> !e.getKey().startsWith("_"))
@@ -145,8 +151,7 @@ public class SplunkResource {
     }
 
     private Response post(Map<String, String> message, String endpoint, String index, Integer tcpPort) throws Exception {
-        SplunkComponent sc = camelContext.getComponent("splunk", SplunkComponent.class);
-        sc.setSplunkConfigurationFactory(parameters -> new SplunkConfiguration());
+        before();
 
         SplunkEvent se = new SplunkEvent();
         for (Map.Entry<String, String> e : message.entrySet()) {
@@ -164,5 +169,10 @@ public class SplunkResource {
                 .created(new URI("https://camel.apache.org/"))
                 .entity(response)
                 .build();
+    }
+
+    private void before() {
+        SplunkComponent sc = camelContext.getComponent("splunk", SplunkComponent.class);
+        sc.setSplunkConfigurationFactory(parameters -> new SplunkConfiguration());
     }
 }

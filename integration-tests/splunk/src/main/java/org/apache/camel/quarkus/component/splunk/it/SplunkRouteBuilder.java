@@ -41,7 +41,10 @@ public class SplunkRouteBuilder extends RouteBuilder {
         //        String url = String.format(
         //                "splunk://realtime?&scheme=http&port=32925&delay=5000&initEarliestTime=-10s&latestTime=now&search=${search}");
 
-        String url = "splunk://realtime?delay=5000&initEarliestTime=2021-03-07T16:11:57.992+00:00&latestTime=2021-03-09T16:11:57.992+00:00&port=32925&scheme=http&search=search+index%3Dsubmitindex+sourcetype%3DtestSource+%7C+rex+field%3D_raw+%22Name%3A+%28%3F%3Cname%3E.*%29+From%3A+%28%3F%3Cfrom%3E.*%29%22";
+        String port = System.getProperty(SplunkResource.PARAM_REMOTE_PORT);
+        //
+        String url = "splunk://realtime?delay=5000&initEarliestTime=rt-1m&port=" + port
+                + "&scheme=http&search=search+index%3Dsubmitindex+sourcetype%3DtestSource+%7C+rex+field%3D_raw+%22Name%3A+%28%3F%3Cname%3E.*%29+From%3A+%28%3F%3Cfrom%3E.*%29%22";
 
         //        from(url)
         //                .log(">>>>>>>>>>>>>>>>>>>>>> ${body}")
