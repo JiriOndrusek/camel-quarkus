@@ -27,8 +27,13 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
 
-    public static String INDEX = "submitindex";
-
+    public static String SUBMIT_INDEX = "submitindex";
+    public static String STREAM_INDEX = "streamindex";
+    public static String NORMAL_SEARCH_INDEX = "normalindex";
+    public static String SAVED_SEARCH_INDEX = "savedindex";
+    public static String REALTIME_SEARCH_INDEX = "realtimeindex";
+    public static String TCP_INDEX = "tcpindex";
+    public static String SAVED_SEARCH_NAME = "savedSearchForTest";
     private static final int REMOTE_PORT = 8089;
     private static final int TCP_PORT = 9997;
 
@@ -38,37 +43,43 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
     public Map<String, String> start() {
 
         try {
-            container = new GenericContainer("splunk/splunk:8.1.2")
-                    .withExposedPorts(REMOTE_PORT)
-                    .withEnv("SPLUNK_START_ARGS", "--accept-license")
-                    .withEnv("SPLUNK_PASSWORD", "changeit")
-                    .withEnv("SPLUNK_LICENSE_URI", "Free")
-                    .withStartupTimeout(Duration.ofSeconds(120))
-                    .waitingFor(
-                            Wait.forLogMessage(".*Ansible playbook complete.*\\n", 1));
+//            container = new GenericContainer("splunk/splunk:8.1.2")
+//                    .withExposedPorts(REMOTE_PORT)
+//                    .withEnv("SPLUNK_START_ARGS", "--accept-license")
+//                    .withEnv("SPLUNK_PASSWORD", "changeit")
+//                    .withEnv("SPLUNK_LICENSE_URI", "Free")
+//                    .withStartupTimeout(Duration.ofSeconds(120))
+//                    .waitingFor(
+//                            Wait.forLogMessage(".*Ansible playbook complete.*\\n", 1));
+//
+//            container.start();
+//
+//            container.execInContainer("sudo", "sed", "-i", "s/allowRemoteLogin=requireSetPassword/allowRemoteLogin=always/",
+//                    "/opt/splunk/etc/system/default/server.conf");
+//            container.execInContainer("sudo", "sed", "-i", "s/enableSplunkdSSL = true/enableSplunkdSSL = false/",
+//                    "/opt/splunk/etc/system/default/server.conf");
+//            container.execInContainer("sudo", "./bin/splunk", "restart");
+//            container.execInContainer("sudo", "./bin/splunk", "add", "index", SUBMIT_INDEX);
+//            container.execInContainer("sudo", "./bin/splunk", "add", "index", NORMAL_SEARCH_INDEX);
+//            container.execInContainer("sudo", "./bin/splunk", "add", "index", REALTIME_SEARCH_INDEX);
+//            container.execInContainer("sudo", "./bin/splunk", "add", "index", SAVED_SEARCH_INDEX);
+//            container.execInContainer("sudo", "./bin/splunk", "add", "index", STREAM_INDEX);
+//            container.execInContainer("sudo", "./bin/splunk", "add", "index", TCP_INDEX);
+//            container.execInContainer("curl", "-k", "http://localhost:" + REMOTE_PORT + "/services/saved/searches",
+//                    "-d", "name=" + SAVED_SEARCH_NAME,
+//                    "-d", "disabled=0",
+//                    "-d", "description=" + SAVED_SEARCH_NAME,
+//                    "-d", "search=\"index=" + SAVED_SEARCH_INDEX + " sourcetype=" + SplunkResource.SOURCE_TYPE + "\"",
+//                    "-d", "dispatch.index_earliest=-1m",
+//                    "-d", "dispatch.index_latestlatest=now");
+//
+//            return CollectionHelper.mapOf(
+//                    SplunkResource.PARAM_REMOTE_PORT, container.getMappedPort(REMOTE_PORT).toString(),
+//                    SplunkResource.PARAM_TCP_PORT, container.getMappedPort(TCP_PORT).toString());
 
-            container.start();
-
-            container.execInContainer("sudo", "sed", "-i", "s/allowRemoteLogin=requireSetPassword/allowRemoteLogin=always/",
-                    "/opt/splunk/etc/system/default/server.conf");
-            container.execInContainer("sudo", "sed", "-i", "s/enableSplunkdSSL = true/enableSplunkdSSL = false/",
-                    "/opt/splunk/etc/system/default/server.conf");
-            container.execInContainer("sudo", "./bin/splunk", "restart");
-            container.execInContainer("sudo", "./bin/splunk", "add", "index", INDEX);
-            //
-            //            int i = 0;
-            //            while (i++ < 600) {
-            //                System.out.println(i++ + ", r port: " + container.getMappedPort(REMOTE_PORT).toString());
-            //                Thread.sleep(1000 * 60);
-            //            }
-            //
             return CollectionHelper.mapOf(
-                    SplunkResource.PARAM_REMOTE_PORT, container.getMappedPort(REMOTE_PORT).toString(),
-                    SplunkResource.PARAM_TCP_PORT, container.getMappedPort(TCP_PORT).toString());
-
-            //                                    return CollectionHelper.mapOf(
-            //                                            SplunkResource.PARAM_REMOTE_PORT, "32828",
-            //                                            SplunkResource.PARAM_TCP_PORT, "-1");
+                    SplunkResource.PARAM_REMOTE_PORT, "33004",
+                    SplunkResource.PARAM_TCP_PORT, "-1");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -79,9 +79,9 @@ public class SplunkResource {
                         + search,
                 port);
 
-        final SplunkEvent m1 = consumerTemplate.receiveBody(url, 10000, SplunkEvent.class);
-        final SplunkEvent m2 = consumerTemplate.receiveBody(url, 10000, SplunkEvent.class);
-        final SplunkEvent m3 = consumerTemplate.receiveBody(url, 10000, SplunkEvent.class);
+        final SplunkEvent m1 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
+        final SplunkEvent m2 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
+        final SplunkEvent m3 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
 
         List result = Arrays.stream(new SplunkEvent[] { m1, m2, m3 })
                 .map(m -> m.getEventData().entrySet().stream()
@@ -93,6 +93,32 @@ public class SplunkResource {
                 .collect(Collectors.toList());
 
         return result;
+    }
+
+    @Path("/savedSearch")
+    @POST
+    public String savedSearch(String name) throws Exception {
+        before();
+
+        String url = String.format(
+                "splunk://savedsearch?scheme=http&port=%d&delay=500&initEarliestTime=-1m&savedsearch=%s",
+                port, name);
+
+        final SplunkEvent m1 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
+        final SplunkEvent m2 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
+        final SplunkEvent m3 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
+        final SplunkEvent m4 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
+
+        List result = Arrays.stream(new SplunkEvent[] { m1, m2, m3, m4 })
+                .map(m -> {
+                    if (m == null) {
+                        return "null";
+                    }
+                    return m.getEventData().get("_raw");
+                })
+                .collect(Collectors.toList());
+
+        return result.toString();
     }
 
     @Path("/realtime")
@@ -150,6 +176,7 @@ public class SplunkResource {
     @Path("/startRealtimePolling")
     @POST
     public void startPolling(String search) {
+        before();
         // use another thread for polling consumer to demonstrate that we can wait before
         // the message is sent to the queue
         Executors.newSingleThreadExecutor().execute(() -> {

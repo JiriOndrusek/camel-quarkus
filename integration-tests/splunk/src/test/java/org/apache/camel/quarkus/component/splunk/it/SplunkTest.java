@@ -40,63 +40,34 @@ class SplunkTest {
 
     @Test
     public void testSubmit() {
-        write(Collections.singletonMap("name", "Sheldon"), "submit", SplunkTestResource.INDEX);
+        write(Collections.singletonMap("name", "Sheldon"), "submit", SplunkTestResource.SUBMIT_INDEX);
     }
 
     @Test
     public void testStream() {
-        write(Collections.singletonMap("name", "Irma"), "stream", SplunkTestResource.INDEX);
+        write(Collections.singletonMap("name", "Irma"), "stream", SplunkTestResource.STREAM_INDEX);
     }
 
     @Test
     @Disabled //needs version, which is obtained in Service.login which is not called on free splunk server
     public void testTcp() {
-        write(Collections.singletonMap("name", "Leonard"), "tcp", SplunkTestResource.INDEX);
+        write(Collections.singletonMap("name", "Leonard"), "tcp", SplunkTestResource.SUBMIT_INDEX);
     }
 
     @Test
     public void testSearchNormal() {
-        write();
+        write(SplunkTestResource.NORMAL_SEARCH_INDEX);
 
-        List<Map<String, String>> result = read("normal");
-
-        assertResult(result);
-    }
-
-    @Test
-    public void testSearchRealtime() throws InterruptedException, ExecutionException {
-
-        RestAssured.given()
+        List<Map<String, String>> result = RestAssured.given()
+                .contentType(ContentType.TEXT)
                 .body(String.format(
                         "search index=%s sourcetype=%s | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
-                        SplunkTestResource.INDEX, SplunkResource.SOURCE_TYPE))
-                .post("/splunk/startRealtimePolling");
-
-        //some time to start polling
-        TimeUnit.SECONDS.sleep(5);
-        write("_r1");
-        TimeUnit.SECONDS.sleep(1);
-        write("_r2");
-        TimeUnit.SECONDS.sleep(1);
-        write("_r3");
-        TimeUnit.SECONDS.sleep(1);
-        write("_r4");
-        TimeUnit.SECONDS.sleep(1);
-        write("_r5");
-        //wait some time to gather the pulls from splunk server
-        TimeUnit.SECONDS.sleep(5);
-        //there should be some data from realtime search in direct
-        RestAssured.get("/splunk/directRealtimePolling")
+                        SplunkTestResource.NORMAL_SEARCH_INDEX, SplunkResource.SOURCE_TYPE))
+                .post("/splunk/normal")
                 .then()
-                .statusCode(200);
-    }
+                .statusCode(200)
+                .extract().as(List.class);
 
-    @Test
-    @Disabled // todo
-    public void testSavedSearch() {
-    }
-
-    private void assertResult(List<Map<String, String>> result) {
         Assert.assertEquals(3, result.size());
         Assert.assertEquals("Irma", result.get(0).get("name"));
         Assert.assertEquals("Earth\"", result.get(0).get("from"));
@@ -106,29 +77,71 @@ class SplunkTest {
         Assert.assertEquals("Alpha Centauri\"", result.get(2).get("from"));
     }
 
-    private List<Map<String, String>> read(String endpoint) {
-        List<Map<String, String>> result = RestAssured.given()
-                .contentType(ContentType.TEXT)
+    @Test
+    public void testSearchRealtime() throws InterruptedException, ExecutionException {
+
+        RestAssured.given()
                 .body(String.format(
                         "search index=%s sourcetype=%s | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
-                        SplunkTestResource.INDEX, SplunkResource.SOURCE_TYPE))
-                .post("/splunk/" + endpoint)
+                        SplunkTestResource.REALTIME_SEARCH_INDEX, SplunkResource.SOURCE_TYPE))
+                .post("/splunk/startRealtimePolling");
+
+        //some time to start polling
+        TimeUnit.SECONDS.sleep(5);
+        write("_r1", SplunkTestResource.REALTIME_SEARCH_INDEX);
+        TimeUnit.SECONDS.sleep(1);
+        write("_r2", SplunkTestResource.REALTIME_SEARCH_INDEX);
+        TimeUnit.SECONDS.sleep(1);
+        write("_r3", SplunkTestResource.REALTIME_SEARCH_INDEX);
+        TimeUnit.SECONDS.sleep(1);
+        write("_r4", SplunkTestResource.REALTIME_SEARCH_INDEX);
+        TimeUnit.SECONDS.sleep(1);
+        write("_r5", SplunkTestResource.REALTIME_SEARCH_INDEX);
+        //wait some time to gather the pulls from splunk server
+        TimeUnit.SECONDS.sleep(5);
+        //there should be some data from realtime search in direct (concrete values depends on the speed of writing into index)
+        //test is asserting that there are some
+        RestAssured.get("/splunk/directRealtimePolling")
+                .then()
+                .statusCode(200);
+    }
+
+    @Test //todo try the same aproach as realtime seaerch
+    public void testSavedSearch() throws InterruptedException {
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .body(SplunkTestResource.SAVED_SEARCH_NAME)
+                .post("/splunk/savedSearch")
+                .then()
+                .statusCode(200);
+        write(SplunkTestResource.SAVED_SEARCH_INDEX);
+
+        //some time to start polling
+        TimeUnit.SECONDS.sleep(5);
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .body(SplunkTestResource.SAVED_SEARCH_NAME)
+                .post("/splunk/savedSearch")
                 .then()
                 .statusCode(200)
-                .extract().as(List.class);
-        return result;
+                .body(containsString("Name: Sheldon"))
+                .body(containsString("Name: Leonard"))
+                .body(containsString("Name: Irma"))
+                .body(containsString("null"));
+
     }
 
-    private void write() {
-        write("");
+    private void write(String index) {
+        write("", index);
     }
 
-    private void write(String suffix) {
+    private void write(String suffix, String index) {
         write(CollectionHelper.mapOf("entity", "Name: Sheldon" + suffix + " From: Alpha Centauri"), "submit",
-                SplunkTestResource.INDEX);
+                index);
         write(CollectionHelper.mapOf("entity", "Name: Leonard" + suffix + " From: Earth 2.0"), "submit",
-                SplunkTestResource.INDEX);
-        write(CollectionHelper.mapOf("entity", "Name: Irma" + suffix + " From: Earth"), "submit", SplunkTestResource.INDEX);
+                index);
+        write(CollectionHelper.mapOf("entity", "Name: Irma" + suffix + " From: Earth"), "submit", index);
     }
 
     private void write(Map<String, String> data, String endpoint, String index) {
