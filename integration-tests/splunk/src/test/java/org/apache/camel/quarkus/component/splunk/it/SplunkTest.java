@@ -20,6 +20,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import io.quarkus.test.common.QuarkusTestResource;
@@ -68,7 +71,20 @@ class SplunkTest {
         //therefore it is not possible to simulate event which is already sent to splunk but not written into index
         //this call just simulates execution of logic to search for such an event on splunk, in case it can cause problems
         //in native mode
+
+        Future<List<Map<String, String>>> resultRead = Executors.newSingleThreadExecutor().submit(() -> read("realtime"));
         read("realtime");
+        write("_r1");
+        write("_r2");
+        write("_r3");
+        write("_r4");
+        write("_r5");
+        //wait some time for the pulls from splunk server
+        TimeUnit.SECONDS.sleep(5);
+        //there should be some data in realtime search
+        List result = resultRead.get();
+
+        //but there is no assert, because data from search differs almost randomly
     }
 
     @Test
@@ -100,11 +116,15 @@ class SplunkTest {
     }
 
     private void write() {
-        write(CollectionHelper.mapOf("entity", "Name: Sheldon From: Alpha Centauri"), "submit",
+        write("");
+    }
+
+    private void write(String suffix) {
+        write(CollectionHelper.mapOf("entity", "Name: Sheldon" + suffix + " From: Alpha Centauri"), "submit",
                 SplunkTestResource.INDEX);
-        write(CollectionHelper.mapOf("entity", "Name: Leonard From: Earth 2.0"), "submit",
+        write(CollectionHelper.mapOf("entity", "Name: Leonard" + suffix + " From: Earth 2.0"), "submit",
                 SplunkTestResource.INDEX);
-        write(CollectionHelper.mapOf("entity", "Name: Irma From: Earth"), "submit", SplunkTestResource.INDEX);
+        write(CollectionHelper.mapOf("entity", "Name: Irma" + suffix + " From: Earth"), "submit", SplunkTestResource.INDEX);
     }
 
     private void write(Map<String, String> data, String endpoint, String index) {

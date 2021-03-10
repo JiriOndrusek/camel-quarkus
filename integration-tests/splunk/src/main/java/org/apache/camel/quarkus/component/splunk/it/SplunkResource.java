@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -40,6 +39,7 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.splunk.SplunkComponent;
 import org.apache.camel.component.splunk.SplunkConfiguration;
 import org.apache.camel.component.splunk.event.SplunkEvent;
+import org.apache.camel.support.EndpointHelper;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @Path("/splunk")
@@ -66,13 +66,12 @@ public class SplunkResource {
     @Inject
     CamelContext camelContext;
 
-
     @Path("/normal")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public List normal(String search) throws Exception {
         before();
-        
+
         String url = String.format(
                 "splunk://normal?scheme=http&port=%d&delay=5000&initEarliestTime=-10s&search="
                         + search,
@@ -102,11 +101,11 @@ public class SplunkResource {
 
         System.out.println("**** reading ");
         String url = String.format(
-                "splunk://realtime?scheme=http&port=%d&delay=5000&initEarliestTime=rt-5s&search="
+                "splunk://realtime?scheme=http&port=%d&delay=5000&initEarliestTime=rt-30s&latestTime=RAW(rt+30s)&search="
                         + search,
                 port);
-
-        final SplunkEvent m1 = consumerTemplate.receiveBody(url, 6000, SplunkEvent.class);
+        url = EndpointHelper.normalizeEndpointUri(url);
+        final SplunkEvent m1 = consumerTemplate.receiveBody(url, 5000, SplunkEvent.class);
 
         if (m1 == null) {
             return Collections.emptyList();

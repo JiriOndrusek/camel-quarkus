@@ -38,23 +38,23 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
     public Map<String, String> start() {
 
         try {
-//            container = new GenericContainer("splunk/splunk:8.1.2")
-//                    .withExposedPorts(REMOTE_PORT)
-//                    .withEnv("SPLUNK_START_ARGS", "--accept-license")
-//                    .withEnv("SPLUNK_PASSWORD", "changeit")
-//                    .withEnv("SPLUNK_LICENSE_URI", "Free")
-//                    .withStartupTimeout(Duration.ofSeconds(120))
-//                    .waitingFor(
-//                            Wait.forLogMessage(".*Ansible playbook complete.*\\n", 1));
-//
-//            container.start();
-//
-//            container.execInContainer("sudo", "sed", "-i", "s/allowRemoteLogin=requireSetPassword/allowRemoteLogin=always/",
-//                    "/opt/splunk/etc/system/default/server.conf");
-//            container.execInContainer("sudo", "sed", "-i", "s/enableSplunkdSSL = true/enableSplunkdSSL = false/",
-//                    "/opt/splunk/etc/system/default/server.conf");
-//            container.execInContainer("sudo", "./bin/splunk", "restart");
-//            container.execInContainer("sudo", "./bin/splunk", "add", "index", INDEX);
+            container = new GenericContainer("splunk/splunk:8.1.2")
+                    .withExposedPorts(REMOTE_PORT)
+                    .withEnv("SPLUNK_START_ARGS", "--accept-license")
+                    .withEnv("SPLUNK_PASSWORD", "changeit")
+                    .withEnv("SPLUNK_LICENSE_URI", "Free")
+                    .withStartupTimeout(Duration.ofSeconds(120))
+                    .waitingFor(
+                            Wait.forLogMessage(".*Ansible playbook complete.*\\n", 1));
+
+            container.start();
+
+            container.execInContainer("sudo", "sed", "-i", "s/allowRemoteLogin=requireSetPassword/allowRemoteLogin=always/",
+                    "/opt/splunk/etc/system/default/server.conf");
+            container.execInContainer("sudo", "sed", "-i", "s/enableSplunkdSSL = true/enableSplunkdSSL = false/",
+                    "/opt/splunk/etc/system/default/server.conf");
+            container.execInContainer("sudo", "./bin/splunk", "restart");
+            container.execInContainer("sudo", "./bin/splunk", "add", "index", INDEX);
             //
             //            int i = 0;
             //            while (i++ < 600) {
@@ -62,13 +62,13 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
             //                Thread.sleep(1000 * 60);
             //            }
             //
-//            return CollectionHelper.mapOf(
-//                    SplunkResource.PARAM_REMOTE_PORT, container.getMappedPort(REMOTE_PORT).toString(),
-//                    SplunkResource.PARAM_TCP_PORT, container.getMappedPort(TCP_PORT).toString());
+            return CollectionHelper.mapOf(
+                    SplunkResource.PARAM_REMOTE_PORT, container.getMappedPort(REMOTE_PORT).toString(),
+                    SplunkResource.PARAM_TCP_PORT, container.getMappedPort(TCP_PORT).toString());
 
-                        return CollectionHelper.mapOf(
-                                SplunkResource.PARAM_REMOTE_PORT, "33063",
-                                SplunkResource.PARAM_TCP_PORT, "-1");
+            //                        return CollectionHelper.mapOf(
+            //                                SplunkResource.PARAM_REMOTE_PORT, "32780",
+            //                                SplunkResource.PARAM_TCP_PORT, "-1");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
