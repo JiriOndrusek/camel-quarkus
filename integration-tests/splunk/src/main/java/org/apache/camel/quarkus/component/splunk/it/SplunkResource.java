@@ -21,11 +21,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -121,6 +123,43 @@ public class SplunkResource {
                 .collect(Collectors.toList());
 
         return result;
+    }
+
+    @Path("/directRealtimePolling")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map directRealtimePolling() throws Exception {
+        before();
+
+        final SplunkEvent m1 = consumerTemplate.receiveBody("direct:realtimePolling", 5000, SplunkEvent.class);
+
+        if (m1 == null) {
+            return Collections.emptyMap();
+        }
+
+        Map result = m1.getEventData().entrySet().stream()
+                .filter(e -> !e.getKey().startsWith("_"))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (v1, v2) -> v1));
+
+        return result;
+    }
+
+    @Path("/startRealtimePolling")
+    @POST
+    public void startPolling(String search) {
+        // use another thread for polling consumer to demonstrate that we can wait before
+        // the message is sent to the queue
+        Executors.newSingleThreadExecutor().execute(() -> {
+            String url = String.format(
+                    "splunk://realtime?scheme=http&port=%d&delay=1000&initEarliestTime=rt-40s&latestTime=RAW(rt+40s)&search="
+                            + search,
+                    port);
+            SplunkEvent body = consumerTemplate.receiveBody(url, SplunkEvent.class);
+            producerTemplate.sendBody("direct:realtimePolling", body);
+        });
     }
 
     @Path("/submit")

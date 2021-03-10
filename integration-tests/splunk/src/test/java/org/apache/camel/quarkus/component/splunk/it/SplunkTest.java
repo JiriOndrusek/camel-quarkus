@@ -20,8 +20,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -67,24 +65,30 @@ class SplunkTest {
 
     @Test
     public void testSearchRealtime() throws InterruptedException, ExecutionException {
-        //realtime search return all data, which are not inserted into splunk index,
-        //therefore it is not possible to simulate event which is already sent to splunk but not written into index
-        //this call just simulates execution of logic to search for such an event on splunk, in case it can cause problems
-        //in native mode
 
-        Future<List<Map<String, String>>> resultRead = Executors.newSingleThreadExecutor().submit(() -> read("realtime"));
-        read("realtime");
-        write("_r1");
-        write("_r2");
-        write("_r3");
-        write("_r4");
-        write("_r5");
-        //wait some time for the pulls from splunk server
+        RestAssured.given()
+                .body(String.format(
+                        "search index=%s sourcetype=%s | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
+                        SplunkTestResource.INDEX, SplunkResource.SOURCE_TYPE))
+                .post("/splunk/startRealtimePolling");
+
+        //some time to start polling
         TimeUnit.SECONDS.sleep(5);
-        //there should be some data in realtime search
-        List result = resultRead.get();
-
-        //but there is no assert, because data from search differs almost randomly
+        write("_r1");
+        TimeUnit.SECONDS.sleep(1);
+        write("_r2");
+        TimeUnit.SECONDS.sleep(1);
+        write("_r3");
+        TimeUnit.SECONDS.sleep(1);
+        write("_r4");
+        TimeUnit.SECONDS.sleep(1);
+        write("_r5");
+        //wait some time to gather the pulls from splunk server
+        TimeUnit.SECONDS.sleep(5);
+        //there should be some data from realtime search in direct
+        RestAssured.get("/splunk/directRealtimePolling")
+                .then()
+                .statusCode(200);
     }
 
     @Test
