@@ -29,7 +29,6 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.util.CollectionHelper;
 import org.junit.Assert;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.containsString;
@@ -49,7 +48,7 @@ class SplunkTest {
     }
 
     @Test
-    @Disabled //needs version, which is obtained in Service.login which is not called on free splunk server
+    //    @Disabled //needs version, which is obtained in Service.login which is not called on free splunk server
     public void testTcp() {
         write(Collections.singletonMap("name", "Leonard"), "tcp", SplunkTestResource.SUBMIT_INDEX);
     }

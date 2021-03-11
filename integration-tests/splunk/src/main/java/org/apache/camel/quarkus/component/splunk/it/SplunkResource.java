@@ -223,10 +223,10 @@ public class SplunkResource {
         }
 
         String url = String.format(
-                "splunk:%s?scheme=http&port=%d&index=%s&sourceType=%s&source=%s",
+                "splunk:%s?username=admin&password=changeit&scheme=http&port=%d&index=%s&sourceType=%s&source=%s",
                 endpoint, port, index, SOURCE_TYPE, SOURCE);
         if (tcpPort != null) {
-            url = url + "&tcpReceiverPort=" + tcpPort;
+            url = url + "&tcpLocalReceiverPort=9997&tcpReceiverPort=" + tcpPort + "&streaming=true";
         }
         final String response = producerTemplate.requestBody(url, se, String.class);
         return Response
