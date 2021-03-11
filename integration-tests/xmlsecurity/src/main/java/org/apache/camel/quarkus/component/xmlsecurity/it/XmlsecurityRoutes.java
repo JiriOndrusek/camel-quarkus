@@ -21,16 +21,14 @@ import java.util.Map;
 
 import javax.crypto.SecretKey;
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.apache.camel.builder.RouteBuilder;
 
 @ApplicationScoped
 public class XmlsecurityRoutes extends RouteBuilder {
 
-    @Inject
-    @Named("key")
+    //    @Inject
+    //    @Named("key")
     SecretKey key;
 
     @Override
