@@ -102,12 +102,12 @@ public class SplunkResource {
         before();
 
         String url = String.format(
-                "splunk://savedsearch?scheme=http&port=%d&delay=500&initEarliestTime=-10s&savedsearch=%s",
+                "splunk://savedsearch?scheme=http&port=%d&delay=500&initEarliestTime=-1m&savedsearch=%s",
                 port, name);
 
-        final SplunkEvent m1 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
-        final SplunkEvent m2 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
-        final SplunkEvent m3 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
+        final SplunkEvent m1 = consumerTemplate.receiveBody(url, 5000, SplunkEvent.class);
+        final SplunkEvent m2 = consumerTemplate.receiveBody(url, 5000, SplunkEvent.class);
+        final SplunkEvent m3 = consumerTemplate.receiveBody(url, 5000, SplunkEvent.class);
 
         List result = Arrays.stream(new SplunkEvent[] { m1, m2, m3 })
                 .map(m -> {
