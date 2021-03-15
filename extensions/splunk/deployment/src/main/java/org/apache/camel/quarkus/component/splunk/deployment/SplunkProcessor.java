@@ -18,14 +18,20 @@ package org.apache.camel.quarkus.component.splunk.deployment;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.ExtensionSslNativeSupportBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
 import org.joda.time.DateTimeZone;
 
 class SplunkProcessor {
@@ -49,13 +55,36 @@ class SplunkProcessor {
     }
 
     @BuildStep
+    ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
+        IndexView index = combinedIndex.getIndex();
+
+        List<String> dtos = new LinkedList<>();
+        dtos.addAll(index.getAllKnownSubclasses(DotName.createSimple("com.splunk.Input")).stream()
+                .map(c -> c.name().toString()).peek(System.out::println).collect(Collectors.toList()));
+
+        System.out.println("****************************");
+        return new ReflectiveClassBuildItem(false, false, dtos.toArray(new String[dtos.size()]));
+    }
+
+    @BuildStep
     List<ReflectiveClassBuildItem> reflectiveClasses() {
         return Arrays.asList(new ReflectiveClassBuildItem(false, false, "com.splunk.Index"),
-                new ReflectiveClassBuildItem(false, false, "com.splunk.SavedSearch"));
+                new ReflectiveClassBuildItem(false, false, "com.splunk.SavedSearch"),
+                new ReflectiveClassBuildItem(false, false, "com.splunk.Service"));
+        //                new ReflectiveClassBuildItem(false, false, "com.splunk.MonitorInput"),
+        //                new ReflectiveClassBuildItem(false, false, "com.splunk.TcpSplunkInput"),
+        //                new ReflectiveClassBuildItem(false, false, "com.splunk.TcpInput"),
+        //                new ReflectiveClassBuildItem(false, false, "com.splunk.ScriptInput"));
+    }
+
+    @BuildStep
+    IndexDependencyBuildItem registerDependencyForIndex() {
+        return new IndexDependencyBuildItem("org.apache.servicemix.bundles", "org.apache.servicemix.bundles.splunk");
     }
 
     @BuildStep
     NativeImageResourceBuildItem nativeImageResources() {
+        // Add Joda timezone resources into the native image as it is required by com.twilio.converter.DateConverter
         List<String> timezones = new ArrayList<>();
         for (String timezone : DateTimeZone.getAvailableIDs()) {
             String[] zoneParts = timezone.split("/");

@@ -17,6 +17,7 @@
 
 package org.apache.camel.quarkus.component.splunk.it;
 
+import java.time.Duration;
 import java.util.Map;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
@@ -47,8 +48,10 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
                     .withEnv("SPLUNK_START_ARGS", "--accept-license")
                     .withEnv("SPLUNK_PASSWORD", "changeit")
                     .withEnv("SPLUNK_LICENSE_URI", "Free")
+                    .withStartupTimeout(Duration.ofSeconds(120))
                     .waitingFor(
-                            Wait.forLogMessage(".*Ansible playbook complete.*\\n", 1));
+                            Wait.forLogMessage(".*Ansible playbook complete.*\\n", 1)
+                                    .withStartupTimeout(Duration.ofSeconds(120)));
 
             container.start();
 
