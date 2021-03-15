@@ -34,7 +34,6 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
     public static String TCP_INDEX = "tcpindex";
     public static String SAVED_SEARCH_NAME = "savedSearchForTest";
     private static final int REMOTE_PORT = 8089;
-    private static final int TCP_PORT = 9997;
 
     private GenericContainer container;
 
@@ -44,6 +43,7 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
         try {
             container = new GenericContainer("splunk/splunk:8.1.2")
                     .withExposedPorts(REMOTE_PORT)
+                    .withExposedPorts(SplunkResource.LOCAL_TCP_PORT)
                     .withEnv("SPLUNK_START_ARGS", "--accept-license")
                     .withEnv("SPLUNK_PASSWORD", "changeit")
                     .withEnv("SPLUNK_LICENSE_URI", "Free")
@@ -62,15 +62,17 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
             container.execInContainer("sudo", "./bin/splunk", "add", "index", REALTIME_SEARCH_INDEX);
             container.execInContainer("sudo", "./bin/splunk", "add", "index", SAVED_SEARCH_INDEX);
             container.execInContainer("sudo", "./bin/splunk", "add", "index", STREAM_INDEX);
-            container.execInContainer("sudo", "./bin/splunk", "add", "index", TCP_INDEX);
+            container.execInContainer("sudo", "./bin/splunk", "add", "tcp", String.valueOf(SplunkResource.LOCAL_TCP_PORT),
+                    "-sourcetype",
+                    SplunkResource.SOURCE_TYPE);
 
             return CollectionHelper.mapOf(
                     SplunkResource.PARAM_REMOTE_PORT, container.getMappedPort(REMOTE_PORT).toString(),
-                    SplunkResource.PARAM_TCP_PORT, container.getMappedPort(TCP_PORT).toString());
+                    SplunkResource.PARAM_TCP_PORT, container.getMappedPort(SplunkResource.LOCAL_TCP_PORT).toString());
 
-            //            return CollectionHelper.mapOf(
-            //                    SplunkResource.PARAM_REMOTE_PORT, "33075",
-            //                    SplunkResource.PARAM_TCP_PORT, "33072");
+            //                        return CollectionHelper.mapOf(
+            //                                SplunkResource.PARAM_REMOTE_PORT, "32817",
+            //                                SplunkResource.PARAM_TCP_PORT, "32813");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

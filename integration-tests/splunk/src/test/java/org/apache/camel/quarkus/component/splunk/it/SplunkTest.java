@@ -29,13 +29,15 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.util.CollectionHelper;
 import org.junit.Assert;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import static org.hamcrest.Matchers.containsString;
 
 @QuarkusTest
 @QuarkusTestResource(SplunkTestResource.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class SplunkTest {
 
     @Test
@@ -49,9 +51,8 @@ class SplunkTest {
     }
 
     @Test
-    @Disabled //needs to configure listening port (not 9997) in settings->data input -> tcp
     public void testTcp() {
-        write(Collections.singletonMap("name", "Leonard"), "tcp", SplunkTestResource.SUBMIT_INDEX);
+        write(Collections.singletonMap("name", "Leonard"), "tcp", null);
     }
 
     @Test
@@ -78,7 +79,7 @@ class SplunkTest {
     }
 
     @Test
-    public void testSearchRealtime() throws InterruptedException, ExecutionException {
+    public void testRealtimeSearch() throws InterruptedException, ExecutionException {
 
         RestAssured.given()
                 .body(String.format(

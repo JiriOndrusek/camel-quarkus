@@ -52,6 +52,7 @@ public class SplunkResource {
     public static final String PARAM_TCP_PORT = "org.apache.camel.quarkus.component.splunk.it.SplunkResource_tcpPort";
     public static final String SOURCE = "test";
     public static final String SOURCE_TYPE = "testSource";
+    public static final int LOCAL_TCP_PORT = 9998;
 
     @Inject
     ProducerTemplate producerTemplate;
@@ -101,12 +102,12 @@ public class SplunkResource {
         before();
 
         String url = String.format(
-                "splunk://savedsearch?scheme=http&port=%d&delay=500&initEarliestTime=-1m&savedsearch=%s",
+                "splunk://savedsearch?scheme=http&port=%d&delay=500&initEarliestTime=-10s&savedsearch=%s",
                 port, name);
 
-        final SplunkEvent m1 = consumerTemplate.receiveBody(url, 5000, SplunkEvent.class);
-        final SplunkEvent m2 = consumerTemplate.receiveBody(url, 5000, SplunkEvent.class);
-        final SplunkEvent m3 = consumerTemplate.receiveBody(url, 5000, SplunkEvent.class);
+        final SplunkEvent m1 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
+        final SplunkEvent m2 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
+        final SplunkEvent m3 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
 
         List result = Arrays.stream(new SplunkEvent[] { m1, m2, m3 })
                 .map(m -> {
@@ -126,7 +127,6 @@ public class SplunkResource {
     public List realtime(String search) throws Exception {
         before();
 
-        System.out.println("**** reading ");
         String url = String.format(
                 "splunk://realtime?scheme=http&port=%d&delay=5000&initEarliestTime=rt-30s&latestTime=RAW(rt+30s)&search="
                         + search,
@@ -193,7 +193,6 @@ public class SplunkResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
     public Response submit(Map<String, String> message, @QueryParam("index") String index) throws Exception {
-        System.out.println("*** submitting " + message);
         return post(message, "submit", index, null);
     }
 
@@ -210,7 +209,6 @@ public class SplunkResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
     public Response tcp(Map<String, String> message, @QueryParam("index") String index) throws Exception {
-        System.out.println("**** writing " + message);
         return post(message, "tcp", index, tcpPort);
     }
 
@@ -223,11 +221,13 @@ public class SplunkResource {
         }
 
         String url = String.format(
-                "splunk:%s?username=admin&password=changeit&scheme=http&port=%d&index=%s&sourceType=%s&source=%s",
+                "splunk:%s?scheme=http&port=%d&index=%s&sourceType=%s&source=%s",
                 endpoint, port, index, SOURCE_TYPE, SOURCE);
         if (tcpPort != null) {
-            //todo possible issue on component -> lets see after finishing
-            url = url + "&tcpLocalReceiverPort=9997&tcpReceiverPort=" + tcpPort + "&streaming=true";
+            url = String.format(
+                    "splunk:%s?username=admin&password=changeit&scheme=http&port=%d&index=%s&sourceType=%s&source=%s&tcpReceiverLocalPort=9998&tcpReceiverPort="
+                            + tcpPort,
+                    endpoint, port, index, SOURCE_TYPE, SOURCE);
         }
         final String response = producerTemplate.requestBody(url, se, String.class);
         return Response
