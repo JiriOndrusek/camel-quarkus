@@ -77,8 +77,10 @@ class HbaseTest {
 
     public static Configuration defaultConf() {
         Configuration conf = HBaseConfiguration.create();
-        conf.set("test.hbase.zookeeper.property.clientPort", HBaseTestResource.CLIENT_PORT.toString());
+        conf.set("hbase.zookeeper.property.clientPort", "2181");
+
         return conf;
+
     }
 
 }
