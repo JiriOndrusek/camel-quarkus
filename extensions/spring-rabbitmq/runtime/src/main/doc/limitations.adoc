@@ -1,0 +1,5 @@
+You can use component without any special configuration in the JVM mode.
+
+In native mode you have to add compiler flag `-H:+InlineBeforeAnalysis`,
+to allow removal in static methods (see https://github.com/oracle/graal/issues/2594[graal issue]).
+Component fails without this flag in the native mode.
