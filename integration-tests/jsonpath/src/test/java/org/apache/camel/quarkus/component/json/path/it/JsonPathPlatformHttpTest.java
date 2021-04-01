@@ -34,7 +34,20 @@ class JsonPathPlatformHttpTest {
         String result = RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(BODY)
-                .get("/getTemperature")
+                .post("/getTemperature")
+                .then()
+                .statusCode(200)
+                .extract().asString();
+
+        assertEquals(RESULT, result);
+    }
+
+    @Test
+    public void testWithPlatformHttp2() {
+        String result = RestAssured.given()
+                //                .contentType(ContentType.JSON)
+                .body(BODY)
+                .post("/getTemperature2")
                 .then()
                 .statusCode(200)
                 .extract().asString();

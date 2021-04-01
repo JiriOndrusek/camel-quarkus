@@ -43,6 +43,10 @@ public class JsonPathTestRoute extends RouteBuilder {
         from("platform-http:/getTemperature").choice().when().jsonpath("$.room[?(@.temperature > 20)]").setBody(simple("HOT"))
                 .otherwise().setBody(constant("WARM")).end();
 
+        from("platform-http:/getTemperature2").setBody(simple("{room:{temperature:30}}")).choice().when()
+                .jsonpath("$.room[?(@.temperature > 20)]").setBody(simple("HOT"))
+                .otherwise().setBody(constant("WARM")).end();
+
         from("direct:getTemperature").choice().when().jsonpath("$.room[?(@.temperature > 20)]").setBody(simple("HOT"))
                 .otherwise().setBody(constant("WARM")).end();
     }
