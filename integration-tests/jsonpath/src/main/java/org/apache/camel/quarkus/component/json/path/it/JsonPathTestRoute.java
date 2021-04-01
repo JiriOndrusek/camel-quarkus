@@ -39,6 +39,12 @@ public class JsonPathTestRoute extends RouteBuilder {
         from("direct:getFullName").bean(FullNameBean.class);
 
         from("direct:getAllCarColors").transform().jsonpath("$.cars[*].color");
+
+        from("platform-http:/getTemperature").choice().when().jsonpath("$.room[?(@.temperature > 20)]").setBody(simple("HOT"))
+                .otherwise().setBody(constant("WARM")).end();
+
+        from("direct:getTemperature").choice().when().jsonpath("$.room[?(@.temperature > 20)]").setBody(simple("HOT"))
+                .otherwise().setBody(constant("WARM")).end();
     }
 
     @RegisterForReflection

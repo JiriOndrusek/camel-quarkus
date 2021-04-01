@@ -20,6 +20,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -52,6 +53,15 @@ public class JsonPathResource {
     public String getBookPrice(String storeRequestJson) {
         LOG.infof("Getting book price from json store request: %s", storeRequestJson);
         return producerTemplate.requestBody("direct:getBookPrice", storeRequestJson, String.class);
+    }
+
+    @Path("/getTemperature")
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.TEXT_PLAIN)
+    public String getTemperature(String body) {
+        LOG.infof("Getting temperature for \"%s\"", body);
+        return producerTemplate.requestBody("direct:getTemperature", "{room:{temperature:" + body + "}}", String.class);
     }
 
     @Path("/getFullName")
