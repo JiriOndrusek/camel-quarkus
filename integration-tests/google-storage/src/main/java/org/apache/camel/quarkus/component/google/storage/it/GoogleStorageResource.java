@@ -25,6 +25,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -39,6 +40,7 @@ import org.jboss.logging.Logger;
 public class GoogleStorageResource {
 
     public static final String PARAM_PORT = "org.apache.camel.quarkus.component.googlr.storage.it.GoogleStorageClientProducer_port";
+    public static final String QUERY_PARAM_OBJECT_NAME = "objectName";
 
     private static final Logger LOG = Logger.getLogger(GoogleStorageResource.class);
 
@@ -53,21 +55,30 @@ public class GoogleStorageResource {
     @Produces(MediaType.TEXT_PLAIN)
     public String get() throws Exception {
         final String message = consumerTemplate.receiveBodyNoWait("google-storage://my_bucket?operation=getObject", String.class);
-        LOG.infof("Received from google-storage: %s", message);
         return message;
     }
 
-    @Path("/post")
+    @Path("/getObject")
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response post(String message) throws Exception {
-        LOG.infof("Sending to google-storage: %s", message);
-        final Blob response = producerTemplate.requestBodyAndHeader("google-storage://my_bucket?operation=getObject", null, GoogleCloudStorageConstants.OBJECT_NAME, "my_file.txt", Blob.class);
-        LOG.infof("Got response from google-storage: %s", response);
+    public Response getObject(String objectNane) throws Exception {
+        final Blob response = producerTemplate.requestBodyAndHeader("google-storage://my_bucket?operation=getObject", null, GoogleCloudStorageConstants.OBJECT_NAME, objectNane, Blob.class);
         return Response
                 .created(new URI("https://camel.apache.org/"))
                 .entity(new String(response.getContent()))
+                .build();
+    }
+
+    @Path("/putObject")
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response putBucket(String body, @QueryParam(QUERY_PARAM_OBJECT_NAME) String objectName) throws Exception {
+        final Blob response = producerTemplate.requestBodyAndHeader("google-storage://my_bucket", body, GoogleCloudStorageConstants.OBJECT_NAME, objectName, Blob.class);
+        return Response
+                .created(new URI("https://camel.apache.org/"))
+                .entity(response.getName())
                 .build();
     }
 }

@@ -32,7 +32,7 @@ import static org.hamcrest.Matchers.is;
 @QuarkusTestResource(GoogleStorageTestResource.class)
 class GoogleStorageTest {
 
-    @Test
+//    @Test
     public void testGetObject() {
         final String msg = java.util.UUID.randomUUID().toString().replace("-", "");
         RestAssured.given() //
@@ -48,6 +48,26 @@ class GoogleStorageTest {
 //        RestAssured.get("/google-storage/get")
 //                .then()
 //                .statusCode(200);
+    }
+
+    @Test
+    public void testPutGetObject() {
+        RestAssured.given() //
+                .contentType(ContentType.TEXT)
+                .body("Sheldon")
+                .queryParam(GoogleStorageResource.QUERY_PARAM_OBJECT_NAME, "object01")
+                .post("/google-storage/putObject") //
+                .then()
+                .statusCode(201)
+                .body(is("object01"));
+
+        RestAssured.given() //
+                .contentType(ContentType.TEXT)
+                .body("object01")
+                .post("/google-storage/getObject") //
+                .then()
+                .statusCode(201)
+                .body(is("Sheldon"));;
     }
 
 //    @Test
