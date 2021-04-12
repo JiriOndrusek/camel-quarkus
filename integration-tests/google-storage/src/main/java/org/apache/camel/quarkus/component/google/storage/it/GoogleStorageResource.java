@@ -17,12 +17,12 @@
 package org.apache.camel.quarkus.component.google.storage.it;
 
 import java.net.URI;
+import java.util.Map;
 import java.util.concurrent.Executors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -31,6 +31,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.CopyWriter;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.google.storage.GoogleCloudStorageConstants;
@@ -40,14 +41,18 @@ import org.jboss.logging.Logger;
 @ApplicationScoped
 public class GoogleStorageResource {
 
+    public static enum Operation {getObject, copyObject}
+
     public static final String DIRECT_POLLING = "direct:polling";
 
     public static final String PARAM_PORT = "org.apache.camel.quarkus.component.googlr.storage.it.GoogleStorageClientProducer_port";
 
     public static final String QUERY_OBJECT_NAME = "objectName";
     public static final String QUERY_BUCKET = "bucketName";
+    public static final String QUERY_OPERATION = "operation";
     public static final String QUERY_DESTINATION_BUCKET = "destinationBucket";
     public static final String QUERY_DIRECT = "fromDirect";
+    public static final String QUERY_POLLING_ACTION = "pollingAction";
 
     private static final Logger LOG = Logger.getLogger(GoogleStorageResource.class);
 
@@ -57,28 +62,31 @@ public class GoogleStorageResource {
     @Inject
     ConsumerTemplate consumerTemplate;
 
-    @Path("/get")
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public String get() throws Exception {
-        final String message = consumerTemplate.receiveBodyNoWait("google-storage://my_bucket?operation=getObject",
-                String.class);
-        return message;
-    }
-
-    @Path("/getObject")
+    @Path("/operation")
     @POST
-    @Consumes(MediaType.TEXT_PLAIN)
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response getObject(String objectNane,
-            @QueryParam(QUERY_BUCKET) String bucketName) throws Exception {
-        final Blob response = producerTemplate.requestBodyAndHeader(
-                String.format("google-storage://%s?operation=getObject&autoCreateBucket=true", bucketName), null,
-                GoogleCloudStorageConstants.OBJECT_NAME, objectNane, Blob.class);
-        return Response
-                .created(new URI("https://camel.apache.org/"))
-                .entity(new String(response.getContent()))
-                .build();
+    public Response operation(Map<String, Object> parameters,
+                              @QueryParam(QUERY_OPERATION) String operation,
+                              @QueryParam(QUERY_BUCKET) String bucketName) throws Exception {
+        Operation op = Operation.valueOf(operation);
+        StringBuilder sb = new StringBuilder("google-storage://").append(bucketName).append("?autoCreateBucket=true").append("&operation=").append(op.toString());
+        final Object response = producerTemplate.requestBodyAndHeaders(
+                sb.toString(), null, parameters, Object.class);
+
+        if(response instanceof Blob) {
+            return Response
+                    .created(new URI("https://camel.apache.org/"))
+                    .entity(new String(((Blob)response).getContent()))
+                    .build();
+        }
+        if(response instanceof CopyWriter) {
+            return Response
+                    .created(new URI("https://camel.apache.org/"))
+                    .entity(new String(((CopyWriter)response).getResult().getContent()))
+                    .build();
+        }
+        return null;
     }
 
     @Path("/putObject")
@@ -100,16 +108,17 @@ public class GoogleStorageResource {
     @Path("/startPolling")
     @POST
     public void startPolling(@QueryParam(QUERY_BUCKET) String bucketName,
-            @QueryParam(QUERY_DESTINATION_BUCKET) String destinationBucket) {
+                             @QueryParam(QUERY_POLLING_ACTION) String pollingAction,
+                             @QueryParam(QUERY_DESTINATION_BUCKET) String destinationBucket) {
         // use another thread for polling consumer to demonstrate that we can wait before
         // the message is sent to the queue
         Executors.newSingleThreadExecutor().execute(() -> {
             String url = String.format("google-storage://%s?"
-                    + "moveAfterRead=true"
+                    + "%s=true"
                     + "&destinationBucket=%s"
                     + "&autoCreateBucket=true"
                     + "&deleteAfterRead=true"
-                    + "&includeBody=true", bucketName, destinationBucket);
+                    + "&includeBody=true", bucketName, pollingAction, destinationBucket);
             byte[] body = consumerTemplate.receiveBody(url, byte[].class);
             producerTemplate.sendBody(DIRECT_POLLING, "Polling Hello " + new String(body));
         });
