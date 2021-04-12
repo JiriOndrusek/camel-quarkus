@@ -21,22 +21,28 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.component.google.storage.GoogleCloudStorageConstants;
+import org.apache.camel.component.google.storage.GoogleCloudStorageOperations;
 import org.apache.camel.util.CollectionHelper;
+import org.hamcrest.Matcher;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 import java.util.Collections;
+import java.util.Map;
 
+import static org.hamcrest.Matchers.both;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
 @QuarkusTest
 @QuarkusTestResource(GoogleStorageTestResource.class)
 class GoogleStorageTest {
 
     private static final String DEST_BUCKET = "destBucket";
-    private static final String TEST_BUCKET = "testBucket";
+    private static final String TEST_BUCKET1 = "testBucket1";
     private static final String TEST_BUCKET2 = "testBucket2";
     private static final String FILE_NAME_007 = "file007";
     private static final String FILE_NAME_006 = "file006";
@@ -45,7 +51,7 @@ class GoogleStorageTest {
     public void testConsumer() throws InterruptedException {
         //consumer - start thread with the poling consumer from exchange "polling", polling queue, routing "pollingKey", result is sent to polling direct
         RestAssured.given()
-                .queryParam(GoogleStorageResource.QUERY_BUCKET, TEST_BUCKET)
+                .queryParam(GoogleStorageResource.QUERY_BUCKET, TEST_BUCKET1)
                 .queryParam(GoogleStorageResource.QUERY_POLLING_ACTION, "moveAfterRead")
                 .queryParam(GoogleStorageResource.QUERY_DESTINATION_BUCKET, DEST_BUCKET)
                 .post("/google-storage/startPolling");
@@ -54,15 +60,7 @@ class GoogleStorageTest {
         Thread.sleep(500);
 
         //producer - putObject
-        RestAssured.given()
-                .contentType(ContentType.TEXT)
-                .body("Sheldon")
-                .queryParam(GoogleStorageResource.QUERY_BUCKET, TEST_BUCKET)
-                .queryParam(GoogleStorageResource.QUERY_OBJECT_NAME, FILE_NAME_007)
-                .post("/google-storage/putObject")
-                .then()
-                .statusCode(201)
-                .body(is(FILE_NAME_007));
+        putObject("Sheldon", TEST_BUCKET1, FILE_NAME_007);
 
         //get result from direct (for pooling) with timeout
         RestAssured.given()
@@ -73,54 +71,65 @@ class GoogleStorageTest {
                 .body(is("Polling Hello Sheldon"));
 
         //producer - getObject
-        RestAssured.given()
-                .contentType(ContentType.JSON)
-                .body(Collections.singletonMap(GoogleCloudStorageConstants.OBJECT_NAME, FILE_NAME_007))
-                .queryParam(GoogleStorageResource.QUERY_BUCKET, DEST_BUCKET)
-                .queryParam(GoogleStorageResource.QUERY_OPERATION, "getObject")
-                .post("/google-storage/operation")
-                .then()
-                .statusCode(201)
-                .body(is("Sheldon"));
+        executeOperation(GoogleCloudStorageOperations.getObject,
+                Collections.singletonMap(GoogleCloudStorageConstants.OBJECT_NAME, FILE_NAME_007),
+                is("Sheldon"));
     }
 
     @Test
     public void testProducer() throws InterruptedException {
 
         //create object in testBucket
-        RestAssured.given()
-                .contentType(ContentType.TEXT)
-                .body("Sheldon")
-                .queryParam(GoogleStorageResource.QUERY_BUCKET, TEST_BUCKET)
-                .queryParam(GoogleStorageResource.QUERY_OBJECT_NAME, FILE_NAME_007)
-                .post("/google-storage/putObject")
-                .then()
-                .statusCode(201)
-                .body(is(FILE_NAME_007));
+        putObject("Sheldon", TEST_BUCKET1, FILE_NAME_007);
 
-        RestAssured.given()
-                .contentType(ContentType.TEXT)
-                .body("Irma")
-                .queryParam(GoogleStorageResource.QUERY_BUCKET, TEST_BUCKET2)
-                .queryParam(GoogleStorageResource.QUERY_OBJECT_NAME, FILE_NAME_006)
-                .post("/google-storage/putObject")
-                .then()
-                .statusCode(201)
-                .body(is(FILE_NAME_006));
+        putObject("Irma", TEST_BUCKET2, FILE_NAME_006);
 
         //copy object to test_bucket2
-        RestAssured.given()
-                .contentType(ContentType.JSON)
-                .body(CollectionHelper.mapOf(GoogleCloudStorageConstants.OBJECT_NAME, FILE_NAME_007,
+        executeOperation(GoogleCloudStorageOperations.copyObject,
+                CollectionHelper.mapOf(GoogleCloudStorageConstants.OBJECT_NAME, FILE_NAME_007,
                         GoogleCloudStorageConstants.DESTINATION_BUCKET_NAME, TEST_BUCKET2,
-                        GoogleCloudStorageConstants.DESTINATION_OBJECT_NAME, FILE_NAME_007 + "_copy"))
-                .queryParam(GoogleStorageResource.QUERY_BUCKET, TEST_BUCKET)
-                .queryParam(GoogleStorageResource.QUERY_OPERATION, GoogleStorageResource.Operation.copyObject)
-                .post("/google-storage/operation")
+                        GoogleCloudStorageConstants.DESTINATION_OBJECT_NAME, FILE_NAME_007 + "_copy"),
+                is("Sheldon"));
+
+        //delete object in test_bucket
+        executeOperation(GoogleCloudStorageOperations.deleteObject,
+                CollectionHelper.mapOf(GoogleCloudStorageConstants.OBJECT_NAME, FILE_NAME_007),
+                is(Boolean.toString(true)));
+
+        //list buckets
+        executeOperation(GoogleCloudStorageOperations.listBuckets, Collections.emptyMap(),
+                both(containsString(TEST_BUCKET1)).and(containsString(TEST_BUCKET2)));
+
+        //delete bucket
+        executeOperation(GoogleCloudStorageOperations.deleteBucket, Collections.emptyMap(), is(Boolean.toString(true)));
+
+        executeOperation(GoogleCloudStorageOperations.listBuckets, Collections.emptyMap(),
+                not(containsString(TEST_BUCKET1)));
+
+    }
+
+    private void putObject(String sheldon, String testBucket1, String fileName007) {
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .body(sheldon)
+                .queryParam(GoogleStorageResource.QUERY_BUCKET, testBucket1)
+                .queryParam(GoogleStorageResource.QUERY_OBJECT_NAME, fileName007)
+                .post("/google-storage/putObject")
                 .then()
                 .statusCode(201)
-                .body(is("Sheldon"));
+                .body(is(fileName007));
+    }
 
+    private void executeOperation(GoogleCloudStorageOperations operation, Map<String, Object> parameters, Matcher matcher) {
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(parameters)
+                .queryParam(GoogleStorageResource.QUERY_BUCKET, TEST_BUCKET1)
+                .queryParam(GoogleStorageResource.QUERY_OPERATION, operation)
+                .post("/google-storage/operation")
+                .then()
+                .statusCode(200)
+                .body(matcher);
     }
 
 }

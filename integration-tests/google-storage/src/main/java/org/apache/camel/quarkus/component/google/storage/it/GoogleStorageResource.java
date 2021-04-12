@@ -17,8 +17,10 @@
 package org.apache.camel.quarkus.component.google.storage.it;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -31,17 +33,17 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.CopyWriter;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.google.storage.GoogleCloudStorageConstants;
+import org.apache.camel.component.google.storage.GoogleCloudStorageOperations;
 import org.jboss.logging.Logger;
 
 @Path("/google-storage")
 @ApplicationScoped
 public class GoogleStorageResource {
-
-    public static enum Operation {getObject, copyObject}
 
     public static final String DIRECT_POLLING = "direct:polling";
 
@@ -66,27 +68,29 @@ public class GoogleStorageResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response operation(Map<String, Object> parameters,
+    public String operation(Map<String, Object> parameters,
                               @QueryParam(QUERY_OPERATION) String operation,
                               @QueryParam(QUERY_BUCKET) String bucketName) throws Exception {
-        Operation op = Operation.valueOf(operation);
-        StringBuilder sb = new StringBuilder("google-storage://").append(bucketName).append("?autoCreateBucket=true").append("&operation=").append(op.toString());
-        final Object response = producerTemplate.requestBodyAndHeaders(
-                sb.toString(), null, parameters, Object.class);
+        GoogleCloudStorageOperations op = GoogleCloudStorageOperations.valueOf(operation);
+        String url = String.format("google-storage://%s?autoCreateBucket=true&operation=%s", bucketName, op.toString());
+        final Object response = producerTemplate.requestBodyAndHeaders(url, null, parameters, Object.class);
 
         if(response instanceof Blob) {
-            return Response
-                    .created(new URI("https://camel.apache.org/"))
-                    .entity(new String(((Blob)response).getContent()))
-                    .build();
+            return new String(((Blob)response).getContent());
         }
         if(response instanceof CopyWriter) {
-            return Response
-                    .created(new URI("https://camel.apache.org/"))
-                    .entity(new String(((CopyWriter)response).getResult().getContent()))
-                    .build();
+            return new String(((CopyWriter)response).getResult().getContent());
         }
-        return null;
+        if(response instanceof List) {
+            List l = (List)response;
+            return (String) l.stream().map(o -> {
+                if (o instanceof Bucket) {
+                    return ((Bucket) o).getName();
+                }
+                return "null";
+            }).collect(Collectors.joining(","));
+        }
+        return String.valueOf(response);
     }
 
     @Path("/putObject")
