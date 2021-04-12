@@ -16,10 +16,6 @@
  */
 package org.apache.camel.quarkus.component.google.storage.it;
 
-import com.google.cloud.storage.Blob;
-import com.google.cloud.storage.Bucket;
-import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.StorageOptions;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
@@ -32,57 +28,48 @@ import static org.hamcrest.Matchers.is;
 @QuarkusTestResource(GoogleStorageTestResource.class)
 class GoogleStorageTest {
 
-//    @Test
-    public void testGetObject() {
-        final String msg = java.util.UUID.randomUUID().toString().replace("-", "");
-        RestAssured.given() //
-                .contentType(ContentType.TEXT)
-                .body(msg)
-                .post("/google-storage/post") //
-                .then()
-                .statusCode(201)
-                .body(is("hello"));;
-//
-//        Assertions.fail("Add some assertions to " + getClass().getName());
-
-//        RestAssured.get("/google-storage/get")
-//                .then()
-//                .statusCode(200);
-    }
+    private static final String DEST_BUCKET = "destBucket";
+    private static final String TEST_BUCKET = "testBucket";
+    private static final String FILE_NAME = "file007";
 
     @Test
-    public void testPutGetObject() {
-        RestAssured.given() //
+    public void test() throws InterruptedException {
+        //consumer - start thread with the poling consumer from exchange "polling", polling queue, routing "pollingKey", result is sent to polling direct
+        RestAssured.given()
+                .queryParam(GoogleStorageResource.QUERY_BUCKET, TEST_BUCKET)
+                .queryParam(GoogleStorageResource.QUERY_DESTINATION_BUCKET, DEST_BUCKET)
+                .post("/google-storage/startPolling");
+
+        // wait a little to demonstrate we can start poll before we have a msg on the queue
+        Thread.sleep(500);
+
+        //producer - putObject
+        RestAssured.given()
                 .contentType(ContentType.TEXT)
                 .body("Sheldon")
-                .queryParam(GoogleStorageResource.QUERY_PARAM_OBJECT_NAME, "object01")
-                .post("/google-storage/putObject") //
+                .queryParam(GoogleStorageResource.QUERY_BUCKET, TEST_BUCKET)
+                .queryParam(GoogleStorageResource.QUERY_OBJECT_NAME, FILE_NAME)
+                .post("/google-storage/putObject")
                 .then()
                 .statusCode(201)
-                .body(is("object01"));
+                .body(is(FILE_NAME));
 
-        RestAssured.given() //
+        //get result from direct (for pooling) with timeout
+        RestAssured.given()
+                .queryParam(GoogleStorageResource.QUERY_DIRECT, GoogleStorageResource.DIRECT_POLLING)
+                .post("/google-storage/getFromDirect")
+                .then()
+                .statusCode(200)
+                .body(is("Polling Hello Sheldon"));
+
+        //producer - getObject
+        RestAssured.given()
                 .contentType(ContentType.TEXT)
-                .body("object01")
-                .post("/google-storage/getObject") //
+                .body(FILE_NAME)
+                .queryParam(GoogleStorageResource.QUERY_BUCKET, "destBucket")
+                .post("/google-storage/getObject")
                 .then()
                 .statusCode(201)
-                .body(is("Sheldon"));;
+                .body(is("Sheldon"));
     }
-
-//    @Test
-//    public void test2() {
-//        String port = System.getProperty(GoogleStorageTestResource.AAA);
-//        Storage storage = StorageOptions.newBuilder()
-//                .setHost("http://localhost:" + port)
-//                .build()
-//                .getService();
-//
-//        Bucket bucket = storage.get("my_bucket");
-//
-//        Blob result = bucket.get("my_file.txt");
-//
-//        System.out.println(new String(result.getContent()));
-//    }
-
 }

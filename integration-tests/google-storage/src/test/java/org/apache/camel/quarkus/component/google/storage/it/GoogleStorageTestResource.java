@@ -16,12 +16,11 @@
  */
 package org.apache.camel.quarkus.component.google.storage.it;
 
+import java.util.Map;
+
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.apache.camel.util.CollectionHelper;
-import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
-
-import java.util.Map;
 
 public class GoogleStorageTestResource implements QuarkusTestResourceLifecycleManager {
 
@@ -33,8 +32,8 @@ public class GoogleStorageTestResource implements QuarkusTestResourceLifecycleMa
         try {
             container = new GenericContainer<>("fsouza/fake-gcs-server")
                     .withExposedPorts(4443)
-                    .withClasspathResourceMapping("data", "/data", BindMode.READ_WRITE)
-                    .withCreateContainerCmdModifier(it -> it.withEntrypoint("/bin/fake-gcs-server", "-data", "/data", "-scheme", "http"));
+                    .withCreateContainerCmdModifier(
+                            it -> it.withEntrypoint("/bin/fake-gcs-server", "-scheme", "http"));
             container.start();
 
             return CollectionHelper.mapOf(
@@ -43,7 +42,6 @@ public class GoogleStorageTestResource implements QuarkusTestResourceLifecycleMa
             throw new RuntimeException(e);
         }
     }
-
 
     @Override
     public void stop() {

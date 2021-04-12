@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.component.google.storage.it;
 
 import java.net.URI;
+import java.util.concurrent.Executors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -39,8 +40,14 @@ import org.jboss.logging.Logger;
 @ApplicationScoped
 public class GoogleStorageResource {
 
+    public static final String DIRECT_POLLING = "direct:polling";
+
     public static final String PARAM_PORT = "org.apache.camel.quarkus.component.googlr.storage.it.GoogleStorageClientProducer_port";
-    public static final String QUERY_PARAM_OBJECT_NAME = "objectName";
+
+    public static final String QUERY_OBJECT_NAME = "objectName";
+    public static final String QUERY_BUCKET = "bucketName";
+    public static final String QUERY_DESTINATION_BUCKET = "destinationBucket";
+    public static final String QUERY_DIRECT = "fromDirect";
 
     private static final Logger LOG = Logger.getLogger(GoogleStorageResource.class);
 
@@ -54,7 +61,8 @@ public class GoogleStorageResource {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String get() throws Exception {
-        final String message = consumerTemplate.receiveBodyNoWait("google-storage://my_bucket?operation=getObject", String.class);
+        final String message = consumerTemplate.receiveBodyNoWait("google-storage://my_bucket?operation=getObject",
+                String.class);
         return message;
     }
 
@@ -62,8 +70,11 @@ public class GoogleStorageResource {
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response getObject(String objectNane) throws Exception {
-        final Blob response = producerTemplate.requestBodyAndHeader("google-storage://my_bucket?operation=getObject", null, GoogleCloudStorageConstants.OBJECT_NAME, objectNane, Blob.class);
+    public Response getObject(String objectNane,
+            @QueryParam(QUERY_BUCKET) String bucketName) throws Exception {
+        final Blob response = producerTemplate.requestBodyAndHeader(
+                String.format("google-storage://%s?operation=getObject&autoCreateBucket=true", bucketName), null,
+                GoogleCloudStorageConstants.OBJECT_NAME, objectNane, Blob.class);
         return Response
                 .created(new URI("https://camel.apache.org/"))
                 .entity(new String(response.getContent()))
@@ -74,11 +85,40 @@ public class GoogleStorageResource {
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response putBucket(String body, @QueryParam(QUERY_PARAM_OBJECT_NAME) String objectName) throws Exception {
-        final Blob response = producerTemplate.requestBodyAndHeader("google-storage://my_bucket", body, GoogleCloudStorageConstants.OBJECT_NAME, objectName, Blob.class);
+    public Response putBucket(String body,
+            @QueryParam(QUERY_BUCKET) String bucketName,
+            @QueryParam(QUERY_OBJECT_NAME) String objectName) throws Exception {
+        final Blob response = producerTemplate.requestBodyAndHeader("google-storage://" + bucketName + "?autoCreateBucket=true",
+                body,
+                GoogleCloudStorageConstants.OBJECT_NAME, objectName, Blob.class);
         return Response
                 .created(new URI("https://camel.apache.org/"))
                 .entity(response.getName())
                 .build();
+    }
+
+    @Path("/startPolling")
+    @POST
+    public void startPolling(@QueryParam(QUERY_BUCKET) String bucketName,
+            @QueryParam(QUERY_DESTINATION_BUCKET) String destinationBucket) {
+        // use another thread for polling consumer to demonstrate that we can wait before
+        // the message is sent to the queue
+        Executors.newSingleThreadExecutor().execute(() -> {
+            String url = String.format("google-storage://%s?"
+                    + "moveAfterRead=true"
+                    + "&destinationBucket=%s"
+                    + "&autoCreateBucket=true"
+                    + "&deleteAfterRead=true"
+                    + "&includeBody=true", bucketName, destinationBucket);
+            byte[] body = consumerTemplate.receiveBody(url, byte[].class);
+            producerTemplate.sendBody(DIRECT_POLLING, "Polling Hello " + new String(body));
+        });
+    }
+
+    @Path("/getFromDirect")
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    public String getFromDirect(@QueryParam(QUERY_DIRECT) String directName) {
+        return consumerTemplate.receiveBody(directName, 5000, String.class);
     }
 }
