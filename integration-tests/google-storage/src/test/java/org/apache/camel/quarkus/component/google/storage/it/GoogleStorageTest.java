@@ -56,38 +56,16 @@ class GoogleStorageTest {
     @BeforeEach
     public void beforeEach() {
         RestAssured.given().get("/google-storage/loadComponent").then().statusCode(200);
-        deleteBuckets(TEST_BUCKET1, TEST_BUCKET2, TEST_BUCKET3, DEST_BUCKET);
     }
 
     @AfterEach
     public void afterEach() {
         //clean after test
-        //        deleteBuckets(TEST_BUCKET1, TEST_BUCKET2, TEST_BUCKET3, DEST_BUCKET);
-    }
-
-    //    @Test
-    public void testConsumer() throws InterruptedException {
-        //producer - putObject
-        putObject("Sheldon", TEST_BUCKET3, FILE_NAME_007);
-        putObject("Irma", DEST_BUCKET, FILE_NAME_006);
-
-        //consumer - start thread with the poling consumer from exchange "polling", polling queue, routing "pollingKey", result is sent to polling direct
-        RestAssured.given()
-                .queryParam(GoogleStorageResource.QUERY_BUCKET, TEST_BUCKET3)
-                .queryParam(GoogleStorageResource.QUERY_POLLING_ACTION, "moveAfterRead")
-                .queryParam(GoogleStorageResource.QUERY_DESTINATION_BUCKET, DEST_BUCKET)
-                .post("/google-storage/consumer");
-
-        //producer - getObject
-        executeOperation(DEST_BUCKET, GoogleCloudStorageOperations.getObject,
-                Collections.singletonMap(GoogleCloudStorageConstants.OBJECT_NAME, FILE_NAME_007),
-                is("Sheldon"));
+        deleteBuckets(TEST_BUCKET1, TEST_BUCKET2, TEST_BUCKET3, DEST_BUCKET);
     }
 
     @Test
     public void testConsumer2() throws InterruptedException {
-        //create dest bucket
-        putObject("Irma", DEST_BUCKET, FILE_NAME_006);
         //consumer - start thread with the poling consumer from exchange "polling", polling queue, routing "pollingKey", result is sent to polling direct
         RestAssured.given()
                 .queryParam(GoogleStorageResource.QUERY_BUCKET, TEST_BUCKET3)

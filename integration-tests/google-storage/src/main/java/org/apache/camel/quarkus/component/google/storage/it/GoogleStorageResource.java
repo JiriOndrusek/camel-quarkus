@@ -139,20 +139,6 @@ public class GoogleStorageResource {
                 .build();
     }
 
-    @Path("/consumer")
-    @POST
-    @Produces(MediaType.TEXT_PLAIN)
-    public void consumer(@QueryParam(QUERY_BUCKET) String bucketName,
-            @QueryParam(QUERY_POLLING_ACTION) String pollingAction,
-            @QueryParam(QUERY_DESTINATION_BUCKET) String destinationBucket) {
-        String url = String.format(getBaseUrl(bucketName, "autoCreateBucket=true")
-                + "&%s=true"
-                + "&destinationBucket=%s"
-                + "&deleteAfterRead=true"
-                + "&includeBody=true", pollingAction, destinationBucket);
-        byte[] body = consumerTemplate.receiveBody(url, 1000, byte[].class);
-    }
-
     @Path("/startPolling")
     @POST
     public void startPolling(@QueryParam(QUERY_BUCKET) String bucketName,
