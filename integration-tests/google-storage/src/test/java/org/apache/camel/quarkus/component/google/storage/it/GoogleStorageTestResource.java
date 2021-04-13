@@ -16,6 +16,7 @@
  */
 package org.apache.camel.quarkus.component.google.storage.it;
 
+import java.util.Collections;
 import java.util.Map;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
@@ -28,7 +29,10 @@ public class GoogleStorageTestResource implements QuarkusTestResourceLifecycleMa
 
     @Override
     public Map<String, String> start() {
-
+        //if there is a real configuration, don't start container
+        if (GoogleStorageHelper.isRealAccount()) {
+            return Collections.emptyMap();
+        }
         try {
             container = new GenericContainer<>("fsouza/fake-gcs-server")
                     .withExposedPorts(4443)
