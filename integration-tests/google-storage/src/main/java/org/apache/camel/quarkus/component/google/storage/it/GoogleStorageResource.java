@@ -81,7 +81,8 @@ public class GoogleStorageResource {
             return Response.ok().build();
         }
 
-        String port = System.getProperty(GoogleStorageResource.PARAM_PORT);
+        //        String port = System.getProperty(GoogleStorageResource.PARAM_PORT);
+        String port = "4443";
         gsc.getConfiguration().setStorageClient(StorageOptions.newBuilder()
                 .setHost("http://localhost:" + port)
                 .setProjectId("dummy-project-for-testing")

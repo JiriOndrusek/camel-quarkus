@@ -1,0 +1,23 @@
+[
+  {
+    "name": "com.google.api.services.storage.model.Bucket",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ]
+  },{
+    "name": "com.google.api.services.storage.model.Bucket$Versioning",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ]
+  },{
+    "name": "com.google.api.client.json.GenericJson",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ]
+  },{
+    "name": "com.google.api.services.storage.model.StorageObject",
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ]
+  }
+]
