@@ -30,7 +30,9 @@ import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
 import org.apache.camel.component.google.storage.GoogleCloudStorageConstants;
 import org.apache.camel.component.google.storage.GoogleCloudStorageOperations;
+import org.apache.camel.util.CollectionHelper;
 import org.hamcrest.Matcher;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -52,7 +54,7 @@ class GoogleStorageTest {
         RestAssured.given().get("/google-storage/loadComponent").then().statusCode(200);
     }
 
-    //    @AfterEach
+    @AfterEach
     public void afterEach() {
         //clean after test
         deleteBuckets(TEST_BUCKET1, TEST_BUCKET2, TEST_BUCKET3, DEST_BUCKET);
@@ -107,14 +109,14 @@ class GoogleStorageTest {
         putObject("Sheldon", TEST_BUCKET1, FILE_NAME_007);
 
         //        putObject("Irma", TEST_BUCKET2, FILE_NAME_006);
-        //
-        //        //copy object to test_bucket2
-        //        executeOperation(GoogleCloudStorageOperations.copyObject,
-        //                CollectionHelper.mapOf(GoogleCloudStorageConstants.OBJECT_NAME, FILE_NAME_007,
-        //                        GoogleCloudStorageConstants.DESTINATION_BUCKET_NAME, TEST_BUCKET2,
-        //                        GoogleCloudStorageConstants.DESTINATION_OBJECT_NAME, FILE_NAME_007 + "_copy"),
-        //                is("Sheldon"));
-        //
+
+        //copy object to test_bucket2
+        executeOperation(GoogleCloudStorageOperations.copyObject,
+                CollectionHelper.mapOf(GoogleCloudStorageConstants.OBJECT_NAME, FILE_NAME_007,
+                        GoogleCloudStorageConstants.DESTINATION_BUCKET_NAME, TEST_BUCKET2,
+                        GoogleCloudStorageConstants.DESTINATION_OBJECT_NAME, FILE_NAME_007 + "_copy"),
+                is("Sheldon"));
+
         //        //GetObject
         //        executeOperation(TEST_BUCKET2, GoogleCloudStorageOperations.getObject,
         //                Collections.singletonMap(GoogleCloudStorageConstants.OBJECT_NAME, FILE_NAME_007 + "_copy"),

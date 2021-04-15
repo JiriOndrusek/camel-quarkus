@@ -24,7 +24,9 @@ import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.EnableAllSecurityServicesBuildItem;
 import io.quarkus.deployment.builditem.ExtensionSslNativeSupportBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 
 class GoogleStorageProcessor {
@@ -76,5 +78,29 @@ class GoogleStorageProcessor {
         return new ReflectiveClassBuildItem(true, true, Storage.Objects.Insert.class.getName(),
                 StorageRequest.class.getName());
     }
+
+    @BuildStep
+    ReflectiveClassBuildItem registerForReflection3(CombinedIndexBuildItem combinedIndex) {
+        IndexView index = combinedIndex.getIndex();
+
+        String[] dtos = index.getAllKnownSubclasses(DotName.createSimple(StorageRequest.class.getName())).stream()
+                .map(ci -> ci.name().toString())
+                .sorted() //todo remove
+                .peek(System.out::println) //todo remove
+                .toArray(String[]::new);
+
+        return new ReflectiveClassBuildItem(true, true, dtos);
+
+    }
+
+    @BuildStep
+    IndexDependencyBuildItem registerDependencyForIndex() {
+        return new IndexDependencyBuildItem("com.google.apis", "google-api-services-storage");
+    }
+
+    //    @BuildStep
+    //    void addDependencies(BuildProducer<IndexDependencyBuildItem> indexDependency) {
+    //        indexDependency.produce(new IndexDependencyBuildItem("com.google.apis", "google-api-service-storage"));
+    //    }
 
 }
