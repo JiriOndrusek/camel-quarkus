@@ -1,21 +1,67 @@
 [
   {
     "name": "com.google.api.services.storage.model.Bucket",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredClasses" : true,
+    "allPublicClasses" : true,
     "methods": [
       { "name": "<init>", "parameterTypes": [] }
     ]
   },{
     "name": "com.google.api.services.storage.model.Bucket$Versioning",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
     "methods": [
       { "name": "<init>", "parameterTypes": [] }
     ]
   },{
     "name": "com.google.api.client.json.GenericJson",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
     "methods": [
       { "name": "<init>", "parameterTypes": [] }
     ]
   },{
     "name": "com.google.api.services.storage.model.StorageObject",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ]
+  },{
+    "name": "com.google.api.services.storage.model.ObjectAccessControl",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] }
+    ]
+  },{
+    "name": "com.google.api.services.storage.model.ObjectAccessControl$ProjectTeam",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
     "methods": [
       { "name": "<init>", "parameterTypes": [] }
     ]

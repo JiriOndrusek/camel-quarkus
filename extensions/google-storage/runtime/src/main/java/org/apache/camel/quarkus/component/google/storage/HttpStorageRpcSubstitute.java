@@ -66,6 +66,7 @@ public final class HttpStorageRpcSubstitute {
             System.out.println(">>> 4: executed - " + so);
             return so;
         } catch (IOException ex) {
+            System.out.println("99999 : exception: " + ex);
             span.setStatus(Status.UNKNOWN.withDescription(ex.getMessage()));
             ex.printStackTrace();
         } finally {

@@ -56,7 +56,7 @@ class GoogleStorageProcessor {
         //                .peek(System.out::println)
         //                .toArray(String[]::new);
 
-        return new ReflectiveClassBuildItem(false, false, Bucket.class.getName());
+        return new ReflectiveClassBuildItem(true, true, Bucket.class.getName());
     }
 
     @BuildStep
@@ -73,7 +73,7 @@ class GoogleStorageProcessor {
         //        return new ReflectiveHierarchyBuildItem.Builder()(true, true, Storage.Objects.Insert.class.getName()); //see ClassInfo
         //        DotName simpleName = DotName.createSimple(Storage.Objects.Insert.class.getName());
         //        return new ReflectiveHierarchyBuildItem.Builder().type(Type.create(simpleName, Type.Kind.CLASS)).build();
-        return new ReflectiveClassBuildItem(false, false, Storage.Objects.Insert.class.getName(),
+        return new ReflectiveClassBuildItem(true, true, Storage.Objects.Insert.class.getName(),
                 StorageRequest.class.getName());
     }
 
