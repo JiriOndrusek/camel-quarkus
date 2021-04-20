@@ -118,35 +118,5 @@
   {
     "name":"com.google.api.client.util.GenericData",
     "allDeclaredFields":true
-  },
-  {
-    "name":"com.google.api.services.storage.Storage$Buckets$Get",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true
-  },
-  {
-    "name":"com.google.api.services.storage.Storage$Buckets$Insert",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true
-  },
-  {
-    "name":"com.google.api.services.storage.Storage$Objects$Get",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true
-  },
-  {
-    "name":"com.google.api.services.storage.Storage$Objects$Insert",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true
-  },
-  {
-    "name":"com.google.api.services.storage.Storage$Objects$Rewrite",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true
-  },
-  {
-    "name":"com.google.api.services.storage.StorageRequest",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true
   }
 ]
