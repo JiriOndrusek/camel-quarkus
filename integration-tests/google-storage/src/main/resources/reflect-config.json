@@ -89,29 +89,6 @@
   ]
 },
   {
-    "name":"com.google.api.client.googleapis.json.GoogleJsonError",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true,
-    "methods":[{"name":"<init>","parameterTypes":[] }]
-  },
-  {
-    "name":"com.google.api.client.googleapis.services.AbstractGoogleClientRequest",
-    "allDeclaredFields":true
-  },
-  {
-    "name":"com.google.api.client.googleapis.services.json.AbstractGoogleJsonClientRequest",
-    "allDeclaredFields":true
-  },
-  {
-    "name":"com.google.api.client.http.GenericUrl",
-    "allDeclaredFields":true
-  },
-  {
-    "name":"com.google.api.client.http.HttpHeaders",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true
-  },
-  {
     "name":"com.google.api.client.json.GenericJson",
     "allDeclaredFields":true
   },
