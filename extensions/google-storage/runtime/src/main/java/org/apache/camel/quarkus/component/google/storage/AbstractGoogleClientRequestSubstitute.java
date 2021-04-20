@@ -3,15 +3,13 @@ package org.apache.camel.quarkus.component.google.storage;
 import java.io.IOException;
 
 import com.google.api.client.googleapis.services.AbstractGoogleClient;
-import com.google.api.client.googleapis.services.AbstractGoogleClientRequest;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.UriTemplate;
 import com.oracle.svm.core.annotate.Alias;
 import com.oracle.svm.core.annotate.Substitute;
-import com.oracle.svm.core.annotate.TargetClass;
 
-@TargetClass(value = AbstractGoogleClientRequest.class)
+//@TargetClass(value = AbstractGoogleClientRequest.class)
 public final class AbstractGoogleClientRequestSubstitute {
 
     //    @Alias

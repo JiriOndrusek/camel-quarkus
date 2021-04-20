@@ -7,9 +7,8 @@ import java.lang.reflect.Method;
 import com.google.api.client.util.FieldInfo;
 import com.oracle.svm.core.annotate.Alias;
 import com.oracle.svm.core.annotate.Substitute;
-import com.oracle.svm.core.annotate.TargetClass;
 
-@TargetClass(value = FieldInfo.class)
+//@TargetClass(value = FieldInfo.class)
 public final class FieldInfoSubstitute {
 
     @Alias

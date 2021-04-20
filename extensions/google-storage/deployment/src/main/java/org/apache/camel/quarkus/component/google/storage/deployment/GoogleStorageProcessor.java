@@ -16,6 +16,8 @@
  */
 package org.apache.camel.quarkus.component.google.storage.deployment;
 
+import com.google.api.client.json.GenericJson;
+import com.google.api.client.util.GenericData;
 import com.google.api.services.storage.Storage;
 import com.google.api.services.storage.StorageRequest;
 import com.google.cloud.storage.Bucket;
@@ -26,6 +28,7 @@ import io.quarkus.deployment.builditem.ExtensionSslNativeSupportBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 
@@ -76,7 +79,7 @@ class GoogleStorageProcessor {
         //        DotName simpleName = DotName.createSimple(Storage.Objects.Insert.class.getName());
         //        return new ReflectiveHierarchyBuildItem.Builder().type(Type.create(simpleName, Type.Kind.CLASS)).build();
         return new ReflectiveClassBuildItem(true, true, Storage.Objects.Insert.class.getName(),
-                StorageRequest.class.getName());
+                StorageRequest.class.getName(), GenericJson.class.getName(), GenericData.class.getName());
     }
 
     @BuildStep
@@ -89,8 +92,13 @@ class GoogleStorageProcessor {
                 .peek(System.out::println) //todo remove
                 .toArray(String[]::new);
 
-        return new ReflectiveClassBuildItem(true, true, dtos);
+        String[] dtos2 = index.getAllKnownSubclasses(DotName.createSimple(GenericJson.class.getName())).stream()
+                .map(ci -> ci.name().toString())
+                .sorted() //todo remove
+                .peek(System.out::println) //todo remove
+                .toArray(String[]::new);
 
+        return new ReflectiveClassBuildItem(true, true, ArrayUtils.addAll(dtos, dtos2));
     }
 
     @BuildStep

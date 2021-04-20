@@ -6,12 +6,10 @@ import java.util.concurrent.ExecutionException;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
-import com.google.api.gax.retrying.DirectRetryingExecutor;
 import com.google.api.gax.retrying.RetryingFuture;
 import com.oracle.svm.core.annotate.Substitute;
-import com.oracle.svm.core.annotate.TargetClass;
 
-@TargetClass(value = DirectRetryingExecutor.class)
+//@TargetClass(value = DirectRetryingExecutor.class)
 public final class DirectRetryingExecutorSubstitution {
 
     @Substitute

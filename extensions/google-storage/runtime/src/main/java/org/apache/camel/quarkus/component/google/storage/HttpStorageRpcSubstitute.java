@@ -11,13 +11,12 @@ import com.google.cloud.storage.spi.v1.HttpStorageRpc;
 import com.google.cloud.storage.spi.v1.StorageRpc;
 import com.oracle.svm.core.annotate.Alias;
 import com.oracle.svm.core.annotate.Substitute;
-import com.oracle.svm.core.annotate.TargetClass;
 import io.opencensus.common.Scope;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Status;
 import io.opencensus.trace.Tracer;
 
-@TargetClass(value = HttpStorageRpc.class)
+//@TargetClass(value = HttpStorageRpc.class)
 public final class HttpStorageRpcSubstitute {
 
     @Alias
