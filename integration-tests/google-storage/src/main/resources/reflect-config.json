@@ -76,24 +76,5 @@
   "methods": [
     { "name": "<init>", "parameterTypes": [] }
   ]
-},{
-  "name": "com.google.api.services.storage.model.RewriteResponse",
-  "allDeclaredConstructors" : true,
-  "allPublicConstructors" : true,
-  "allDeclaredMethods" : true,
-  "allPublicMethods" : true,
-  "allDeclaredClasses" : true,
-  "allPublicClasses" : true,
-  "methods": [
-    { "name": "<init>", "parameterTypes": [] }
-  ]
-},
-  {
-    "name":"com.google.api.client.json.GenericJson",
-    "allDeclaredFields":true
-  },
-  {
-    "name":"com.google.api.client.util.GenericData",
-    "allDeclaredFields":true
-  }
+}
 ]
