@@ -74,7 +74,7 @@ class GoogleStorageTest {
                 .post("/google-storage/startPolling");
 
         // wait a little to demonstrate we can start poll before we have a msg on the queue
-        Thread.sleep(500);
+        Thread.sleep(5000);
 
         //producer - putObject
         putObject("Sheldon", TEST_BUCKET3, FILE_NAME_007);
