@@ -65,32 +65,10 @@
     "name":"java.lang.String[]"
   },
   {
-    "name":"java.lang.Thread",
-    "fields":[
-      {"name":"contextClassLoader", "allowUnsafeAccess":true},
-      {"name":"inheritableThreadLocals", "allowUnsafeAccess":true},
-      {"name":"threadLocals", "allowUnsafeAccess":true}
-    ]
-  },
-  {
-    "name":"java.lang.management.ManagementFactory",
-    "methods":[{"name":"getRuntimeMXBean","parameterTypes":[] }]
-  },
-  {
     "name":"java.lang.management.RuntimeMXBean",
     "methods":[
       {"name":"getInputArguments","parameterTypes":[] },
       {"name":"getName","parameterTypes":[] }
     ]
-  },
-  {
-    "name":"sun.nio.ch.SelectorImpl",
-    "fields":[
-      {"name":"publicSelectedKeys", "allowUnsafeAccess":true},
-      {"name":"selectedKeys", "allowUnsafeAccess":true}
-    ]
-  },
-  {
-    "name":"sun.security.pkcs.SignerInfo[]"
   }
 ]
