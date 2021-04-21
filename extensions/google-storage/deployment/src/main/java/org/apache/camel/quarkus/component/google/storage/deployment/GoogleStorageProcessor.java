@@ -17,7 +17,10 @@
 package org.apache.camel.quarkus.component.google.storage.deployment;
 
 import com.google.api.client.googleapis.json.GoogleJsonError;
+import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.json.GenericJson;
+import com.google.api.client.json.webtoken.JsonWebSignature;
+import com.google.api.client.json.webtoken.JsonWebToken;
 import com.google.api.client.util.GenericData;
 import com.google.api.services.storage.Storage;
 import com.google.api.services.storage.StorageRequest;
@@ -63,7 +66,8 @@ class GoogleStorageProcessor {
     ReflectiveClassBuildItem registerForReflection2() {
         return new ReflectiveClassBuildItem(true, true, Storage.Objects.Insert.class.getName(),
                 StorageRequest.class.getName(), GenericJson.class.getName(), GenericData.class.getName(),
-                GoogleJsonError.class.getName());
+                GoogleJsonError.class.getName(), HttpHeaders.class.getName(), JsonWebToken.Payload.class.getName(),
+                JsonWebSignature.Header.class.getName(), GoogleJsonError.ErrorInfo.class.getName(), byte[].class.getName());
     }
 
     @BuildStep
