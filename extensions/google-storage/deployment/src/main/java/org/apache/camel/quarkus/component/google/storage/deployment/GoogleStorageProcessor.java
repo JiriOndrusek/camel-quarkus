@@ -72,14 +72,10 @@ class GoogleStorageProcessor {
 
         String[] dtos = index.getAllKnownSubclasses(DotName.createSimple(StorageRequest.class.getName())).stream()
                 .map(ci -> ci.name().toString())
-                .sorted() //todo remove
-                .peek(System.out::println) //todo remove
                 .toArray(String[]::new);
 
         String[] dtos2 = index.getAllKnownSubclasses(DotName.createSimple(GenericJson.class.getName())).stream()
                 .map(ci -> ci.name().toString())
-                .sorted() //todo remove
-                .peek(System.out::println) //todo remove
                 .toArray(String[]::new);
 
         return new ReflectiveClassBuildItem(true, true, ArrayUtils.addAll(dtos, dtos2));
