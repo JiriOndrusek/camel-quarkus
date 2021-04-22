@@ -28,8 +28,6 @@ import com.google.cloud.storage.Bucket;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
-import io.quarkus.deployment.builditem.EnableAllSecurityServicesBuildItem;
-import io.quarkus.deployment.builditem.ExtensionSslNativeSupportBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
@@ -45,15 +43,15 @@ class GoogleStorageProcessor {
         return new FeatureBuildItem(FEATURE);
     }
 
-    @BuildStep
-    ExtensionSslNativeSupportBuildItem activateSslNativeSupport() {
-        return new ExtensionSslNativeSupportBuildItem(FEATURE);
-    }
-
-    @BuildStep
-    EnableAllSecurityServicesBuildItem enableAllSecurity() {
-        return new EnableAllSecurityServicesBuildItem();
-    }
+    //    @BuildStep
+    //    ExtensionSslNativeSupportBuildItem activateSslNativeSupport() {
+    //        return new ExtensionSslNativeSupportBuildItem(FEATURE);
+    //    }
+    //
+    //    @BuildStep
+    //    EnableAllSecurityServicesBuildItem enableAllSecurity() {
+    //        return new EnableAllSecurityServicesBuildItem();
+    //    }
 
     @BuildStep
     ReflectiveClassBuildItem registerForReflection2() {
@@ -72,13 +70,13 @@ class GoogleStorageProcessor {
                 .map(ci -> ci.name().toString())
                 .toArray(String[]::new);
 
-        reflectiveClasses.produce(new ReflectiveClassBuildItem(true, true, dtos));
+        reflectiveClasses.produce(new ReflectiveClassBuildItem(false, true, dtos));
 
         dtos = index.getAllKnownSubclasses(DotName.createSimple(GenericJson.class.getName())).stream()
                 .map(ci -> ci.name().toString())
                 .toArray(String[]::new);
 
-        reflectiveClasses.produce(new ReflectiveClassBuildItem(true, true, dtos));
+        reflectiveClasses.produce(new ReflectiveClassBuildItem(false, true, dtos));
     }
 
     @BuildStep
