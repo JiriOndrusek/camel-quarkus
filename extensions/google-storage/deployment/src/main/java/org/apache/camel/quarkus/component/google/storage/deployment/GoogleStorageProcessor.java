@@ -28,6 +28,7 @@ import com.google.cloud.storage.Bucket;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
+import io.quarkus.deployment.builditem.ExtensionSslNativeSupportBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
@@ -43,28 +44,21 @@ class GoogleStorageProcessor {
         return new FeatureBuildItem(FEATURE);
     }
 
-    //    @BuildStep
-    //    ExtensionSslNativeSupportBuildItem activateSslNativeSupport() {
-    //        return new ExtensionSslNativeSupportBuildItem(FEATURE);
-    //    }
-    //
-    //    @BuildStep
-    //    EnableAllSecurityServicesBuildItem enableAllSecurity() {
-    //        return new EnableAllSecurityServicesBuildItem();
-    //    }
-
     @BuildStep
-    ReflectiveClassBuildItem registerForReflection2() {
-        return new ReflectiveClassBuildItem(true, true, Bucket.class.getName(), Storage.Objects.Insert.class.getName(),
-                StorageRequest.class.getName(), GenericJson.class.getName(), GenericData.class.getName(),
-                GoogleJsonError.class.getName(), HttpHeaders.class.getName(), JsonWebToken.Payload.class.getName(),
-                JsonWebSignature.Header.class.getName(), GoogleJsonError.ErrorInfo.class.getName(), byte[].class.getName());
+    ExtensionSslNativeSupportBuildItem activateSslNativeSupport() {
+        return new ExtensionSslNativeSupportBuildItem(FEATURE);
     }
 
     @BuildStep
-    void registerForReflection3(CombinedIndexBuildItem combinedIndex,
+    void registerForReflection(CombinedIndexBuildItem combinedIndex,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClasses) {
         IndexView index = combinedIndex.getIndex();
+
+        reflectiveClasses.produce(new ReflectiveClassBuildItem(false, true, Bucket.class.getName(),
+                Storage.Objects.Insert.class.getName(),
+                StorageRequest.class.getName(), GenericJson.class.getName(), GenericData.class.getName(),
+                GoogleJsonError.class.getName(), HttpHeaders.class.getName(), JsonWebToken.Payload.class.getName(),
+                JsonWebSignature.Header.class.getName(), GoogleJsonError.ErrorInfo.class.getName(), byte[].class.getName()));
 
         String[] dtos = index.getAllKnownSubclasses(DotName.createSimple(StorageRequest.class.getName())).stream()
                 .map(ci -> ci.name().toString())
