@@ -73,10 +73,10 @@
 <!--            <artifactId>google-http-client-appengine</artifactId>-->
 <!--            <groupId>com.google.http-client</groupId>-->
 <!--        </dependency>-->
-        <dependency>
-            <groupId>com.google.appengine</groupId>
-            <artifactId>appengine-api-1.0-sdk</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.google.appengine</groupId>-->
+<!--            <artifactId>appengine-api-1.0-sdk</artifactId>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>
