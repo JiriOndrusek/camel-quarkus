@@ -32,6 +32,7 @@ group-02:
   - elasticsearch-rest
   - google-bigquery
   - google-pubsub
+  - google-storage
   - grpc
   - pubnub
   - protobuf
