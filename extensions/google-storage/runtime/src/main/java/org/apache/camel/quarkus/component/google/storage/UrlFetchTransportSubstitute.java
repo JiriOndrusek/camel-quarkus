@@ -11,7 +11,7 @@ public final class UrlFetchTransportSubstitute {
 
     @Substitute
     protected Object buildRequest(String method, String url) throws IOException {
-        throw new IllegalStateException("3333333333333333333333333333333333");
+        throw new IllegalStateException("Not used by camel extension");
     }
 
 }

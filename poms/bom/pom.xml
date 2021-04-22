@@ -5629,19 +5629,9 @@
             </dependency>
             <dependency>
                 <groupId>com.google.http-client</groupId>
-                <artifactId>google-http-client-appengine</artifactId>
-                <version>${google-http-client-appengine.version}</version>
-            </dependency>  
-            <dependency>
-                <groupId>com.google.http-client</groupId>
                 <artifactId>google-http-client-jackson2</artifactId>
                 <version>${google-http-client-jackson2.version}</version>
             </dependency>            
-            <dependency>
-                <groupId>com.google.appengine</groupId>
-                <artifactId>appengine-api-1.0-sdk</artifactId>
-                <version>${google-appengine.version}</version>
-            </dependency>
             <dependency>
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java</artifactId>

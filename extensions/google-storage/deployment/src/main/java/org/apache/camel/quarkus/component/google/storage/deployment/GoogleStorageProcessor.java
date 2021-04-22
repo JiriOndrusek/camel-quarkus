@@ -25,6 +25,7 @@ import com.google.api.client.util.GenericData;
 import com.google.api.services.storage.Storage;
 import com.google.api.services.storage.StorageRequest;
 import com.google.cloud.storage.Bucket;
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.EnableAllSecurityServicesBuildItem;
@@ -32,7 +33,6 @@ import io.quarkus.deployment.builditem.ExtensionSslNativeSupportBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
-import org.apache.commons.lang3.ArrayUtils;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 
@@ -55,34 +55,30 @@ class GoogleStorageProcessor {
         return new EnableAllSecurityServicesBuildItem();
     }
 
-    //todo refactor
-    @BuildStep
-    ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
-
-        return new ReflectiveClassBuildItem(true, true, Bucket.class.getName());
-    }
-
     @BuildStep
     ReflectiveClassBuildItem registerForReflection2() {
-        return new ReflectiveClassBuildItem(true, true, Storage.Objects.Insert.class.getName(),
+        return new ReflectiveClassBuildItem(true, true, Bucket.class.getName(), Storage.Objects.Insert.class.getName(),
                 StorageRequest.class.getName(), GenericJson.class.getName(), GenericData.class.getName(),
                 GoogleJsonError.class.getName(), HttpHeaders.class.getName(), JsonWebToken.Payload.class.getName(),
                 JsonWebSignature.Header.class.getName(), GoogleJsonError.ErrorInfo.class.getName(), byte[].class.getName());
     }
 
     @BuildStep
-    ReflectiveClassBuildItem registerForReflection3(CombinedIndexBuildItem combinedIndex) {
+    void registerForReflection3(CombinedIndexBuildItem combinedIndex,
+            BuildProducer<ReflectiveClassBuildItem> reflectiveClasses) {
         IndexView index = combinedIndex.getIndex();
 
         String[] dtos = index.getAllKnownSubclasses(DotName.createSimple(StorageRequest.class.getName())).stream()
                 .map(ci -> ci.name().toString())
                 .toArray(String[]::new);
 
-        String[] dtos2 = index.getAllKnownSubclasses(DotName.createSimple(GenericJson.class.getName())).stream()
+        reflectiveClasses.produce(new ReflectiveClassBuildItem(true, true, dtos));
+
+        dtos = index.getAllKnownSubclasses(DotName.createSimple(GenericJson.class.getName())).stream()
                 .map(ci -> ci.name().toString())
                 .toArray(String[]::new);
 
-        return new ReflectiveClassBuildItem(true, true, ArrayUtils.addAll(dtos, dtos2));
+        reflectiveClasses.produce(new ReflectiveClassBuildItem(true, true, dtos));
     }
 
     @BuildStep

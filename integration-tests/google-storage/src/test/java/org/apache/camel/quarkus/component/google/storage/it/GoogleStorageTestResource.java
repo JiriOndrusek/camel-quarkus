@@ -25,6 +25,9 @@ import org.testcontainers.containers.GenericContainer;
 
 public class GoogleStorageTestResource implements QuarkusTestResourceLifecycleManager {
 
+    public static final int PORT = 4443;
+    public static final String CONTAINER_NAME = "fsouza/fake-gcs-server";
+
     private GenericContainer<?> container;
 
     @Override
@@ -34,14 +37,14 @@ public class GoogleStorageTestResource implements QuarkusTestResourceLifecycleMa
             return Collections.emptyMap();
         }
         try {
-            container = new GenericContainer<>("fsouza/fake-gcs-server")
-                    .withExposedPorts(4443)
+            container = new GenericContainer<>(CONTAINER_NAME)
+                    .withExposedPorts(PORT)
                     .withCreateContainerCmdModifier(
                             it -> it.withEntrypoint("/bin/fake-gcs-server", "-scheme", "http"));
             container.start();
 
             return CollectionHelper.mapOf(
-                    GoogleStorageResource.PARAM_PORT, container.getMappedPort(4443).toString());
+                    GoogleStorageResource.PARAM_PORT, container.getMappedPort(PORT).toString());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

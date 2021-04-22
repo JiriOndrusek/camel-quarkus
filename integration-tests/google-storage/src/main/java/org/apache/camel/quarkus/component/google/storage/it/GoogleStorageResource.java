@@ -153,7 +153,6 @@ public class GoogleStorageResource {
                     + "&deleteAfterRead=true"
                     + "&includeBody=true", pollingAction, destinationBucket);
             byte[] body = consumerTemplate.receiveBody(url, 10000, byte[].class);
-            System.out.println("***  Received " + new String(body));
             producerTemplate.sendBody(DIRECT_POLLING, "Polling Hello " + new String(body));
         });
     }
