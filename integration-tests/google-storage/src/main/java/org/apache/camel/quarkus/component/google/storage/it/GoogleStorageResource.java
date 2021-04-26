@@ -16,6 +16,7 @@
  */
 package org.apache.camel.quarkus.component.google.storage.it;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -24,8 +25,8 @@ import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -37,7 +38,8 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.CopyWriter;
 import com.google.cloud.storage.StorageOptions;
-import org.apache.camel.CamelContext;
+import io.quarkiverse.googlecloudservices.storage.runtime.StorageProducer;
+import io.quarkus.arc.Unremovable;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.google.storage.GoogleCloudStorageComponent;
@@ -70,25 +72,25 @@ public class GoogleStorageResource {
     ConsumerTemplate consumerTemplate;
 
     @Inject
-    CamelContext context;
+    StorageProducer sp;
 
-    @Path("/loadComponent")
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response loadComponent() throws Exception {
-        GoogleCloudStorageComponent gsc = context.getComponent(COMPONENT_GOOGLE_STORAGE, GoogleCloudStorageComponent.class);
-        if (GoogleStorageHelper.isRealAccount() || gsc.getConfiguration().getStorageClient() != null) {
-            return Response.ok().build();
+    @Produces
+    @ApplicationScoped
+    @Unremovable
+    @Named(COMPONENT_GOOGLE_STORAGE)
+    GoogleCloudStorageComponent produceComponent() throws IOException {
+        GoogleCloudStorageComponent gsc = new GoogleCloudStorageComponent();
+        if (!GoogleStorageHelper.isRealAccount()) {
+            String port = System.getProperty(GoogleStorageResource.PARAM_PORT);
+            gsc.getConfiguration().setStorageClient(StorageOptions.newBuilder()
+                    .setHost("http://localhost:" + port)
+                    .setProjectId("dummy-project-for-testing")
+                    .build()
+                    .getService());
+        } else {
+            gsc.getConfiguration().setStorageClient(sp.storage());
         }
-
-        String port = System.getProperty(GoogleStorageResource.PARAM_PORT);
-        gsc.getConfiguration().setStorageClient(StorageOptions.newBuilder()
-                .setHost("http://localhost:" + port)
-                .setProjectId("dummy-project-for-testing")
-                .build()
-                .getService());
-
-        return Response.ok().build();
+        return gsc;
     }
 
     @Path("/operation")
@@ -165,10 +167,9 @@ public class GoogleStorageResource {
     }
 
     private String getBaseUrl(String bucketName, String parameters) {
-        String serviceAccountKeyFile = System.getenv(GoogleStorageHelper.GOOGLE_APPLICATION_CREDENTIALS);
-        if (serviceAccountKeyFile != null && !"".equals(serviceAccountKeyFile)) {
-            return "google-storage://" + bucketName + "?serviceAccountKey=file:" + serviceAccountKeyFile + "&" + parameters;
-        }
+        //        if (GoogleStorageHelper.isRealAccount()) {
+        //            return "google-storage://" + bucketName + "?serviceAccountKey=file:" + GoogleStorageHelper.getAccountLocation() + "&" + parameters;
+        //        }
         return "google-storage://" + bucketName + "?" + parameters;
     }
 }

@@ -25,6 +25,8 @@ import com.google.api.client.util.GenericData;
 import com.google.api.services.storage.Storage;
 import com.google.api.services.storage.StorageRequest;
 import com.google.cloud.storage.Bucket;
+import io.quarkiverse.googlecloudservices.storage.runtime.StorageProducer;
+import io.quarkus.arc.deployment.UnremovableBeanBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
@@ -78,4 +80,7 @@ class GoogleStorageProcessor {
         return new IndexDependencyBuildItem("com.google.apis", "google-api-services-storage");
     }
 
+    UnremovableBeanBuildItem create() {
+        return UnremovableBeanBuildItem.beanTypes(StorageProducer.class);
+    }
 }

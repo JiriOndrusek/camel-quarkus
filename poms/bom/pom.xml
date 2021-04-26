@@ -5799,6 +5799,16 @@
                 <version>${quarkus-google-cloud.version}</version>
             </dependency>
             <dependency>
+                <groupId>io.quarkiverse.googlecloudservices</groupId>
+                <artifactId>quarkus-google-cloud-storage</artifactId>
+                <version>${quarkus-google-cloud.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.quarkiverse.googlecloudservices</groupId>
+                <artifactId>quarkus-google-cloud-storage-deployment</artifactId>
+                <version>${quarkus-google-cloud.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>io.quarkiverse.minio</groupId>
                 <artifactId>quarkus-minio</artifactId>
                 <version>${quarkiverse-minio.version}</version>

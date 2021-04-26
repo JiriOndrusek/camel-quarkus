@@ -16,12 +16,13 @@
  */
 package org.apache.camel.quarkus.component.google.storage.it;
 
+import org.eclipse.microprofile.config.ConfigProvider;
+
 public class GoogleStorageHelper {
 
-    public static final String GOOGLE_APPLICATION_CREDENTIALS = "GOOGLE_APPLICATION_CREDENTIALS";
+    public static String CONFIG_PROPERTY_REAL_ACCOUNT = GoogleStorageHelper.class.getCanonicalName() + "_real_acount";
 
     public static boolean isRealAccount() {
-        String serviceAccountKeyFile = System.getenv(GOOGLE_APPLICATION_CREDENTIALS);
-        return serviceAccountKeyFile != null && !"".equals(serviceAccountKeyFile);
+        return ConfigProvider.getConfig().getValue(CONFIG_PROPERTY_REAL_ACCOUNT, boolean.class);
     }
 }

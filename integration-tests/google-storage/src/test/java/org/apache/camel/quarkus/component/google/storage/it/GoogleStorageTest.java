@@ -34,7 +34,6 @@ import org.apache.camel.component.google.storage.GoogleCloudStorageOperations;
 import org.apache.camel.util.CollectionHelper;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.both;
@@ -52,11 +51,6 @@ class GoogleStorageTest {
     private static final String TEST_BUCKET3 = "camel_quarkus_test_bucket3";
     private static final String FILE_NAME_007 = "file007";
     private static final String FILE_NAME_006 = "file006";
-
-    @BeforeEach
-    public void beforeEach() {
-        RestAssured.given().get("/google-storage/loadComponent").then().statusCode(200);
-    }
 
     @AfterEach
     public void afterEach() {

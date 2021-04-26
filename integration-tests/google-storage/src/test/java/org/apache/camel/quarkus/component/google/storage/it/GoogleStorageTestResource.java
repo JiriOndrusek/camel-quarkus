@@ -45,6 +45,7 @@ public class GoogleStorageTestResource implements QuarkusTestResourceLifecycleMa
 
             return CollectionHelper.mapOf(
                     GoogleStorageResource.PARAM_PORT, container.getMappedPort(PORT).toString());
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

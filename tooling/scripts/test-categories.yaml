@@ -21,6 +21,7 @@ group-01:
   - git
   - infinispan
   - caffeine
+  - google-storage  
   - http
   - jsch
   - hazelcast
@@ -32,7 +33,6 @@ group-02:
   - elasticsearch-rest
   - google-bigquery
   - google-pubsub
-  - google-storage
   - grpc
   - pubnub
   - protobuf
