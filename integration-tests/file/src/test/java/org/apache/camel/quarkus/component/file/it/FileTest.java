@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -30,6 +31,7 @@ import io.restassured.path.json.JsonPath;
 import io.restassured.response.ValidatableResponse;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.camel.quarkus.component.file.it.FileResource.CONSUME_BATCH;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 
@@ -57,6 +59,40 @@ class FileTest {
                 .then()
                 .statusCode(200)
                 .body(equalTo(FILE_BODY));
+    }
+
+    @Test
+    public void batchConsumer() {
+        // Create 2 files
+        String fileName1 = RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .body(FILE_BODY + "1")
+                .post("/file/create/" + CONSUME_BATCH)
+                .then()
+                .statusCode(201)
+                .extract()
+                .body()
+                .asString();
+
+        String fileName2 = RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .body(FILE_BODY + "2")
+                .post("/file/create/" + CONSUME_BATCH)
+                .then()
+                .statusCode(201)
+                .extract()
+                .body()
+                .asString();
+
+        await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            List<Integer> records = RestAssured
+                    .get("/file/get2/")
+                    .then()
+                    .statusCode(200)
+                    .extract().as(List.class);
+
+            return records.size() == 2 && records.get(0) == 0 && records.get(1) == 1;
+        });
     }
 
     @Test

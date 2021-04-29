@@ -17,6 +17,8 @@
 package org.apache.camel.quarkus.component.file.it;
 
 import java.net.URI;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -29,19 +31,26 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.component.mock.MockEndpoint;
 
 @Path("/file")
 @ApplicationScoped
 public class FileResource {
+
+    public static String CONSUME_BATCH = "consumeBatch";
 
     @Inject
     ProducerTemplate producerTemplate;
 
     @Inject
     ConsumerTemplate consumerTemplate;
+
+    @Inject
+    CamelContext context;
 
     @Path("/get/{folder}/{name}")
     @GET
@@ -50,12 +59,26 @@ public class FileResource {
         return consumerTemplate.receiveBodyNoWait("file:target/" + folder + "?fileName=" + name, String.class);
     }
 
+    @Path("/get2")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Integer> getFile2() throws Exception {
+        MockEndpoint mockEndpoint = context.getEndpoint("mock:test", MockEndpoint.class);
+        context.getRouteController().startRoute(CONSUME_BATCH);
+        //        Thread.sleep(10000);
+        List<Integer> r = mockEndpoint.getExchanges().stream().map(e -> (Integer) e.getProperty(Exchange.BATCH_INDEX))
+                .collect(Collectors.toList());
+
+        return r;
+    }
+
     @Path("/create/{folder}")
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
     public Response createFile(@PathParam("folder") String folder, String content) throws Exception {
-        Exchange response = producerTemplate.request("file:target/" + folder, exchange -> exchange.getIn().setBody(content));
+        Exchange response = producerTemplate.request("file:target/" + folder + "?initialDelay=10",
+                exchange -> exchange.getIn().setBody(content));
         return Response
                 .created(new URI("https://camel.apache.org/"))
                 .entity(response.getMessage().getHeader(Exchange.FILE_NAME_PRODUCED))

@@ -20,6 +20,8 @@ import javax.enterprise.context.ApplicationScoped;
 
 import org.apache.camel.builder.RouteBuilder;
 
+import static org.apache.camel.quarkus.component.file.it.FileResource.CONSUME_BATCH;
+
 @ApplicationScoped
 public class FileRoutes extends RouteBuilder {
 
@@ -42,5 +44,12 @@ public class FileRoutes extends RouteBuilder {
 
         from("file://target/quartz?scheduler=quartz&scheduler.cron=0/1+*+*+*+*+?&repeatCount=0")
                 .to("file://target/quartz/out");
+
+        from("file://target/" + CONSUME_BATCH + "?"
+                + "initialDelay=0&delay=5")
+                        .id(CONSUME_BATCH)
+                        .noAutoStartup()
+                        .to("mock:test");
+
     }
 }
