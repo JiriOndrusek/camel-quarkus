@@ -47,8 +47,10 @@ public class FileRoutes extends RouteBuilder {
 
         from("file://target/" + CONSUME_BATCH + "?"
                 + "initialDelay=0&delay=5")
+
                         .id(CONSUME_BATCH)
                         .noAutoStartup()
+                        .convertBodyTo(String.class)
                         .to("mock:test");
 
     }

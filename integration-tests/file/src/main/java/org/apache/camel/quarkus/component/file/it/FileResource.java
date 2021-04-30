@@ -17,7 +17,9 @@
 package org.apache.camel.quarkus.component.file.it;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -59,17 +61,20 @@ public class FileResource {
         return consumerTemplate.receiveBodyNoWait("file:target/" + folder + "?fileName=" + name, String.class);
     }
 
-    @Path("/get2")
+    @Path("/getBatch")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Integer> getFile2() throws Exception {
+    public Map<String, Object> getBatch() throws Exception {
         MockEndpoint mockEndpoint = context.getEndpoint("mock:test", MockEndpoint.class);
-        context.getRouteController().startRoute(CONSUME_BATCH);
-        //        Thread.sleep(10000);
-        List<Integer> r = mockEndpoint.getExchanges().stream().map(e -> (Integer) e.getProperty(Exchange.BATCH_INDEX))
-                .collect(Collectors.toList());
 
-        return r;
+        context.getRouteController().startRoute(CONSUME_BATCH);
+
+        Map<String, Object> result = new HashMap<>();
+
+        mockEndpoint.getExchanges().stream().forEach(
+                e -> result.put(e.getIn().getBody(String.class), e.getProperty(Exchange.BATCH_INDEX)));
+
+        return result;
     }
 
     @Path("/create/{folder}")

@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -43,15 +44,7 @@ class FileTest {
     @Test
     public void file() {
         // Create a new file
-        String fileName = RestAssured.given()
-                .contentType(ContentType.TEXT)
-                .body(FILE_BODY)
-                .post("/file/create/in")
-                .then()
-                .statusCode(201)
-                .extract()
-                .body()
-                .asString();
+        String fileName = createFile(FILE_BODY, "/file/create/in");
 
         // Read the file
         RestAssured
@@ -61,37 +54,33 @@ class FileTest {
                 .body(equalTo(FILE_BODY));
     }
 
+    private String createFile(String content, String path) {
+        return RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .body(content)
+                .post(path)
+                .then()
+                .statusCode(201)
+                .extract()
+                .body()
+                .asString();
+    }
+
     @Test
     public void batchConsumer() {
         // Create 2 files
-        String fileName1 = RestAssured.given()
-                .contentType(ContentType.TEXT)
-                .body(FILE_BODY + "1")
-                .post("/file/create/" + CONSUME_BATCH)
-                .then()
-                .statusCode(201)
-                .extract()
-                .body()
-                .asString();
-
-        String fileName2 = RestAssured.given()
-                .contentType(ContentType.TEXT)
-                .body(FILE_BODY + "2")
-                .post("/file/create/" + CONSUME_BATCH)
-                .then()
-                .statusCode(201)
-                .extract()
-                .body()
-                .asString();
+        createFile(FILE_BODY + "1", "/file/create/" + CONSUME_BATCH);
+        createFile(FILE_BODY + "2", "/file/create/" + CONSUME_BATCH);
 
         await().atMost(10, TimeUnit.SECONDS).until(() -> {
-            List<Integer> records = RestAssured
-                    .get("/file/get2/")
+            Map<String, Object> records = RestAssured
+                    .get("/file/getBatch/")
                     .then()
                     .statusCode(200)
-                    .extract().as(List.class);
+                    .extract().as(Map.class);
 
-            return records.size() == 2 && records.get(0) == 0 && records.get(1) == 1;
+            return records.size() == 2 && records.keySet().contains(FILE_BODY + "1") && records.keySet().contains(FILE_BODY + "2")
+                    && records.values().contains(0) && records.values().contains(1);
         });
     }
 
@@ -143,15 +132,7 @@ class FileTest {
 
     @Test
     public void quartzSchedulerFilePollingConsumer() throws InterruptedException {
-        String fileName = RestAssured.given()
-                .contentType(ContentType.TEXT)
-                .body(FILE_BODY)
-                .post("/file/create/quartz")
-                .then()
-                .statusCode(201)
-                .extract()
-                .body()
-                .asString();
+        String fileName = createFile(FILE_BODY, "/file/create/quartz");
 
         String targetFileName = Paths.get(fileName).toFile().getName();
         await().atMost(10, TimeUnit.SECONDS).until(() -> {
