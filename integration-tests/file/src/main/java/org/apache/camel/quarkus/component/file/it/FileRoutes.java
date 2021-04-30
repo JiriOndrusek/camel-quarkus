@@ -46,12 +46,19 @@ public class FileRoutes extends RouteBuilder {
                 .to("file://target/quartz/out");
 
         from("file://target/" + CONSUME_BATCH + "?"
-                + "initialDelay=0&delay=5")
-
+                + "initialDelay=0&delay=100")
                         .id(CONSUME_BATCH)
                         .noAutoStartup()
                         .convertBodyTo(String.class)
                         .to("mock:test");
+
+      from("file://target/charset?initialDelay=0&delay=10&delete=true&charset=UTF-8")
+                        .convertBodyTo(String.class)
+                        .to("mock:charset");
+
+      from("file://target/charset2?initialDelay=0&delay=10&delete=true&charset=ISO-8859-1")
+                        .convertBodyTo(String.class)
+                        .to("mock:charset");
 
     }
 }

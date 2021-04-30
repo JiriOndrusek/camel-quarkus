@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.component.file.it;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,11 +36,13 @@ import org.junit.jupiter.api.Test;
 import static org.apache.camel.quarkus.component.file.it.FileResource.CONSUME_BATCH;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.IsNot.not;
 
 @QuarkusTest
 class FileTest {
 
     private static final String FILE_BODY = "Hello Camel Quarkus";
+    private static final String FILE_BODY_UTF8 = "Hello World \u4f60\u597d";
 
     @Test
     public void file() {
@@ -48,22 +51,50 @@ class FileTest {
 
         // Read the file
         RestAssured
-                .get("/file/get/in/" + Paths.get(fileName).getFileName())
+                .post("/file/get/in/" + Paths.get(fileName).getFileName())
                 .then()
                 .statusCode(200)
                 .body(equalTo(FILE_BODY));
     }
 
-    private String createFile(String content, String path) {
-        return RestAssured.given()
-                .contentType(ContentType.TEXT)
-                .body(content)
-                .post(path)
-                .then()
-                .statusCode(201)
-                .extract()
-                .body()
-                .asString();
+    @Test
+    public void consumerCharset() throws UnsupportedEncodingException {
+        // Create a new file
+        createFile(FILE_BODY_UTF8, "/file/create/charset", "UTF-8");
+//        String fileName = createFile(FILE_BODY_UTF8, "/file/create/in", "UTF-8");
+//
+//        // Read the file
+//        RestAssured
+//                .post("/file/get/in/" + Paths.get(fileName).getFileName())
+//                .then()
+//                .statusCode(200)
+//                .body(equalTo(FILE_BODY_UTF8));
+////
+        await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            // Read the file
+            String records = RestAssured
+                    .get("/file/getFromMock/charset")
+                    .then()
+                    .statusCode(200)
+                    .body(equalTo(FILE_BODY_UTF8))
+                    .extract().asString();
+
+            return records != null && !records.equals("");
+        });
+
+        createFile(FILE_BODY_UTF8, "/file/create/charset2", "UTF-8");
+
+        await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            // Read the file
+            String records = RestAssured
+                    .get("/file/getFromMock/charset2")
+                    .then()
+                    .statusCode(200)
+                    .body(not(equalTo(FILE_BODY_UTF8)))
+                    .extract().asString();
+
+            return records != null && !records.equals("");
+        });
     }
 
     @Test
@@ -124,8 +155,8 @@ class FileTest {
         Thread.sleep(10_000L);
 
         // Read the file that should not be there
-        RestAssured
-                .get("/file/get/{folder}/{name}", FileRoutes.READ_LOCK_OUT, Paths.get(fileName).getFileName())
+        RestAssured.given()
+                .post("/file/get/{folder}/{name}", FileRoutes.READ_LOCK_OUT, Paths.get(fileName).getFileName())
                 .then()
                 .statusCode(204);
     }
@@ -140,11 +171,35 @@ class FileTest {
         });
 
         RestAssured
-                .get("/file/get/{folder}/{name}", "quartz/out", targetFileName)
+                .given()
+                .post("/file/get/{folder}/{name}", "quartz/out", targetFileName)
                 .then()
                 .statusCode(200)
                 .body(equalTo(FILE_BODY));
     }
+
+    private static String createFile(String content, String path) {
+        return createFile(content.getBytes(), path, null);
+    }
+
+    private static String createFile(String content, String path, String charset) throws UnsupportedEncodingException {
+        return createFile(content.getBytes(), path, charset);
+    }
+
+    private static String createFile(byte[] content, String path, String charset) {
+        return RestAssured.given()
+                .urlEncodingEnabled(true)
+                .queryParam("charset", charset)
+                .contentType(ContentType.TEXT)
+                .body(content)
+                .post(path)
+                .then()
+                .statusCode(201)
+                .extract()
+                .body()
+                .asString();
+    }
+
 
     private static void awaitEvent(final Path dir, final Path file, final String type) {
         await()

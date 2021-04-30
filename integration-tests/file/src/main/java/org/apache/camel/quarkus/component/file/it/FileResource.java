@@ -30,6 +30,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -55,10 +56,17 @@ public class FileResource {
     CamelContext context;
 
     @Path("/get/{folder}/{name}")
-    @GET
+    @POST
     @Produces(MediaType.TEXT_PLAIN)
-    public String getFile(@PathParam("folder") String folder, @PathParam("name") String name) throws Exception {
-        return consumerTemplate.receiveBodyNoWait("file:target/" + folder + "?fileName=" + name, String.class);
+    public String getFile(@PathParam("folder") String folder, @PathParam("name") String name, @QueryParam("charset") String charset) throws Exception {
+        StringBuilder url = new StringBuilder(String.format("file:target/%s?fileName=%s", folder, name));
+        if(charset != null && !charset.equals("")) {
+            url.append("&charset=").append(charset);
+        }
+        String s = consumerTemplate.receiveBodyNoWait(url.toString(), String.class);
+        System.out.println(s);
+
+        return s;
     }
 
     @Path("/getBatch")
@@ -77,12 +85,27 @@ public class FileResource {
         return result;
     }
 
+    @Path("/getFromMock/{folder}")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String getFromMock(@PathParam("folder") String folder) throws Exception {
+        MockEndpoint mockEndpoint = context.getEndpoint("mock:charset", MockEndpoint.class);
+
+        context.getRouteController().startRoute(CONSUME_BATCH);
+
+        return mockEndpoint.getExchanges().stream().map(e -> e.getIn().getBody(String.class)).collect(Collectors.joining("; "));
+    }
+
     @Path("/create/{folder}")
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response createFile(@PathParam("folder") String folder, String content) throws Exception {
-        Exchange response = producerTemplate.request("file:target/" + folder + "?initialDelay=10",
+    public Response createFile(@PathParam("folder") String folder, byte[] content, @QueryParam("charset") String charset) throws Exception {
+        StringBuilder url = new StringBuilder("file:target/" + folder + "?initialDelay=10");
+        if(charset != null && !charset.equals("")) {
+            url.append("&charset=").append(charset);
+        }
+        Exchange response = producerTemplate.request(url.toString(),
                 exchange -> exchange.getIn().setBody(content));
         return Response
                 .created(new URI("https://camel.apache.org/"))
