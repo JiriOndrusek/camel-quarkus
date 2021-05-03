@@ -19,6 +19,8 @@ package org.apache.camel.quarkus.component.file.it;
 import javax.enterprise.context.ApplicationScoped;
 
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.file.GenericFile;
+import org.apache.camel.component.file.GenericFileFilter;
 
 import static org.apache.camel.quarkus.component.file.it.FileResource.CONSUME_BATCH;
 
@@ -60,8 +62,23 @@ public class FileRoutes extends RouteBuilder {
                 .convertBodyTo(String.class)
                 .to("mock:charsetISO");
 
-        from(("file://target/idempotent?idempotent=true&move=done/${file:name}&initialDelay=0&delay=10"))
+        from("file://target/idempotent?idempotent=true&move=done/${file:name}&initialDelay=0&delay=10")
                 .convertBodyTo(String.class).to("mock:idempotent");
 
+        bindToRegistry("myFilter", new MyFileFilter<>());
+        from(("file://target/filter?initialDelay=0&delay=10&filter=#myFilter"))
+                .convertBodyTo(String.class).to("mock:filter");
+    }
+
+    public class MyFileFilter<T> implements GenericFileFilter<T> {
+        @Override
+        public boolean accept(GenericFile<T> file) {
+            // we want all directories
+            if (file.isDirectory()) {
+                return true;
+            }
+            // we dont accept any files starting with skip in the name
+            return !file.getFileName().startsWith("skip");
+        }
     }
 }

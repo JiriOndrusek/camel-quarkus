@@ -25,6 +25,7 @@ import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -79,8 +80,8 @@ class FileTest {
     @Test
     public void consumerCharset() throws UnsupportedEncodingException {
         // Create a new file
-        createFile(FILE_BODY_UTF8, "/file/create/charsetUTF8", "UTF-8");
-        createFile(FILE_BODY_UTF8, "/file/create/charsetISO", "UTF-8");
+        createFile(FILE_BODY_UTF8, "/file/create/charsetUTF8", "UTF-8", null);
+        createFile(FILE_BODY_UTF8, "/file/create/charsetISO", "UTF-8", null);
 
         await().atMost(10, TimeUnit.SECONDS).until(() -> {
             // Read the file
@@ -126,7 +127,7 @@ class FileTest {
         });
     }
 
-    //    @Test
+    @Test
     public void idempotent() throws IOException {
         // Create a new file
         String fileName01 = createFile(FILE_CONTENT_01, "/file/create/idempotent");
@@ -158,6 +159,26 @@ class FileTest {
             // Read the file
             String records = RestAssured
                     .get("/file/getFromMock/idempotent")
+                    .then()
+                    .statusCode(200)
+                    .body(equalTo(FILE_CONTENT_02))
+                    .extract().asString();
+
+            return records != null && !records.equals("");
+        });
+    }
+
+    @Test
+    public void filter() throws IOException {
+        String fileName = createFile(FILE_CONTENT_01, "/file/create/filter", null, "skip_" + UUID.randomUUID().toString());
+        createFile(FILE_CONTENT_02, "/file/create/filter");
+
+        pathsToDelete.add(Paths.get(fileName));
+
+        await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            // Read the file
+            String records = RestAssured
+                    .get("/file/getFromMock/filter")
                     .then()
                     .statusCode(200)
                     .body(equalTo(FILE_CONTENT_02))
@@ -231,19 +252,21 @@ class FileTest {
     }
 
     private static String createFile(String content, String path) {
-        return createFile(content.getBytes(), path, null);
+        return createFile(content.getBytes(), path, null, null);
     }
 
-    private static String createFile(String content, String path, String charset) throws UnsupportedEncodingException {
-        return createFile(content.getBytes(), path, charset);
+    private static String createFile(String content, String path, String charset, String prefix)
+            throws UnsupportedEncodingException {
+        return createFile(content.getBytes(), path, charset, prefix);
     }
 
-    private static String createFile(byte[] content, String path, String charset) {
+    private static String createFile(byte[] content, String path, String charset, String fileName) {
         return RestAssured.given()
                 .urlEncodingEnabled(true)
                 .queryParam("charset", charset)
                 .contentType(ContentType.TEXT)
                 .body(content)
+                .queryParam("fileName", fileName)
                 .post(path)
                 .then()
                 .statusCode(201)

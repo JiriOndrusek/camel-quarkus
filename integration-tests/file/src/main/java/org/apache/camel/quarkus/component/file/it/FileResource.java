@@ -108,14 +108,20 @@ public class FileResource {
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response createFile(@PathParam("folder") String folder, byte[] content, @QueryParam("charset") String charset)
+    public Response createFile(@PathParam("folder") String folder, byte[] content, @QueryParam("charset") String charset,
+            @QueryParam("fileName") String fileName)
             throws Exception {
         StringBuilder url = new StringBuilder("file:target/" + folder + "?initialDelay=10");
         if (charset != null && !charset.equals("")) {
             url.append("&charset=").append(charset);
         }
         Exchange response = producerTemplate.request(url.toString(),
-                exchange -> exchange.getIn().setBody(content));
+                exchange -> {
+                    exchange.getIn().setBody(content);
+                    if (fileName != null && !fileName.equals("")) {
+                        exchange.getIn().setHeader(Exchange.FILE_NAME, fileName);
+                    }
+                });
         return Response
                 .created(new URI("https://camel.apache.org/"))
                 .entity(response.getMessage().getHeader(Exchange.FILE_NAME_PRODUCED))
