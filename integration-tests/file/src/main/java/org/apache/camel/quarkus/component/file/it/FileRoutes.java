@@ -52,13 +52,15 @@ public class FileRoutes extends RouteBuilder {
                         .convertBodyTo(String.class)
                         .to("mock:test");
 
-      from("file://target/charset?initialDelay=0&delay=10&delete=true&charset=UTF-8")
-                        .convertBodyTo(String.class)
-                        .to("mock:charset");
+          from("file://target/charsetUTF8?initialDelay=0&delay=10&delete=true&charset=UTF-8")
+                            .convertBodyTo(String.class)
+                            .to("mock:charsetUTF8");
 
-      from("file://target/charset2?initialDelay=0&delay=10&delete=true&charset=ISO-8859-1")
-                        .convertBodyTo(String.class)
-                        .to("mock:charset");
+          from("file://target/charsetISO?initialDelay=0&delay=10&delete=true&charset=ISO-8859-1")
+                            .convertBodyTo(String.class)
+                            .to("mock:charsetISO");
+
+
 
     }
 }

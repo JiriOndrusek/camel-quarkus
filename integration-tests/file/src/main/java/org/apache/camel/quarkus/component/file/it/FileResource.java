@@ -89,7 +89,7 @@ public class FileResource {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String getFromMock(@PathParam("folder") String folder) throws Exception {
-        MockEndpoint mockEndpoint = context.getEndpoint("mock:charset", MockEndpoint.class);
+        MockEndpoint mockEndpoint = context.getEndpoint("mock:"  + folder, MockEndpoint.class);
 
         context.getRouteController().startRoute(CONSUME_BATCH);
 

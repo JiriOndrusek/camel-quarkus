@@ -60,20 +60,13 @@ class FileTest {
     @Test
     public void consumerCharset() throws UnsupportedEncodingException {
         // Create a new file
-        createFile(FILE_BODY_UTF8, "/file/create/charset", "UTF-8");
-//        String fileName = createFile(FILE_BODY_UTF8, "/file/create/in", "UTF-8");
-//
-//        // Read the file
-//        RestAssured
-//                .post("/file/get/in/" + Paths.get(fileName).getFileName())
-//                .then()
-//                .statusCode(200)
-//                .body(equalTo(FILE_BODY_UTF8));
-////
+        createFile(FILE_BODY_UTF8, "/file/create/charsetUTF8", "UTF-8");
+        createFile(FILE_BODY_UTF8, "/file/create/charsetISO", "UTF-8");
+
         await().atMost(10, TimeUnit.SECONDS).until(() -> {
             // Read the file
             String records = RestAssured
-                    .get("/file/getFromMock/charset")
+                    .get("/file/getFromMock/charsetUTF8")
                     .then()
                     .statusCode(200)
                     .body(equalTo(FILE_BODY_UTF8))
@@ -82,12 +75,10 @@ class FileTest {
             return records != null && !records.equals("");
         });
 
-        createFile(FILE_BODY_UTF8, "/file/create/charset2", "UTF-8");
-
         await().atMost(10, TimeUnit.SECONDS).until(() -> {
-            // Read the file
+            // File content read as ISO-8859-1 has to have different content (because file contains some unknown characters)
             String records = RestAssured
-                    .get("/file/getFromMock/charset2")
+                    .get("/file/getFromMock/charsetISO")
                     .then()
                     .statusCode(200)
                     .body(not(equalTo(FILE_BODY_UTF8)))
