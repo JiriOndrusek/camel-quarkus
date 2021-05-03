@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +32,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.ValidatableResponse;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.camel.quarkus.component.file.it.FileResource.CONSUME_BATCH;
@@ -42,7 +44,24 @@ import static org.hamcrest.core.IsNot.not;
 class FileTest {
 
     private static final String FILE_BODY = "Hello Camel Quarkus";
+    private static final String FILE_CONTENT_01 = "Hello1";
+    private static final String FILE_CONTENT_02 = "Hello2";
     private static final String FILE_BODY_UTF8 = "Hello World \u4f60\u597d";
+
+    private List<Path> pathsToDelete = new LinkedList<>();
+
+    @AfterEach
+    public void afterEach() {
+        pathsToDelete.stream().forEach(p -> {
+            try {
+                Files.delete(p);
+            } catch (IOException e) {
+                //ignore
+            }
+        });
+
+        pathsToDelete.clear();
+    }
 
     @Test
     public void file() {
@@ -91,8 +110,8 @@ class FileTest {
     @Test
     public void batchConsumer() {
         // Create 2 files
-        createFile(FILE_BODY + "1", "/file/create/" + CONSUME_BATCH);
-        createFile(FILE_BODY + "2", "/file/create/" + CONSUME_BATCH);
+        createFile(FILE_CONTENT_01, "/file/create/" + CONSUME_BATCH);
+        createFile(FILE_CONTENT_02, "/file/create/" + CONSUME_BATCH);
 
         await().atMost(10, TimeUnit.SECONDS).until(() -> {
             Map<String, Object> records = RestAssured
@@ -101,8 +120,50 @@ class FileTest {
                     .statusCode(200)
                     .extract().as(Map.class);
 
-            return records.size() == 2 && records.keySet().contains(FILE_BODY + "1") && records.keySet().contains(FILE_BODY + "2")
+            return records.size() == 2 && records.keySet().contains(FILE_CONTENT_01)
+                    && records.keySet().contains(FILE_CONTENT_02)
                     && records.values().contains(0) && records.values().contains(1);
+        });
+    }
+
+    //    @Test
+    public void idempotent() throws IOException {
+        // Create a new file
+        String fileName01 = createFile(FILE_CONTENT_01, "/file/create/idempotent");
+
+        await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            // Read the file
+            String records = RestAssured
+                    .get("/file/getFromMock/idempotent")
+                    .then()
+                    .statusCode(200)
+                    .body(equalTo(FILE_CONTENT_01))
+                    .extract().asString();
+
+            return records != null && !records.equals("");
+        });
+
+        // move file back
+        Path donePath = Paths.get(fileName01.replaceFirst("target/idempotent", "target/idempotent/done"));
+        Path targetPath = Paths.get(fileName01);
+        Files.move(donePath, targetPath);
+        //register file for deletion after tests
+        pathsToDelete.add(targetPath);
+
+        //create another file, to receive only this one in the next check
+        createFile(FILE_CONTENT_02, "/file/create/idempotent");
+
+        //there should be no file in mock
+        await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            // Read the file
+            String records = RestAssured
+                    .get("/file/getFromMock/idempotent")
+                    .then()
+                    .statusCode(200)
+                    .body(equalTo(FILE_CONTENT_02))
+                    .extract().asString();
+
+            return records != null && !records.equals("");
         });
     }
 
@@ -190,7 +251,6 @@ class FileTest {
                 .body()
                 .asString();
     }
-
 
     private static void awaitEvent(final Path dir, final Path file, final String type) {
         await()

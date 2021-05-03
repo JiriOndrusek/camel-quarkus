@@ -18,7 +18,6 @@ package org.apache.camel.quarkus.component.file.it;
 
 import java.net.URI;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -58,9 +57,10 @@ public class FileResource {
     @Path("/get/{folder}/{name}")
     @POST
     @Produces(MediaType.TEXT_PLAIN)
-    public String getFile(@PathParam("folder") String folder, @PathParam("name") String name, @QueryParam("charset") String charset) throws Exception {
+    public String getFile(@PathParam("folder") String folder, @PathParam("name") String name,
+            @QueryParam("charset") String charset) throws Exception {
         StringBuilder url = new StringBuilder(String.format("file:target/%s?fileName=%s", folder, name));
-        if(charset != null && !charset.equals("")) {
+        if (charset != null && !charset.equals("")) {
             url.append("&charset=").append(charset);
         }
         String s = consumerTemplate.receiveBodyNoWait(url.toString(), String.class);
@@ -73,7 +73,7 @@ public class FileResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, Object> getBatch() throws Exception {
-        MockEndpoint mockEndpoint = context.getEndpoint("mock:test", MockEndpoint.class);
+        MockEndpoint mockEndpoint = context.getEndpoint("mock:" + CONSUME_BATCH, MockEndpoint.class);
 
         context.getRouteController().startRoute(CONSUME_BATCH);
 
@@ -89,20 +89,29 @@ public class FileResource {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String getFromMock(@PathParam("folder") String folder) throws Exception {
-        MockEndpoint mockEndpoint = context.getEndpoint("mock:"  + folder, MockEndpoint.class);
+        MockEndpoint mockEndpoint = context.getEndpoint("mock:" + folder, MockEndpoint.class);
 
         context.getRouteController().startRoute(CONSUME_BATCH);
 
-        return mockEndpoint.getExchanges().stream().map(e -> e.getIn().getBody(String.class)).collect(Collectors.joining("; "));
+        //wait a moment for route to start
+        Thread.sleep(500);
+
+        String result = mockEndpoint.getExchanges().stream().map(e -> e.getIn().getBody(String.class))
+                .collect(Collectors.joining("; "));
+
+        mockEndpoint.reset();
+
+        return result;
     }
 
     @Path("/create/{folder}")
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response createFile(@PathParam("folder") String folder, byte[] content, @QueryParam("charset") String charset) throws Exception {
+    public Response createFile(@PathParam("folder") String folder, byte[] content, @QueryParam("charset") String charset)
+            throws Exception {
         StringBuilder url = new StringBuilder("file:target/" + folder + "?initialDelay=10");
-        if(charset != null && !charset.equals("")) {
+        if (charset != null && !charset.equals("")) {
             url.append("&charset=").append(charset);
         }
         Exchange response = producerTemplate.request(url.toString(),

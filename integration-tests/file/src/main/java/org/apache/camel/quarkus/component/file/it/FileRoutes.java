@@ -50,17 +50,18 @@ public class FileRoutes extends RouteBuilder {
                         .id(CONSUME_BATCH)
                         .noAutoStartup()
                         .convertBodyTo(String.class)
-                        .to("mock:test");
+                        .to("mock:" + CONSUME_BATCH);
 
-          from("file://target/charsetUTF8?initialDelay=0&delay=10&delete=true&charset=UTF-8")
-                            .convertBodyTo(String.class)
-                            .to("mock:charsetUTF8");
+        from("file://target/charsetUTF8?initialDelay=0&delay=10&delete=true&charset=UTF-8")
+                .convertBodyTo(String.class)
+                .to("mock:charsetUTF8");
 
-          from("file://target/charsetISO?initialDelay=0&delay=10&delete=true&charset=ISO-8859-1")
-                            .convertBodyTo(String.class)
-                            .to("mock:charsetISO");
+        from("file://target/charsetISO?initialDelay=0&delay=10&delete=true&charset=ISO-8859-1")
+                .convertBodyTo(String.class)
+                .to("mock:charsetISO");
 
-
+        from(("file://target/idempotent?idempotent=true&move=done/${file:name}&initialDelay=0&delay=10"))
+                .convertBodyTo(String.class).to("mock:idempotent");
 
     }
 }
