@@ -47,6 +47,7 @@ import org.apache.camel.catalog.RuntimeCamelCatalog;
 import org.apache.camel.component.log.LogComponent;
 import org.apache.camel.impl.engine.DefaultHeadersMapFactory;
 import org.apache.camel.model.ModelCamelContext;
+import org.apache.camel.quarkus.it.support.typeconverter.MyString;
 import org.apache.camel.spi.Registry;
 import org.apache.camel.support.LRUCacheFactory;
 import org.apache.camel.support.processor.DefaultExchangeFormatter;
@@ -272,6 +273,13 @@ public class CoreResource {
     @Produces(MediaType.TEXT_PLAIN)
     public boolean startupStepRecorder() {
         return context.adapt(ExtendedCamelContext.class).getStartupStepRecorder() instanceof DefaultStartupStepRecorder;
+    }
+
+    @Path("/convert/{value}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public MyString convert(@PathParam("value") String value) {
+        return context.getTypeConverter().convertTo(MyString.class, value);
     }
 
 }

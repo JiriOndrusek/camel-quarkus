@@ -19,6 +19,7 @@ package org.apache.camel.quarkus.it.support.typeconverter.deployment;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
+import org.apache.camel.quarkus.core.deployment.spi.CamelRegistryBuildItem;
 import org.apache.camel.quarkus.core.deployment.spi.CamelTypeConverterLoaderBuildItem;
 import org.apache.camel.quarkus.it.support.typeconverter.CustomTypeConverterRecorder;
 
@@ -28,4 +29,12 @@ public class CustomTypeConverterBuildStep {
     CamelTypeConverterLoaderBuildItem typeConverterLoader(CustomTypeConverterRecorder recorder) {
         return new CamelTypeConverterLoaderBuildItem(recorder.createTypeConverterLoader());
     }
+
+    @Record(ExecutionTime.STATIC_INIT)
+    @BuildStep
+    void bindMyStringConverter(CustomTypeConverterRecorder recorder,
+            CamelRegistryBuildItem registryBuildItem) {
+        recorder.bindMyStringConverter(registryBuildItem.getRegistry());
+    }
+
 }

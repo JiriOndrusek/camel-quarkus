@@ -129,4 +129,13 @@ public class CoreTest {
         RestAssured.when().get("/test/startup-step-recorder").then().body(is("true"));
     }
 
+    @Test
+    void testConverterFromRegistery() {
+        RestAssured.when()
+                .get("/test/convert/{value}", "Sheldon")
+                .then()
+                .statusCode(200)
+                .body("value", is("Sheldon"), "formattedValue", is("<tag>Sheldon</tag>"));
+    }
+
 }
