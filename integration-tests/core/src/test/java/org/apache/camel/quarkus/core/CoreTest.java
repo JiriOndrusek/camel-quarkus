@@ -133,6 +133,15 @@ public class CoreTest {
     }
 
     @Test
+    void testConverterFromRegistery() {
+        RestAssured.when()
+                .get("/test/convert/{value}", "Sheldon")
+                .then()
+                .statusCode(200)
+                .body("value", is("Sheldon"), "formattedValue", is("<tag>Sheldon</tag>"));
+    }
+
+    @Test
     void testConverterFromAnnotation() {
         RestAssured.given()
                 .contentType(ContentType.TEXT).body("a:b")
