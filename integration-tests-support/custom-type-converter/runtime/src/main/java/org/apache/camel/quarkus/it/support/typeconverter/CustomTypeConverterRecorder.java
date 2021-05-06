@@ -31,4 +31,25 @@ public class CustomTypeConverterRecorder {
         registry.getValue().bind("myStringConverter", new MyStringConverterLoader());
     }
 
+    //    public void bindCustomConverter(RuntimeValue<TypeConverterRegistry> registry, String className) {
+    //        try {
+    //            new AnnotationTypeConverterLoader(null).loadConverterMethods(registry.getValue(), Class.forName(className));
+    //        } catch (ClassNotFoundException e) {
+    //            e.printStackTrace();
+    //        }
+    //        ////        try {
+    //        //            return new RuntimeValue<>( registry ->
+    //        //                    registry.addTypeConverter(fromType, toType, new SimpleTypeConverter(true, (type, exchange, value) -> {
+    //        //                        Object converter = method.getDeclaringClass().getDeclaredConstructor().newInstance();
+    //        //                        return method.invoke(converter, fromType, value);
+    //        //                    })));
+    //        //
+    //        ////            registry.getValue().bind("myStringConverter" + className,
+    //        ////                    Class.forName(className).getDeclaredConstructor().newInstance());
+    //        ////        } catch (Exception e) {
+    //        ////            e.printStackTrace();
+    //        ////        }
+    //        ////        return null
+    //    }
+
 }

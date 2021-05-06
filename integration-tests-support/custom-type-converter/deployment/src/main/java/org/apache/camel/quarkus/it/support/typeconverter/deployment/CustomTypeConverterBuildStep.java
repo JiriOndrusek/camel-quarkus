@@ -37,4 +37,63 @@ public class CustomTypeConverterBuildStep {
         recorder.bindMyStringConverter(registryBuildItem.getRegistry());
     }
 
+    //    //    @BuildStep //todo try to use CamelTypeConverterLoaderBuildItem
+    //    //    ReflectiveClassBuildItem registerForReflection() {
+    //    //        return new ReflectiveClassBuildItem(false, false, TypeConverter.class.getName());
+    //    //    }
+    //
+    //    @Record(ExecutionTime.STATIC_INIT)
+    //    @BuildStep
+    //    void registerForReflection(CustomTypeConverterRecorder recorder,
+    //            CombinedIndexBuildItem combinedIndex,
+    //            CamelTypeConverterRegistryBuildItem camelTypeConverterRegistryBuildItem) {
+    //        IndexView index = combinedIndex.getIndex();
+    //
+    //        Set<ClassInfo> converterClasses = new HashSet<>();
+    //        Collection<AnnotationInstance> annotations = index
+    //                .getAnnotations(DotName.createSimple(Converter.class.getName()));
+    //        for (AnnotationInstance annotation : annotations) {
+    //            if (annotation.target().kind() == AnnotationTarget.Kind.CLASS) {
+    //                recorder.bindCustomConverter(camelTypeConverterRegistryBuildItem.getRegistry(),
+    //                        annotation.target().asClass().name().toString());
+    //            }
+    //            //            if (annotation.target().kind() == AnnotationTarget.Kind.CLASS) {
+    //            //                System.out.println(
+    //            //                        ">>>>> class: " + annotation.target().asClass().name().toString());
+    //            //                converterClasses.add(annotation.target().asClass());
+    //            //                continue;
+    //            //            }
+    //            //
+    //            //            if (annotation.target().kind() == AnnotationTarget.Kind.METHOD && converterClasses.contains( annotation.target().asMethod().declaringClass())) {
+    //            //                System.out.println(
+    //            //                        ">>>>> method: " + annotation.target().asMethod().name());
+    //            //                Class clazz = Class.forName(annotation.target().asMethod().declaringClass().name().toString());
+    //            //                annotation.target().asMethod().mename(), annotation.target().asMethod().p)
+    //            //
+    //            //                return new CamelTypeConverterLoaderBuildItem(
+    //            //                        annotation.target().asMethod().
+    //            //                     recorder.bindCustomConverter()
+    //            //                );
+    //            //            }
+    //            //            if (annotation.target().kind() == AnnotationTarget.Kind.CLASS) {
+    //            //                String className = annotation.target().asClass().name().toString();
+    //            //
+    //            //                reflectiveClasses.produce(new ReflectiveClassBuildItem(false, false, className));
+    //            //                //                typeConverterLoaders
+    //            //                //                        .produce(new CamelTypeConverterLoaderBuildItem(new RuntimeValue<TypeConverterLoader>(registry -> {
+    //            //                //                            try {
+    //            //                //                                registry.addTypeConverter(MyString.class, String.class,
+    //            //                //                                        (TypeConverter) Class.forName(className).getDeclaredConstructor().newInstance());
+    //            //                //                            } catch (Exception e) {
+    //            //                //                                e.printStackTrace();
+    //            //                //                            }
+    //            //                //                        })));
+    //            //
+    //            //                //                typeConverterLoaders
+    //            //                //                        .produce(new CamelTypeConverterLoaderBuildItem(new RuntimeValue<>(new MyStringConverterLoader())));
+    //            //
+    //            //                recorder.bindCustomConverter(className, registryBuildItem.getRegistry());
+    //            //            }
+    //        }
+    //    }
 }

@@ -282,4 +282,11 @@ public class CoreResource {
         return context.getTypeConverter().convertTo(MyString.class, value);
     }
 
+    @Path("/convertAnnotation/{value}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public MyString2 convertAnotation(@PathParam("value") String value) {
+        return context.getTypeConverter().convertTo(MyString2.class, value);
+    }
+
 }

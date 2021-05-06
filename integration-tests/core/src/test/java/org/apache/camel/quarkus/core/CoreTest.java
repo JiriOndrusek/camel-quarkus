@@ -138,4 +138,13 @@ public class CoreTest {
                 .body("value", is("Sheldon"), "formattedValue", is("<tag>Sheldon</tag>"));
     }
 
+    @Test
+    void testConverterFromAnnotation() {
+        RestAssured.when()
+                .get("/test/convertAnnotation/{value}", "Sheldon")
+                .then()
+                .statusCode(200)
+                .body("value", is("Sheldon"), "formattedValue", is("<myString2>Sheldon</myString2>"));
+    }
+
 }
