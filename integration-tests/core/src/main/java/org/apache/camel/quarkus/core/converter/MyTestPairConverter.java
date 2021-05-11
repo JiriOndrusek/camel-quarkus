@@ -19,13 +19,13 @@ package org.apache.camel.quarkus.core.converter;
 import org.apache.camel.Converter;
 
 @Converter
-public class AnnotatedMyPairConverter {
+public class MyTestPairConverter {
 
     @Converter(allowNull = true)
-    public static AnnotatedMyPair toMyPair(String s) {
+    public static MyTestPair toMyPair(String s) {
         if ("null".equals(s)) {
             return null;
         }
-        return new AnnotatedMyPair(s);
+        return new MyTestPair(s);
     }
 }

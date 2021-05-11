@@ -49,7 +49,7 @@ import org.apache.camel.catalog.RuntimeCamelCatalog;
 import org.apache.camel.component.log.LogComponent;
 import org.apache.camel.impl.engine.DefaultHeadersMapFactory;
 import org.apache.camel.model.ModelCamelContext;
-import org.apache.camel.quarkus.core.converter.AnnotatedMyPair;
+import org.apache.camel.quarkus.core.converter.MyTestPair;
 import org.apache.camel.quarkus.it.support.typeconverter.pairs.MyBulk1Pair;
 import org.apache.camel.quarkus.it.support.typeconverter.pairs.MyBulk2Pair;
 import org.apache.camel.quarkus.it.support.typeconverter.pairs.MyLoaderPair;
@@ -289,14 +289,14 @@ public class CoreResource {
         return context.getTypeConverter().convertTo(MyRegistryPair.class, input);
     }
 
-    @Path("/converter/annotatedMyPair")
+    @Path("/converter/myTestPair")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public AnnotatedMyPair fromStringToAnnotatedMyPair(String input) {
-        return context.getTypeConverter().convertTo(AnnotatedMyPair.class, input);
+    public MyTestPair fromStringToMyTestPair(String input) {
+        return context.getTypeConverter().convertTo(MyTestPair.class, input);
     }
 
-    @Path("/converter/loaderPair")
+    @Path("/converter/myLoaderPair")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public MyLoaderPair fromMyLoaderPair(String input) {

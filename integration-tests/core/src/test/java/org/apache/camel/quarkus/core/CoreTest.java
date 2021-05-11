@@ -133,26 +133,16 @@ public class CoreTest {
     }
 
     @Test
-    void testConverterFromRegistery() {
-        RestAssured.given()
-                .contentType(ContentType.TEXT).body("a:b")
-                .accept(MediaType.APPLICATION_JSON)
-                .post("/test/converter/myRegistryPair")
-                .then()
-                .statusCode(200)
-                .body("key", is("registry_a"), "val", is("b"));
+    void testConverterFromRegistry() {
+        //converter from loader which is present in registry
+        testConvereter("/test/converter/myRegistryPair", "registry_a");
 
     }
 
     @Test
     void testConverterFromAnnotation() {
-        RestAssured.given()
-                .contentType(ContentType.TEXT).body("a:b")
-                .accept(MediaType.APPLICATION_JSON)
-                .post("/test/converter/annotatedMyPair")
-                .then()
-                .statusCode(200)
-                .body("key", is("annotated_a"), "val", is("b"));
+        //converter with annotation present in this module
+        testConvereter("/test/converter/myTestPair", "test_a");
     }
 
     @Test
@@ -162,7 +152,7 @@ public class CoreTest {
         RestAssured.given()
                 .contentType(ContentType.TEXT).body("null")
                 .accept(MediaType.APPLICATION_JSON)
-                .post("/test/converter/annotatedMyPair")
+                .post("/test/converter/myTestPair")
                 .then()
                 .statusCode(204);
 
@@ -172,33 +162,16 @@ public class CoreTest {
     }
 
     @Test
-    void testConverterFromAnnotationLoader() {
-        RestAssured.given()
-                .contentType(ContentType.TEXT).body("a:b")
-                .accept(MediaType.APPLICATION_JSON)
-                .post("/test/converter/annotatedMyPair")
-                .then()
-                .statusCode(200)
-                .body("key", is("annotated_a"), "val", is("b"));
+    void testBulkConverters() {
+        //converters generated with @Converter(generateBulkLoader = true)
+        testConvereter("/test/converter/myBulk1Pair", "bulk1_a");
+        testConvereter("/test/converter/myBulk2Pair", "bulk2_a");
     }
 
     @Test
-    void testBulkConverters() {
-        RestAssured.given()
-                .contentType(ContentType.TEXT).body("a:b")
-                .accept(MediaType.APPLICATION_JSON)
-                .post("/test/converter/myBulk1Pair")
-                .then()
-                .statusCode(200)
-                .body("key", is("bulk1_a"), "val", is("b"));
-
-        RestAssured.given()
-                .contentType(ContentType.TEXT).body("a:b")
-                .accept(MediaType.APPLICATION_JSON)
-                .post("/test/converter/myBulk2Pair")
-                .then()
-                .statusCode(200)
-                .body("key", is("bulk2_a"), "val", is("b"));
+    void testLoaderConverters() {
+        //converters generated with @Converter(generateLoader = true)
+        testConvereter("/test/converter/myLoaderPair", "loader_a");
     }
 
     @Test
@@ -221,4 +194,13 @@ public class CoreTest {
                 .statusCode(204);
     }
 
+    private void testConvereter(String s, String keyValue) {
+        RestAssured.given()
+                .contentType(ContentType.TEXT).body("a:b")
+                .accept(MediaType.APPLICATION_JSON)
+                .post(s)
+                .then()
+                .statusCode(200)
+                .body("key", is(keyValue), "val", is("b"));
+    }
 }

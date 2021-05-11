@@ -33,7 +33,7 @@ public class CustomTypeConverterRecorder {
     }
 
     public void bindMyStringConverter(RuntimeValue<Registry> registry) {
-        registry.getValue().bind("myStringConverter", new RegistryPairConverterLoader());
+        registry.getValue().bind("myRegistryPairConverter", new RegistryPairConverterLoader());
     }
 
 }

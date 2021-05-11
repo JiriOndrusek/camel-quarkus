@@ -17,13 +17,13 @@
 package org.apache.camel.quarkus.it.support.typeconverter.converters;
 
 import org.apache.camel.Converter;
-import org.apache.camel.quarkus.it.support.typeconverter.pairs.MyBulk2Pair;
+import org.apache.camel.quarkus.it.support.typeconverter.pairs.MyLoaderPair;
 
 @Converter(generateLoader = true)
 public class MyLoaderConverter {
 
     @Converter
-    public static MyBulk2Pair toMyPair(String s) {
-        return new MyBulk2Pair(s);
+    public static MyLoaderPair toMyPair(String s) {
+        return new MyLoaderPair(s);
     }
 }

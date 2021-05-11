@@ -25,7 +25,7 @@ public final class MyLoaderConverterLoader implements TypeConverterLoader {
     }
 
     private void registerConverters(TypeConverterRegistry registry) {
-        addTypeConverter(registry, org.apache.camel.quarkus.it.support.typeconverter.pairs.MyBulk2Pair.class, java.lang.String.class, false,
+        addTypeConverter(registry, org.apache.camel.quarkus.it.support.typeconverter.pairs.MyLoaderPair.class, java.lang.String.class, false,
             (type, exchange, value) -> org.apache.camel.quarkus.it.support.typeconverter.converters.MyLoaderConverter.toMyPair((java.lang.String) value));
     }
 
