@@ -16,17 +16,28 @@
  */
 package org.apache.camel.quarkus.core.converter;
 
-public class AnnotatedMyPair {
-    public final String key;
-    public final String annotatedValue;
+import org.apache.camel.quarkus.it.support.typeconverter.pairs.AbstractPair;
 
-    public AnnotatedMyPair(String key, String annotatedValue) {
-        this.key = key;
-        this.annotatedValue = annotatedValue;
+public class AnnotatedMyPair extends AbstractPair {
+    public AnnotatedMyPair(String value) {
+        super(value);
     }
 
-    public static AnnotatedMyPair fromString(String input) {
-        String[] items = input.split(":");
-        return new AnnotatedMyPair(items[0], items[1]);
+    @Override
+    protected String keyPrefix() {
+        return "annotated_";
     }
+
+    //    public final String key;
+    //    public final String annotatedValue;
+    //
+    //    public AnnotatedMyPair(String key, String annotatedValue) {
+    //        this.key = key;
+    //        this.annotatedValue = annotatedValue;
+    //    }
+    //
+    //    public static AnnotatedMyPair fromString(String input) {
+    //        String[] items = input.split(":");
+    //        return new AnnotatedMyPair(items[0], items[1]);
+    //    }
 }

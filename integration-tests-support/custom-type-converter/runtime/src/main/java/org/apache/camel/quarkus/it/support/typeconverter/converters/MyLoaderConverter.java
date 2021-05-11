@@ -14,19 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.it.support.typeconverter;
+package org.apache.camel.quarkus.it.support.typeconverter.converters;
 
-import org.apache.camel.TypeConverterLoaderException;
-import org.apache.camel.spi.TypeConverterLoader;
-import org.apache.camel.spi.TypeConverterRegistry;
-import org.apache.camel.support.SimpleTypeConverter;
+import org.apache.camel.Converter;
+import org.apache.camel.quarkus.it.support.typeconverter.pairs.MyBulk2Pair;
 
-public class MyStringConverterLoader implements TypeConverterLoader {
-    @Override
-    public void load(TypeConverterRegistry registry) throws TypeConverterLoaderException {
-        registry.addTypeConverter(
-                MyString.class,
-                String.class,
-                new SimpleTypeConverter(false, (type, exchange, value) -> MyString.valueOf((String) value)));
+@Converter(generateLoader = true)
+public class MyLoaderConverter {
+
+    @Converter
+    public static MyBulk2Pair toMyPair(String s) {
+        return new MyBulk2Pair(s);
     }
 }

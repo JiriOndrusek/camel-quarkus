@@ -22,6 +22,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -29,6 +30,7 @@ import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -47,12 +49,16 @@ import org.apache.camel.catalog.RuntimeCamelCatalog;
 import org.apache.camel.component.log.LogComponent;
 import org.apache.camel.impl.engine.DefaultHeadersMapFactory;
 import org.apache.camel.model.ModelCamelContext;
-import org.apache.camel.quarkus.it.support.typeconverter.MyString;
 import org.apache.camel.quarkus.core.converter.AnnotatedMyPair;
+import org.apache.camel.quarkus.it.support.typeconverter.pairs.MyBulk1Pair;
+import org.apache.camel.quarkus.it.support.typeconverter.pairs.MyBulk2Pair;
+import org.apache.camel.quarkus.it.support.typeconverter.pairs.MyLoaderPair;
+import org.apache.camel.quarkus.it.support.typeconverter.pairs.MyRegistryPair;
 import org.apache.camel.spi.Registry;
 import org.apache.camel.support.LRUCacheFactory;
 import org.apache.camel.support.processor.DefaultExchangeFormatter;
 import org.apache.camel.support.startup.DefaultStartupStepRecorder;
+import org.apache.camel.util.CollectionHelper;
 import org.apache.commons.io.IOUtils;
 
 @Path("/test")
@@ -276,11 +282,11 @@ public class CoreResource {
         return context.adapt(ExtendedCamelContext.class).getStartupStepRecorder() instanceof DefaultStartupStepRecorder;
     }
 
-    @Path("/convert/{value}")
-    @GET
+    @Path("/converter/myRegistryPair")
+    @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public MyString convert(@PathParam("value") String value) {
-        return context.getTypeConverter().convertTo(MyString.class, value);
+    public MyRegistryPair converterMyRegistrPair(String input) {
+        return context.getTypeConverter().convertTo(MyRegistryPair.class, input);
     }
 
     @Path("/converter/annotatedMyPair")
@@ -288,5 +294,45 @@ public class CoreResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AnnotatedMyPair fromStringToAnnotatedMyPair(String input) {
         return context.getTypeConverter().convertTo(AnnotatedMyPair.class, input);
+    }
+
+    @Path("/converter/loaderPair")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public MyLoaderPair fromMyLoaderPair(String input) {
+        return context.getTypeConverter().convertTo(MyLoaderPair.class, input);
+    }
+
+    @Path("/converter/myBulk1Pair")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public MyBulk1Pair convertMyBulk1Pair(String input) {
+        return context.getTypeConverter().convertTo(MyBulk1Pair.class, input);
+    }
+
+    @Path("/converter/myBulk2Pair")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public MyBulk2Pair convertMyBulk2Pair(String input) {
+        return context.getTypeConverter().convertTo(MyBulk2Pair.class, input);
+    }
+
+    @Path("/converter/setStatisticsEnabled")
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    public void cnverterSetStatisticsEnabled(boolean value) {
+        context.getTypeConverterRegistry().getStatistics().setStatisticsEnabled(value);
+        if (value) {
+            context.getTypeConverterRegistry().getStatistics().reset();
+        }
+    }
+
+    @Path("/converter/getStatisticsHit")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map<String, Long> converterGetStatistics() {
+        long hit = context.getTypeConverterRegistry().getStatistics().getHitCounter();
+        long miss = context.getTypeConverterRegistry().getStatistics().getMissCounter();
+        return CollectionHelper.mapOf("hit", hit, "miss", miss);
     }
 }

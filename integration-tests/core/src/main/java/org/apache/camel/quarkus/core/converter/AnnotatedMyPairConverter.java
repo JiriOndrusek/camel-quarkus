@@ -21,8 +21,11 @@ import org.apache.camel.Converter;
 @Converter
 public class AnnotatedMyPairConverter {
 
-    @Converter
+    @Converter(allowNull = true)
     public static AnnotatedMyPair toMyPair(String s) {
-        return AnnotatedMyPair.fromString(s);
+        if ("null".equals(s)) {
+            return null;
+        }
+        return new AnnotatedMyPair(s);
     }
 }

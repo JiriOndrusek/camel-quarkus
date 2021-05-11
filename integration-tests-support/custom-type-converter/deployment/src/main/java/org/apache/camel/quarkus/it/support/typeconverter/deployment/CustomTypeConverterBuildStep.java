@@ -16,6 +16,7 @@
  */
 package org.apache.camel.quarkus.it.support.typeconverter.deployment;
 
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
@@ -26,8 +27,9 @@ import org.apache.camel.quarkus.it.support.typeconverter.CustomTypeConverterReco
 public class CustomTypeConverterBuildStep {
     @Record(ExecutionTime.STATIC_INIT)
     @BuildStep
-    CamelTypeConverterLoaderBuildItem typeConverterLoader(CustomTypeConverterRecorder recorder) {
-        return new CamelTypeConverterLoaderBuildItem(recorder.createTypeConverterLoader());
+    void typeConverterLoaders(BuildProducer<CamelTypeConverterLoaderBuildItem> loaders, CustomTypeConverterRecorder recorder) {
+        loaders.produce(new CamelTypeConverterLoaderBuildItem(recorder.createTypeConverterLoader()));
+        loaders.produce(new CamelTypeConverterLoaderBuildItem(recorder.getBulkConverterLoader()));
     }
 
     @Record(ExecutionTime.STATIC_INIT)

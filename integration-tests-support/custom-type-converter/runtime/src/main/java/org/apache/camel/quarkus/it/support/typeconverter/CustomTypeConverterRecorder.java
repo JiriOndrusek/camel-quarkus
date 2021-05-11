@@ -18,6 +18,7 @@ package org.apache.camel.quarkus.it.support.typeconverter;
 
 import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.annotations.Recorder;
+import org.apache.camel.quarkus.it.support.typeconverter.converters.CamelQuarkusIntegrationTestsSupportCustomTypeConverterBulkConverterLoader;
 import org.apache.camel.spi.Registry;
 import org.apache.camel.spi.TypeConverterLoader;
 
@@ -27,8 +28,12 @@ public class CustomTypeConverterRecorder {
         return new RuntimeValue<>(new CustomTypeConverterLoader());
     }
 
+    public RuntimeValue<TypeConverterLoader> getBulkConverterLoader() {
+        return new RuntimeValue<>(new CamelQuarkusIntegrationTestsSupportCustomTypeConverterBulkConverterLoader());
+    }
+
     public void bindMyStringConverter(RuntimeValue<Registry> registry) {
-        registry.getValue().bind("myStringConverter", new MyStringConverterLoader());
+        registry.getValue().bind("myStringConverter", new RegistryPairConverterLoader());
     }
 
 }

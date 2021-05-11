@@ -134,11 +134,14 @@ public class CoreTest {
 
     @Test
     void testConverterFromRegistery() {
-        RestAssured.when()
-                .get("/test/convert/{value}", "Sheldon")
+        RestAssured.given()
+                .contentType(ContentType.TEXT).body("a:b")
+                .accept(MediaType.APPLICATION_JSON)
+                .post("/test/converter/myRegistryPair")
                 .then()
                 .statusCode(200)
-                .body("value", is("Sheldon"), "formattedValue", is("<tag>Sheldon</tag>"));
+                .body("key", is("registry_a"), "val", is("b"));
+
     }
 
     @Test
@@ -149,6 +152,73 @@ public class CoreTest {
                 .post("/test/converter/annotatedMyPair")
                 .then()
                 .statusCode(200)
-                .body("key", is("a"), "annotatedValue", is("b"));
+                .body("key", is("annotated_a"), "val", is("b"));
     }
+
+    @Test
+    void testConverterToNull() {
+        enableStatistics(true);
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT).body("null")
+                .accept(MediaType.APPLICATION_JSON)
+                .post("/test/converter/annotatedMyPair")
+                .then()
+                .statusCode(204);
+
+        RestAssured.when().get("/test/converter/getStatisticsHit").then().body("hit", is(1), "miss", is(0));
+
+        enableStatistics(false);
+    }
+
+    @Test
+    void testConverterFromAnnotationLoader() {
+        RestAssured.given()
+                .contentType(ContentType.TEXT).body("a:b")
+                .accept(MediaType.APPLICATION_JSON)
+                .post("/test/converter/annotatedMyPair")
+                .then()
+                .statusCode(200)
+                .body("key", is("annotated_a"), "val", is("b"));
+    }
+
+    @Test
+    void testBulkConverters() {
+        RestAssured.given()
+                .contentType(ContentType.TEXT).body("a:b")
+                .accept(MediaType.APPLICATION_JSON)
+                .post("/test/converter/myBulk1Pair")
+                .then()
+                .statusCode(200)
+                .body("key", is("bulk1_a"), "val", is("b"));
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT).body("a:b")
+                .accept(MediaType.APPLICATION_JSON)
+                .post("/test/converter/myBulk2Pair")
+                .then()
+                .statusCode(200)
+                .body("key", is("bulk2_a"), "val", is("b"));
+    }
+
+    @Test
+    void testConverterGetStatistics() {
+        enableStatistics(true);
+
+        //1 hit
+        testConverterFromAnnotation();
+
+        RestAssured.when().get("/test/converter/getStatisticsHit").then().body("hit", is(1));
+
+        enableStatistics(false);
+    }
+
+    private void enableStatistics(boolean b) {
+        RestAssured.given()
+                .contentType(ContentType.TEXT).body(b)
+                .post("/test/converter/setStatisticsEnabled")
+                .then()
+                .statusCode(204);
+    }
+
 }
