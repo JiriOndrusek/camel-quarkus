@@ -16,16 +16,15 @@
  */
 package org.apache.camel.quarkus.core.converter;
 
-import org.apache.camel.Converter;
+import org.apache.camel.quarkus.it.support.typeconverter.pairs.AbstractPair;
 
-@Converter
-public class MyTestPairConverter {
+public class MyExchangePair extends AbstractPair {
+    public MyExchangePair(String value) {
+        super(value);
+    }
 
-    @Converter(allowNull = true)
-    public static MyTestPair toMyPair(String s) {
-        if ("null".equals(s)) {
-            return null;
-        }
-        return new MyTestPair(s);
+    @Override
+    protected String keyPrefix() {
+        return "exchange_";
     }
 }

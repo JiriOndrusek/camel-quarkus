@@ -135,14 +135,14 @@ public class CoreTest {
     @Test
     void testConverterFromRegistry() {
         //converter from loader which is present in registry
-        testConvereter("/test/converter/myRegistryPair", "registry_a");
+        testConverter("/test/converter/myRegistryPair", "registry_a");
 
     }
 
     @Test
     void testConverterFromAnnotation() {
         //converter with annotation present in this module
-        testConvereter("/test/converter/myTestPair", "test_a");
+        testConverter("/test/converter/myTestPair", "test_a");
     }
 
     @Test
@@ -152,7 +152,7 @@ public class CoreTest {
         RestAssured.given()
                 .contentType(ContentType.TEXT).body("null")
                 .accept(MediaType.APPLICATION_JSON)
-                .post("/test/converter/myTestPair")
+                .post("/test/converter/myNullablePair")
                 .then()
                 .statusCode(204);
 
@@ -164,14 +164,34 @@ public class CoreTest {
     @Test
     void testBulkConverters() {
         //converters generated with @Converter(generateBulkLoader = true)
-        testConvereter("/test/converter/myBulk1Pair", "bulk1_a");
-        testConvereter("/test/converter/myBulk2Pair", "bulk2_a");
+        testConverter("/test/converter/myBulk1Pair", "bulk1_a");
+        testConverter("/test/converter/myBulk2Pair", "bulk2_a");
     }
 
     @Test
     void testLoaderConverters() {
         //converters generated with @Converter(generateLoader = true)
-        testConvereter("/test/converter/myLoaderPair", "loader_a");
+        testConverter("/test/converter/myLoaderPair", "loader_a");
+    }
+
+    @Test
+    void testFallback() {
+        testConverter("/test/converter/fallback", "test_a");
+    }
+
+    @Test
+    void testExchangeConverter() {
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT).body("a:b")
+                .queryParam("converterValue", "c:d")
+                .accept(MediaType.APPLICATION_JSON)
+                .post("/test/converter/myExchangePair")
+                .then()
+                .statusCode(200)
+                .body("key", is("exchange_c"), "val", is("d"));
+        ;
+
     }
 
     @Test
@@ -194,11 +214,15 @@ public class CoreTest {
                 .statusCode(204);
     }
 
-    private void testConvereter(String s, String keyValue) {
+    private void testConverter(String url, String keyValue) {
+        testConverter(url, "a:b", keyValue);
+    }
+
+    private void testConverter(String url, String body, String keyValue) {
         RestAssured.given()
-                .contentType(ContentType.TEXT).body("a:b")
+                .contentType(ContentType.TEXT).body(body)
                 .accept(MediaType.APPLICATION_JSON)
-                .post(s)
+                .post(url)
                 .then()
                 .statusCode(200)
                 .body("key", is(keyValue), "val", is("b"));

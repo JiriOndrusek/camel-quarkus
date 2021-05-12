@@ -19,6 +19,7 @@ package org.apache.camel.quarkus.core.converter;
 import org.apache.camel.quarkus.it.support.typeconverter.pairs.AbstractPair;
 
 public class MyNullablePair extends AbstractPair {
+
     public MyNullablePair(String value) {
         super(value);
     }

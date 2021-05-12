@@ -34,11 +34,13 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.CamelContextAware;
+import org.apache.camel.Exchange;
 import org.apache.camel.ExtendedCamelContext;
 import org.apache.camel.NoSuchLanguageException;
 import org.apache.camel.ProducerTemplate;
@@ -49,12 +51,16 @@ import org.apache.camel.catalog.RuntimeCamelCatalog;
 import org.apache.camel.component.log.LogComponent;
 import org.apache.camel.impl.engine.DefaultHeadersMapFactory;
 import org.apache.camel.model.ModelCamelContext;
+import org.apache.camel.quarkus.core.converter.MyExchangePair;
+import org.apache.camel.quarkus.core.converter.MyNullablePair;
 import org.apache.camel.quarkus.core.converter.MyTestPair;
+import org.apache.camel.quarkus.core.converter.TestConverters;
 import org.apache.camel.quarkus.it.support.typeconverter.pairs.MyBulk1Pair;
 import org.apache.camel.quarkus.it.support.typeconverter.pairs.MyBulk2Pair;
 import org.apache.camel.quarkus.it.support.typeconverter.pairs.MyLoaderPair;
 import org.apache.camel.quarkus.it.support.typeconverter.pairs.MyRegistryPair;
 import org.apache.camel.spi.Registry;
+import org.apache.camel.support.DefaultExchange;
 import org.apache.camel.support.LRUCacheFactory;
 import org.apache.camel.support.processor.DefaultExchangeFormatter;
 import org.apache.camel.support.startup.DefaultStartupStepRecorder;
@@ -317,6 +323,13 @@ public class CoreResource {
         return context.getTypeConverter().convertTo(MyBulk2Pair.class, input);
     }
 
+    @Path("/converter/myNullablePair")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public MyNullablePair convertMyNullablePair(String input) {
+        return context.getTypeConverter().convertTo(MyNullablePair.class, input);
+    }
+
     @Path("/converter/setStatisticsEnabled")
     @POST
     @Produces(MediaType.TEXT_PLAIN)
@@ -334,5 +347,22 @@ public class CoreResource {
         long hit = context.getTypeConverterRegistry().getStatistics().getHitCounter();
         long miss = context.getTypeConverterRegistry().getStatistics().getMissCounter();
         return CollectionHelper.mapOf("hit", hit, "miss", miss);
+    }
+
+    @Path("/converter/fallback")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public MyTestPair convertFallback(String input) {
+        return context.getTypeConverter().convertTo(MyTestPair.class,
+                "org.apache.camel.quarkus.core.converter.MyTestPair:" + input);
+    }
+
+    @Path("/converter/myExchangePair")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public MyExchangePair convertMyExchangePair(String input, @QueryParam("converterValue") String converterValue) {
+        Exchange e = new DefaultExchange(context);
+        e.setProperty(TestConverters.CONVERTER_VALUE, converterValue);
+        return context.getTypeConverter().convertTo(MyExchangePair.class, e, input);
     }
 }
