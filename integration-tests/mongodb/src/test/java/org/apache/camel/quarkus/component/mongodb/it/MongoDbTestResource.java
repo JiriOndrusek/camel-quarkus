@@ -17,10 +17,15 @@
 
 package org.apache.camel.quarkus.component.mongodb.it;
 
+import java.sql.SQLException;
 import java.util.Map;
 
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoDatabase;
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.apache.camel.util.CollectionHelper;
+import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -45,6 +50,8 @@ public class MongoDbTestResource implements QuarkusTestResourceLifecycleManager 
 
             container.start();
 
+            setUp();
+
             return CollectionHelper.mapOf(
                     "quarkus.mongodb.hosts",
                     container.getContainerIpAddress() + ":" + container.getMappedPort(MONGODB_PORT).toString(),
@@ -55,11 +62,33 @@ public class MongoDbTestResource implements QuarkusTestResourceLifecycleManager 
         }
     }
 
+    private static MongoClient mongoClient;
+
+    private static MongoDatabase db;
+
+
+//    @BeforeAll
+//    public static
+    void setUp() throws SQLException {
+        final String mongoUrl = "mongodb://" + container.getContainerIpAddress() + ":" + container.getMappedPort(MONGODB_PORT).toString();
+
+        if (mongoUrl != null) {
+            mongoClient = MongoClients.create(mongoUrl);
+        }
+        org.junit.Assume.assumeTrue(mongoClient != null);
+
+        db = mongoClient.getDatabase("test");
+        db.createCollection("cappedCollection");
+    }
+
     @Override
     public void stop() {
         try {
             if (container != null) {
                 container.stop();
+            }
+            if (mongoClient != null) {
+                mongoClient.close();
             }
         } catch (Exception e) {
             // ignored

@@ -39,7 +39,10 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoIterable;
 import io.quarkus.mongodb.MongoClientName;
+import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.mongodb.MongoDbConstants;
 import org.bson.Document;
 
 @Path("/mongodb")
@@ -55,6 +58,9 @@ public class MongoDbResource {
 
     @Inject
     ProducerTemplate producerTemplate;
+
+    @Inject
+    CamelContext camelContext;
 
     @POST
     @Path("/collection/{collectionName}")
@@ -97,4 +103,38 @@ public class MongoDbResource {
 
         return arrayBuilder.build();
     }
+
+    @POST
+    @Path("/collection/dynamic/{collectionName}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object dynamic(@PathParam("collectionName") String collectionName, String content,
+            @HeaderParam("mongoClientName") String mongoClientName,
+            @HeaderParam("dynamicOperation") String operation)
+            throws URISyntaxException {
+
+        Object result = producerTemplate.requestBodyAndHeader(
+                String.format("mongodb:%s?database=test&collection=%s&operation=insert&dynamicity=true",
+                        mongoClientName, collectionName),
+                content, MongoDbConstants.OPERATION_HEADER, operation);
+
+        return result;
+    }
+
+    @GET
+    @Path("/startRoute/{routeId}")
+    public void startRoute(@PathParam("routeId") String routeId) throws Exception {
+//        camelContext.addRoutes(new RouteBuilder() {
+//
+//            @Override
+//            public void configure() throws Exception {
+//
+//                from("mongodb:" + MongoDbResource.DEFAULT_MONGO_CLIENT_NAME + "?database=test&collection=cappedCollection&tailTrackIncreasingField=increasing")
+//                        .id("tailing").log("${body}");
+//
+//            }
+//        });
+        camelContext.getRouteController().startRoute(routeId);
+    }
+
 }
