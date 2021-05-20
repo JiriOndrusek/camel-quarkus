@@ -24,7 +24,6 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.CreateCollectionOptions;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
@@ -49,7 +48,6 @@ class MongoDbTest {
     private static MongoClient mongoClient;
 
     private static MongoDatabase db;
-
 
     @BeforeAll
     public static void setUp() throws SQLException {
@@ -131,29 +129,26 @@ class MongoDbTest {
 
     }
 
-
     @Test
     public void testTailingConsumer() throws Exception {
 
-        db.getCollection(CAPPED_COLLECTION).drop();
-        MongoCollection cappedTestCollection;
-        db.createCollection(CAPPED_COLLECTION,
-                new CreateCollectionOptions().capped(true).sizeInBytes(1000000000).maxDocuments(100));
-        cappedTestCollection = db.getCollection(CAPPED_COLLECTION, Document.class);
+        MongoCollection cappedTestCollection = db.getCollection(CAPPED_COLLECTION, Document.class);
 
-
-        RestAssured
-                .given()
-                .get("/mongodb/startRoute/tailing/")
-                .then()
-                .statusCode(204);
-
-        for (int i = 1; i <= 1000; i++) {
+        for (int i = 1; i <= 10_000; i++) {
             cappedTestCollection.insertOne(new Document("increasing", i).append("string", "value" + i));
+
+            //verify continuously
+            if (i % 1000 == 0) {
+                Thread.sleep(1000);
+                RestAssured
+                        .given()
+                        .contentType(ContentType.JSON)
+                        .get("/mongodb/resultsReset/tailing/")
+                        .then()
+                        .statusCode(200)
+                        .body("size", is(1000), "last.string", is("value" + i));
+            }
         }
-
-        Thread.sleep(1000);
-
     }
 
 }

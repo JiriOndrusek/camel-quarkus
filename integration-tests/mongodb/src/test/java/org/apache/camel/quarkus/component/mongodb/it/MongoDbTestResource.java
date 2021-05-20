@@ -23,9 +23,9 @@ import java.util.Map;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.CreateCollectionOptions;
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.apache.camel.util.CollectionHelper;
-import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -66,11 +66,11 @@ public class MongoDbTestResource implements QuarkusTestResourceLifecycleManager 
 
     private static MongoDatabase db;
 
-
-//    @BeforeAll
-//    public static
+    //    @BeforeAll
+    //    public static
     void setUp() throws SQLException {
-        final String mongoUrl = "mongodb://" + container.getContainerIpAddress() + ":" + container.getMappedPort(MONGODB_PORT).toString();
+        final String mongoUrl = "mongodb://" + container.getContainerIpAddress() + ":"
+                + container.getMappedPort(MONGODB_PORT).toString();
 
         if (mongoUrl != null) {
             mongoClient = MongoClients.create(mongoUrl);
@@ -78,7 +78,8 @@ public class MongoDbTestResource implements QuarkusTestResourceLifecycleManager 
         org.junit.Assume.assumeTrue(mongoClient != null);
 
         db = mongoClient.getDatabase("test");
-        db.createCollection("cappedCollection");
+        db.createCollection("cappedCollection",
+                new CreateCollectionOptions().capped(true).sizeInBytes(1000000000).maxDocuments(1000));
     }
 
     @Override

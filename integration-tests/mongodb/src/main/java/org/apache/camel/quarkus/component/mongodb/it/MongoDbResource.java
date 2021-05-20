@@ -18,9 +18,12 @@ package org.apache.camel.quarkus.component.mongodb.it;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -41,8 +44,8 @@ import com.mongodb.client.MongoIterable;
 import io.quarkus.mongodb.MongoClientName;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mongodb.MongoDbConstants;
+import org.apache.camel.util.CollectionHelper;
 import org.bson.Document;
 
 @Path("/mongodb")
@@ -61,6 +64,10 @@ public class MongoDbResource {
 
     @Inject
     CamelContext camelContext;
+
+    @Inject
+    @Named("results")
+    Map<String, List<Document>> results;
 
     @POST
     @Path("/collection/{collectionName}")
@@ -124,17 +131,27 @@ public class MongoDbResource {
     @GET
     @Path("/startRoute/{routeId}")
     public void startRoute(@PathParam("routeId") String routeId) throws Exception {
-//        camelContext.addRoutes(new RouteBuilder() {
-//
-//            @Override
-//            public void configure() throws Exception {
-//
-//                from("mongodb:" + MongoDbResource.DEFAULT_MONGO_CLIENT_NAME + "?database=test&collection=cappedCollection&tailTrackIncreasingField=increasing")
-//                        .id("tailing").log("${body}");
-//
-//            }
-//        });
+        //        camelContext.addRoutes(new RouteBuilder() {
+        //
+        //            @Override
+        //            public void configure() throws Exception {
+        //
+        //                from("mongodb:" + MongoDbResource.DEFAULT_MONGO_CLIENT_NAME + "?database=test&collection=cappedCollection&tailTrackIncreasingField=increasing")
+        //                        .id("tailing").log("${body}");
+        //
+        //            }
+        //        });
         camelContext.getRouteController().startRoute(routeId);
+    }
+
+    @GET
+    @Path("/resultsReset/{resultId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map getResultsAndReset(@PathParam("resultId") String resultId) {
+        int size = results.get(resultId).size();
+        Document last = results.get(resultId).get(size - 1);
+        results.get(resultId).clear();
+        return CollectionHelper.mapOf("size", size, "last", last);
     }
 
 }
