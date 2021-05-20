@@ -31,14 +31,17 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
+import org.apache.camel.util.CollectionHelper;
 import org.bson.Document;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.testcontainers.shaded.com.github.dockerjava.core.MediaType;
 
 import static org.apache.camel.quarkus.component.mongodb.it.MongoDbRoute.COLLECTION_PERSISTENT_TAILING;
+import static org.apache.camel.quarkus.component.mongodb.it.MongoDbRoute.COLLECTION_STREAM_CHANGES;
 import static org.apache.camel.quarkus.component.mongodb.it.MongoDbRoute.COLLECTION_TAILING;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
@@ -143,7 +146,7 @@ class MongoDbTest {
 
             //verify continuously
             if (i % CAP_NUMBER == 0) {
-                waitForTailingResults("value" + i, COLLECTION_TAILING);
+                waitForTailingResults(CAP_NUMBER, "value" + i, COLLECTION_TAILING);
             }
         }
     }
@@ -157,7 +160,7 @@ class MongoDbTest {
 
             //verify continuously
             if (i % CAP_NUMBER == 0) {
-                waitForTailingResults("value" + i, COLLECTION_PERSISTENT_TAILING);
+                waitForTailingResults(CAP_NUMBER, "value" + i, COLLECTION_PERSISTENT_TAILING);
             }
         }
 
@@ -173,12 +176,44 @@ class MongoDbTest {
 
             //verify continuously
             if (i % CAP_NUMBER == 0) {
-                waitForTailingResults("value" + i, COLLECTION_PERSISTENT_TAILING);
+                waitForTailingResults(CAP_NUMBER, "value" + i, COLLECTION_PERSISTENT_TAILING);
             }
         }
     }
 
-    private void waitForTailingResults(String laststring, String resultId) {
+    @Test
+    public void testStreamConsumer() throws Exception {
+        MongoCollection collection = db.getCollection(COLLECTION_STREAM_CHANGES, Document.class);
+
+        for (int i = 1; i <= 10; i++) {
+            collection.insertOne(new Document("increasing", i).append("string", "value" + i));
+        }
+
+        waitForTailingResults(10, "value10", COLLECTION_STREAM_CHANGES);
+    }
+
+    @Test
+    public void testConvertMapToDocument() {
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(CollectionHelper.mapOf("key1", "val1", "key2", "val2"))
+                .post("/mongodb/convertMapToDocument")
+                .then()
+                .statusCode(200)
+                .body("clazz", is(Document.class.getName()), "key1", is("val1"), "key2", is("val2"));
+    }
+
+    @Test
+    public void testConvertAnyObjectToDocument() {
+        RestAssured.given()
+                .body("Hello!")
+                .post("/mongodb/convertAnyObjectToDocument")
+                .then()
+                .statusCode(200)
+                .body("clazz", is(Document.class.getName()), "value", is("Hello!"));
+    }
+
+    private void waitForTailingResults(int expectedSize, String laststring, String resultId) {
         AtomicInteger size = new AtomicInteger();
         await().atMost(2, TimeUnit.SECONDS).until(() -> {
             Map record = RestAssured
@@ -190,7 +225,7 @@ class MongoDbTest {
 
             size.addAndGet((int) record.get("size"));
 
-            return size.get() == CAP_NUMBER && laststring.equals(((Map) record.get("last")).get("string"));
+            return size.get() == expectedSize && laststring.equals(((Map) record.get("last")).get("string"));
         });
     }
 }

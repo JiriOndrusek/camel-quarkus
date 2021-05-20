@@ -35,15 +35,18 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoIterable;
 import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.ServiceStatus;
 import org.apache.camel.component.mongodb.MongoDbConstants;
+import org.apache.camel.support.DefaultExchange;
 import org.apache.camel.util.CollectionHelper;
 import org.bson.Document;
 
@@ -145,6 +148,43 @@ public class MongoDbResource {
             results.get(resultId).clear();
         }
         return CollectionHelper.mapOf("size", size, "last", last);
+    }
+
+    @Path("/convertMapToDocument")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map convertMapToDocument(Map input) {
+        Document doc =  camelContext.getTypeConverter().convertTo(Document.class, input);
+        doc.put("clazz", doc.getClass().getName());
+        return doc;
+    }
+
+    @Path("/convertAnyObjectToDocument")
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map convertMapToDocument(String input) {
+
+        Document doc =  camelContext.getTypeConverter().convertTo(Document.class, new SimplePojo(input));
+        doc.put("clazz", doc.getClass().getName());
+        return doc;
+    }
+
+    private static class SimplePojo {
+        private String value;
+
+        public SimplePojo(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
     }
 
 }

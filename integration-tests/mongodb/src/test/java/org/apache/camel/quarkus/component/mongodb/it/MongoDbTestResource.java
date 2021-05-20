@@ -17,7 +17,7 @@
 
 package org.apache.camel.quarkus.component.mongodb.it;
 
-import java.sql.SQLException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import com.mongodb.client.MongoClient;
@@ -26,9 +26,12 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.CreateCollectionOptions;
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.apache.camel.util.CollectionHelper;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
@@ -37,6 +40,7 @@ public class MongoDbTestResource implements QuarkusTestResourceLifecycleManager 
 
     private static final int MONGODB_PORT = 27017;
     private static final String MONGO_IMAGE = "mongo:4.0";
+    private static final String PRIVATE_HOST = "mongodb_private";
 
     private GenericContainer container;
 
@@ -51,9 +55,14 @@ public class MongoDbTestResource implements QuarkusTestResourceLifecycleManager 
         try {
             container = new GenericContainer(MONGO_IMAGE)
                     .withExposedPorts(MONGODB_PORT)
+                    .withCommand("--replSet", "my-mongo-set")
+                    .withNetwork(Network.newNetwork())
+                    .withNetworkAliases(PRIVATE_HOST)
                     .waitingFor(Wait.forListeningPort());
 
             container.start();
+
+            execScriptInContainer("initMongodb.txt");
 
             setUpDb();
 
@@ -67,7 +76,7 @@ public class MongoDbTestResource implements QuarkusTestResourceLifecycleManager 
         }
     }
 
-    void setUpDb() throws SQLException {
+    void setUpDb() {
         final String mongoUrl = "mongodb://" + container.getContainerIpAddress() + ":"
                 + container.getMappedPort(MONGODB_PORT).toString();
 
@@ -81,6 +90,19 @@ public class MongoDbTestResource implements QuarkusTestResourceLifecycleManager 
                 new CreateCollectionOptions().capped(true).sizeInBytes(1000000000).maxDocuments(MongoDbTest.CAP_NUMBER));
         db.createCollection(MongoDbRoute.COLLECTION_PERSISTENT_TAILING,
                 new CreateCollectionOptions().capped(true).sizeInBytes(1000000000).maxDocuments(MongoDbTest.CAP_NUMBER));
+        db.createCollection(MongoDbRoute.COLLECTION_STREAM_CHANGES);
+    }
+
+    private void execScriptInContainer(String script) throws Exception {
+        String cmd = IOUtils.toString(getClass().getResource("/" + script), StandardCharsets.UTF_8);
+        String[] cmds = cmd.split("\\n\\n");
+
+        for (int i = 0; i < cmds.length; i++) {
+            Container.ExecResult er = container.execInContainer(new String[] { "mongo", "--eval", cmds[i] });
+            if (er.getExitCode() != 0) {
+                throw new IllegalStateException("Exec exit code " + er.getExitCode() + ". " + er.getStderr());
+            }
+        }
     }
 
     @Override
