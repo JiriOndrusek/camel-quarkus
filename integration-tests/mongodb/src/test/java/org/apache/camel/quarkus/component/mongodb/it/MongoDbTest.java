@@ -19,6 +19,8 @@ package org.apache.camel.quarkus.component.mongodb.it;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -36,6 +38,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import static org.apache.camel.quarkus.component.mongodb.it.MongoDbRoute.COLLECTION_PERSISTENT_TAILING;
+import static org.apache.camel.quarkus.component.mongodb.it.MongoDbRoute.COLLECTION_TAILING;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -43,7 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @QuarkusTestResource(MongoDbTestResource.class)
 class MongoDbTest {
     public static final String MSG = "Hello Camel Quarkus Mongo DB";
-    private static String CAPPED_COLLECTION = "cappedCollection";
+    public static int CAP_NUMBER = 1000;
 
     private static MongoClient mongoClient;
 
@@ -131,24 +136,61 @@ class MongoDbTest {
 
     @Test
     public void testTailingConsumer() throws Exception {
+        MongoCollection collection = db.getCollection(COLLECTION_TAILING, Document.class);
 
-        MongoCollection cappedTestCollection = db.getCollection(CAPPED_COLLECTION, Document.class);
-
-        for (int i = 1; i <= 10_000; i++) {
-            cappedTestCollection.insertOne(new Document("increasing", i).append("string", "value" + i));
+        for (int i = 1; i <= (10 * CAP_NUMBER); i++) {
+            collection.insertOne(new Document("increasing", i).append("string", "value" + i));
 
             //verify continuously
-            if (i % 1000 == 0) {
-                Thread.sleep(1000);
-                RestAssured
-                        .given()
-                        .contentType(ContentType.JSON)
-                        .get("/mongodb/resultsReset/tailing/")
-                        .then()
-                        .statusCode(200)
-                        .body("size", is(1000), "last.string", is("value" + i));
+            if (i % CAP_NUMBER == 0) {
+                waitForTailingResults("value" + i, COLLECTION_TAILING);
             }
         }
     }
 
+    @Test
+    public void testPersistentTailingConsumer() throws Exception {
+        MongoCollection collection = db.getCollection(COLLECTION_PERSISTENT_TAILING, Document.class);
+
+        for (int i = 1; i <= (3 * CAP_NUMBER); i++) {
+            collection.insertOne(new Document("increasing", i).append("string", "value" + i));
+
+            //verify continuously
+            if (i % CAP_NUMBER == 0) {
+                waitForTailingResults("value" + i, COLLECTION_PERSISTENT_TAILING);
+            }
+        }
+
+        //restart route
+        RestAssured
+                .given()
+                .get("/mongodb/restartRoute/" + COLLECTION_PERSISTENT_TAILING)
+                .then()
+                .statusCode(204);
+
+        for (int i = (3 * CAP_NUMBER + 1); i <= (6 * CAP_NUMBER); i++) {
+            collection.insertOne(new Document("increasing", i).append("string", "value" + i));
+
+            //verify continuously
+            if (i % CAP_NUMBER == 0) {
+                waitForTailingResults("value" + i, COLLECTION_PERSISTENT_TAILING);
+            }
+        }
+    }
+
+    private void waitForTailingResults(String laststring, String resultId) {
+        AtomicInteger size = new AtomicInteger();
+        await().atMost(2, TimeUnit.SECONDS).until(() -> {
+            Map record = RestAssured
+                    .given().contentType(ContentType.JSON)
+                    .get("/mongodb/resultsReset/" + resultId)
+                    .then()
+                    .statusCode(200)
+                    .extract().as(Map.class);
+
+            size.addAndGet((int) record.get("size"));
+
+            return size.get() == CAP_NUMBER && laststring.equals(((Map) record.get("last")).get("string"));
+        });
+    }
 }

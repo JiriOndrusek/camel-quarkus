@@ -34,10 +34,15 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 
 public class MongoDbTestResource implements QuarkusTestResourceLifecycleManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbTestResource.class);
+
     private static final int MONGODB_PORT = 27017;
     private static final String MONGO_IMAGE = "mongo:4.0";
 
     private GenericContainer container;
+
+    private static MongoClient mongoClient;
+
+    private static MongoDatabase db;
 
     @Override
     public Map<String, String> start() {
@@ -50,7 +55,7 @@ public class MongoDbTestResource implements QuarkusTestResourceLifecycleManager 
 
             container.start();
 
-            setUp();
+            setUpDb();
 
             return CollectionHelper.mapOf(
                     "quarkus.mongodb.hosts",
@@ -62,13 +67,7 @@ public class MongoDbTestResource implements QuarkusTestResourceLifecycleManager 
         }
     }
 
-    private static MongoClient mongoClient;
-
-    private static MongoDatabase db;
-
-    //    @BeforeAll
-    //    public static
-    void setUp() throws SQLException {
+    void setUpDb() throws SQLException {
         final String mongoUrl = "mongodb://" + container.getContainerIpAddress() + ":"
                 + container.getMappedPort(MONGODB_PORT).toString();
 
@@ -78,8 +77,10 @@ public class MongoDbTestResource implements QuarkusTestResourceLifecycleManager 
         org.junit.Assume.assumeTrue(mongoClient != null);
 
         db = mongoClient.getDatabase("test");
-        db.createCollection("cappedCollection",
-                new CreateCollectionOptions().capped(true).sizeInBytes(1000000000).maxDocuments(1000));
+        db.createCollection(MongoDbRoute.COLLECTION_TAILING,
+                new CreateCollectionOptions().capped(true).sizeInBytes(1000000000).maxDocuments(MongoDbTest.CAP_NUMBER));
+        db.createCollection(MongoDbRoute.COLLECTION_PERSISTENT_TAILING,
+                new CreateCollectionOptions().capped(true).sizeInBytes(1000000000).maxDocuments(MongoDbTest.CAP_NUMBER));
     }
 
     @Override

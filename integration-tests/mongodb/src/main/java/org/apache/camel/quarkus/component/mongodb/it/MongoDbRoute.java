@@ -16,6 +16,9 @@ import org.bson.Document;
 @ApplicationScoped
 public class MongoDbRoute extends RouteBuilder {
 
+    public static String COLLECTION_TAILING = "tailingCollection";
+    public static String COLLECTION_PERSISTENT_TAILING = "persistentTailingCollection";
+
     @Inject
     @Named("results")
     Map<String, List<Document>> results;
@@ -23,16 +26,23 @@ public class MongoDbRoute extends RouteBuilder {
     @Override
     public void configure() {
         from("mongodb:" + MongoDbResource.DEFAULT_MONGO_CLIENT_NAME
-                + "?database=test&collection=cappedCollection&tailTrackIncreasingField=increasing")
-                        .process(e -> results.get("tailing").add(e.getMessage().getBody(Document.class)));
+                + "?database=test&collection=" + COLLECTION_TAILING + "&tailTrackIncreasingField=increasing")
+                        .process(e -> results.get(COLLECTION_TAILING).add(e.getMessage().getBody(Document.class)));
+
+        from("mongodb:" + MongoDbResource.DEFAULT_MONGO_CLIENT_NAME
+                + "?database=test&collection=" + COLLECTION_PERSISTENT_TAILING
+                + "&tailTrackIncreasingField=increasing&persistentTailTracking=true&persistentId=darwin\"")
+                        .id(COLLECTION_PERSISTENT_TAILING)
+                        .process(e -> results.get(COLLECTION_PERSISTENT_TAILING).add(e.getMessage().getBody(Document.class)));
     }
 
     @Produces
     @ApplicationScoped
     @Named("results")
-    public Map<String, List<Document>> results() {
+    Map<String, List<Document>> results() {
         Map<String, List<Document>> result = new HashMap<>();
-        result.put("tailing", new CopyOnWriteArrayList<>());
+        result.put(COLLECTION_TAILING, new CopyOnWriteArrayList<>());
+        result.put(COLLECTION_PERSISTENT_TAILING, new CopyOnWriteArrayList<>());
         return result;
     }
 }
