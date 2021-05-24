@@ -16,17 +16,27 @@
  */
 package org.apache.camel.quarkus.component.sql.it;
 
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -38,6 +48,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import io.agroal.api.AgroalDataSource;
+import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.quarkus.component.sql.it.model.Camel;
 import org.springframework.util.LinkedCaseInsensitiveMap;
@@ -52,14 +63,26 @@ public class SqlResource {
     @Inject
     ProducerTemplate producerTemplate;
 
+    @Inject
+    @Named("results")
+    Map<String, List<Map>> results;
+
+    @Inject
+    CamelContext camelContext;
+
     @PostConstruct
-    public void postConstruct() throws SQLException {
+    public void postConstruct() throws SQLException, URISyntaxException, IOException {
         try (Connection conn = dataSource.getConnection()) {
             try (Statement statement = conn.createStatement()) {
-                statement.execute("DROP TABLE IF EXISTS camel");
-                statement.execute("CREATE TABLE camel (id int AUTO_INCREMENT, species VARCHAR(255))");
-                statement.execute(
-                        "CREATE ALIAS ADD_NUMS FOR \"org.apache.camel.quarkus.component.sql.it.storedproc.NumberAddStoredProcedure.addNumbers\"");
+                try (Stream<String> stream = Files.lines(Paths.get(getClass().getResource("/sql/initDb.sql").toURI()))) {
+                    stream.filter(s -> s != null && !"".equals(s) && !s.startsWith("--")).forEach(s -> {
+                        try {
+                            statement.execute(s);
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    });
+                }
             }
         }
     }
@@ -113,17 +136,38 @@ public class SqlResource {
         return result.getSpecies() + " " + result.getId();
     }
 
-    @Path("/post")
+    @Path("/insert/")
     @POST
-    @Consumes(MediaType.TEXT_PLAIN)
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response createCamel(String species) throws Exception {
-        Map<String, Object> params = new HashMap<>();
-        params.put("species", species);
+    public Response insert(@QueryParam("table") String table, Map<String, Object> values) throws Exception {
 
-        producerTemplate.requestBodyAndHeaders(
-                "sql:INSERT INTO camel (species) VALUES (:#species)", null,
-                params);
+        LinkedHashMap linkedHashMap = new LinkedHashMap(values);
+
+        String sql = String.format("sql:INSERT INTO %s (%s) VALUES (%s)", table,
+                linkedHashMap.keySet().stream().collect(Collectors.joining(", ")),
+                linkedHashMap.keySet().stream().map(s -> ":#" + s).collect(Collectors.joining(", ")));
+
+        producerTemplate.requestBodyAndHeaders(sql, null, values);
+
+        return Response
+                .created(new URI("https://camel.apache.org/"))
+                .build();
+    }
+
+    @Path("/update/")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response update(@QueryParam("table") String table, Map<String, Object> values) throws Exception {
+
+        String sql = String.format("sql:update %s set %s where id=:#id", table,
+                values.keySet().stream()
+                        .filter(k -> !"ID".equals(k))
+                        .map(k -> k + " = :#" + k)
+                        .collect(Collectors.joining(", ")));
+
+        producerTemplate.requestBodyAndHeaders(sql, null, values);
 
         return Response
                 .created(new URI("https://camel.apache.org/"))
@@ -145,4 +189,35 @@ public class SqlResource {
 
         return results.get("#result-set-1").get(0).get("PUBLIC.ADD_NUMS(?1, ?2)").toString();
     }
+
+    @Path("/get/results/{resultId}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List consumerResults(@PathParam("resultId") String resultId) throws Exception {
+        List<Map> list = new LinkedList(this.results.get(resultId));
+        results.get(resultId).clear();
+        return list;
+    }
+
+    @GET
+    @Path("/route/{routeId}/{operation}")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String route(@PathParam("routeId") String routeId, @PathParam("operation") String operation)
+            throws Exception {
+        //is start enough
+        switch (operation) {
+            case "stop":
+                camelContext.getRouteController().stopRoute(routeId);
+                break;
+            case "start":
+                camelContext.getRouteController().startRoute(routeId);
+                break;
+            case "status":
+                return camelContext.getRouteController().getRouteStatus(routeId).name();
+
+        }
+
+        return null;
+    }
+
 }

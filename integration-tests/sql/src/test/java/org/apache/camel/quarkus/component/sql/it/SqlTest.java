@@ -19,7 +19,12 @@ package org.apache.camel.quarkus.component.sql.it;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import org.apache.camel.util.CollectionHelper;
 import org.junit.jupiter.api.Test;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.is;
 
@@ -30,9 +35,10 @@ class SqlTest {
     public void testSqlComponent() {
         // Create Camel species
         RestAssured.given()
-                .contentType(ContentType.TEXT)
-                .body("Dromedarius")
-                .post("/sql/post")
+                .contentType(ContentType.JSON)
+                .queryParam("table", "camel")
+                .body(CollectionHelper.mapOf("species", "Dromedarius"))
+                .post("/sql/insert")
                 .then()
                 .statusCode(201);
 
@@ -65,5 +71,54 @@ class SqlTest {
                 .then()
                 .statusCode(200)
                 .body(is("15"));
+    }
+
+    @Test
+    public void testConsumer() throws InterruptedException {
+        RestAssured.given()
+                .get("/sql/route/consumerRoute/start")
+                .then().statusCode(204);
+
+        //wait for consumer rto start
+        Thread.sleep(500);
+
+        RestAssured.given()
+                .queryParam("table", "projects")
+                .contentType(ContentType.JSON)
+                .body(CollectionHelper.mapOf("id", 1, "project", "Camel", "license", "222", "processed", false))
+                .post("/sql/insert")
+                .then()
+                .statusCode(201);
+
+        //wait for the record to be caught
+        Thread.sleep(500);
+
+        List l = RestAssured.get("/sql/get/results/consumerResults")
+                .then()
+                .statusCode(200)
+                .extract().as(List.class);
+
+        System.out.println(l);
+
+        Map m = new HashMap((Map)l.get(0));
+        m.put("LICENSE", "XXX");
+        m.put("PROCESSED", "false");
+        //update
+        RestAssured.given()
+                .queryParam("table", "projects")
+                .contentType(ContentType.JSON)
+                .body(m)
+                .post("/sql/update")
+                .then()
+                .statusCode(201);
+
+        Thread.sleep(500);
+
+        l = RestAssured.get("/sql/get/results/consumerResults")
+                .then()
+                .statusCode(200)
+                .extract().as(List.class);
+
+        System.out.println(l);
     }
 }
