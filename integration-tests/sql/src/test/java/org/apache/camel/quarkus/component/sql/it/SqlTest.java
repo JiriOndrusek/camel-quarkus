@@ -16,16 +16,16 @@
  */
 package org.apache.camel.quarkus.component.sql.it;
 
+import java.util.List;
+import java.util.Map;
+
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.util.CollectionHelper;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 
 @QuarkusTest
@@ -82,10 +82,12 @@ class SqlTest {
         //wait for consumer rto start
         Thread.sleep(500);
 
+        Map project = CollectionHelper.mapOf("ID", 1, "PROJECT", "Camel", "LICENSE", "222", "PROCESSED", false);
+
         RestAssured.given()
                 .queryParam("table", "projects")
                 .contentType(ContentType.JSON)
-                .body(CollectionHelper.mapOf("id", 1, "project", "Camel", "license", "222", "processed", false))
+                .body(project)
                 .post("/sql/insert")
                 .then()
                 .statusCode(201);
@@ -96,29 +98,24 @@ class SqlTest {
         List l = RestAssured.get("/sql/get/results/consumerResults")
                 .then()
                 .statusCode(200)
+                .body("size()", is(1), "$", hasItem(project))
                 .extract().as(List.class);
 
-        System.out.println(l);
-
-        Map m = new HashMap((Map)l.get(0));
-        m.put("LICENSE", "XXX");
-        m.put("PROCESSED", "false");
+        Map updatedProject = CollectionHelper.mapOf("ID", 1, "PROJECT", "Camel", "LICENSE", "XXX", "PROCESSED", false);
         //update
         RestAssured.given()
                 .queryParam("table", "projects")
                 .contentType(ContentType.JSON)
-                .body(m)
+                .body(updatedProject)
                 .post("/sql/update")
                 .then()
                 .statusCode(201);
 
         Thread.sleep(500);
 
-        l = RestAssured.get("/sql/get/results/consumerResults")
+        RestAssured.get("/sql/get/results/consumerResults")
                 .then()
                 .statusCode(200)
-                .extract().as(List.class);
-
-        System.out.println(l);
+                .body("size()", is(1), "$", hasItem(updatedProject));
     }
 }

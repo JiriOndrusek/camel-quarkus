@@ -29,7 +29,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -206,14 +205,14 @@ public class SqlResource {
             throws Exception {
         //is start enough
         switch (operation) {
-            case "stop":
-                camelContext.getRouteController().stopRoute(routeId);
-                break;
-            case "start":
-                camelContext.getRouteController().startRoute(routeId);
-                break;
-            case "status":
-                return camelContext.getRouteController().getRouteStatus(routeId).name();
+        case "stop":
+            camelContext.getRouteController().stopRoute(routeId);
+            break;
+        case "start":
+            camelContext.getRouteController().startRoute(routeId);
+            break;
+        case "status":
+            return camelContext.getRouteController().getRouteStatus(routeId).name();
 
         }
 

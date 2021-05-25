@@ -1,15 +1,16 @@
 package org.apache.camel.quarkus.component.sql.it;
 
-import org.apache.camel.builder.RouteBuilder;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.apache.camel.builder.RouteBuilder;
 
 @ApplicationScoped
 public class SqlRoutes extends RouteBuilder {
