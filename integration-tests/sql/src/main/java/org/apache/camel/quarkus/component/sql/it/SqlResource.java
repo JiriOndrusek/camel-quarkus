@@ -44,6 +44,7 @@ import javax.ws.rs.core.Response;
 
 import io.agroal.api.AgroalDataSource;
 import org.apache.camel.CamelContext;
+import org.apache.camel.CamelExecutionException;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.quarkus.component.sql.it.model.Camel;
 import org.springframework.util.LinkedCaseInsensitiveMap;
@@ -234,6 +235,10 @@ public class SqlResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Object toDirect(@PathParam("directId") String directId, Map<String, Object> headers) throws Exception {
-        return producerTemplate.requestBodyAndHeaders("direct:" + directId, null, headers, Object.class);
+        try {
+            return producerTemplate.requestBodyAndHeaders("direct:" + directId, null, headers, Object.class);
+        } catch (CamelExecutionException e) {
+            return e.getCause().getClass().getName() + ":" + e.getCause().getMessage();
+        }
     }
 }

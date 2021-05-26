@@ -30,26 +30,18 @@ public class SqlRoutes extends RouteBuilder {
 
         from("sql:select * from projects where processed = false order by id?initialDelay=0&delay=50&consumer.onConsume=update projects set processed = true where id = :#id")
                 .id("consumerRoute").autoStartup(false)
-                .process(e -> {
-                    results.get("consumerRoute").add(e.getMessage().getBody(Map.class));
-                });
+                .process(e -> results.get("consumerRoute").add(e.getMessage().getBody(Map.class)));
 
         from("sql:classpath:sql/selectProjects.sql?initialDelay=0&delay=50&consumer.onConsume=update projects set processed = true")
                 .id("consumerClasspathRoute").autoStartup(false)
-                .process(e -> {
-                    System.out.println("received ++++++");
-                    results.get("consumerClasspathRoute").add(e.getMessage().getBody(Map.class));
-                });
+                .process(e -> results.get("consumerClasspathRoute").add(e.getMessage().getBody(Map.class)));
 
         Path tmpFile = createTmpFileFrom("sql/selectProjects.sql");
 
         from("sql:file:" + tmpFile
                 + "?initialDelay=0&delay=50&consumer.onConsume=update projects set processed = true")
                         .id("consumerFileRoute").autoStartup(false)
-                        .process(e -> {
-                            System.out.println("received ++++++");
-                            results.get("consumerFileRoute").add(e.getMessage().getBody(Map.class));
-                        });
+                        .process(e -> results.get("consumerFileRoute").add(e.getMessage().getBody(Map.class)));
 
         from("direct:transacted")
                 .transacted("PROPAGATION_REQUIRED")

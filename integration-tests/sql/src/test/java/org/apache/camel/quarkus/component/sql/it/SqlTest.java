@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.component.sql.it;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
@@ -25,6 +26,7 @@ import org.apache.camel.component.sql.SqlConstants;
 import org.apache.camel.util.CollectionHelper;
 import org.junit.jupiter.api.Test;
 
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.*;
 
 @QuarkusTest
@@ -114,7 +116,8 @@ class SqlTest {
                         "rollback", true))
                 .post("/sql/toDirect/transacted")
                 .then()
-                .statusCode(500);
+                .statusCode(200)
+                .body(is("java.lang.Exception:forced Exception"));
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -125,13 +128,22 @@ class SqlTest {
                 .body("size()", is(1));
     }
 
-    private void testConsumer(int id, String routeId) throws InterruptedException {
-        RestAssured.given()
-                .get("/sql/route/" + routeId + "/start")
-                .then().statusCode(204);
+    @Test
+    public void testDefaultErrorCode() throws InterruptedException {
 
-        //wait for consumer rto start
-        Thread.sleep(500);
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(CollectionHelper.mapOf(SqlConstants.SQL_QUERY,
+                        "select * from projects where project = 'Transacted' order id"))
+                .post("/sql/toDirect/transacted")
+                .then()
+                .statusCode(200)
+                .body(startsWith("org.springframework.jdbc.BadSqlGrammarException"));
+
+    }
+
+    private void testConsumer(int id, String routeId) throws InterruptedException {
+        route(routeId, "start", "Started");
 
         Map project = CollectionHelper.mapOf("ID", id, "PROJECT", routeId, "LICENSE", "222", "PROCESSED", false);
         Map updatedProject = CollectionHelper.mapOf("ID", id, "PROJECT", routeId, "LICENSE", "XXX", "PROCESSED", false);
@@ -168,10 +180,19 @@ class SqlTest {
                 .statusCode(200)
                 .body("size()", is(1), "$", hasItem(updatedProject));
 
+        route(routeId, "stop", "Stopped");
+    }
+
+    private void route(String routeId, String operation, String expectedOutput) {
         RestAssured.given()
-                .get("/sql/route/" + routeId + "/stop")
+                .get("/sql/route/" + routeId + "/" + operation)
                 .then().statusCode(204);
 
-        Thread.sleep(500);
+        if (expectedOutput != null) {
+            await().atMost(5, TimeUnit.SECONDS).until(() -> RestAssured
+                    .get("/sql/route/" + routeId + "/status")
+                    .then()
+                    .extract().asString(), equalTo(expectedOutput));
+        }
     }
 }
