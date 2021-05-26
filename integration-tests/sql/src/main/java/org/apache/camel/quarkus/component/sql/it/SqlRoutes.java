@@ -1,6 +1,7 @@
 package org.apache.camel.quarkus.component.sql.it;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.transaction.TransactionManager;
 
 import org.apache.camel.builder.RouteBuilder;
 
@@ -19,6 +21,9 @@ public class SqlRoutes extends RouteBuilder {
     @Inject
     @Named("results")
     Map<String, List<Map>> results;
+
+    @Inject
+    TransactionManager tm;
 
     @Override
     public void configure() throws IOException {
@@ -36,9 +41,31 @@ public class SqlRoutes extends RouteBuilder {
                     results.get("consumerClasspathRoute").add(e.getMessage().getBody(Map.class));
                 });
 
+        Path tmpFile = createTmpFileFrom("sql/selectProjects.sql");
+
+        from("sql:file:" + tmpFile
+                + "?initialDelay=0&delay=50&consumer.onConsume=update projects set processed = true")
+                        .id("consumerFileRoute").autoStartup(false)
+                        .process(e -> {
+                            System.out.println("received ++++++");
+                            results.get("consumerFileRoute").add(e.getMessage().getBody(Map.class));
+                        });
+
+        from("direct:transacted")
+                .transacted("PROPAGATION_REQUIRED")
+                .to("sql:overriddenByTheHeader")
+                .process(e -> {
+                    if (e.getIn().getHeader("rollback", boolean.class)) {
+                        throw new Exception("forced Exception");
+                    }
+                });
+
+    }
+
+    private Path createTmpFileFrom(String file) throws IOException {
         File tmpFile = File.createTempFile("selectProjects-", ".sql");
         tmpFile.deleteOnExit();
-        try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("sql/selectProjects.sql")) { //todo quick workaround
+        try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(file)) { //todo quick workaround
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             int c;
@@ -47,15 +74,7 @@ public class SqlRoutes extends RouteBuilder {
             }
             new FileOutputStream(tmpFile).write(out.toByteArray());
         }
-
-        from("sql:file:" + tmpFile.toPath()
-                + "?initialDelay=0&delay=50&consumer.onConsume=update projects set processed = true")
-                        .id("consumerFileRoute").autoStartup(false)
-                        .process(e -> {
-                            System.out.println("received ++++++");
-                            results.get("consumerFileRoute").add(e.getMessage().getBody(Map.class));
-                        });
-
+        return tmpFile.toPath();
     }
 
     @Produces

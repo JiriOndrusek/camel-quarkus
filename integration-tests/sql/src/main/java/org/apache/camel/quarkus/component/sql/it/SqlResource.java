@@ -229,4 +229,11 @@ public class SqlResource {
         return null;
     }
 
+    @Path("/toDirect/{directId}")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object toDirect(@PathParam("directId") String directId, Map<String, Object> headers) throws Exception {
+        return producerTemplate.requestBodyAndHeaders("direct:" + directId, null, headers, Object.class);
+    }
 }
