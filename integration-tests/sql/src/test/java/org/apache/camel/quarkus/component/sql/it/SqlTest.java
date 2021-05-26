@@ -16,7 +16,6 @@
  */
 package org.apache.camel.quarkus.component.sql.it;
 
-import java.util.List;
 import java.util.Map;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -24,6 +23,8 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.util.CollectionHelper;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
@@ -73,16 +74,20 @@ class SqlTest {
                 .body(is("15"));
     }
 
-    @Test
-    public void testConsumer() throws InterruptedException {
+    @ParameterizedTest
+    @ValueSource(strings = { "consumerRoute", "consumerClasspathRoute" })
+    //    @ValueSource(strings = { "consumerClasspathRoute" })
+    public void testConsumer(String routeId) throws InterruptedException {
+        int id = routeId.equals("consumerRoute") ? 1 : 2;
         RestAssured.given()
-                .get("/sql/route/consumerRoute/start")
+                .get("/sql/route/" + routeId + "/start")
                 .then().statusCode(204);
 
         //wait for consumer rto start
         Thread.sleep(500);
 
-        Map project = CollectionHelper.mapOf("ID", 1, "PROJECT", "Camel", "LICENSE", "222", "PROCESSED", false);
+        Map project = CollectionHelper.mapOf("ID", id, "PROJECT", routeId, "LICENSE", "222", "PROCESSED", false);
+        Map updatedProject = CollectionHelper.mapOf("ID", id, "PROJECT", routeId, "LICENSE", "XXX", "PROCESSED", false);
 
         RestAssured.given()
                 .queryParam("table", "projects")
@@ -95,13 +100,11 @@ class SqlTest {
         //wait for the record to be caught
         Thread.sleep(500);
 
-        List l = RestAssured.get("/sql/get/results/consumerResults")
+        RestAssured.get("/sql/get/results/" + routeId)
                 .then()
                 .statusCode(200)
-                .body("size()", is(1), "$", hasItem(project))
-                .extract().as(List.class);
+                .body("size()", is(1), "$", hasItem(project));
 
-        Map updatedProject = CollectionHelper.mapOf("ID", 1, "PROJECT", "Camel", "LICENSE", "XXX", "PROCESSED", false);
         //update
         RestAssured.given()
                 .queryParam("table", "projects")
@@ -113,9 +116,15 @@ class SqlTest {
 
         Thread.sleep(500);
 
-        RestAssured.get("/sql/get/results/consumerResults")
+        RestAssured.get("/sql/get/results/" + routeId)
                 .then()
                 .statusCode(200)
                 .body("size()", is(1), "$", hasItem(updatedProject));
+
+        RestAssured.given()
+                .get("/sql/route/" + routeId + "/stop")
+                .then().statusCode(204);
+
+        Thread.sleep(500);
     }
 }

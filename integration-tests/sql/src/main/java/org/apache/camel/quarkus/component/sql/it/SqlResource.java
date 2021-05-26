@@ -16,19 +16,15 @@
  */
 package org.apache.camel.quarkus.component.sql.it;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -73,7 +69,21 @@ public class SqlResource {
     public void postConstruct() throws SQLException, URISyntaxException, IOException {
         try (Connection conn = dataSource.getConnection()) {
             try (Statement statement = conn.createStatement()) {
-                try (Stream<String> stream = Files.lines(Paths.get(getClass().getResource("/sql/initDb.sql").toURI()))) {
+                //                String data = IOUtils.toString(getClass().getResourceAsStream("/INVENTORY-CommaDelimitedWithQualifier.txt"),
+                //                        StandardCharsets.UTF_8);
+                //                InputStream is = getClass().getResourceAsStream("/sql/initDb.sql");
+                //                System.out.println("**********************" + is);
+
+                try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("initDb.sql")) { //todo quick workaround
+
+                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+                    int c;
+                    while ((c = is.read()) >= 0) {
+                        out.write(c);
+                    }
+                    String data = (out.toString("UTF-8"));
+
+                    Stream<String> stream = Arrays.stream(data.split("\n"));
                     stream.filter(s -> s != null && !"".equals(s) && !s.startsWith("--")).forEach(s -> {
                         try {
                             statement.execute(s);
@@ -140,7 +150,7 @@ public class SqlResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
     public Response insert(@QueryParam("table") String table, Map<String, Object> values) throws Exception {
-
+        System.out.println("+++++++++++ insert " + values);
         LinkedHashMap linkedHashMap = new LinkedHashMap(values);
 
         String sql = String.format("sql:INSERT INTO %s (%s) VALUES (%s)", table,

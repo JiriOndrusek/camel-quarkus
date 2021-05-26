@@ -24,8 +24,14 @@ public class SqlRoutes extends RouteBuilder {
         from("sql:select * from projects where processed = false order by id?initialDelay=0&delay=50&consumer.onConsume=update projects set processed = true where id = :#id")
                 .id("consumerRoute").autoStartup(false)
                 .process(e -> {
-                    System.out.println("************8 received ");
-                    results.get("consumerResults").add(e.getMessage().getBody(Map.class));
+                    results.get("consumerRoute").add(e.getMessage().getBody(Map.class));
+                });
+
+        from("sql:classpath:sql/selectProjects.sql?initialDelay=0&delay=50&consumer.onConsume=update projects set processed = true")
+                .id("consumerClasspathRoute").autoStartup(false)
+                .process(e -> {
+                    System.out.println("received ++++++");
+                    results.get("consumerClasspathRoute").add(e.getMessage().getBody(Map.class));
                 });
 
     }
@@ -35,7 +41,8 @@ public class SqlRoutes extends RouteBuilder {
     @Named("results")
     Map<String, List<Map>> results() {
         Map<String, List<Map>> result = new HashMap<>();
-        result.put("consumerResults", new CopyOnWriteArrayList<>());
+        result.put("consumerRoute", new CopyOnWriteArrayList<>());
+        result.put("consumerClasspathRoute", new CopyOnWriteArrayList<>());
         return result;
     }
 }

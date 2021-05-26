@@ -15,13 +15,8 @@
 -- limitations under the License.
 --
 
-DROP TABLE IF EXISTS camel
-CREATE TABLE camel (id int AUTO_INCREMENT, species VARCHAR(255))
-CREATE ALIAS ADD_NUMS FOR "org.apache.camel.quarkus.component.sql.it.storedproc.NumberAddStoredProcedure.addNumbers"
-
--- for consumer
-DROP TABLE IF EXISTS projects
-create table projects (id integer primary key, project varchar(25), license varchar(5), processed BOOLEAN);
--- insert into projects values (4, 'Camel', 'ASF', false);
--- insert into projects values (2, 'AMQ', 'ASF');
--- insert into projects values (3, 'Linux', 'XX');
+-- this is a comment
+select *
+from projects
+where processed = false
+order by id
