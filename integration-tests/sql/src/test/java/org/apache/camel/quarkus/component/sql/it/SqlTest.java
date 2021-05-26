@@ -23,11 +23,8 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.util.CollectionHelper;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 
 @QuarkusTest
 class SqlTest {
@@ -74,11 +71,22 @@ class SqlTest {
                 .body(is("15"));
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = { "consumerRoute", "consumerClasspathRoute" })
-    //    @ValueSource(strings = { "consumerClasspathRoute" })
-    public void testConsumer(String routeId) throws InterruptedException {
-        int id = routeId.equals("consumerRoute") ? 1 : 2;
+    @Test
+    public void testConsumer() throws InterruptedException {
+        testConsumer(1, "consumerRoute");
+    }
+
+    @Test
+    public void testClasspathConsumer() throws InterruptedException {
+        testConsumer(2, "consumerClasspathRoute");
+    }
+
+    @Test
+    public void testFileConsumer() throws InterruptedException {
+        testConsumer(3, "consumerFileRoute");
+    }
+
+    private void testConsumer(int id, String routeId) throws InterruptedException {
         RestAssured.given()
                 .get("/sql/route/" + routeId + "/start")
                 .then().statusCode(204);
