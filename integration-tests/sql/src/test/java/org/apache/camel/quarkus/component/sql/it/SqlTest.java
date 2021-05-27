@@ -16,6 +16,7 @@
  */
 package org.apache.camel.quarkus.component.sql.it;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -26,6 +27,7 @@ import org.apache.camel.component.sql.SqlConstants;
 import org.apache.camel.util.CollectionHelper;
 import org.junit.jupiter.api.Test;
 
+import static io.restassured.RestAssured.given;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.*;
 
@@ -134,12 +136,56 @@ class SqlTest {
         RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(CollectionHelper.mapOf(SqlConstants.SQL_QUERY,
-                        "select * from projects where project = 'Transacted' order id"))
+                        "select * from NOT_EXIST order id"))
                 .post("/sql/toDirect/transacted")
                 .then()
                 .statusCode(200)
                 .body(startsWith("org.springframework.jdbc.BadSqlGrammarException"));
 
+    }
+
+    @Test
+    public void testIdempotentRepository() {
+        // add value with key 1
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .queryParam("body", "one")
+                .body(CollectionHelper.mapOf("messageId", "1"))
+                .post("/sql/toDirect/idempotent")
+                .then()
+                .statusCode(200);
+
+        // add value with key 2
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .queryParam("body", "two")
+                .body(CollectionHelper.mapOf("messageId", "2"))
+                .post("/sql/toDirect/idempotent")
+                .then()
+                .statusCode(200);
+
+        // add same value with key 3
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .queryParam("body", "three")
+                .body(CollectionHelper.mapOf("messageId", "3"))
+                .post("/sql/toDirect/idempotent")
+                .then()
+                .statusCode(200);
+
+        // add another value with key 1 -- this one is supposed to be skipped
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .queryParam("body", "four")
+                .body(CollectionHelper.mapOf("messageId", "1"))
+                .post("/sql/toDirect/idempotent")
+                .then()
+                .statusCode(200);
+
+        // get all values added to the map
+        await().atMost(5, TimeUnit.SECONDS).until(() -> (Iterable<? extends String>) RestAssured
+                .get("/sql/get/results/idempotentRoute").then().extract().as(List.class),
+                containsInAnyOrder("one", "two", "three"));
     }
 
     private void testConsumer(int id, String routeId) throws InterruptedException {

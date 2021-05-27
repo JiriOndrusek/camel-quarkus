@@ -13,17 +13,22 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.transaction.TransactionManager;
 
+import io.agroal.api.AgroalDataSource;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.processor.idempotent.jdbc.JdbcMessageIdRepository;
 
 @ApplicationScoped
 public class SqlRoutes extends RouteBuilder {
 
     @Inject
     @Named("results")
-    Map<String, List<Map>> results;
+    Map<String, List> results;
 
     @Inject
     TransactionManager tm;
+
+    @Inject
+    AgroalDataSource dataSource;
 
     @Override
     public void configure() throws IOException {
@@ -37,7 +42,6 @@ public class SqlRoutes extends RouteBuilder {
                 .process(e -> results.get("consumerClasspathRoute").add(e.getMessage().getBody(Map.class)));
 
         Path tmpFile = createTmpFileFrom("sql/selectProjects.sql");
-
         from("sql:file:" + tmpFile
                 + "?initialDelay=0&delay=50&consumer.onConsume=update projects set processed = true")
                         .id("consumerFileRoute").autoStartup(false)
@@ -51,6 +55,12 @@ public class SqlRoutes extends RouteBuilder {
                         throw new Exception("forced Exception");
                     }
                 });
+
+        // Idempotent Repository
+        JdbcMessageIdRepository repo = new JdbcMessageIdRepository(dataSource, "idempotentRepo");
+        from("direct:idempotent")
+                .idempotentConsumer(header("messageId"), repo)
+                .process(e -> results.get("idempotentRoute").add(e.getMessage().getBody(String.class)));
 
     }
 
@@ -72,11 +82,12 @@ public class SqlRoutes extends RouteBuilder {
     @Produces
     @ApplicationScoped
     @Named("results")
-    Map<String, List<Map>> results() {
-        Map<String, List<Map>> result = new HashMap<>();
+    Map<String, List> results() {
+        Map<String, List> result = new HashMap<>();
         result.put("consumerRoute", new CopyOnWriteArrayList<>());
         result.put("consumerClasspathRoute", new CopyOnWriteArrayList<>());
         result.put("consumerFileRoute", new CopyOnWriteArrayList<>());
+        result.put("idempotentRoute", new CopyOnWriteArrayList<>());
         return result;
     }
 }

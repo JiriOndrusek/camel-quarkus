@@ -50,7 +50,8 @@ public class HazelcastIdempotentResource {
 
     @POST
     public Response add(HazelcastMapRequest request) {
-        producerTemplate.sendBodyAndHeader("direct:in-idempotent", request.getValue(), "messageId", request.getId());
+        producerTemplate.sendBodyAndHeader("direct:" +
+                "in-idempotent", request.getValue(), "messageId", request.getId());
         return Response.accepted().build();
     }
 

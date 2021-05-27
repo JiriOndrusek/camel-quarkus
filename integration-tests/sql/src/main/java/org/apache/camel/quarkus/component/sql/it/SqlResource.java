@@ -61,7 +61,7 @@ public class SqlResource {
 
     @Inject
     @Named("results")
-    Map<String, List<Map>> results;
+    Map<String, List> results;
 
     @Inject
     CamelContext camelContext;
@@ -70,11 +70,6 @@ public class SqlResource {
     public void postConstruct() throws SQLException, URISyntaxException, IOException {
         try (Connection conn = dataSource.getConnection()) {
             try (Statement statement = conn.createStatement()) {
-                //                String data = IOUtils.toString(getClass().getResourceAsStream("/INVENTORY-CommaDelimitedWithQualifier.txt"),
-                //                        StandardCharsets.UTF_8);
-                //                InputStream is = getClass().getResourceAsStream("/sql/initDb.sql");
-                //                System.out.println("**********************" + is);
-
                 try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("initDb.sql")) { //todo quick workaround
 
                     ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -151,7 +146,6 @@ public class SqlResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
     public Response insert(@QueryParam("table") String table, Map<String, Object> values) throws Exception {
-        System.out.println("+++++++++++ insert " + values);
         LinkedHashMap linkedHashMap = new LinkedHashMap(values);
 
         String sql = String.format("sql:INSERT INTO %s (%s) VALUES (%s)", table,
@@ -234,11 +228,13 @@ public class SqlResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Object toDirect(@PathParam("directId") String directId, Map<String, Object> headers) throws Exception {
+    public Object toDirect(@PathParam("directId") String directId, @QueryParam("body") String body, Map<String, Object> headers)
+            throws Exception {
         try {
-            return producerTemplate.requestBodyAndHeaders("direct:" + directId, null, headers, Object.class);
+            return producerTemplate.requestBodyAndHeaders("direct:" + directId, body, headers, Object.class);
         } catch (CamelExecutionException e) {
             return e.getCause().getClass().getName() + ":" + e.getCause().getMessage();
         }
     }
+
 }

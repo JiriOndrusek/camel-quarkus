@@ -22,6 +22,8 @@ CREATE ALIAS ADD_NUMS FOR "org.apache.camel.quarkus.component.sql.it.storedproc.
 -- for consumer
 DROP TABLE IF EXISTS projects
 create table projects (id integer primary key, project varchar(25), license varchar(5), processed BOOLEAN);
--- insert into projects values (4, 'Camel', 'ASF', false);
--- insert into projects values (2, 'AMQ', 'ASF');
--- insert into projects values (3, 'Linux', 'XX');
+
+
+-- idempotent repo
+DROP TABLE IF EXISTS CAMEL_MESSAGEPROCESSED
+-- CREATE TABLE camel_messageProcessed ( processorName VARCHAR(255), messageId VARCHAR(100), createdAt TIMESTAMP )
