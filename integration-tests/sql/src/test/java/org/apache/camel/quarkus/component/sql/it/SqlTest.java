@@ -23,6 +23,8 @@ import java.util.concurrent.TimeUnit;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import io.restassured.response.ValidatableResponse;
+import io.restassured.specification.RequestSpecification;
 import org.apache.camel.component.sql.SqlConstants;
 import org.apache.camel.util.CollectionHelper;
 import org.junit.jupiter.api.Disabled;
@@ -35,7 +37,7 @@ import static org.hamcrest.Matchers.*;
 @QuarkusTest
 class SqlTest {
 
-    //    @Test
+    @Test
     public void testSqlComponent() {
         // Create Camel species
         RestAssured.given()
@@ -65,7 +67,7 @@ class SqlTest {
                 .body(is("Dromedarius 1"));
     }
 
-    //    @Test
+    @Test
     public void testSqlStoredComponent() {
         // Invoke ADD_NUMS stored procedure
         RestAssured.given()
@@ -77,87 +79,77 @@ class SqlTest {
                 .body(is("15"));
     }
 
-    //    @Test
+    @Test
     public void testConsumer() throws InterruptedException {
         testConsumer(1, "consumerRoute");
     }
 
-    //    @Test
+    @Test
     public void testClasspathConsumer() throws InterruptedException {
         testConsumer(2, "consumerClasspathRoute");
     }
 
-    //    @Test
+    @Test
     public void testFileConsumer() throws InterruptedException {
         testConsumer(3, "consumerFileRoute");
     }
 
-    //    @Test
+    @Test
     public void testTransacted() throws InterruptedException {
 
-        RestAssured.given()
-                .contentType(ContentType.JSON)
-                .body(CollectionHelper.mapOf(SqlConstants.SQL_QUERY,
-                        "insert into projects values (5, 'Transacted', 'ASF', false)",
-                        "rollback", false))
-                .post("/sql/toDirect/transacted")
-                .then()
+        postMap("/sql/toDirect/transacted", CollectionHelper.mapOf(SqlConstants.SQL_QUERY,
+                "insert into projects values (5, 'Transacted', 'ASF', false)",
+                "rollback", false))
                 .statusCode(204);
 
-        RestAssured.given()
-                .contentType(ContentType.JSON)
-                .body(CollectionHelper.mapOf(SqlConstants.SQL_QUERY, "select * from projects where project = 'Transacted'"))
-                .post("/sql/toDirect/transacted")
-                .then()
+        postMap("/sql/toDirect/transacted", CollectionHelper.mapOf(SqlConstants.SQL_QUERY,
+                "select * from projects where project = 'Transacted'"))
                 .statusCode(200)
                 .body("size()", is(1));
 
-        RestAssured.given()
-                .contentType(ContentType.JSON)
-                .body(CollectionHelper.mapOf(SqlConstants.SQL_QUERY,
+        postMap("/sql/toDirect/transacted", CollectionHelper.mapOf(SqlConstants.SQL_QUERY,
                         "insert into projects values (6, 'Transacted', 'ASF', false)",
                         "rollback", true))
-                .post("/sql/toDirect/transacted")
-                .then()
                 .statusCode(200)
                 .body(is("java.lang.Exception:forced Exception"));
 
-        RestAssured.given()
-                .contentType(ContentType.JSON)
-                .body(CollectionHelper.mapOf(SqlConstants.SQL_QUERY, "select * from projects where project = 'Transacted'"))
-                .post("/sql/toDirect/transacted")
-                .then()
+        postMap("/sql/toDirect/transacted", CollectionHelper.mapOf(SqlConstants.SQL_QUERY, "select * from projects where project = 'Transacted'"))
                 .statusCode(200)
                 .body("size()", is(1));
     }
 
-    //    @Test
+    @Test
     public void testDefaultErrorCode() throws InterruptedException {
-
-        RestAssured.given()
-                .contentType(ContentType.JSON)
-                .body(CollectionHelper.mapOf(SqlConstants.SQL_QUERY,
-                        "select * from NOT_EXIST order id"))
-                .post("/sql/toDirect/transacted")
-                .then()
+        postMap("/sql/toDirect/transacted", CollectionHelper.mapOf(SqlConstants.SQL_QUERY, "select * from NOT_EXIST order id"))
                 .statusCode(200)
                 .body(startsWith("org.springframework.jdbc.BadSqlGrammarException"));
-
     }
 
-    //    @Test
+    @Test
     public void testIdempotentRepository() {
         // add value with key 1
-        sendToDirect("/sql/toDirect/idempotent", "one", "1", 200);
+        postMapWithParam("/sql/toDirect/idempotent",
+                "body", "one",
+                CollectionHelper.mapOf("messageId", "1"))
+                .statusCode(200);
 
         // add value with key 2
-        sendToDirect("/sql/toDirect/idempotent", "two", "2", 200);
+        postMapWithParam("/sql/toDirect/idempotent",
+                "body", "two",
+                CollectionHelper.mapOf("messageId", "2"))
+                .statusCode(200);
 
         // add same value with key 3
-        sendToDirect("/sql/toDirect/idempotent", "three", "3", 200);
+        postMapWithParam("/sql/toDirect/idempotent",
+                "body", "three",
+                CollectionHelper.mapOf("messageId", "3"))
+                .statusCode(200);
 
         // add another value with key 1 -- this one is supposed to be skipped
-        sendToDirect("/sql/toDirect/idempotent", "four", "1", 200);
+        postMapWithParam("/sql/toDirect/idempotent",
+                "body", "four",
+                CollectionHelper.mapOf("messageId", "1"))
+                .statusCode(200);
 
         // get all values added to the map
         await().atMost(5, TimeUnit.SECONDS).until(() -> (Iterable<? extends String>) RestAssured
@@ -165,15 +157,6 @@ class SqlTest {
                 containsInAnyOrder("one", "two", "three"));
     }
 
-    private void sendToDirect(String toUrl, String body, String messageId, int statuscode) {
-        RestAssured.given()
-                .contentType(ContentType.JSON)
-                .queryParam("body", body)
-                .body(CollectionHelper.mapOf("messageId", messageId))
-                .post(toUrl)
-                .then()
-                .statusCode(statuscode);
-    }
 
     @Test
     @Disabled //needs serialization
@@ -222,12 +205,9 @@ class SqlTest {
         Map project = CollectionHelper.mapOf("ID", id, "PROJECT", routeId, "LICENSE", "222", "PROCESSED", false);
         Map updatedProject = CollectionHelper.mapOf("ID", id, "PROJECT", routeId, "LICENSE", "XXX", "PROCESSED", false);
 
-        RestAssured.given()
-                .queryParam("table", "projects")
-                .contentType(ContentType.JSON)
-                .body(project)
-                .post("/sql/insert")
-                .then()
+        postMapWithParam("/sql/insert",
+                "table", "projects",
+                project)
                 .statusCode(201);
 
         //wait for the record to be caught
@@ -239,12 +219,9 @@ class SqlTest {
                 .body("size()", is(1), "$", hasItem(project));
 
         //update
-        RestAssured.given()
-                .queryParam("table", "projects")
-                .contentType(ContentType.JSON)
-                .body(updatedProject)
-                .post("/sql/update")
-                .then()
+        postMapWithParam("/sql/update",
+                "table", "projects",
+                updatedProject)
                 .statusCode(201);
 
         Thread.sleep(500);
@@ -255,6 +232,24 @@ class SqlTest {
                 .body("size()", is(1), "$", hasItem(updatedProject));
 
         route(routeId, "stop", "Stopped");
+    }
+
+
+    private ValidatableResponse postMap(String toUrl, Map<String, String> body) {
+        return postMapWithParam(toUrl, null, null, body);
+    }
+
+    private ValidatableResponse postMapWithParam(String toUrl, String param, String paramValue, Map<String, String> body) {
+        RequestSpecification rs =  RestAssured.given()
+                .contentType(ContentType.JSON);
+        
+        if(param != null) {
+            rs = rs.queryParam(param, paramValue);
+        }
+
+        return rs.body(body)
+                .post(toUrl)
+                .then();
     }
 
     private void route(String routeId, String operation, String expectedOutput) {
