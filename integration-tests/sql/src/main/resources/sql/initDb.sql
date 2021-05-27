@@ -26,4 +26,9 @@ create table projects (id integer primary key, project varchar(25), license varc
 
 -- idempotent repo
 DROP TABLE IF EXISTS CAMEL_MESSAGEPROCESSED
--- CREATE TABLE camel_messageProcessed ( processorName VARCHAR(255), messageId VARCHAR(100), createdAt TIMESTAMP )
+
+-- aggregation repo
+DROP TABLE IF EXISTS aggregation
+CREATE TABLE aggregation (id varchar(255) NOT NULL, exchange blob NOT NULL, version BIGINT NOT NULL, constraint aggregation_pk PRIMARY KEY (id));
+DROP TABLE IF EXISTS aggregation_completed
+CREATE TABLE aggregation_completed (id varchar(255) NOT NULL, exchange blob NOT NULL, version BIGINT NOT NULL, constraint aggregation_completed_pk PRIMARY KEY (id));

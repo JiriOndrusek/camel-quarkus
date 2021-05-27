@@ -16,17 +16,12 @@
  */
 package org.apache.camel.quarkus.component.sql.it;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -68,28 +63,7 @@ public class SqlResource {
 
     @PostConstruct
     public void postConstruct() throws SQLException, URISyntaxException, IOException {
-        try (Connection conn = dataSource.getConnection()) {
-            try (Statement statement = conn.createStatement()) {
-                try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("initDb.sql")) { //todo quick workaround
 
-                    ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    int c;
-                    while ((c = is.read()) >= 0) {
-                        out.write(c);
-                    }
-                    String data = (out.toString("UTF-8"));
-
-                    Stream<String> stream = Arrays.stream(data.split("\n"));
-                    stream.filter(s -> s != null && !"".equals(s) && !s.startsWith("--")).forEach(s -> {
-                        try {
-                            statement.execute(s);
-                        } catch (SQLException ex) {
-                            throw new RuntimeException(ex);
-                        }
-                    });
-                }
-            }
-        }
     }
 
     @Path("/get/{species}")

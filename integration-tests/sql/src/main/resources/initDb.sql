@@ -22,6 +22,14 @@ CREATE ALIAS ADD_NUMS FOR "org.apache.camel.quarkus.component.sql.it.storedproc.
 -- for consumer
 DROP TABLE IF EXISTS projects
 create table projects (id integer primary key, project varchar(25), license varchar(5), processed BOOLEAN);
--- insert into projects values (4, 'Camel', 'ASF', false);
--- insert into projects values (2, 'AMQ', 'ASF');
--- insert into projects values (3, 'Linux', 'XX');
+
+
+
+-- idempotent repo
+DROP TABLE IF EXISTS CAMEL_MESSAGEPROCESSED
+
+-- aggregation repo
+DROP TABLE IF EXISTS aggregation
+CREATE TABLE aggregation (id varchar(255) NOT NULL, exchange blob NOT NULL, version BIGINT NOT NULL, constraint aggregation_pk PRIMARY KEY (id));
+DROP TABLE IF EXISTS aggregation_completed
+CREATE TABLE aggregation_completed (id varchar(255) NOT NULL, exchange blob NOT NULL, version BIGINT NOT NULL, constraint aggregation_completed_pk PRIMARY KEY (id));

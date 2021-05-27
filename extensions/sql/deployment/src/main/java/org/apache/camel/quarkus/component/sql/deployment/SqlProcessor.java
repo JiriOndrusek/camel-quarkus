@@ -23,7 +23,9 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.UnsafeAccessedFieldBuildItem;
 import org.apache.camel.quarkus.component.sql.CamelSqlConfig;
+import org.apache.camel.support.DefaultExchangeHolder;
 
 class SqlProcessor {
 
@@ -36,7 +38,19 @@ class SqlProcessor {
 
     @BuildStep
     void registerForReflection(BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
-        reflectiveClass.produce(new ReflectiveClassBuildItem(false, true, Types.class));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(false, true, Types.class, DefaultExchangeHolder.class));
+        //        reflectiveClass.produce(new ReflectiveClassBuildItem(false, false, DefaultExchangeHolder.class));
+    }
+
+    @BuildStep
+    void allowUnsafeAccess(BuildProducer<UnsafeAccessedFieldBuildItem> unsafeAccessProducer) {
+        unsafeAccessProducer.produce(new UnsafeAccessedFieldBuildItem(DefaultExchangeHolder.class.getName(), "exception"));
+        unsafeAccessProducer.produce(new UnsafeAccessedFieldBuildItem(DefaultExchangeHolder.class.getName(), "exchangeId"));
+        unsafeAccessProducer.produce(new UnsafeAccessedFieldBuildItem(DefaultExchangeHolder.class.getName(), "inBody"));
+        unsafeAccessProducer.produce(new UnsafeAccessedFieldBuildItem(DefaultExchangeHolder.class.getName(), "outBody"));
+        unsafeAccessProducer.produce(new UnsafeAccessedFieldBuildItem(DefaultExchangeHolder.class.getName(), "inHeaders"));
+        unsafeAccessProducer.produce(new UnsafeAccessedFieldBuildItem(DefaultExchangeHolder.class.getName(), "outHeaders"));
+        unsafeAccessProducer.produce(new UnsafeAccessedFieldBuildItem(DefaultExchangeHolder.class.getName(), "properties"));
     }
 
     @BuildStep
