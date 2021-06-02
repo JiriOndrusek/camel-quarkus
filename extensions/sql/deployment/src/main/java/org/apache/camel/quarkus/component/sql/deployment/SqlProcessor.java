@@ -17,13 +17,20 @@
 package org.apache.camel.quarkus.component.sql.deployment;
 
 import java.sql.Types;
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyBuildItem;
 import org.apache.camel.quarkus.component.sql.CamelSqlConfig;
+import org.apache.camel.support.DefaultExchangeHolder;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.Type;
 
 class SqlProcessor {
 
@@ -35,19 +42,17 @@ class SqlProcessor {
     }
 
     @BuildStep
-    void registerForReflection(BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
+    void registerForReflection3(BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
+                                BuildProducer<ReflectiveHierarchyBuildItem> reflectiveHierarchy) {
         reflectiveClass.produce(new ReflectiveClassBuildItem(false, true, Types.class));
-    }
+        reflectiveClass.produce(new ReflectiveClassBuildItem(false, true, true, true, DefaultExchangeHolder.class.getName()));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(false, false, false, true, String.class.getName()));
 
-    @BuildStep
-    void sqlNativeImageResources(BuildProducer<NativeImageResourceBuildItem> nativeImage, CamelSqlConfig config) {
-        if (!config.scriptFiles.isPresent()) {
-            return;
-        }
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, false, false, true, LinkedHashMap.class.getName(),
+                HashMap.class.getName(), Number.class.getName(), Integer.class.getName()));
 
-        config.scriptFiles.get()
-                .stream()
-                .map(scriptFile -> new NativeImageResourceBuildItem(scriptFile.replace("classpath:", "")))
-                .forEach(nativeImage::produce);
+        DotName simpleName = DotName.createSimple(LinkedHashMap.class.getName());
+        reflectiveHierarchy.produce(new ReflectiveHierarchyBuildItem.Builder().type(Type.create(simpleName, Type.Kind.CLASS))
+                .serialization(true).build());
     }
 }
