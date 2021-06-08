@@ -1,0 +1,1 @@
+Serialization-config.json is a workaround until serilazation support makes it into Quarkus (see https://github.com/quarkusio/quarkus/pull/15380[pull request])

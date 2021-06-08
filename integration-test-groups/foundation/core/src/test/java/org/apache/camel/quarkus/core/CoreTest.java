@@ -103,4 +103,9 @@ public class CoreTest {
     void testStartupStepRecorder() {
         RestAssured.when().get("/core/startup-step-recorder").then().body(is("true"));
     }
+
+    @Test
+    void testSerialization() {
+        RestAssured.when().get("/core/serialization").then().body(is("true"));
+    }
 }

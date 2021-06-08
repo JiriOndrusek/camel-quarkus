@@ -1,0 +1,44 @@
+[
+  {
+    "name" : "java.lang.Boolean"
+  },
+  {
+    "name" : "java.lang.Byte"
+  },
+  {
+    "name" : "java.lang.Character"
+  },
+  {
+    "name" : "java.lang.Double"
+  },
+  {
+    "name" : "java.lang.Float"
+  },
+  {
+    "name" : "java.lang.Integer"
+  },
+  {
+    "name" : "java.lang.Long"
+  },
+  {
+    "name" : "java.lang.Number"
+  },
+  {
+    "name" : "java.util.Date"
+  },
+  {
+    "name" : "java.lang.String"
+  },
+  {
+    "name" : "java.util.HashMap"
+  },
+  {
+    "name" : "java.math.BigInteger"
+  },
+  {
+    "name" : "java.util.LinkedHashMap"
+  },
+  {
+    "name" : "org.apache.camel.support.DefaultExchangeHolder"
+  }
+]

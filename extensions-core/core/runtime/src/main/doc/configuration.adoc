@@ -40,3 +40,26 @@ quarkus.camel.native.resources.include-patterns = *.txt
 ----
 
 More information about selecting resources for inclusion in the native executable could be found at xref:user-guide/native-mode.adoc#embedding-resource-in-native-executable[Embedding resource in native executable].
+
+==== Serialization in native mode
+
+Following classes are registered for serialization:
+
+* java.lang.Boolean
+* java.lang.Byte
+* java.lang.Character
+* java.lang.Float
+* java.lang.Double
+* java.lang.Integer
+* java.lang.Long
+* java.lang.Number
+* java.lang.String
+* java.math.BigInteger
+* java.util.Date
+* java.util.HashMap
+* java.util.LinkedHashMap
+
+Developers can configure other classes
+for serialization via the serialization configuration file
+`-H:SerializationConfigurationResources=/path/to-serialization-config.json` option. For more
+information see https://github.com/oracle/graal/pull/2730[pull request with feature].

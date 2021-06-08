@@ -67,6 +67,25 @@ Note that URI schemes such as `file` or `http` do not need to be listed.
 quarkus.camel.sql.script-files = queries.sql, classpath:sql/insert.sql
 ----
 
+=== SQL Aggregator ===
+
+If your exchanges in native mode contain objects other than:
+
+* `java.util.LinkedHashMap`
+* `java.util.HashMap`
+* `java.lang.String`
+* `java.lang.Number`
+* `java.lang.Integer`
+
+You have to register all those classes for serialization.
+
+There is a serialization support in GraalVM 21.0. Developers can configure classes
+for serialization via the serialization configuration file
+`-H:SerializationConfigurationResources=/path/to-serialization-config.json` option. For more
+information see https://github.com/oracle/graal/pull/2730[PR with feature].
+
+
+
 
 [width="100%",cols="80,5,15",options="header"]
 |===
