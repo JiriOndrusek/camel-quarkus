@@ -10,33 +10,25 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 
 @RegisterForReflection
-public class MessageServlet extends HttpServlet {
-
-    public static final String MESSAGE = "message";
-
-    private String message;
+public class AvroRpcServlet extends HttpServlet {
 
     @Override
     public void init(final ServletConfig config) throws ServletException {
         super.init(config);
-        message = config.getInitParameter(MESSAGE);
     }
 
     @Override
     protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
-        Responder responder = (Responder) req.getServletContext().getAttribute("avro");
+        Responder responder = (Responder) req.getServletContext().getAttribute("avro-servlet-param");
 
         new ResponderServlet(responder).service(req, resp);
     }
 
     @Override
     protected void doPost(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
-        Responder responder = (Responder) req.getServletContext().getAttribute("avro");
-//responder.respond()
-        new ResponderServlet(responder).service(req, resp);
+        doGet(req, resp);
 
     }
 }

@@ -49,7 +49,6 @@ public class AvroRpcTestResource implements QuarkusTestResourceLifecycleManager 
 
             // ---------------- producers ---------------
             final int reflectiveHttpPort = AvailablePortFinder.getNextAvailable();
-//            reflectHttpServer = new HttpQuarkusServer(
             reflectHttpServer = new HttpServer(
                     new ReflectResponder(TestReflection.class, httpTestReflection),
                     reflectiveHttpPort);
@@ -62,8 +61,7 @@ public class AvroRpcTestResource implements QuarkusTestResourceLifecycleManager 
             reflectNettyServer.start();
 
             final int specificHttpPort = AvailablePortFinder.getNextAvailable();
-            specificHttpServer = new HttpQuarkusServer(
-//            specificHttpServer = new HttpServer(
+            specificHttpServer = new HttpAvroRpcServer(
                     new SpecificResponder(KeyValueProtocol.class, httpKeyValue),
                     specificHttpPort);
             specificHttpServer.start();
