@@ -21,6 +21,7 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import org.apache.avro.specific.AvroGenerated;
 import org.jboss.jandex.AnnotationTarget;
@@ -50,5 +51,11 @@ class AvroRpcProcessor {
     @BuildStep
     void registerDependencyForIndex(BuildProducer<IndexDependencyBuildItem> indexDependency) {
         indexDependency.produce(new IndexDependencyBuildItem("org.apache.avro", "avro-ipc"));
+    }
+
+    @BuildStep
+    NativeImageResourceBuildItem nativeImageResourceBuildItem() {
+        return new NativeImageResourceBuildItem(
+                "META-INF/services/org.apache.camel.component.avro.spi.AvroRpcHttpServerBuilder");
     }
 }

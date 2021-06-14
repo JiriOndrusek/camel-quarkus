@@ -1,14 +1,9 @@
-package org.apache.camel.quarkus.component.avro.rpc.it;
+package org.apache.camel.quarkus.component.avro.rpc.spi;
 
 import java.io.IOException;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import io.quarkus.runtime.annotations.RegisterForReflection;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -95,5 +90,3 @@ public class HttpAvroRpcServer implements Server {
     }
 
 }
-
-

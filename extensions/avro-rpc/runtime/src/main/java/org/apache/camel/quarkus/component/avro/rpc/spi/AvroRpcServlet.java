@@ -1,15 +1,16 @@
-package org.apache.camel.quarkus.component.avro.rpc.it;
+package org.apache.camel.quarkus.component.avro.rpc.spi;
 
-import io.quarkus.runtime.annotations.RegisterForReflection;
-import org.apache.avro.ipc.Responder;
-import org.apache.avro.ipc.ResponderServlet;
+import java.io.IOException;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+
+import io.quarkus.runtime.annotations.RegisterForReflection;
+import org.apache.avro.ipc.Responder;
+import org.apache.avro.ipc.ResponderServlet;
 
 @RegisterForReflection
 public class AvroRpcServlet extends HttpServlet {
@@ -29,6 +30,5 @@ public class AvroRpcServlet extends HttpServlet {
     @Override
     protected void doPost(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
         doGet(req, resp);
-
     }
 }

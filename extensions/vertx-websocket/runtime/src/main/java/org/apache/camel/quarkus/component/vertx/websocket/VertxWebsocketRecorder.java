@@ -22,7 +22,6 @@ import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.annotations.Recorder;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
-
 import org.apache.camel.CamelContext;
 import org.apache.camel.component.vertx.websocket.VertxWebsocketComponent;
 import org.apache.camel.component.vertx.websocket.VertxWebsocketHost;
