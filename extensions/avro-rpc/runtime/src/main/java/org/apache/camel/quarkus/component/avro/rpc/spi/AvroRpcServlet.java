@@ -8,11 +8,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import io.quarkus.runtime.annotations.RegisterForReflection;
 import org.apache.avro.ipc.Responder;
 import org.apache.avro.ipc.ResponderServlet;
 
-@RegisterForReflection
 public class AvroRpcServlet extends HttpServlet {
 
     @Override
