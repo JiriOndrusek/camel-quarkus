@@ -16,10 +16,12 @@
  */
 package org.apache.camel.quarkus.component.avro.rpc.spi;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import org.apache.avro.ipc.Server;
 import org.apache.avro.ipc.specific.SpecificResponder;
 import org.apache.camel.component.avro.spi.AvroRpcHttpServerBuilder;
 
+@RegisterForReflection
 public class UndertowHttpServerBuilder implements AvroRpcHttpServerBuilder {
     @Override
     public Server create(SpecificResponder responder, int port) throws Exception {

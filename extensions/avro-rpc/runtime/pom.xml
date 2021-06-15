@@ -65,10 +65,14 @@
                     <groupId>org.apache.avro</groupId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>camel-avro-rpc-spi</artifactId>
+                    <artifactId>camel-avro-rpc-jetty</artifactId>
                     <groupId>org.apache.camel</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-avro-rpc-spi</artifactId>
         </dependency>
         <dependency>
             <artifactId>quarkus-avro</artifactId>
