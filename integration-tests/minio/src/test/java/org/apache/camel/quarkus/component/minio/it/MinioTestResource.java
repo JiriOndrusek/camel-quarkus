@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.component.minio.it;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.Map;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
@@ -49,8 +50,9 @@ public class MinioTestResource implements QuarkusTestResourceLifecycleManager {
         String host = minioServer.getHost();
 
         return CollectionHelper.mapOf(
-                "quarkus.minio.url", String.format("http://%s:%s", host, port));
+                "quarkus.minio.url2", String.format("http://%s:%s", host, port));
     }
+
 
     @Override
     public void stop() {

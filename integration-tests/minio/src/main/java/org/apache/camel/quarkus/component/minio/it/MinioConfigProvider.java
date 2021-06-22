@@ -47,7 +47,7 @@ public class MinioConfigProvider implements ConfigSourceProvider {
 
         private final Map<String, String> values = new HashMap<String, String>() {
             {
-                put("quarkus.minio.url", String.format("http://%s:%s", host, port));
+//                put("quarkus.minio.url", String.format("http://%s:%s", host, port));
                 put("quarkus.minio.access-key", MinioResource.SERVER_ACCESS_KEY);
                 put("quarkus.minio.secret-key", MinioResource.SERVER_SECRET_KEY);
             }

@@ -30,7 +30,7 @@ public class MinioClientProducer {
     @Named("minioClient")
     public MinioClient produceMinioClient() {
         return MinioClient.builder()
-                .endpoint(ConfigProvider.getConfig().getValue("quarkus.minio.url", String.class))
+                .endpoint(ConfigProvider.getConfig().getValue("quarkus.minio.url2", String.class))
                 .credentials(MinioResource.SERVER_ACCESS_KEY, MinioResource.SERVER_SECRET_KEY)
                 .build();
     }
