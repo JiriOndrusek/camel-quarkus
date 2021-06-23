@@ -34,6 +34,7 @@ import io.minio.GetObjectArgs;
 import io.minio.Result;
 import io.minio.messages.Bucket;
 import io.minio.messages.Item;
+import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.minio.MinioConstants;
@@ -52,16 +53,19 @@ public class MinioResource {
     @Inject
     ConsumerTemplate consumerTemplate;
 
+    @Inject
+    CamelContext camelContext;
+
     @Path("/consumer")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String consumer() {
-
         final String message = consumerTemplate.receiveBody(
                 "minio://mycamel?moveAfterRead=true&destinationBucketName=camel-kafka-connector&autoCreateBucket=true"
                         + "&accessKey=" + SERVER_ACCESS_KEY
                         + "&secretKey=RAW(" + SERVER_SECRET_KEY + ")"
-                        + "&minioClient=#minioClient",
+                        + "&minioClient=#minioClient"
+                        + "&autowiredEnabled=false",
                 5000, String.class);
         return message;
     }
