@@ -25,8 +25,10 @@ import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import io.quarkus.undertow.deployment.ServletBuildItem;
 import org.apache.avro.specific.AvroGenerated;
 import org.apache.camel.quarkus.component.avro.rpc.spi.AvroRpcServlet;
+import org.apache.camel.quarkus.component.avro.rpc.spi.FakeHttpServer;
 import org.apache.camel.quarkus.component.avro.rpc.spi.UndertowHttpServerFactory;
 import org.apache.camel.quarkus.core.deployment.spi.CamelServiceBuildItem;
 import org.jboss.jandex.AnnotationTarget;
@@ -54,7 +56,7 @@ class AvroRpcProcessor {
         reflectiveClassProducer.produce(new ReflectiveClassBuildItem(false, false, dtos));
         reflectiveClassProducer
                 .produce(new ReflectiveClassBuildItem(false, false, AvroRpcServlet.class,
-                        UndertowHttpServerFactory.class));
+                        UndertowHttpServerFactory.class, FakeHttpServer.class));
         reflectiveClassProducer
                 .produce(new ReflectiveClassBuildItem(false, false, "io.undertow.vertx.VertxUndertowEngine"));
     }
@@ -75,4 +77,16 @@ class AvroRpcProcessor {
         return new CamelServiceBuildItem(Paths.get("META-INF/services/org/apache/camel/avro-rpc-http-server-factory"),
                 UndertowHttpServerFactory.class.getName());
     }
+
+    @BuildStep
+    ServletBuildItem test() {
+        //        return ServletBuildItem.builder("avro-rpc", AvroRpcServlet.class.getName())
+        //                .setMappings(Collections.singletonList("/*")).build();
+        System.out.println("AvroRpcProcessor.testt");
+        ServletBuildItem servletBuildItem = ServletBuildItem.builder(FEATURE, AvroRpcServlet.class.getName())
+                .addMapping("/*")
+                .build();
+        return servletBuildItem;
+    }
+
 }

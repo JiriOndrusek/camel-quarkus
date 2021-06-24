@@ -76,7 +76,8 @@ public class AvroRpcTestResource implements QuarkusTestResourceLifecycleManager 
 
             final int reflectiveHttpTransceiverPort = AvailablePortFinder.getNextAvailable();
             final int reflectiveNettyTransceiverPort = AvailablePortFinder.getNextAvailable();
-            final int specificHttpTransceiverPort = AvailablePortFinder.getNextAvailable();
+            final int specificHttpTransceiverPort = 8081;
+            //            final int specificHttpTransceiverPort = AvailablePortFinder.getNextAvailable();
             final int specificNettyTransceiverPort = AvailablePortFinder.getNextAvailable();
 
             return CollectionHelper.mapOf(AvroRpcResource.REFLECTIVE_HTTP_SERVER_PORT_PARAM, String.valueOf(reflectiveHttpPort),

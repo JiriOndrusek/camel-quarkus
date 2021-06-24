@@ -29,7 +29,6 @@ import org.apache.avro.ipc.Transceiver;
 import org.apache.avro.ipc.netty.NettyTransceiver;
 import org.apache.avro.ipc.reflect.ReflectRequestor;
 import org.apache.avro.ipc.specific.SpecificRequestor;
-import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestPojo;
 import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestReflection;
 import org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.Key;
 import org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.KeyValueProtocol;
@@ -104,23 +103,23 @@ abstract class AvroRpcTestSupport {
                 .body(is(NAME_FROM_KEY_VALUE));
     }
 
-    @Test
-    public void testReflectionConsumer() throws Exception {
-        TestPojo testPojo = new TestPojo();
-        testPojo.setPojoName(NAME);
-        Object[] request = { testPojo };
-
-        initReflectRequestor();
-        reflectRequestor.request("setTestPojo", request);
-
-        RestAssured.given()
-                .contentType(ContentType.TEXT)
-                .body(protocol)
-                .post("/avro-rpc/reflectionConsumerGet")
-                .then()
-                .statusCode(200)
-                .body(is(NAME));
-    }
+    //    @Test
+    //    public void testReflectionConsumer() throws Exception {
+    //        TestPojo testPojo = new TestPojo();
+    //        testPojo.setPojoName(NAME);
+    //        Object[] request = { testPojo };
+    //
+    //        initReflectRequestor();
+    //        reflectRequestor.request("setTestPojo", request);
+    //
+    //        RestAssured.given()
+    //                .contentType(ContentType.TEXT)
+    //                .body(protocol)
+    //                .post("/avro-rpc/reflectionConsumerGet")
+    //                .then()
+    //                .statusCode(200)
+    //                .body(is(NAME));
+    //    }
 
     @Test
     public void testSpecificConsumer() throws Exception {

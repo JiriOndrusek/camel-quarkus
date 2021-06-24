@@ -16,13 +16,41 @@
  */
 package org.apache.camel.quarkus.component.avro.rpc.spi;
 
-import org.apache.avro.ipc.Server;
-import org.apache.avro.ipc.specific.SpecificResponder;
-import org.apache.camel.component.avro.spi.AvroRpcHttpServerFactory;
+import java.io.IOException;
 
-public class UndertowHttpServerFactory implements AvroRpcHttpServerFactory {
-    @Override
-    public Server create(SpecificResponder responder, int port) throws Exception {
-        return new FakeHttpServer(responder, port);
+import javax.servlet.ServletException;
+
+import org.apache.avro.AvroRuntimeException;
+import org.apache.avro.ipc.Responder;
+import org.apache.avro.ipc.Server;
+
+public class FakeHttpServer implements Server {
+
+    private int port;
+
+    public FakeHttpServer(Responder servletAvro, int port) throws IOException, ServletException {
+        this.port = port;
+        AvroRpcServlet.avroResponder = servletAvro;
     }
+
+    @Override
+    public int getPort() {
+        return port;
+    }
+
+    @Override
+    public void start() {
+        //do nothing
+    }
+
+    @Override
+    public void close() {
+        //do nothing
+    }
+
+    @Override
+    public void join() throws InterruptedException {
+        throw new AvroRuntimeException(new UnsupportedOperationException());
+    }
+
 }

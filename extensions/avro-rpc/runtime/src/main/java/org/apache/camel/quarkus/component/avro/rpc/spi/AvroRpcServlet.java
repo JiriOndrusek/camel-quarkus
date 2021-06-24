@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -27,7 +28,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.avro.ipc.Responder;
 import org.apache.avro.ipc.ResponderServlet;
 
+@WebServlet
 public class AvroRpcServlet extends HttpServlet {
+
+    public static Responder avroResponder = null;
 
     @Override
     public void init(final ServletConfig config) throws ServletException {
@@ -36,9 +40,13 @@ public class AvroRpcServlet extends HttpServlet {
 
     @Override
     protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
-        Responder responder = (Responder) req.getServletContext().getAttribute("avro-servlet-param");
+        if (avroResponder != null) {
+            new ResponderServlet(avroResponder).service(req, resp);
+        } else {
+            Responder responder = (Responder) req.getServletContext().getAttribute("avro-servlet-param");
 
-        new ResponderServlet(responder).service(req, resp);
+            new ResponderServlet(responder).service(req, resp);
+        }
     }
 
     @Override
