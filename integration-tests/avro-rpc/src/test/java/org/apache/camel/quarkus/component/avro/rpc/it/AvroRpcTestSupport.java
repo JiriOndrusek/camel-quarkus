@@ -178,7 +178,8 @@ abstract class AvroRpcTestSupport {
                 specificTransceiver = new HttpTransceiver(
                         new URL("http://localhost:"
                                 + ConfigProvider.getConfig().getValue(AvroRpcResource.SPECIFIC_HTTP_TRANSCEIVER_PORT_PARAM,
-                                        String.class)));
+                                        String.class)
+                                + "/avro"));
             } else {
                 specificTransceiver = new NettyTransceiver(
                         new InetSocketAddress("localhost",

@@ -27,6 +27,7 @@ import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.undertow.deployment.ServletBuildItem;
 import org.apache.avro.specific.AvroGenerated;
+import org.apache.camel.quarkus.component.avro.rpc.AvroRpcConfig;
 import org.apache.camel.quarkus.component.avro.rpc.spi.AvroRpcServlet;
 import org.apache.camel.quarkus.component.avro.rpc.spi.FakeHttpServer;
 import org.apache.camel.quarkus.component.avro.rpc.spi.UndertowHttpServerFactory;
@@ -79,12 +80,10 @@ class AvroRpcProcessor {
     }
 
     @BuildStep
-    ServletBuildItem test() {
-        //        return ServletBuildItem.builder("avro-rpc", AvroRpcServlet.class.getName())
-        //                .setMappings(Collections.singletonList("/*")).build();
-        System.out.println("AvroRpcProcessor.testt");
+    ServletBuildItem servlet(AvroRpcConfig avroRpcConfig) {
+        System.out.println("AvroRpcProcessor.test" + avroRpcConfig + ": " + avroRpcConfig.httpServletMapping);
         ServletBuildItem servletBuildItem = ServletBuildItem.builder(FEATURE, AvroRpcServlet.class.getName())
-                .addMapping("/*")
+                .addMapping(avroRpcConfig.httpServletMapping)
                 .build();
         return servletBuildItem;
     }

@@ -43,3 +43,21 @@ Check the xref:user-guide/index.adoc[User guide] for more information about writ
 
 Classes used as the protocol (either specific or reflective) in native mode, have to be registered for reflection (see https://quarkus.io/guides/writing-native-applications-tips#register-reflection[documentation]).
 
+
+== Additional Camel Quarkus configuration
+
+[width="100%",cols="80,5,15",options="header"]
+|===
+| Configuration property | Type | Default
+
+
+|icon:lock[title=Fixed at build time] [[quarkus.camel.avro.http-servlet-mapping]]`link:#quarkus.camel.avro.http-servlet-mapping[quarkus.camel.avro.http-servlet-mapping]`
+
+Sets path for http servlet mapping to listen on. Default is /++*++
+| `string`
+| `/*`
+|===
+
+[.configuration-legend]
+icon:lock[title=Fixed at build time] Configuration property fixed at build time. All other configuration properties are overridable at runtime.
+
