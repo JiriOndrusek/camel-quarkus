@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.avro.rpc.spi;
+package org.apache.camel.quarkus.component.avro.rpc.it;
 
 import java.io.IOException;
 
@@ -33,6 +33,7 @@ import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.ipc.Responder;
 import org.apache.avro.ipc.ResponderServlet;
 import org.apache.avro.ipc.Server;
+import org.apache.camel.quarkus.component.avro.rpc.AvroRpcServlet;
 
 public class HttpAvroRpcServer implements Server {
 

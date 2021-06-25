@@ -28,7 +28,6 @@ import org.apache.camel.quarkus.component.avro.rpc.it.reflection.TestReflection;
 import org.apache.camel.quarkus.component.avro.rpc.it.reflection.impl.TestReflectionImpl;
 import org.apache.camel.quarkus.component.avro.rpc.it.specific.generated.KeyValueProtocol;
 import org.apache.camel.quarkus.component.avro.rpc.it.specific.impl.KeyValueProtocolImpl;
-import org.apache.camel.quarkus.component.avro.rpc.spi.HttpAvroRpcServer;
 import org.apache.camel.quarkus.test.AvailablePortFinder;
 import org.apache.camel.util.CollectionHelper;
 
@@ -74,7 +73,8 @@ public class AvroRpcTestResource implements QuarkusTestResourceLifecycleManager 
 
             //----------- consumers ----------------------------------
 
-            final int reflectiveHttpTransceiverPort = AvailablePortFinder.getNextAvailable();
+            final int reflectiveHttpTransceiverPort = 8081;
+//            final int reflectiveHttpTransceiverPort = AvailablePortFinder.getNextAvailable();
             final int reflectiveNettyTransceiverPort = AvailablePortFinder.getNextAvailable();
             final int specificHttpTransceiverPort = 8081;
             //            final int specificHttpTransceiverPort = AvailablePortFinder.getNextAvailable();

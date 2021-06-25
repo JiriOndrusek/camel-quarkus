@@ -49,9 +49,9 @@ public class AvroRpcRouteBuilder extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
-        //        from(String.format("avro:http:localhost:%d/setTestPojo?protocolClassName=%s&singleParameter=true", httpPort,
-        //                TestReflection.class.getCanonicalName()))
-        //                        .process(new ReflectionProcessor(avroRpcResource.getTestReflection(ProtocolType.http)));
+                from(String.format("avro:http:localhost:%d/setTestPojo?protocolClassName=%s&singleParameter=true", httpPort,
+                        TestReflection.class.getCanonicalName()))
+                                .process(new ReflectionProcessor(avroRpcResource.getTestReflection(ProtocolType.http)));
 
         from(String.format("avro:netty:localhost:%d/setTestPojo?protocolClassName=%s&singleParameter=true", nettyPort,
                 TestReflection.class.getCanonicalName()))

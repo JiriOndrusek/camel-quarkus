@@ -28,7 +28,7 @@ import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.undertow.deployment.ServletBuildItem;
 import org.apache.avro.specific.AvroGenerated;
 import org.apache.camel.quarkus.component.avro.rpc.AvroRpcConfig;
-import org.apache.camel.quarkus.component.avro.rpc.spi.AvroRpcServlet;
+import org.apache.camel.quarkus.component.avro.rpc.AvroRpcServlet;
 import org.apache.camel.quarkus.component.avro.rpc.spi.FakeHttpServer;
 import org.apache.camel.quarkus.component.avro.rpc.spi.UndertowHttpServerFactory;
 import org.apache.camel.quarkus.core.deployment.spi.CamelServiceBuildItem;

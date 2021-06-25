@@ -23,6 +23,7 @@ import javax.servlet.ServletException;
 import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.ipc.Responder;
 import org.apache.avro.ipc.Server;
+import org.apache.camel.quarkus.component.avro.rpc.AvroRpcServlet;
 
 public class FakeHttpServer implements Server {
 
