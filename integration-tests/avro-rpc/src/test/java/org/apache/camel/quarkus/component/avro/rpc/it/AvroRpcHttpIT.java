@@ -21,4 +21,7 @@ import io.quarkus.test.junit.NativeImageTest;
 @NativeImageTest
 class AvroRpcHttpIT extends AvroRpcHttpTest {
 
+    public AvroRpcHttpIT() {
+        this.httpPort = 8080;
+    }
 }

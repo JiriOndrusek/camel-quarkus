@@ -51,11 +51,17 @@ Classes used as the protocol (either specific or reflective) in native mode, hav
 | Configuration property | Type | Default
 
 
-|icon:lock[title=Fixed at build time] [[quarkus.camel.avro.http-servlet-mapping]]`link:#quarkus.camel.avro.http-servlet-mapping[quarkus.camel.avro.http-servlet-mapping]`
+|icon:lock[title=Fixed at build time] [[quarkus.camel.avro.http-specific-mapping]]`link:#quarkus.camel.avro.http-specific-mapping[quarkus.camel.avro.http-specific-mapping]`
 
-Sets path for http servlet mapping to listen on. Default is /++*++
+Sets path for http servlet mapping for specific mapping. If both specific and reflect mappings are empty, all paths are handled. todo
 | `string`
-| `/*`
+| 
+
+|icon:lock[title=Fixed at build time] [[quarkus.camel.avro.http-reflect-mapping]]`link:#quarkus.camel.avro.http-reflect-mapping[quarkus.camel.avro.http-reflect-mapping]`
+
+Sets path for http servlet mapping for reflect mapping. If both specific and reflect mappings are empty, all paths are handled. ++*++ todo
+| `string`
+| 
 |===
 
 [.configuration-legend]

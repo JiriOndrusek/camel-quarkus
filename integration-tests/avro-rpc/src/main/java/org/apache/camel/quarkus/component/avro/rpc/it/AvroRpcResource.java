@@ -43,9 +43,7 @@ public class AvroRpcResource {
     public static final String REFLECTIVE_NETTY_SERVER_PORT_PARAM = "camel.avro-rpc.test.reflective.nettyServerReflection.port";
     public static final String SPECIFIC_HTTP_SERVER_PORT_PARAM = "camel.avro-rpc.test.generated.httpServerReflection.port";
     public static final String SPECIFIC_NETTY_SERVER_PORT_PARAM = "camel.avro-rpc.test.generated.nettyServerReflection.port";
-    public static final String REFLECTIVE_HTTP_TRANSCEIVER_PORT_PARAM = "camel.avro-rpc.test.httpTransceiverReflection.port";
     public static final String REFLECTIVE_NETTY_TRANSCEIVER_PORT_PARAM = "camel.avro-rpc.test.nettyTransceiverReflection.port";
-    public static final String SPECIFIC_HTTP_TRANSCEIVER_PORT_PARAM = "camel.avro-rpc.test.specific.httpTransceiverReflection.port";
     public static final String SPECIFIC_NETTY_TRANSCEIVER_PORT_PARAM = "camel.avro-rpc.test.specific.nettyTransceiverReflection.port";
 
     private TestReflection httpTestReflection = new TestReflectionImpl(),

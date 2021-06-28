@@ -25,28 +25,45 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import io.quarkus.arc.Arc;
 import org.apache.avro.ipc.Responder;
 import org.apache.avro.ipc.ResponderServlet;
+import org.apache.camel.CamelContext;
+import org.apache.camel.spi.Registry;
 
 @WebServlet
 public class AvroRpcServlet extends HttpServlet {
 
-    public static Responder avroResponder = null;
+    private Boolean reflect;
 
     @Override
     public void init(final ServletConfig config) throws ServletException {
         super.init(config);
+
+        if ("true".equals(config.getInitParameter("avro-rpc-specific")) &&
+                "true".equals(config.getInitParameter("avro-rpc-reflect"))) {
+            reflect = null;
+        } else if ("true".equals(config.getInitParameter("avro-rpc-specific"))) {
+            reflect = false;
+        } else if ("true".equals(config.getInitParameter("avro-rpc-reflect"))) {
+            reflect = true;
+        }
     }
 
     @Override
     protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
-        if (avroResponder != null) {
-            new ResponderServlet(avroResponder).service(req, resp);
-        } else {
-            Responder responder = (Responder) req.getServletContext().getAttribute("avro-servlet-param");
+        Registry registry = Arc.container().instance(CamelContext.class).get().getRegistry();
 
-            new ResponderServlet(responder).service(req, resp);
+        Responder responder;
+        if (reflect == null) {
+            responder = registry.findByType(Responder.class).iterator().next();
+        } else if (reflect) {
+            responder = registry.findByTypeWithName(Responder.class).get("avro-rpc-reflect");
+        } else {
+            responder = registry.findByTypeWithName(Responder.class).get("avro-rpc-specific");
         }
+
+        new ResponderServlet(responder).service(req, resp);
     }
 
     @Override

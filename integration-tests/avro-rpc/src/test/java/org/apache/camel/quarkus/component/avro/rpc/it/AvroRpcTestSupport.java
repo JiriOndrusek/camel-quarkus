@@ -57,6 +57,8 @@ abstract class AvroRpcTestSupport {
     private Requestor reflectRequestor, specificRequestor;
     private Transceiver reflectTransceiver, specificTransceiver;
 
+    int httpPort;
+
     @Test
     public void testReflectionProducer() {
         RestAssured.given()
@@ -104,23 +106,23 @@ abstract class AvroRpcTestSupport {
                 .body(is(NAME_FROM_KEY_VALUE));
     }
 
-        @Test
-        public void testReflectionConsumer() throws Exception {
-            TestPojo testPojo = new TestPojo();
-            testPojo.setPojoName(NAME);
-            Object[] request = { testPojo };
+    @Test
+    public void testReflectionConsumer() throws Exception {
+        TestPojo testPojo = new TestPojo();
+        testPojo.setPojoName(NAME);
+        Object[] request = { testPojo };
 
-            initReflectRequestor();
-            reflectRequestor.request("setTestPojo", request);
+        initReflectRequestor();
+        reflectRequestor.request("setTestPojo", request);
 
-            RestAssured.given()
-                    .contentType(ContentType.TEXT)
-                    .body(protocol)
-                    .post("/avro-rpc/reflectionConsumerGet")
-                    .then()
-                    .statusCode(200)
-                    .body(is(NAME));
-        }
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .body(protocol)
+                .post("/avro-rpc/reflectionConsumerGet")
+                .then()
+                .statusCode(200)
+                .body(is(NAME));
+    }
 
     @Test
     public void testSpecificConsumer() throws Exception {
@@ -140,7 +142,8 @@ abstract class AvroRpcTestSupport {
                 .body(is(NAME_FROM_KEY_VALUE));
     }
 
-    public AvroRpcTestSupport(ProtocolType protocol) {
+    public AvroRpcTestSupport(ProtocolType protocol, int httpPort) {
+        this.httpPort = httpPort;
         this.protocol = protocol;
     }
 
@@ -160,10 +163,7 @@ abstract class AvroRpcTestSupport {
         if (reflectRequestor == null) {
             if (isHttp()) {
                 reflectTransceiver = new HttpTransceiver(
-                        new URL("http://localhost:"
-                                + ConfigProvider.getConfig().getValue(AvroRpcResource.REFLECTIVE_HTTP_TRANSCEIVER_PORT_PARAM,
-                                        String.class)
-                                + "/avro"));
+                        new URL("http://localhost:" + httpPort + "/avro-reflect"));
             } else {
                 reflectTransceiver = new NettyTransceiver(
                         new InetSocketAddress("localhost",
@@ -178,10 +178,7 @@ abstract class AvroRpcTestSupport {
         if (specificRequestor == null) {
             if (isHttp()) {
                 specificTransceiver = new HttpTransceiver(
-                        new URL("http://localhost:"
-                                + ConfigProvider.getConfig().getValue(AvroRpcResource.SPECIFIC_HTTP_TRANSCEIVER_PORT_PARAM,
-                                        String.class)
-                                + "/avro"));
+                        new URL("http://localhost:" + httpPort + "/avro-specific"));
             } else {
                 specificTransceiver = new NettyTransceiver(
                         new InetSocketAddress("localhost",

@@ -31,14 +31,12 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 public class AvroRpcRouteBuilder extends RouteBuilder {
     public static final String DIRECT_START = "direct:start";
 
-    @ConfigProperty(name = AvroRpcResource.REFLECTIVE_HTTP_TRANSCEIVER_PORT_PARAM)
-    Integer httpPort;
+    Integer httpPort = 8081;
 
     @ConfigProperty(name = AvroRpcResource.REFLECTIVE_NETTY_TRANSCEIVER_PORT_PARAM)
     Integer nettyPort;
 
-    @ConfigProperty(name = AvroRpcResource.SPECIFIC_HTTP_TRANSCEIVER_PORT_PARAM)
-    Integer specificHttpPort;
+    Integer specificHttpPort = 8081;
 
     @ConfigProperty(name = AvroRpcResource.SPECIFIC_NETTY_TRANSCEIVER_PORT_PARAM)
     Integer specificNettyPort;
@@ -49,9 +47,9 @@ public class AvroRpcRouteBuilder extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
-                from(String.format("avro:http:localhost:%d/setTestPojo?protocolClassName=%s&singleParameter=true", httpPort,
-                        TestReflection.class.getCanonicalName()))
-                                .process(new ReflectionProcessor(avroRpcResource.getTestReflection(ProtocolType.http)));
+        from(String.format("avro:http:localhost:%d/setTestPojo?protocolClassName=%s&singleParameter=true", httpPort,
+                TestReflection.class.getCanonicalName()))
+                        .process(new ReflectionProcessor(avroRpcResource.getTestReflection(ProtocolType.http)));
 
         from(String.format("avro:netty:localhost:%d/setTestPojo?protocolClassName=%s&singleParameter=true", nettyPort,
                 TestReflection.class.getCanonicalName()))

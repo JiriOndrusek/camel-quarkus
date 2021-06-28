@@ -20,10 +20,13 @@ import java.io.IOException;
 
 import javax.servlet.ServletException;
 
+import io.quarkus.arc.Arc;
 import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.ipc.Responder;
 import org.apache.avro.ipc.Server;
-import org.apache.camel.quarkus.component.avro.rpc.AvroRpcServlet;
+import org.apache.camel.CamelContext;
+import org.apache.camel.component.avro.AvroReflectResponder;
+import org.apache.camel.spi.Registry;
 
 public class FakeHttpServer implements Server {
 
@@ -31,7 +34,12 @@ public class FakeHttpServer implements Server {
 
     public FakeHttpServer(Responder servletAvro, int port) throws IOException, ServletException {
         this.port = port;
-        AvroRpcServlet.avroResponder = servletAvro;
+        Registry registry = Arc.container().instance(CamelContext.class).get().getRegistry();
+        if (servletAvro instanceof AvroReflectResponder) {
+            registry.bind("avro-rpc-reflect", servletAvro);
+        } else {
+            registry.bind("avro-rpc-specific", servletAvro);
+        }
     }
 
     @Override

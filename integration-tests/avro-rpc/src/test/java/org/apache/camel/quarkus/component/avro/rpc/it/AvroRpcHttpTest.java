@@ -22,7 +22,7 @@ import io.quarkus.test.junit.QuarkusTest;
 public class AvroRpcHttpTest extends AvroRpcTestSupport {
 
     public AvroRpcHttpTest() {
-        super(ProtocolType.http);
+        super(ProtocolType.http, 8081);
     }
 
 }

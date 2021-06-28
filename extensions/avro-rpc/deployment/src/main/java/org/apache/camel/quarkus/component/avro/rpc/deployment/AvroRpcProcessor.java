@@ -20,6 +20,8 @@ import java.nio.file.Paths;
 
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.annotations.ExecutionTime;
+import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
@@ -27,10 +29,13 @@ import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.undertow.deployment.ServletBuildItem;
 import org.apache.avro.specific.AvroGenerated;
+import org.apache.camel.component.avro.AvroComponent;
 import org.apache.camel.quarkus.component.avro.rpc.AvroRpcConfig;
+import org.apache.camel.quarkus.component.avro.rpc.AvroRpcRecorder;
 import org.apache.camel.quarkus.component.avro.rpc.AvroRpcServlet;
 import org.apache.camel.quarkus.component.avro.rpc.spi.FakeHttpServer;
 import org.apache.camel.quarkus.component.avro.rpc.spi.UndertowHttpServerFactory;
+import org.apache.camel.quarkus.core.deployment.spi.CamelBeanBuildItem;
 import org.apache.camel.quarkus.core.deployment.spi.CamelServiceBuildItem;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.DotName;
@@ -80,12 +85,41 @@ class AvroRpcProcessor {
     }
 
     @BuildStep
-    ServletBuildItem servlet(AvroRpcConfig avroRpcConfig) {
-        System.out.println("AvroRpcProcessor.test" + avroRpcConfig + ": " + avroRpcConfig.httpServletMapping);
-        ServletBuildItem servletBuildItem = ServletBuildItem.builder(FEATURE, AvroRpcServlet.class.getName())
-                .addMapping(avroRpcConfig.httpServletMapping)
-                .build();
-        return servletBuildItem;
+    void servlet(BuildProducer<ServletBuildItem> servletProducer, AvroRpcConfig avroRpcConfig) {
+
+        if (avroRpcConfig.httpReflectMapping.isPresent() && avroRpcConfig.httpSpecificMapping.isPresent() &&
+                avroRpcConfig.httpReflectMapping.get().equals(avroRpcConfig.httpSpecificMapping.get())) {
+            throw new IllegalStateException("Specific and reflect mapping can not use the same path!");
+        }
+
+        if (!avroRpcConfig.httpReflectMapping.isPresent() && !avroRpcConfig.httpSpecificMapping.isPresent()) {
+            servletProducer.produce(
+                    ServletBuildItem.builder(FEATURE, AvroRpcServlet.class.getName())
+                            .addMapping("/*")
+                            .build());
+        } else {
+            if (avroRpcConfig.httpSpecificMapping.isPresent()) {
+                servletProducer.produce(
+                        ServletBuildItem.builder(FEATURE + "Specific", AvroRpcServlet.class.getName())
+                                .addMapping(avroRpcConfig.httpSpecificMapping.get())
+                                .addInitParam("avro-rpc-specific", "true")
+                                .build());
+            }
+            if (avroRpcConfig.httpReflectMapping.isPresent()) {
+                servletProducer.produce(
+                        ServletBuildItem.builder(FEATURE + "Reflect", AvroRpcServlet.class.getName())
+                                .addMapping(avroRpcConfig.httpReflectMapping.get())
+                                .addInitParam("avro-rpc-reflect", "true")
+                                .build());
+            }
+        }
+    }
+
+    @Record(ExecutionTime.STATIC_INIT)
+    @BuildStep
+    CamelBeanBuildItem configureBraintreeComponent(AvroRpcRecorder recorder) {
+        return new CamelBeanBuildItem("avro", AvroComponent.class.getName(),
+                recorder.configureAvroComponent());
     }
 
 }
