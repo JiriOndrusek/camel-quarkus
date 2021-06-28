@@ -51,9 +51,9 @@ class AvroRpcProcessor {
                 .toArray(String[]::new);
 
         reflectiveClassProducer.produce(new ReflectiveClassBuildItem(false, false, dtos));
-        reflectiveClassProducer
-                .produce(new ReflectiveClassBuildItem(false, false, AvroRpcServlet.class,
-                        VertxHttpServerFactory.class));
+        //        reflectiveClassProducer
+        //                .produce(new ReflectiveClassBuildItem(false, false, AvroRpcServlet.class,
+        //                        VertxHttpServerFactory.class));
         reflectiveClassProducer
                 .produce(new ReflectiveClassBuildItem(false, false, "io.undertow.vertx.VertxUndertowEngine"));
     }
