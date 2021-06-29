@@ -23,7 +23,6 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
-import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import org.apache.avro.specific.AvroGenerated;
 import org.apache.camel.quarkus.component.avro.rpc.spi.VertxHttpServerFactory;
@@ -51,22 +50,11 @@ class AvroRpcProcessor {
                 .toArray(String[]::new);
 
         reflectiveClassProducer.produce(new ReflectiveClassBuildItem(false, false, dtos));
-        //        reflectiveClassProducer
-        //                .produce(new ReflectiveClassBuildItem(false, false, AvroRpcServlet.class,
-        //                        VertxHttpServerFactory.class));
-        reflectiveClassProducer
-                .produce(new ReflectiveClassBuildItem(false, false, "io.undertow.vertx.VertxUndertowEngine"));
     }
 
     @BuildStep
     void registerDependencyForIndex(BuildProducer<IndexDependencyBuildItem> indexDependency) {
         indexDependency.produce(new IndexDependencyBuildItem("org.apache.avro", "avro-ipc"));
-    }
-
-    @BuildStep
-    void nativeImageResourceBuildItem(BuildProducer<NativeImageResourceBuildItem> resourcesProducer) {
-        resourcesProducer.produce(new NativeImageResourceBuildItem(
-                "META-INF/services/io.undertow.httpcore.UndertowEngine"));
     }
 
     @BuildStep

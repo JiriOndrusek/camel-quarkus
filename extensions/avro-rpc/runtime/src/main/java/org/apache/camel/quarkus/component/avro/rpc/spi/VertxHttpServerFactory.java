@@ -24,7 +24,6 @@ public class VertxHttpServerFactory implements AvroRpcHttpServerFactory {
     @Override
     public Server create(SpecificResponder responder, int port) throws Exception {
         return new VertxHttpServer(responder, port);
-        //        return new HttpAvroRpcServer(responder, port);
     }
 
 }
