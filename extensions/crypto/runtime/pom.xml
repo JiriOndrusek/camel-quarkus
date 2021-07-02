@@ -53,8 +53,8 @@
             <artifactId>camel-quarkus-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.camel.quarkus</groupId>
-            <artifactId>camel-quarkus-support-bouncycastle</artifactId>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-security</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
