@@ -17,13 +17,13 @@
 package org.apache.camel.quarkus.component.crypto.deployment;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.ExtensionSslNativeSupportBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
-import org.apache.camel.quarkus.support.bouncycastle.deployment.CipherTransformationBuildItem;
+import io.quarkus.security.deployment.CipherTransformationBuildItem;
 import org.bouncycastle.bcpg.SymmetricKeyAlgorithmTags;
 import org.bouncycastle.openpgp.PGPUtil;
 import org.jboss.logging.Logger;
@@ -46,7 +46,7 @@ class CryptoProcessor {
 
     @BuildStep
     CipherTransformationBuildItem registerReachableCipherTransformations() {
-        List<String> cipherTransformations = new ArrayList<>();
+        Set<String> cipherTransformations = new HashSet<>();
         for (Field field : SymmetricKeyAlgorithmTags.class.getDeclaredFields()) {
             try {
                 String algorithmName = PGPUtil.getSymmetricCipherName(field.getInt(null));
