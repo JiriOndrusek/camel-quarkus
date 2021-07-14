@@ -16,6 +16,7 @@
  */
 package org.apache.camel.quarkus.support.bouncycastle;
 
+import java.security.Provider;
 import java.security.Security;
 import java.util.List;
 
@@ -23,7 +24,7 @@ import javax.crypto.Cipher;
 
 import io.quarkus.runtime.ShutdownContext;
 import io.quarkus.runtime.annotations.Recorder;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import io.quarkus.security.runtime.SecurityProviderUtils;
 import org.jboss.logging.Logger;
 
 @Recorder
@@ -32,9 +33,7 @@ public class BouncyCastleRecorder {
     private static final Logger LOG = Logger.getLogger(BouncyCastleRecorder.class);
 
     public void registerBouncyCastleProvider(List<String> cipherTransformations, ShutdownContext shutdownContext) {
-        LOG.debug("Adding Bouncy Castle security provider");
-        BouncyCastleProvider provider = new BouncyCastleProvider();
-        Security.addProvider(provider);
+        Provider provider = Security.getProvider(SecurityProviderUtils.BOUNCYCASTLE_PROVIDER_NAME);
 
         // Make it explicit to the static analysis that below security services should be registered as they are reachable at runtime
         for (String cipherTransformation : cipherTransformations) {
