@@ -33,11 +33,13 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 @Produces(MediaType.APPLICATION_JSON)
 public class SolrCloudResource extends SolrCommonResource {
 
-    @ConfigProperty(name = "solr.cloud.url", defaultValue = "localhost:8981/solr/collection1")
+    @ConfigProperty(name = "solr.cloud.url", defaultValue = "localhost:38535/solr?zkHost=127.0.0.1:40323/solr&collection=collection1&username=solr&password=SolrRocks")
     String solrUrl;
 
     public void init(@Observes StartupEvent startupEvent) {
-        solrComponentURI = String.format("solrCloud://%s", solrUrl);
-        solrClient = new HttpSolrClient.Builder(String.format("http://%s", solrUrl)).build();
+        //        solrComponentURI = String.format("solrCloud://%s", solrUrl);
+        solrComponentURI = solrUrl;
+        solrClient = new HttpSolrClient.Builder(
+                String.format("http://%s/collection1", solrUrl.substring(12, solrUrl.indexOf("?")))).build();
     }
 }

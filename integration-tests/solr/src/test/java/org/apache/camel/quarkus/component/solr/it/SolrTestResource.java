@@ -18,7 +18,6 @@ package org.apache.camel.quarkus.component.solr.it;
 
 import java.util.Map;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.apache.camel.util.CollectionHelper;
 import org.slf4j.Logger;
@@ -42,14 +41,19 @@ public class SolrTestResource implements QuarkusTestResourceLifecycleManager {
 
     @Override
     public Map<String, String> start() {
-        // creates 3 containers for 3 different modes of using SOLR
-        createContainers();
-        // start containers
-        startContainers(standaloneContainer, sslContainer, cloudContainer);
+        try {
+            SolrFixtures.createSolrFixtures();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        //        // creates 3 containers for 3 different modes of using SOLR
+        //        createContainers();
+        //        // start containers
+        //        startContainers(standaloneContainer, sslContainer, cloudContainer);
         // return custom URLs
-        return CollectionHelper.mapOf("solr.standalone.url", String.format(URL_FORMAT, standaloneContainer.getSolrPort()),
-                "solr.ssl.url", String.format(URL_FORMAT, sslContainer.getSolrPort()),
-                "solr.cloud.url", String.format(URL_FORMAT, cloudContainer.getSolrPort()));
+        return CollectionHelper.mapOf(/*"solr.standalone.url", String.format(URL_FORMAT, standaloneContainer.getSolrPort()),
+                                      "solr.ssl.url", String.format(URL_FORMAT, sslContainer.getSolrPort()),*/
+                "solr.cloud.url", SolrFixtures.solrRouteUri());
     }
 
     private void createContainers() {
@@ -101,21 +105,21 @@ public class SolrTestResource implements QuarkusTestResourceLifecycleManager {
      */
     private void createCloudContainer() {
         cloudContainer = new SolrContainer(SOLR_IMAGE) {
-            @Override
-            protected void containerIsStarted(InspectContainerResponse containerInfo) {
-                // Retry container setup steps in case of failure
-                int maxRetries = 10;
-                int attempts = 1;
-                do {
-                    try {
-                        super.containerIsStarted(containerInfo);
-                        break;
-                    } catch (Exception e) {
-                        LOGGER.info("Retrying containerIsStarted due to exception: {}", e.getMessage());
-                        attempts++;
-                    }
-                } while (attempts <= maxRetries);
-            }
+            //            @Override
+            //            protected void containerIsStarted(InspectContainerResponse containerInfo) {
+            //                // Retry container setup steps in case of failure
+            //                int maxRetries = 10;
+            //                int attempts = 1;
+            //                do {
+            //                    try {
+            //                        super.containerIsStarted(containerInfo);
+            //                        break;
+            //                    } catch (Exception e) {
+            //                        LOGGER.info("Retrying containerIsStarted due to exception: {}", e.getMessage());
+            //                        attempts++;
+            //                    }
+            //                } while (attempts <= maxRetries);
+            //            }
         }
                 .withZookeeper(true)
                 .withCollection(COLLECTION_NAME)
@@ -124,7 +128,12 @@ public class SolrTestResource implements QuarkusTestResourceLifecycleManager {
 
     @Override
     public void stop() {
-        stopContainers(standaloneContainer, sslContainer, cloudContainer);
+        //        stopContainers(standaloneContainer, sslContainer, cloudContainer);
+        try {
+            SolrFixtures.teardownSolrFixtures();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void stopContainers(SolrContainer... containers) {
