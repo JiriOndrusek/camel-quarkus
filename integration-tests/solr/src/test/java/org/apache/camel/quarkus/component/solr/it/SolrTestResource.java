@@ -17,7 +17,6 @@
 package org.apache.camel.quarkus.component.solr.it;
 
 import java.io.File;
-import java.time.Duration;
 import java.util.Map;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
@@ -30,7 +29,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.SolrContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
-import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 public class SolrTestResource implements QuarkusTestResourceLifecycleManager {
@@ -47,30 +45,21 @@ public class SolrTestResource implements QuarkusTestResourceLifecycleManager {
 
     @Override
     public Map<String, String> start() {
-        // creates 3 containers for 3 different modes of using SOLR
-        createContainers();
-        // start containers
-        startContainers(cloudContainer/*, standaloneContainer, sslContainer*/);
-        //        try {
-        //            Thread.sleep(60 * 1000);
-        //        } catch (InterruptedException e) {
-        //            e.printStackTrace();
-        //        }
+        try {
+            SolrFixtures.createSolrFixtures();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        //        // creates 3 containers for 3 different modes of using SOLR
+        //        createContainers();
+        //        // start containers
+        //        startContainers(standaloneContainer, sslContainer, cloudContainer);
         // return custom URLs
-        Map<String, String> ret = CollectionHelper
-                .mapOf(/*"solr.standalone.url", String.format(URL_FORMAT, standaloneContainer.getSolrPort()),
-                       "solr.ssl.url", String.format(URL_FORMAT, sslContainer.getSolrPort()),*/
-                        "solr.cloud.url", String.format(URL_FORMAT, cloudContainer.getServicePort("solr1", 8983) + ""),
-                        "solr.cloud.url2", String.format(
-                                "localhost:%s/solr?zkHost=localhost:2181&collection=collection1&username=solr&password=SolrRocks",
-                                cloudContainer.getServicePort("solr1", 8983) + "",
-                                cloudContainer.getServicePort("zoo1", 2181) + ""));
-
-        System.out.println("-----------------------------------------");
-        ret.entrySet().stream().peek(System.out::println);
-        System.out.println("-----------------------------------------");
-
-        return ret;
+        return CollectionHelper.mapOf("solr.standalone.url", String.format(URL_FORMAT, standaloneContainer.getSolrPort()),
+                "solr.ssl.url", String.format(URL_FORMAT, sslContainer.getSolrPort()),
+                "solr.cloud.url", String.format(URL_FORMAT, "8981"),
+                "solr.cloud.url2", String.format(
+                        "localhost:8981/solr?zkHost=localhost:2181&collection=collection1&username=solr&password=SolrRocks"/*, cloudContainer.getSolrPort(), cloudContainer.getZookeeperPort()*/));
     }
 
     private void createContainers() {
@@ -152,9 +141,8 @@ public class SolrTestResource implements QuarkusTestResourceLifecycleManager {
         //                .withLogConsumer(new Slf4jLogConsumer(LOGGER));
 
         cloudContainer = new DockerComposeContainer(new File("src/test/resources/docker-compose.yml"))
-                .withExposedService("solr1", 8983, Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(30)))
-                .withExposedService("zoo1", 2181, Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(30)));
-
+        /*.withExposedService("solr1", 8981)
+        .withExposedService("zoo1", 2181)*/;
     }
 
     @Override
