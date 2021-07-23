@@ -1,0 +1,51 @@
+# a docker-compose.yml to start a simple cluster with three ZooKeeper nodes and three Solr nodes.
+#
+# To use:
+#
+# mkdir mycluster
+# cd mycluster
+# curl --output docker-compose.yml https://raw.githubusercontent.com/docker-solr/docker-solr-examples/master/docker-compose/docker-compose.yml
+# docker-compose up
+#
+version: '3.7'
+services:
+  solr1:
+    image: solr:8.7.0
+    ports:
+     - "8981:8983"
+    environment:
+      - ZK_HOST=zoo1:2181
+    networks:
+      - solr
+    depends_on:
+      - zoo1
+
+  zoo1:
+    image: zookeeper:3.6.2
+    restart: always
+    hostname: zoo1
+    ports:
+      - 2181:2181
+      - 7001:7000
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181
+    networks:
+      - solr
+      
+  create-collection:
+    image: solr:8.7.0
+    environment:
+      - SOLR_HOST=solr1
+    networks:
+      - solr
+    command:
+      - bash
+      - "-e"
+      - "-x"
+      - "-c"
+      - "wait-for-solr.sh --max-attempts 10 --wait-seconds 5 --solr-url http://$$SOLR_HOST:8983/; solr create_collection -c collection1 -p 8983"
+
+
+networks:
+  solr:

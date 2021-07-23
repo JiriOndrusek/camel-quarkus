@@ -16,6 +16,7 @@
  */
 package org.apache.camel.quarkus.component.solr.it;
 
+import java.io.File;
 import java.util.Map;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
@@ -23,6 +24,9 @@ import org.apache.camel.util.CollectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.BindMode;
+import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.containers.SolrContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
@@ -37,7 +41,7 @@ public class SolrTestResource implements QuarkusTestResourceLifecycleManager {
 
     private SolrContainer standaloneContainer;
     private SolrContainer sslContainer;
-    private SolrContainer cloudContainer;
+    private DockerComposeContainer cloudContainer;
 
     @Override
     public Map<String, String> start() {
@@ -51,21 +55,32 @@ public class SolrTestResource implements QuarkusTestResourceLifecycleManager {
         //        // start containers
         //        startContainers(standaloneContainer, sslContainer, cloudContainer);
         // return custom URLs
-        return CollectionHelper.mapOf(/*"solr.standalone.url", String.format(URL_FORMAT, standaloneContainer.getSolrPort()),
-                                      "solr.ssl.url", String.format(URL_FORMAT, sslContainer.getSolrPort()),*/
-                "solr.cloud.url", SolrFixtures.solrRouteUri());
+        return CollectionHelper.mapOf("solr.standalone.url", String.format(URL_FORMAT, standaloneContainer.getSolrPort()),
+                "solr.ssl.url", String.format(URL_FORMAT, sslContainer.getSolrPort()),
+                "solr.cloud.url", String.format(URL_FORMAT, "8981"),
+                "solr.cloud.url2", String.format(
+                        "localhost:8981/solr?zkHost=localhost:2181&collection=collection1&username=solr&password=SolrRocks"/*, cloudContainer.getSolrPort(), cloudContainer.getZookeeperPort()*/));
     }
 
     private void createContainers() {
+        Network network = Network.newNetwork();
+
         createStandaloneContainer();
         createSslContainer();
         createCloudContainer();
+
+        //        GenericContainer zookeeper = new GenericContainer("zookeeper:3.6.2")
+        //                .withNetwork(network)
+        //                .withNetworkAliases("zoo1")
+        //                .withEnv("ZOOKEEPER_CLIENT_PORT", "2181");
     }
 
-    private void startContainers(SolrContainer... containers) {
-        for (SolrContainer container : containers) {
+    private void startContainers(DockerComposeContainer dc, GenericContainer... containers) {
+        for (GenericContainer container : containers) {
             container.start();
         }
+
+        dc.start();
     }
 
     /**
@@ -104,43 +119,44 @@ public class SolrTestResource implements QuarkusTestResourceLifecycleManager {
      * creates a cloud container with zookeeper
      */
     private void createCloudContainer() {
-        cloudContainer = new SolrContainer(SOLR_IMAGE) {
-            //            @Override
-            //            protected void containerIsStarted(InspectContainerResponse containerInfo) {
-            //                // Retry container setup steps in case of failure
-            //                int maxRetries = 10;
-            //                int attempts = 1;
-            //                do {
-            //                    try {
-            //                        super.containerIsStarted(containerInfo);
-            //                        break;
-            //                    } catch (Exception e) {
-            //                        LOGGER.info("Retrying containerIsStarted due to exception: {}", e.getMessage());
-            //                        attempts++;
-            //                    }
-            //                } while (attempts <= maxRetries);
-            //            }
-        }
-                .withZookeeper(true)
-                .withCollection(COLLECTION_NAME)
-                .withLogConsumer(new Slf4jLogConsumer(LOGGER));
+        //        cloudContainer = new SolrContainer(SOLR_IMAGE) {
+        //                        @Override
+        //                        protected void containerIsStarted(InspectContainerResponse containerInfo) {
+        //                            // Retry container setup steps in case of failure
+        //                            int maxRetries = 10;
+        //                            int attempts = 1;
+        //                            do {
+        //                                try {
+        //                                    super.containerIsStarted(containerInfo);
+        //                                    break;
+        //                                } catch (Exception e) {
+        //                                    LOGGER.info("Retrying containerIsStarted due to exception: {}", e.getMessage());
+        //                                    attempts++;
+        //                                }
+        //                            } while (attempts <= maxRetries);
+        //                        }
+        //        }
+        //                .withZookeeper(true)
+        //                .withCollection(COLLECTION_NAME)
+        //                .withLogConsumer(new Slf4jLogConsumer(LOGGER));
+
+        cloudContainer = new DockerComposeContainer(new File("src/test/resources/docker-compose.yml"))
+        /*.withExposedService("solr1", 8981)
+        .withExposedService("zoo1", 2181)*/;
     }
 
     @Override
     public void stop() {
-        //        stopContainers(standaloneContainer, sslContainer, cloudContainer);
-        try {
-            SolrFixtures.teardownSolrFixtures();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        stopContainers(cloudContainer, standaloneContainer, sslContainer);
     }
 
-    private void stopContainers(SolrContainer... containers) {
-        for (SolrContainer container : containers) {
+    private void stopContainers(DockerComposeContainer dc, GenericContainer... containers) {
+        for (GenericContainer container : containers) {
             if (container != null) {
                 container.stop();
             }
         }
+
+        dc.stop();
     }
 }
