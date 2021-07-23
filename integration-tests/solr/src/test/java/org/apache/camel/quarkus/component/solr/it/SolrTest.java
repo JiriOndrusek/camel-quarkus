@@ -42,7 +42,7 @@ public class SolrTest {
      * @return
      */
     private static Stream<String> resources() {
-        return Stream.of("/solr/standalone", "/solr/ssl", "/solr/cloud");
+        return Stream.of(/*"/solr/standalone", "/solr/ssl",*/ "/solr/cloud");
     }
 
     @ParameterizedTest
@@ -173,7 +173,7 @@ public class SolrTest {
     }
 
     //  Rollback is currently not supported in SolrCloud mode (SOLR-4895). So limiting this test to standalone and standalone with SSL modes
-    @ParameterizedTest
+    //    @ParameterizedTest
     @ValueSource(strings = { "/solr/standalone", "/solr/ssl" })
     public void testRollback(String resource) {
         Map<String, Object> fields = new HashMap<>();

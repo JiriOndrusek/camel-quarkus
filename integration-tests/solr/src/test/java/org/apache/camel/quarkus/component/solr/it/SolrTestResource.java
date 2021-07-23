@@ -45,18 +45,23 @@ public class SolrTestResource implements QuarkusTestResourceLifecycleManager {
 
     @Override
     public Map<String, String> start() {
+        //        try {
+        //            SolrFixtures.createSolrFixtures();
+        //        } catch (Exception e) {
+        //            e.printStackTrace();
+        //        }
+        // creates 3 containers for 3 different modes of using SOLR
+        createContainers();
+        // start containers
+        startContainers(cloudContainer, standaloneContainer, sslContainer);
         try {
-            SolrFixtures.createSolrFixtures();
-        } catch (Exception e) {
+            Thread.sleep(30 * 1000);
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        //        // creates 3 containers for 3 different modes of using SOLR
-        //        createContainers();
-        //        // start containers
-        //        startContainers(standaloneContainer, sslContainer, cloudContainer);
         // return custom URLs
-        return CollectionHelper.mapOf("solr.standalone.url", String.format(URL_FORMAT, standaloneContainer.getSolrPort()),
-                "solr.ssl.url", String.format(URL_FORMAT, sslContainer.getSolrPort()),
+        return CollectionHelper.mapOf(/*"solr.standalone.url", String.format(URL_FORMAT, standaloneContainer.getSolrPort()),
+                                      "solr.ssl.url", String.format(URL_FORMAT, sslContainer.getSolrPort()),*/
                 "solr.cloud.url", String.format(URL_FORMAT, "8981"),
                 "solr.cloud.url2", String.format(
                         "localhost:8981/solr?zkHost=localhost:2181&collection=collection1&username=solr&password=SolrRocks"/*, cloudContainer.getSolrPort(), cloudContainer.getZookeeperPort()*/));
@@ -76,9 +81,9 @@ public class SolrTestResource implements QuarkusTestResourceLifecycleManager {
     }
 
     private void startContainers(DockerComposeContainer dc, GenericContainer... containers) {
-        for (GenericContainer container : containers) {
-            container.start();
-        }
+        //        for (GenericContainer container : containers) {
+        //            container.start();
+        //        }
 
         dc.start();
     }
