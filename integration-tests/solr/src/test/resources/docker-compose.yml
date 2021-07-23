@@ -11,8 +11,6 @@ version: '3.7'
 services:
   solr1:
     image: solr:8.7.0
-    ports:
-     - "8981:8983"
     environment:
       - ZK_HOST=zoo1:2181
     networks:
@@ -24,9 +22,6 @@ services:
     image: zookeeper:3.6.2
     restart: always
     hostname: zoo1
-    ports:
-      - 2181:2181
-      - 7001:7000
     environment:
       ZOO_MY_ID: 1
       ZOO_SERVERS: server.1=zoo1:2888:3888;2181
