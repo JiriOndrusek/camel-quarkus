@@ -42,7 +42,7 @@ public class SolrTest {
      * @return
      */
     private static Stream<String> resources() {
-        return Stream.of(/*"/solr/standalone", "/solr/ssl",*/ "/solr/cloud");
+        return Stream.of("/solr/standalone", "/solr/ssl", "/solr/cloud");
     }
 
     @ParameterizedTest
