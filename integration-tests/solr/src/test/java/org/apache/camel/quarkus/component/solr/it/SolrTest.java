@@ -17,20 +17,27 @@
 package org.apache.camel.quarkus.component.solr.it;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
-import org.apache.solr.client.solrj.SolrClient;
+import org.apache.camel.quarkus.component.solr.it.bean.Item;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.emptyOrNullString;
+import static org.hamcrest.Matchers.equalTo;
 
 @QuarkusTest
 @QuarkusTestResource(SolrTestResource.class)
@@ -46,7 +53,7 @@ public class SolrTest {
 
     @ParameterizedTest
     @MethodSource("resources")
-    public void testSingleBean(String resource) throws SolrServerException, IOException {
+    public void testSingleBean(String resource) throws Exception {
         // create a bean item
         given()
                 .contentType(ContentType.JSON)
@@ -54,223 +61,182 @@ public class SolrTest {
                 .put(resource + "/bean")
                 .then()
                 .statusCode(202);
-        long results = executeSolrQuery("id:" + SolrCommonResource.TEST_ID).getResults().getNumFound();
-        System.out.println("===========================");
-        System.out.println("===========" + results + "==========");
-        System.out.println("===========================");
+        // verify existing bean
+        Assertions.assertEquals("test1", getBeanVyId("test1"));
 
-        //        // verify existing bean
-        //        given()
-        //                .get(resource + "/bean/test1")
-        //                .then()
-        //                .body(equalTo("test1"));
-        //
-        //        // delete bean by id
-        //        given()
-        //                .contentType(ContentType.JSON)
-        //                .body("test1")
-        //                .delete(resource + "/bean")
-        //                .then()
-        //                .statusCode(202);
-        //        // verify non existing bean
-        //        given()
-        //                .get(resource + "/bean/test1")
-        //                .then()
-        //                .body(emptyOrNullString());
+        // delete bean by id
+        given()
+                .contentType(ContentType.JSON)
+                .body("test1")
+                .delete(resource + "/bean")
+                .then()
+                .statusCode(202);
+        // verify non existing bean
+        Assertions.assertEquals("", getBeanVyId("test1"));
     }
 
-    protected QueryResponse executeSolrQuery(String query) throws SolrServerException, IOException {
+    @ParameterizedTest
+    @MethodSource("resources")
+    public void testMultipleBeans(String resource) throws Exception {
+        // create list of beans
+        List<String> beanNames = new ArrayList<>();
+        beanNames.add("bean1");
+        beanNames.add("bean2");
+
+        // add beans with camel
+        given()
+                .contentType(ContentType.JSON)
+                .body(beanNames)
+                .put(resource + "/beans")
+                .then()
+                .statusCode(202);
+
+        // verify existing beans
+        Assertions.assertEquals("bean1", getBeanVyId("bean1"));
+        Assertions.assertEquals("bean2", getBeanVyId("bean2"));
+
+        // delete all beans that has id begins with bean
+        given()
+                .contentType(ContentType.JSON)
+                .body("bean")
+                .delete(resource + "/beans")
+                .then()
+                .statusCode(202);
+
+        // verify non existing beans
+        Assertions.assertEquals("", getBeanVyId("bean1"));
+        Assertions.assertEquals("", getBeanVyId("bean2"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("resources")
+    public void testInsertId(String resource) throws Exception {
+        Map<String, Object> fields = new HashMap<>();
+        fields.put("id", "id1");
+
+        //insert and commit document
+        given()
+                .contentType(ContentType.JSON)
+                .body(fields)
+                .put(resource + "/document/commit")
+                .then()
+                .statusCode(202);
+
+        // verify existing document
+        Assertions.assertEquals("id1", getBeanVyId("id1"));
+
+    }
+
+    @ParameterizedTest
+    @MethodSource("resources")
+    public void testOptimize(String resource) throws Exception {
+        Map<String, Object> fields = new HashMap<>();
+        fields.put("id", "opt1");
+        // insert without commit
+        given()
+                .contentType(ContentType.JSON)
+                .body(fields)
+                .put(resource + "/document")
+                .then()
+                .statusCode(202);
+        // verify non existing document
+        Assertions.assertEquals("", getBeanVyId("opt1"));
+        // optimize
+        given()
+                .get(resource + "/optimize")
+                .then()
+                .statusCode(202);
+        // verify existing document
+        Assertions.assertEquals("opt1", getBeanVyId("opt1"));
+
+    }
+    //
+    //        //  Rollback is currently not supported in SolrCloud mode (SOLR-4895). So limiting this test to standalone and standalone with SSL modes
+    //        @ParameterizedTest
+    //        @ValueSource(strings = { "/solr/standalone", "/solr/ssl" })
+    //        public void testRollback(String resource) {
+    //            Map<String, Object> fields = new HashMap<>();
+    //            fields.put("id", "roll1");
+    //            // insert without commit
+    //            given()
+    //                    .contentType(ContentType.JSON)
+    //                    .body(fields)
+    //                    .put(resource + "/document")
+    //                    .then()
+    //                    .statusCode(202);
+    //            // verify non existing document
+    //            given()
+    //                    .get(resource + "/bean/roll1")
+    //                    .then()
+    //                    .body(emptyOrNullString());
+    //            // rollback
+    //            given()
+    //                    .get(resource + "/rollback")
+    //                    .then()
+    //                    .statusCode(202);
+    //            //then commit
+    //            given()
+    //                    .get(resource + "/commit")
+    //                    .then()
+    //                    .statusCode(202);
+    //            // verify non existing document
+    //            given()
+    //                    .get(resource + "/bean/roll1")
+    //                    .then()
+    //                    .body(emptyOrNullString());
+    //        }
+
+    @ParameterizedTest
+    @MethodSource("resources")
+    public void testSoftCommit(String resource) throws Exception {
+        Map<String, Object> fields = new HashMap<>();
+        fields.put("id", "com1");
+        // insert without commit
+        given()
+                .contentType(ContentType.JSON)
+                .body(fields)
+                .put(resource + "/document")
+                .then()
+                .statusCode(202);
+        // verify non existing document
+        Assertions.assertEquals("", getBeanVyId("com1"));
+        // soft commit
+        given()
+                .get(resource + "/softcommit")
+                .then()
+                .statusCode(202);
+        // verify existing document
+        Assertions.assertEquals("com1", getBeanVyId("com1"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("resources")
+    public void testInsertStreaming(String resource) throws InterruptedException, Exception {
+        Map<String, Object> fields = new HashMap<>();
+        fields.put("id", "stream1");
+        // insert with streaming mode
+        given()
+                .contentType(ContentType.JSON)
+                .body(fields)
+                .put(resource + "/streaming")
+                .then()
+                .statusCode(202);
+        // wait before commit
+        Thread.sleep(500);
+        given()
+                .get(resource + "/commit")
+                .then()
+                .statusCode(202);
+        // verify existing document
+        Assertions.assertEquals("stream1", getBeanVyId("stream1"));
+    }
+
+    public String getBeanVyId(String id) throws SolrServerException, IOException {
         SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery(query);
+        solrQuery.set("q", "id:" + id);
         QueryRequest queryRequest = new QueryRequest(solrQuery);
-        queryRequest.setBasicAuthCredentials("solr", "SolrRocks");
-        SolrClient solrServer = SolrFixtures.getServer();
-        return queryRequest.process(solrServer, "collection1");
+        QueryResponse response = queryRequest.process(SolrFixtures.getServer());
+        List<Item> responses = response.getBeans(Item.class);
+        return responses.size() != 0 ? responses.get(0).getId() : "";
     }
-
-    //    @ParameterizedTest
-    //    @MethodSource("resources")
-    //    public void testMultipleBeans(String resource) {
-    //        // create list of beans
-    //        List<String> beanNames = new ArrayList<>();
-    //        beanNames.add("bean1");
-    //        beanNames.add("bean2");
-    //
-    //        // add beans with camel
-    //        given()
-    //                .contentType(ContentType.JSON)
-    //                .body(beanNames)
-    //                .put(resource + "/beans")
-    //                .then()
-    //                .statusCode(202);
-    //
-    //        // verify existing beans
-    //        given()
-    //                .get(resource + "/bean/bean1")
-    //                .then()
-    //                .body(equalTo("bean1"));
-    //        given()
-    //                .get(resource + "/bean/bean2")
-    //                .then()
-    //                .body(equalTo("bean2"));
-    //
-    //        // delete all beans that has id begins with bean
-    //        given()
-    //                .contentType(ContentType.JSON)
-    //                .body("bean")
-    //                .delete(resource + "/beans")
-    //                .then()
-    //                .statusCode(202);
-    //
-    //        // verify non existing beans
-    //        given()
-    //                .get(resource + "/bean/bean1")
-    //                .then()
-    //                .body(emptyOrNullString());
-    //        given()
-    //                .get(resource + "/bean/bean2")
-    //                .then()
-    //                .body(emptyOrNullString());
-    //    }
-    //
-    //    @ParameterizedTest
-    //    @MethodSource("resources")
-    //    public void testInsertId(String resource) {
-    //        Map<String, Object> fields = new HashMap<>();
-    //        fields.put("id", "id1");
-    //
-    //        //insert and commit document
-    //        given()
-    //                .contentType(ContentType.JSON)
-    //                .body(fields)
-    //                .put(resource + "/document/commit")
-    //                .then()
-    //                .statusCode(202);
-    //
-    //        // verify existing document
-    //        given()
-    //                .get(resource + "/bean/id1")
-    //                .then()
-    //                .body(equalTo("id1"));
-    //
-    //    }
-    //
-    //    @ParameterizedTest
-    //    @MethodSource("resources")
-    //    public void testOptimize(String resource) {
-    //        Map<String, Object> fields = new HashMap<>();
-    //        fields.put("id", "opt1");
-    //        // insert without commit
-    //        given()
-    //                .contentType(ContentType.JSON)
-    //                .body(fields)
-    //                .put(resource + "/document")
-    //                .then()
-    //                .statusCode(202);
-    //        // verify non existing document
-    //        given()
-    //                .get(resource + "/bean/opt1")
-    //                .then()
-    //                .body(emptyOrNullString());
-    //        // optimize
-    //        given()
-    //                .get(resource + "/optimize")
-    //                .then()
-    //                .statusCode(202);
-    //        // verify existing document
-    //        given()
-    //                .get(resource + "/bean/opt1")
-    //                .then()
-    //                .body(equalTo("opt1"));
-    //
-    //    }
-    //
-    //    //  Rollback is currently not supported in SolrCloud mode (SOLR-4895). So limiting this test to standalone and standalone with SSL modes
-    //    @ParameterizedTest
-    //    @ValueSource(strings = { "/solr/standalone", "/solr/ssl" })
-    //    public void testRollback(String resource) {
-    //        Map<String, Object> fields = new HashMap<>();
-    //        fields.put("id", "roll1");
-    //        // insert without commit
-    //        given()
-    //                .contentType(ContentType.JSON)
-    //                .body(fields)
-    //                .put(resource + "/document")
-    //                .then()
-    //                .statusCode(202);
-    //        // verify non existing document
-    //        given()
-    //                .get(resource + "/bean/roll1")
-    //                .then()
-    //                .body(emptyOrNullString());
-    //        // rollback
-    //        given()
-    //                .get(resource + "/rollback")
-    //                .then()
-    //                .statusCode(202);
-    //        //then commit
-    //        given()
-    //                .get(resource + "/commit")
-    //                .then()
-    //                .statusCode(202);
-    //        // verify non existing document
-    //        given()
-    //                .get(resource + "/bean/roll1")
-    //                .then()
-    //                .body(emptyOrNullString());
-    //    }
-    //
-    //    @ParameterizedTest
-    //    @MethodSource("resources")
-    //    public void testSoftCommit(String resource) {
-    //        Map<String, Object> fields = new HashMap<>();
-    //        fields.put("id", "com1");
-    //        // insert without commit
-    //        given()
-    //                .contentType(ContentType.JSON)
-    //                .body(fields)
-    //                .put(resource + "/document")
-    //                .then()
-    //                .statusCode(202);
-    //        // verify non existing document
-    //        given()
-    //                .get(resource + "/bean/com1")
-    //                .then()
-    //                .body(emptyOrNullString());
-    //        // soft commit
-    //        given()
-    //                .get(resource + "/softcommit")
-    //                .then()
-    //                .statusCode(202);
-    //        // verify existing document
-    //        given()
-    //                .get(resource + "/bean/com1")
-    //                .then()
-    //                .body(equalTo("com1"));
-    //    }
-    //
-    //    @ParameterizedTest
-    //    @MethodSource("resources")
-    //    public void testInsertStreaming(String resource) throws InterruptedException {
-    //        Map<String, Object> fields = new HashMap<>();
-    //        fields.put("id", "stream1");
-    //        // insert with streaming mode
-    //        given()
-    //                .contentType(ContentType.JSON)
-    //                .body(fields)
-    //                .put(resource + "/streaming")
-    //                .then()
-    //                .statusCode(202);
-    //        // wait before commit
-    //        Thread.sleep(500);
-    //        given()
-    //                .get(resource + "/commit")
-    //                .then()
-    //                .statusCode(202);
-    //        // verify existing document
-    //        given()
-    //                .get(resource + "/bean/stream1")
-    //                .then()
-    //                .body(equalTo("stream1"));
-    //    }
 }

@@ -56,8 +56,6 @@ public abstract class SolrCommonResource {
      */
     HttpSolrClient solrClient;
 
-    public static final String TEST_ID = "test1";
-
     /**
      * inits the params solrComponentURI and solrClient
      * 
@@ -68,18 +66,9 @@ public abstract class SolrCommonResource {
     @PUT
     @Path("bean")
     public Response addBean(String name) {
-        //        Item bean = createItem(name);
-        //        producerTemplate.sendBodyAndHeader(solrComponentURI, bean, SolrConstants.OPERATION, SolrConstants.OPERATION_ADD_BEAN);
-        //        solrCommit();
-
-        //add bean
-        Item item = new Item();
-        item.id = TEST_ID;
-        item.categories = new String[] { "aaa", "bbb", "ccc" };
-
-        producerTemplate.sendBodyAndHeader("direct:start", item, SolrConstants.OPERATION, SolrConstants.OPERATION_ADD_BEAN);
-        producerTemplate.sendBodyAndHeader("direct:start", null, SolrConstants.OPERATION, SolrConstants.OPERATION_COMMIT);
-
+        Item bean = createItem(name);
+        producerTemplate.sendBodyAndHeader(solrComponentURI, bean, SolrConstants.OPERATION, SolrConstants.OPERATION_ADD_BEAN);
+        solrCommit();
         return Response.accepted().build();
     }
 
@@ -185,13 +174,13 @@ public abstract class SolrCommonResource {
         QueryRequest queryRequest = new QueryRequest(solrQuery);
         QueryResponse response = queryRequest.process(solrClient);
         List<Item> responses = response.getBeans(Item.class);
-        return responses.size() != 0 ? responses.get(0).id : "";
+        return responses.size() != 0 ? responses.get(0).getId() : "";
     }
 
     private Item createItem(String id) {
         Item item = new Item();
-        //        item.setId(id);
-        //        item.setCategories(new String[] { "aaa", "bbb", "ccc" });
+        item.setId(id);
+        item.setCategories(new String[] { "aaa", "bbb", "ccc" });
         return item;
     }
 }
