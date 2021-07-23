@@ -83,7 +83,7 @@ public class SolrFixtures {
         }*/
     }
 
-    SolrClient getServer() {
+    static SolrClient getServer() {
         /*if (serverType == TestServerType.USE_HTTPS) {
             return solrHttpsServer;
         } else if (serverType == TestServerType.USE_CLOUD) {*/

@@ -20,28 +20,9 @@ import org.apache.solr.client.solrj.beans.Field;
 
 public class Item {
 
-    String id;
+    @Field
+    public String id;
 
     @Field("cat")
-    String[] categories;
-
-    public Item() {
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    @Field
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String[] getCategories() {
-        return categories;
-    }
-
-    public void setCategories(String[] categories) {
-        this.categories = categories;
-    }
+    public String[] categories;
 }
