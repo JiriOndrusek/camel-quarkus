@@ -62,9 +62,11 @@ public class SolrTestResource implements QuarkusTestResourceLifecycleManager {
         // return custom URLs
         return CollectionHelper.mapOf(/*"solr.standalone.url", String.format(URL_FORMAT, standaloneContainer.getSolrPort()),
                                       "solr.ssl.url", String.format(URL_FORMAT, sslContainer.getSolrPort()),*/
-                "solr.cloud.url", String.format(URL_FORMAT, "8981"),
+                "solr.cloud.url", String.format(URL_FORMAT, cloudContainer.getServicePort("solr1", 8983)),
                 "solr.cloud.url2", String.format(
-                        "localhost:8981/solr?zkHost=localhost:2181&collection=collection1&username=solr&password=SolrRocks"/*, cloudContainer.getSolrPort(), cloudContainer.getZookeeperPort()*/));
+                        "localhost:%s/solr?zkHost=localhost:2181&collection=collection1&username=solr&password=SolrRocks",
+                        cloudContainer.getServicePort("solr1",
+                                8983)/*, cloudContainer.getSolrPort(), cloudContainer.getZookeeperPort()*/));
     }
 
     private void createContainers() {
@@ -146,8 +148,8 @@ public class SolrTestResource implements QuarkusTestResourceLifecycleManager {
         //                .withLogConsumer(new Slf4jLogConsumer(LOGGER));
 
         cloudContainer = new DockerComposeContainer(new File("src/test/resources/docker-compose.yml"))
-        /*.withExposedService("solr1", 8981)
-        .withExposedService("zoo1", 2181)*/;
+                .withExposedService("solr1", 8983);
+        /*.withExposedService("zoo1", 2181)*/;
     }
 
     @Override
