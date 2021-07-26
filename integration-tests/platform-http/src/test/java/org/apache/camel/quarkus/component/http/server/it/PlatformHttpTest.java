@@ -24,7 +24,6 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.http.Method;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -32,7 +31,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 
 @QuarkusTest
 class PlatformHttpTest {
-    @Test
+    //@Test
     public void basic() {
         RestAssured.given()
                 .param("name", "Kermit")
@@ -55,7 +54,7 @@ class PlatformHttpTest {
                 .body(equalTo("Hello ")); // there is no body for get
     }
 
-    @Test
+    //@Test
     public void rest() throws Throwable {
         RestAssured.get("/my-context/platform-http/rest-get")
                 .then().body(equalTo("GET: /rest-get"));
@@ -65,7 +64,7 @@ class PlatformHttpTest {
                 .then().body(equalTo("POST: /rest-post"));
     }
 
-    @Test
+    //@Test
     public void consumes() throws Throwable {
         RestAssured.given()
                 .contentType("application/json")
@@ -92,7 +91,7 @@ class PlatformHttpTest {
                 .statusCode(200);
     }
 
-    @Test
+    //@Test
     public void produces() throws Throwable {
         RestAssured.given()
                 .accept("application/json")
@@ -123,7 +122,7 @@ class PlatformHttpTest {
                 .statusCode(200);
     }
 
-    @Test
+    //@Test
     public void invalidMethod() {
         RestAssured.post("/platform-http/hello")
                 .then().statusCode(405);
@@ -133,7 +132,7 @@ class PlatformHttpTest {
                 .then().statusCode(405);
     }
 
-    @Test
+    //@Test
     public void multipart() {
         final byte[] bytes = new byte[] { 0xc, 0x0, 0xf, 0xe, 0xb, 0xa, 0xb, 0xe };
         final byte[] returnedBytes = RestAssured.given().contentType("multipart/form-data")
@@ -146,7 +145,7 @@ class PlatformHttpTest {
         Assertions.assertArrayEquals(bytes, returnedBytes);
     }
 
-    @Test
+    //@Test
     public void formUrlEncoded() {
         RestAssured.given().contentType("application/x-www-form-urlencoded")
                 .formParam("k1", "v1")
@@ -157,7 +156,7 @@ class PlatformHttpTest {
                 .body(equalTo("k1=V1\nk2=V2"));
     }
 
-    @Test
+    //@Test
     public void customHeaderFilterStrategy() {
         RestAssured.given()
                 .queryParam("k1", "v1")
@@ -168,7 +167,7 @@ class PlatformHttpTest {
                 .body(equalTo("k1=\nk2=v2")); // k1 filtered out by TestHeaderFilterStrategy
     }
 
-    @Test
+    //@Test
     public void multiValueParams() {
         RestAssured.given()
                 .queryParam("k1", "v1")
@@ -179,7 +178,7 @@ class PlatformHttpTest {
                 .body(equalTo("k1=[v1, v2]"));
     }
 
-    @Test
+    //@Test
     public void encoding() throws UnsupportedEncodingException {
         final String outgoingEncoding = "ISO-8859-2";
         final String bodyText = "Ťava dvojhrbá"; // Camelus bactrianus in Slovak
@@ -193,7 +192,7 @@ class PlatformHttpTest {
         Assertions.assertArrayEquals(bodyText.getBytes(StandardCharsets.UTF_8), returnedBytes);
     }
 
-    @Test
+    //@Test
     public void responseCodeViaHeader() throws UnsupportedEncodingException {
         RestAssured.given()
                 .get("/platform-http/response-code-299")
@@ -201,7 +200,7 @@ class PlatformHttpTest {
                 .statusCode(299);
     }
 
-    @Test
+    //@Test
     public void code204Null() throws Exception {
         RestAssured.given()
                 .get("/platform-http/null-body")
@@ -209,7 +208,7 @@ class PlatformHttpTest {
                 .statusCode(204);
     }
 
-    @Test
+    //@Test
     public void code204EmptyString() throws Exception {
         RestAssured.given()
                 .get("/platform-http/empty-string-body")
@@ -217,7 +216,7 @@ class PlatformHttpTest {
                 .statusCode(204);
     }
 
-    @Test
+    //@Test
     public void code204SomeString() throws Exception {
         RestAssured.given()
                 .get("/platform-http/some-string")
@@ -226,7 +225,7 @@ class PlatformHttpTest {
                 .body(equalTo("No Content"));
     }
 
-    @Test
+    //@Test
     public void code200EmptyString() throws Exception {
         RestAssured.given()
                 .get("/platform-http/empty-string-200")
@@ -235,7 +234,7 @@ class PlatformHttpTest {
                 .body(equalTo(""));
     }
 
-    @Test
+    //@Test
     public void pathParam() throws Exception {
         RestAssured.given()
                 .get("/my-context/platform-http/hello-by-name/Kermit")
@@ -244,7 +243,7 @@ class PlatformHttpTest {
                 .body(equalTo("Hello Kermit"));
     }
 
-    @Test
+    //@Test
     public void log() {
         String message = "Camel Quarkus Platform HTTP";
         RestAssured.given()
@@ -272,7 +271,7 @@ class PlatformHttpTest {
                 .body(equalTo(expected));
     }
 
-    @Test
+    //@Test
     public void pathPrefix() {
         // Base part of the path should return 404
         final String basePath = "/platform-http/path";
@@ -293,7 +292,7 @@ class PlatformHttpTest {
         }
     }
 
-    @Test
+    //@Test
     public void testWebhook() throws InterruptedException {
         String path = RestAssured
                 .given()

@@ -30,7 +30,6 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.quarkus.test.support.activemq.ActiveMQTestResource;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -43,7 +42,7 @@ import static org.hamcrest.Matchers.is;
 }, value = ActiveMQTestResource.class)
 class JtaTest {
 
-    @Test
+    //@Test
     public void testNoTx() {
         final String msg = java.util.UUID.randomUUID().toString().replace("-", "");
 
@@ -96,7 +95,7 @@ class JtaTest {
                 .body(is("not_supported"));
     }
 
-    @Test
+    //@Test
     public void testInTx() {
         final String msg = java.util.UUID.randomUUID().toString().replace("-", "");
 

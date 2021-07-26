@@ -29,7 +29,6 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.quarkus.test.support.activemq.ActiveMQTestResource;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -79,7 +78,7 @@ class JmsTest {
                 .body(is(expected));
     }
 
-    @Test
+    //@Test
     public void testJmsMapMessage() {
         Map<String, String> message = new HashMap<>();
         message.put("foo", "bar");
@@ -94,7 +93,7 @@ class JmsTest {
                 .body(is("{\"foo\":\"bar\",\"cheese\":\"wine\"}"));
     }
 
-    @Test
+    //@Test
     public void testJmsMessageListenerContainerFactory() {
         String message = "Camel JMS With Custom MessageListenerContainerFactory";
         RestAssured.given()
@@ -105,7 +104,7 @@ class JmsTest {
                 .body(is(message));
     }
 
-    @Test
+    //@Test
     public void testJmsDestinationResolver() {
         String message = "Camel JMS With Custom DestinationResolver";
         RestAssured.given()
@@ -116,7 +115,7 @@ class JmsTest {
                 .body(is(message));
     }
 
-    @Test
+    //@Test
     public void testJmsMessageConverter() {
         String result = RestAssured.given()
                 .body("a test message")
@@ -131,7 +130,7 @@ class JmsTest {
         assertTrue(result.endsWith("converter suffix"));
     }
 
-    @Test
+    //@Test
     public void testJmsTopic() {
         String message = "Camel JMS Topic Message";
         RestAssured.given()
@@ -141,7 +140,7 @@ class JmsTest {
                 .statusCode(204);
     }
 
-    @Test
+    //@Test
     public void testJmsSelector() {
         RestAssured.given()
                 .get("/messaging/jms/selector/foo='bar'")
@@ -150,7 +149,7 @@ class JmsTest {
                 .body(is("Camel JMS Selector Match"));
     }
 
-    @Test
+    //@Test
     public void testJmsObject() {
         String message = "Mr Test Person";
         RestAssured.given()
@@ -161,7 +160,7 @@ class JmsTest {
                 .body(is(message));
     }
 
-    @Test
+    //@Test
     public void testJmsTransferExchange() {
         String message = "Test transfer message";
         RestAssured.given()
@@ -172,7 +171,7 @@ class JmsTest {
                 .body(is(message));
     }
 
-    @Test
+    //@Test
     public void testJmsTransaction() {
         RestAssured.given()
                 .get("/messaging/jms/transaction")
@@ -181,7 +180,7 @@ class JmsTest {
                 .body(is("JMS Transaction Success"));
     }
 
-    @Test
+    //@Test
     public void testResequence() {
         final List<String> messages = Arrays.asList("a", "b", "c", "c", "d");
         for (String msg : messages) {

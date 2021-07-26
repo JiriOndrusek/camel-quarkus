@@ -19,7 +19,6 @@ package org.apache.camel.quarkus.component.infinispan;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -30,7 +29,7 @@ import static org.hamcrest.Matchers.notNullValue;
 @QuarkusTestResource(InfinispanServerTestResource.class)
 public class InfinispanTest {
 
-    @Test
+    //@Test
     public void inspect() {
         RestAssured.when()
                 .get("/test/inspect")

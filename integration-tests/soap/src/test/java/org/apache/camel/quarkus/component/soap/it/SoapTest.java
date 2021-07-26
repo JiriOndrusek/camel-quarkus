@@ -25,7 +25,6 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -93,7 +92,7 @@ class SoapTest {
                 .body(equalTo("Customer not found"));
     }
 
-    @Test
+    //@Test
     public void marshalUnmarshal() {
         final String msg = UUID.randomUUID().toString().replace("-", "");
         RestAssured.given()
@@ -105,7 +104,7 @@ class SoapTest {
                 .body(equalTo(msg));
     }
 
-    @Test
+    //@Test
     public void qNameStrategy() {
         final String msg = UUID.randomUUID().toString().replace("-", "");
         RestAssured.given()
@@ -117,7 +116,7 @@ class SoapTest {
                 .body(equalTo(msg));
     }
 
-    @Test
+    //@Test
     public void serviceInterfaceStrategy() {
         final String msg = UUID.randomUUID().toString().replace("-", "");
         RestAssured.given()
@@ -129,7 +128,7 @@ class SoapTest {
                 .body(equalTo(msg));
     }
 
-    @Test
+    //@Test
     public void multipart() {
         final String msg = UUID.randomUUID().toString().replace("-", "");
         RestAssured.given()

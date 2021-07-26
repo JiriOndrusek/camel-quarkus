@@ -21,7 +21,6 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.eclipse.microprofile.config.ConfigProvider;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -145,7 +144,7 @@ class HttpTest {
                 .body(is("Netty Hello World Compressed"));
     }
 
-    @Test
+    //@Test
     public void basicNettyHttpServer() throws Exception {
         final int port = ConfigProvider.getConfig().getValue("camel.netty-http.test-port", Integer.class);
         RestAssured
@@ -158,7 +157,7 @@ class HttpTest {
                 .body(is("Netty Hello World"));
     }
 
-    @Test
+    //@Test
     public void testAhcWsProducerConsumer() {
         String body = "Camel Quarkus AHC-WS";
         RestAssured
@@ -170,7 +169,7 @@ class HttpTest {
                 .body(is("Hello " + body));
     }
 
-    @Test
+    //@Test
     public void sendDynamic() {
         RestAssured
                 .given()

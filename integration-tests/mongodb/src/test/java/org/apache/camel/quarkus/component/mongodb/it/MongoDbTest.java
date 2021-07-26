@@ -37,7 +37,6 @@ import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -118,7 +117,7 @@ class MongoDbTest {
         assertEquals(MSG, document.get("message"));
     }
 
-    @Test
+    //@Test
     public void testDynamicOperation() {
         String collectionName = "dynamicCamelTest";
 
@@ -145,7 +144,7 @@ class MongoDbTest {
 
     }
 
-    @Test
+    //@Test
     public void testTailingConsumer() throws Exception {
         MongoCollection collection = db.getCollection(COLLECTION_TAILING, Document.class);
 
@@ -159,7 +158,7 @@ class MongoDbTest {
         }
     }
 
-    @Test
+    //@Test
     public void testPersistentTailingConsumer() throws Exception {
         MongoCollection collection = db.getCollection(COLLECTION_PERSISTENT_TAILING, Document.class);
 
@@ -206,7 +205,7 @@ class MongoDbTest {
         return null;
     }
 
-    @Test
+    //@Test
     public void testStreamConsumerWithFilter() throws Exception {
         MongoCollection collection = db.getCollection(COLLECTION_STREAM_CHANGES, Document.class);
 
@@ -217,7 +216,7 @@ class MongoDbTest {
         waitAndResetTailingResults(1, "value2", COLLECTION_STREAM_CHANGES);
     }
 
-    @Test
+    //@Test
     public void testConvertMapToDocument() {
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -228,7 +227,7 @@ class MongoDbTest {
                 .body("clazz", is(Document.class.getName()), "key1", is("val1"), "key2", is("val2"));
     }
 
-    @Test
+    //@Test
     public void testConvertAnyObjectToDocument() {
         RestAssured.given()
                 .body("Hello!")
@@ -238,7 +237,7 @@ class MongoDbTest {
                 .body("clazz", is(Document.class.getName()), "value", is("Hello!"));
     }
 
-    @Test
+    //@Test
     public void testOutputTypeDocumentList() throws Exception {
         MongoCollection collection = db.getCollection(COLLECTION_OUTPUT_TYPE_DOCUMENT_LIST, Document.class);
 
@@ -262,7 +261,7 @@ class MongoDbTest {
 
     }
 
-    @Test
+    //@Test
     public void testOutputTypeDocument() throws Exception {
         MongoCollection collection = db.getCollection(COLLECTION_OUTPUT_TYPE_DOCUMENT, Document.class);
 
