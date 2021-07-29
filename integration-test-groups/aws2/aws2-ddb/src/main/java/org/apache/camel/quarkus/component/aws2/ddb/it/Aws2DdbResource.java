@@ -21,7 +21,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -43,6 +45,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import software.amazon.awssdk.services.dynamodb.model.AttributeAction;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValueUpdate;
+import software.amazon.awssdk.services.dynamodb.model.KeysAndAttributes;
 
 @Path("/aws2-ddb")
 @ApplicationScoped
@@ -146,6 +149,48 @@ public class Aws2DdbResource {
 
     private String componentUri(Ddb2Operations op) {
         return "aws2-ddb://" + tableName + "?operation=" + op;
+    }
+
+    @SuppressWarnings("serial")
+    @Path("/batchItems")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public List batchItems(List<String> keyValues) throws Exception {
+        //        Map<String, AttributeValue> attrs = keys.stream()
+        //                .collect(Collectors.toMap(i -> "key", i -> AttributeValue.builder().s(i).build()));
+        //        Map<String, KeysAndAttributes> keysAndAttrs = CollectionHelper.mapOf(
+        //                tableName, KeysAndAttributes.builder().keys(attrs).build());
+
+        //        Map<String, AttributeValue> attrs = keys.stream()
+        //                .collect(Collectors.toMap(i -> "key", i -> AttributeValue.builder().s(i).build()));
+        //        Map<String, KeysAndAttributes> keysAndAttrs = CollectionHelper.mapOf(
+        //                tableName, KeysAndAttributes.builder().keys(attrs).build(),
+        //                tableName2, KeysAndAttributes.builder().keys(attrs).build());
+
+        //        Map<String, KeysAndAttributes> keysAttrs = keys.entrySet().stream().collect(Collectors.toMap(
+        //                e -> e.getKey(),
+        //                e -> KeysAndAttributes.builder().keys(Collections.singletonMap("key", AttributeValue.builder().s(e.getValue()).build())).build()
+        //        ));
+
+        Map<String, AttributeValue>[] keyAttrs = keyValues.stream()
+                .map(v -> Collections.singletonMap("key", AttributeValue.builder().s(v).build())).toArray(Map[]::new);
+        Map<String, KeysAndAttributes> keysAttrs = Collections.singletonMap(tableName,
+                KeysAndAttributes.builder().keys(keyAttrs).build());
+
+        Map<String, List<Map<AttributeValue, AttributeValue>>> result = (Map<String, List<Map<AttributeValue, AttributeValue>>>) producerTemplate
+                .send(componentUri(Ddb2Operations.BatchGetItems),
+                        e -> e.getIn().setHeader(Ddb2Constants.BATCH_ITEMS, keysAttrs))
+                .getMessage().getHeader(Ddb2Constants.BATCH_RESPONSE);
+        List<Map<String, String>> transf = result.get(tableName).stream().map(
+                m -> new HashMap<String, String>() {
+                    {
+                        put("key", m.get("key").s());
+                        put("value", m.get("value").s());
+                    }
+                }).collect(Collectors.toList());
+
+        return transf;
     }
 
 }

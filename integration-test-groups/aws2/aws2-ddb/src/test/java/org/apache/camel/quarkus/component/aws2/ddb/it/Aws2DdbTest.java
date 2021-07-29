@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -40,7 +41,7 @@ class Aws2DdbTest {
 
     private static final Logger LOG = Logger.getLogger(Aws2DdbTest.class);
 
-    @Test
+    //    @Test
     public void crud() {
         final String key = "key" + UUID.randomUUID().toString().replace("-", "");
         final String msg = "val" + UUID.randomUUID().toString().replace("-", "");
@@ -164,6 +165,67 @@ class Aws2DdbTest {
 
                         && key.equals(list.get(2).get("key"))
                         && newMsg.equals(list.get(2).get("old")));
+    }
+
+    @Test
+    public void batchItems() {
+
+        /* batch items */
+        final String key1 = "key1-" + UUID.randomUUID().toString().replace("-", "");
+        final String msg1 = "val" + UUID.randomUUID().toString().replace("-", "");
+        final String key2 = "key2-" + UUID.randomUUID().toString().replace("-", "");
+        final String msg2 = "val" + UUID.randomUUID().toString().replace("-", "");
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .body(msg1)
+                .post("/aws2-ddb/item/" + key1)
+                .then()
+                .statusCode(201);
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                //                .queryParam("tableName", tableName2)
+                .body(msg2)
+                .post("/aws2-ddb/item/" + key2)
+                .then()
+                .statusCode(201);
+
+        Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(120, TimeUnit.SECONDS).until(
+                () -> {
+                    ExtractableResponse<Response> result = RestAssured.given()
+                            .contentType(ContentType.JSON)
+                            .body(Stream.of(key1, key2).collect(Collectors.toList()))
+                            .post("/aws2-ddb/batchItems")
+                            .then()
+                            .statusCode(200)
+                            .extract();
+
+                    return result.jsonPath().getList("$", Map.class);
+                },
+                /* Both inserted values have to be returned */
+                list -> list.size() == 2
+
+                        && (key1.equals(list.get(0).get("key"))
+                                && msg1.equals(list.get(0).get("value"))
+
+                                && key2.equals(list.get(1).get("key"))
+                                && msg2.equals(list.get(1).get("value"))
+                                || (key1.equals(list.get(1).get("key"))
+                                        && msg1.equals(list.get(1).get("value"))
+
+                                        && key2.equals(list.get(0).get("key"))
+                                        && msg2.equals(list.get(0).get("value")))));
+        //        List result = RestAssured.given()
+        //                .contentType(ContentType.JSON)
+        //                .body(attrs)
+        //                .post("/aws2-ddb/batchItems")
+        //                .then()
+        //                .statusCode(200)
+        //        .extract().as(List.class);
+
+        //        System.out.println(result);
+
     }
 
 }
