@@ -171,9 +171,9 @@ class Aws2DdbTest {
     public void batchItems() {
 
         /* batch items */
-        final String key1 = "key1-" + UUID.randomUUID().toString().replace("-", "");
+        final String key1 = "key-1-" + UUID.randomUUID().toString().replace("-", "");
         final String msg1 = "val" + UUID.randomUUID().toString().replace("-", "");
-        final String key2 = "key2-" + UUID.randomUUID().toString().replace("-", "");
+        final String key2 = "key-2-" + UUID.randomUUID().toString().replace("-", "");
         final String msg2 = "val" + UUID.randomUUID().toString().replace("-", "");
 
         RestAssured.given()
@@ -185,7 +185,6 @@ class Aws2DdbTest {
 
         RestAssured.given()
                 .contentType(ContentType.TEXT)
-                //                .queryParam("tableName", tableName2)
                 .body(msg2)
                 .post("/aws2-ddb/item/" + key2)
                 .then()
@@ -201,31 +200,12 @@ class Aws2DdbTest {
                             .statusCode(200)
                             .extract();
 
-                    return result.jsonPath().getList("$", Map.class);
+                    return result.jsonPath().getMap("$");
                 },
-                /* Both inserted values have to be returned */
-                list -> list.size() == 2
-
-                        && (key1.equals(list.get(0).get("key"))
-                                && msg1.equals(list.get(0).get("value"))
-
-                                && key2.equals(list.get(1).get("key"))
-                                && msg2.equals(list.get(1).get("value"))
-                                || (key1.equals(list.get(1).get("key"))
-                                        && msg1.equals(list.get(1).get("value"))
-
-                                        && key2.equals(list.get(0).get("key"))
-                                        && msg2.equals(list.get(0).get("value")))));
-        //        List result = RestAssured.given()
-        //                .contentType(ContentType.JSON)
-        //                .body(attrs)
-        //                .post("/aws2-ddb/batchItems")
-        //                .then()
-        //                .statusCode(200)
-        //        .extract().as(List.class);
-
-        //        System.out.println(result);
-
+                /* Both inserted pairs have to be returned */
+                map -> map.size() == 2
+                        && msg1.equals(map.get(key1))
+                        && msg2.equals(map.get(key2)));
     }
 
 }

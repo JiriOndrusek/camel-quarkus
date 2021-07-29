@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -156,23 +155,7 @@ public class Aws2DdbResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public List batchItems(List<String> keyValues) throws Exception {
-        //        Map<String, AttributeValue> attrs = keys.stream()
-        //                .collect(Collectors.toMap(i -> "key", i -> AttributeValue.builder().s(i).build()));
-        //        Map<String, KeysAndAttributes> keysAndAttrs = CollectionHelper.mapOf(
-        //                tableName, KeysAndAttributes.builder().keys(attrs).build());
-
-        //        Map<String, AttributeValue> attrs = keys.stream()
-        //                .collect(Collectors.toMap(i -> "key", i -> AttributeValue.builder().s(i).build()));
-        //        Map<String, KeysAndAttributes> keysAndAttrs = CollectionHelper.mapOf(
-        //                tableName, KeysAndAttributes.builder().keys(attrs).build(),
-        //                tableName2, KeysAndAttributes.builder().keys(attrs).build());
-
-        //        Map<String, KeysAndAttributes> keysAttrs = keys.entrySet().stream().collect(Collectors.toMap(
-        //                e -> e.getKey(),
-        //                e -> KeysAndAttributes.builder().keys(Collections.singletonMap("key", AttributeValue.builder().s(e.getValue()).build())).build()
-        //        ));
-
+    public Map batchItems(List<String> keyValues) throws Exception {
         Map<String, AttributeValue>[] keyAttrs = keyValues.stream()
                 .map(v -> Collections.singletonMap("key", AttributeValue.builder().s(v).build())).toArray(Map[]::new);
         Map<String, KeysAndAttributes> keysAttrs = Collections.singletonMap(tableName,
@@ -182,15 +165,13 @@ public class Aws2DdbResource {
                 .send(componentUri(Ddb2Operations.BatchGetItems),
                         e -> e.getIn().setHeader(Ddb2Constants.BATCH_ITEMS, keysAttrs))
                 .getMessage().getHeader(Ddb2Constants.BATCH_RESPONSE);
-        List<Map<String, String>> transf = result.get(tableName).stream().map(
-                m -> new HashMap<String, String>() {
-                    {
-                        put("key", m.get("key").s());
-                        put("value", m.get("value").s());
-                    }
-                }).collect(Collectors.toList());
 
-        return transf;
+        Map<String, String> collected = new HashMap<>();
+        for (Map<AttributeValue, AttributeValue> m : result.get(tableName)) {
+            collected.put(m.get("key").s(), m.get("value").s());
+        }
+
+        return collected;
     }
 
 }
