@@ -48,6 +48,9 @@ class Aws2DdbTest {
     @ConfigProperty(name = "aws-ddb.table-name")
     String tableName;
 
+    @ConfigProperty(name = "aws-ddb.movie-table-name")
+    String movieTableName;
+
     //    @Test
     public void crud() {
         final String key = "key" + UUID.randomUUID().toString().replace("-", "");
@@ -228,8 +231,7 @@ class Aws2DdbTest {
                 () -> {
                     ExtractableResponse<Response> result = RestAssured.given()
                             .contentType(ContentType.JSON)
-                            .body(Stream.of("key", "value").collect(Collectors.toList()))
-                            .queryParam("startKey", key2)
+                            .body(key3)
                             .post("/aws2-ddb/query")
                             .then()
                             .statusCode(200)
@@ -237,8 +239,21 @@ class Aws2DdbTest {
 
                     return result.jsonPath().getMap("$");
                 },
-                /* Both inserted pairs have to be returned */
-                map -> map.size() == 2
+                map -> map.size() == 1
+                        && msg3.equals(map.get(key3)));
+
+        /* Scan */
+        Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(120, TimeUnit.SECONDS).until(
+                () -> {
+                    ExtractableResponse<Response> result = RestAssured.get("/aws2-ddb/scan")
+                            .then()
+                            .statusCode(200)
+                            .extract();
+
+                    return result.jsonPath().getMap("$");
+                },
+                map -> map.size() == 3
+                        && msg1.equals(map.get(key1))
                         && msg2.equals(map.get(key2))
                         && msg3.equals(map.get(key3)));
 
@@ -264,7 +279,17 @@ class Aws2DdbTest {
                         && map.containsKey(Ddb2Constants.ITEM_COUNT)
                         && tableName.equals(map.get(Ddb2Constants.TABLE_NAME)));
 
-        /* Delete table */
+
+        /* Update table */
+        Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(120, TimeUnit.SECONDS).until(
+                () -> RestAssured.get("/aws2-ddb/updateTable")
+                            .then()
+                            .extract()
+                            .statusCode(),
+                Matchers.is(201)
+        );
+
+        /* Delete table (also verify that update from previous step took effect) */
         Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(120, TimeUnit.SECONDS).until(
                 () -> {
                     ExtractableResponse<Response> result = RestAssured.given()
@@ -279,11 +304,28 @@ class Aws2DdbTest {
                 map -> map.size() == 7
                         && map.containsKey(Ddb2Constants.CREATION_DATE)
                         && TableStatus.ACTIVE.name().equals(map.get(Ddb2Constants.TABLE_STATUS))
-                        && map.containsKey(Ddb2Constants.PROVISIONED_THROUGHPUT)
                         && map.containsKey(Ddb2Constants.TABLE_SIZE)
                         && map.containsKey(Ddb2Constants.KEY_SCHEMA)
                         && map.containsKey(Ddb2Constants.ITEM_COUNT)
-                        && tableName.equals(map.get(Ddb2Constants.TABLE_NAME)));
+                        && tableName.equals(map.get(Ddb2Constants.TABLE_NAME))
+                        //previous update changed throughput capacity from 10 to 5
+                        && ((Map)map.get(Ddb2Constants.PROVISIONED_THROUGHPUT)).size() == 2
+                        && ((Map)map.get(Ddb2Constants.PROVISIONED_THROUGHPUT)).get(Ddb2Constants.READ_CAPACITY).equals(5)
+                        && ((Map)map.get(Ddb2Constants.PROVISIONED_THROUGHPUT)).get(Ddb2Constants.WRITE_CAPACITY).equals(5));
+
+        /* Verify delete with describe table */
+        Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(120, TimeUnit.SECONDS).until(
+                () -> {
+                    ExtractableResponse<Response> result = RestAssured.given()
+                            .contentType(ContentType.JSON)
+                            .body(Ddb2Operations.DescribeTable)
+                            .post("/aws2-ddb/operation")
+                            .then()
+                            .statusCode(200)
+                            .extract();
+                    return result.jsonPath().getMap("$");
+                },
+                map -> map.isEmpty());
     }
 
 }

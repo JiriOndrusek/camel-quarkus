@@ -52,25 +52,53 @@ public class Aws2DdbTestEnvCustomizer implements Aws2TestEnvCustomizer {
         final String tableName = "camel-quarkus-" + RandomStringUtils.randomAlphanumeric(16).toLowerCase(Locale.ROOT);
         envContext.property("aws-ddb.table-name", tableName);
 
+        final String moviesTableName = "camel-quarkus-movies-" + RandomStringUtils.randomAlphanumeric(16).toLowerCase(Locale.ROOT);
+        envContext.property("aws-ddb.movie-table-name", tableName);
+
         final DynamoDbClient client = envContext.client(Service.DYNAMODB, DynamoDbClient::builder);
         {
             final String keyColumn = "key";
 
-            ArrayList<KeySchemaElement> indexKeySchema = new ArrayList<KeySchemaElement>();
-            indexKeySchema.add(KeySchemaElement.builder().attributeName("key").keyType(KeyType.HASH).build()); // Partition
-            // key
-            indexKeySchema.add(KeySchemaElement.builder().attributeName("value").withKeyType(KeyType.RANGE));
-
-            GlobalSecondaryIndex keyIndex = GlobalSecondaryIndex.builder()
-                    .indexName("key")
-                    .provisionedThroughput(ProvisionedThroughput.builder()
-                                    .readCapacityUnits(new Long(10))
-                                    .writeCapacityUnits(new Long(10))
-                                    .build())
-                    .projection(Projection.builder().projectionType(ProjectionType.ALL).build())
-                    .build();
-
-
+//            ArrayList<KeySchemaElement> indexKeySchema = new ArrayList<KeySchemaElement>();
+//            indexKeySchema.add(KeySchemaElement.builder().attributeName("key").keyType(KeyType.HASH).build()); // Partition
+//            // key
+//            indexKeySchema.add(KeySchemaElement.builder().attributeName("value").withKeyType(KeyType.RANGE));
+//
+//            GlobalSecondaryIndex keyIndex = GlobalSecondaryIndex.builder()
+//                    .indexName("key")
+//                    .provisionedThroughput(ProvisionedThroughput.builder()
+//                                    .readCapacityUnits(new Long(10))
+//                                    .writeCapacityUnits(new Long(10))
+//                                    .build())
+//                    .projection(Projection.builder().projectionType(ProjectionType.ALL).build())
+//                    .build();
+//
+//
+//
+//            client.createTable(
+//                    CreateTableRequest.builder()
+//                            .keySchema(KeySchemaElement.builder()
+//                                    .attributeName("year")
+//                                    .keyType(KeyType.HASH)
+//                                    .build())
+//                            .keySchema(KeySchemaElement.builder()
+//                                    .attributeName("title")
+//                                    .keyType(KeyType.RANGE)
+//                                    .build())
+//                            .provisionedThroughput(ProvisionedThroughput.builder()
+//                                    .readCapacityUnits(new Long(10))
+//                                    .writeCapacityUnits(new Long(10))
+//                                    .build())
+//                            .attributeDefinitions(AttributeDefinition.builder()
+//                                    .attributeName("year")
+//                                    .attributeType(ScalarAttributeType.N)
+//                                    .build())
+//                            .attributeDefinitions(AttributeDefinition.builder()
+//                                    .attributeName("title")
+//                                    .attributeType(ScalarAttributeType.S)
+//                                    .build())
+//                            .tableName(moviesTableName)
+//                            .build());
 
 
             client.createTable(
@@ -100,6 +128,12 @@ public class Aws2DdbTestEnvCustomizer implements Aws2TestEnvCustomizer {
                         .tableName(tableName)
                         .build());
             }
+
+//            try (DynamoDbWaiter dbWaiter = client.waiter()) {
+//                dbWaiter.waitUntilTableExists(DescribeTableRequest.builder()
+//                        .tableName(tableName)
+//                        .build());
+//            }
 
             envContext.closeable(() -> client.deleteTable(DeleteTableRequest.builder().tableName(tableName).build()));
         }
