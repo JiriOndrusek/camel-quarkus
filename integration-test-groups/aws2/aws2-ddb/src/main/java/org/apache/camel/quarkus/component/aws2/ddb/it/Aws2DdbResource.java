@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -34,9 +35,11 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.camel.Message;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.aws2.ddb.Ddb2Constants;
 import org.apache.camel.component.aws2.ddb.Ddb2Operations;
@@ -44,6 +47,8 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import software.amazon.awssdk.services.dynamodb.model.AttributeAction;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValueUpdate;
+import software.amazon.awssdk.services.dynamodb.model.ComparisonOperator;
+import software.amazon.awssdk.services.dynamodb.model.Condition;
 import software.amazon.awssdk.services.dynamodb.model.KeysAndAttributes;
 
 @Path("/aws2-ddb")
@@ -150,7 +155,6 @@ public class Aws2DdbResource {
         return "aws2-ddb://" + tableName + "?operation=" + op;
     }
 
-    @SuppressWarnings("serial")
     @Path("/batchItems")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -172,6 +176,57 @@ public class Aws2DdbResource {
         }
 
         return collected;
+    }
+
+    @Path("/query")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map query(List<String> attributeNames,
+            @QueryParam("startKey") String startKey) throws Exception {
+        Map<String, Condition> keyConditions = new HashMap<>();
+        Condition.Builder condition = Condition.builder().comparisonOperator(ComparisonOperator.GT.toString())
+                .attributeValueList(AttributeValue.builder().n("1985").build());
+
+        keyConditions.put("1", condition.build());
+
+        List<Map<AttributeValue, AttributeValue>> result = (List<Map<AttributeValue, AttributeValue>>) producerTemplate
+                .send(componentUri(Ddb2Operations.Query),
+                        e -> {
+                            e.getIn().setHeader(Ddb2Constants.ATTRIBUTE_NAMES, attributeNames);
+                            e.getIn().setHeader(Ddb2Constants.CONSISTENT_READ, true);
+                            e.getIn().setHeader(Ddb2Constants.START_KEY, startKey);
+                            e.getIn().setHeader(Ddb2Constants.LIMIT, 10);
+                            e.getIn().setHeader(Ddb2Constants.SCAN_INDEX_FORWARD, true);
+                            e.getIn().setHeader(Ddb2Constants.KEY_CONDITIONS, keyConditions);
+                            e.getIn().setHeader(Ddb2Constants.INDEX_NAME, "key-index");
+                        })
+                .getMessage().getHeader(Ddb2Constants.ITEMS);
+
+        Map<String, String> collected = new HashMap<>();
+        for (Map<AttributeValue, AttributeValue> m : result) {
+            collected.put(m.get("key").s(), m.get("value").s());
+        }
+
+        return collected;
+    }
+
+    @Path("/operation")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map operation(String operation) throws Exception {
+        final Message message = producerTemplate
+                .send(componentUri(Ddb2Operations.valueOf(operation)), e -> {
+                })
+                .getMessage();
+        return message.getHeaders().entrySet().stream().collect(Collectors.toMap(
+                Map.Entry::getKey,
+                e -> {
+                    if (e.getValue() instanceof List) {
+                        return ((List) e.getValue()).size();
+                    }
+                    return e.getValue().toString();
+                }));
     }
 
 }

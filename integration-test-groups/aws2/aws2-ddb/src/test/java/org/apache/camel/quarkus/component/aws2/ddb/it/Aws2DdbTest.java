@@ -29,17 +29,24 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
+import org.apache.camel.component.aws2.ddb.Ddb2Constants;
+import org.apache.camel.component.aws2.ddb.Ddb2Operations;
 import org.apache.camel.quarkus.test.support.aws2.Aws2TestResource;
 import org.awaitility.Awaitility;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.hamcrest.Matchers;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Test;
+import software.amazon.awssdk.services.dynamodb.model.TableStatus;
 
 @QuarkusTest
 @QuarkusTestResource(Aws2TestResource.class)
 class Aws2DdbTest {
 
     private static final Logger LOG = Logger.getLogger(Aws2DdbTest.class);
+
+    @ConfigProperty(name = "aws-ddb.table-name")
+    String tableName;
 
     //    @Test
     public void crud() {
@@ -168,13 +175,14 @@ class Aws2DdbTest {
     }
 
     @Test
-    public void batchItems() {
+    public void operations() {
 
-        /* batch items */
         final String key1 = "key-1-" + UUID.randomUUID().toString().replace("-", "");
-        final String msg1 = "val" + UUID.randomUUID().toString().replace("-", "");
+        final String msg1 = "val-1-" + UUID.randomUUID().toString().replace("-", "");
         final String key2 = "key-2-" + UUID.randomUUID().toString().replace("-", "");
-        final String msg2 = "val" + UUID.randomUUID().toString().replace("-", "");
+        final String msg2 = "val-2-" + UUID.randomUUID().toString().replace("-", "");
+        final String key3 = "key-3-" + UUID.randomUUID().toString().replace("-", "");
+        final String msg3 = "val-3-" + UUID.randomUUID().toString().replace("-", "");
 
         RestAssured.given()
                 .contentType(ContentType.TEXT)
@@ -190,6 +198,14 @@ class Aws2DdbTest {
                 .then()
                 .statusCode(201);
 
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .body(msg3)
+                .post("/aws2-ddb/item/" + key3)
+                .then()
+                .statusCode(201);
+
+        /* Batch items */
         Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(120, TimeUnit.SECONDS).until(
                 () -> {
                     ExtractableResponse<Response> result = RestAssured.given()
@@ -206,6 +222,68 @@ class Aws2DdbTest {
                 map -> map.size() == 2
                         && msg1.equals(map.get(key1))
                         && msg2.equals(map.get(key2)));
+
+        /* Query */
+        Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(120, TimeUnit.SECONDS).until(
+                () -> {
+                    ExtractableResponse<Response> result = RestAssured.given()
+                            .contentType(ContentType.JSON)
+                            .body(Stream.of("key", "value").collect(Collectors.toList()))
+                            .queryParam("startKey", key2)
+                            .post("/aws2-ddb/query")
+                            .then()
+                            .statusCode(200)
+                            .extract();
+
+                    return result.jsonPath().getMap("$");
+                },
+                /* Both inserted pairs have to be returned */
+                map -> map.size() == 2
+                        && msg2.equals(map.get(key2))
+                        && msg3.equals(map.get(key3)));
+
+        /* Describe table */
+        Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(120, TimeUnit.SECONDS).until(
+                () -> {
+                    ExtractableResponse<Response> result = RestAssured.given()
+                            .contentType(ContentType.JSON)
+                            .body(Ddb2Operations.DescribeTable)
+                            .post("/aws2-ddb/operation")
+                            .then()
+                            .statusCode(200)
+                            .extract();
+                    return result.jsonPath().getMap("$");
+                },
+                map -> map.size() == 8
+                        && map.containsKey(Ddb2Constants.CREATION_DATE)
+                        && map.containsKey(Ddb2Constants.READ_CAPACITY)
+                        && TableStatus.ACTIVE.name().equals(map.get(Ddb2Constants.TABLE_STATUS))
+                        && map.containsKey(Ddb2Constants.WRITE_CAPACITY)
+                        && map.containsKey(Ddb2Constants.TABLE_SIZE)
+                        && map.containsKey(Ddb2Constants.KEY_SCHEMA)
+                        && map.containsKey(Ddb2Constants.ITEM_COUNT)
+                        && tableName.equals(map.get(Ddb2Constants.TABLE_NAME)));
+
+        /* Delete table */
+        Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(120, TimeUnit.SECONDS).until(
+                () -> {
+                    ExtractableResponse<Response> result = RestAssured.given()
+                            .contentType(ContentType.JSON)
+                            .body(Ddb2Operations.DeleteTable)
+                            .post("/aws2-ddb/operation")
+                            .then()
+                            .statusCode(200)
+                            .extract();
+                    return result.jsonPath().getMap("$");
+                },
+                map -> map.size() == 7
+                        && map.containsKey(Ddb2Constants.CREATION_DATE)
+                        && TableStatus.ACTIVE.name().equals(map.get(Ddb2Constants.TABLE_STATUS))
+                        && map.containsKey(Ddb2Constants.PROVISIONED_THROUGHPUT)
+                        && map.containsKey(Ddb2Constants.TABLE_SIZE)
+                        && map.containsKey(Ddb2Constants.KEY_SCHEMA)
+                        && map.containsKey(Ddb2Constants.ITEM_COUNT)
+                        && tableName.equals(map.get(Ddb2Constants.TABLE_NAME)));
     }
 
 }

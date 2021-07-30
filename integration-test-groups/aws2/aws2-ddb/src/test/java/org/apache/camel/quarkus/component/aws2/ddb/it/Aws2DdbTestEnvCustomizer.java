@@ -16,6 +16,7 @@
  */
 package org.apache.camel.quarkus.component.aws2.ddb.it;
 
+import java.util.ArrayList;
 import java.util.Locale;
 
 import org.apache.camel.quarkus.test.support.aws2.Aws2TestEnvContext;
@@ -27,8 +28,11 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition;
 import software.amazon.awssdk.services.dynamodb.model.CreateTableRequest;
 import software.amazon.awssdk.services.dynamodb.model.DeleteTableRequest;
 import software.amazon.awssdk.services.dynamodb.model.DescribeTableRequest;
+import software.amazon.awssdk.services.dynamodb.model.GlobalSecondaryIndex;
 import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement;
 import software.amazon.awssdk.services.dynamodb.model.KeyType;
+import software.amazon.awssdk.services.dynamodb.model.Projection;
+import software.amazon.awssdk.services.dynamodb.model.ProjectionType;
 import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
 import software.amazon.awssdk.services.dynamodb.model.StreamSpecification;
@@ -51,6 +55,24 @@ public class Aws2DdbTestEnvCustomizer implements Aws2TestEnvCustomizer {
         final DynamoDbClient client = envContext.client(Service.DYNAMODB, DynamoDbClient::builder);
         {
             final String keyColumn = "key";
+
+            ArrayList<KeySchemaElement> indexKeySchema = new ArrayList<KeySchemaElement>();
+            indexKeySchema.add(KeySchemaElement.builder().attributeName("key").keyType(KeyType.HASH).build()); // Partition
+            // key
+            indexKeySchema.add(KeySchemaElement.builder().attributeName("value").withKeyType(KeyType.RANGE));
+
+            GlobalSecondaryIndex keyIndex = GlobalSecondaryIndex.builder()
+                    .indexName("key")
+                    .provisionedThroughput(ProvisionedThroughput.builder()
+                                    .readCapacityUnits(new Long(10))
+                                    .writeCapacityUnits(new Long(10))
+                                    .build())
+                    .projection(Projection.builder().projectionType(ProjectionType.ALL).build())
+                    .build();
+
+
+
+
             client.createTable(
                     CreateTableRequest.builder()
                             .attributeDefinitions(AttributeDefinition.builder()
@@ -70,6 +92,7 @@ public class Aws2DdbTestEnvCustomizer implements Aws2TestEnvCustomizer {
                                     .streamViewType(StreamViewType.NEW_AND_OLD_IMAGES)
                                     .build())
                             .tableName(tableName)
+//                            .globalSecondaryIndexes(keyIndex)
                             .build());
 
             try (DynamoDbWaiter dbWaiter = client.waiter()) {
