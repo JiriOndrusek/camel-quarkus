@@ -16,6 +16,12 @@
  */
 package org.apache.camel.quarkus.component.aws2.ddb.it;
 
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
@@ -28,13 +34,6 @@ import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import static org.apache.camel.quarkus.component.aws2.ddb.it.Aws2DdbResource.Table;
 
@@ -64,6 +63,22 @@ class Aws2DdbStreamTest {
                 .then()
                 .statusCode(201);
 
+        /* Update #1 */
+        final String newMsg = "newVal" + UUID.randomUUID().toString().replace("-", "");
+        RestAssured.given()
+                .body(newMsg)
+                .queryParam("table", Table.stream)
+                .put("/aws2-ddb/item/" + key1)
+                .then()
+                .statusCode(204);
+
+        /* Delete #1 */
+        RestAssured.given()
+                .queryParam("table", Table.stream)
+                .delete("/aws2-ddb/item/" + key1)
+                .then()
+                .statusCode(204);
+
         /* PUT #2 */
         RestAssured.given()
                 .contentType(ContentType.TEXT)
@@ -73,7 +88,7 @@ class Aws2DdbStreamTest {
                 .then()
                 .statusCode(201);
 
-        StringBuilder put1SeqNumber = new StringBuilder();
+        StringBuilder put2SeqNumber = new StringBuilder();
 
         Awaitility.await().atMost(120, TimeUnit.SECONDS).until(
                 () -> {
@@ -82,27 +97,34 @@ class Aws2DdbStreamTest {
                             .statusCode(200)
                             .extract();
 
-
                     List<Map> retVal = result.jsonPath().getList("$", Map.class);
-                    LOG.info("Expecting 3 events got " + result.statusCode() + ": " + result.body().asString());
+                    LOG.info("Expecting 4 (+ 1 init) events got " + result.statusCode() + ": " + result.body().asString());
                     //remove init events
                     retVal = retVal.stream().filter(m -> !String.valueOf(m.get("key")).startsWith("initKey"))
                             .collect(Collectors.toList());
 
-                    if(retVal.size() == 2 && retVal.get(0) != null && retVal.get(0).get("sequenceNumber") != null) {
-                        put1SeqNumber.append(((String)retVal.get(0).get("sequenceNumber")));
+                    if (retVal.size() == 4 && retVal.get(3) != null && retVal.get(3).get("sequenceNumber") != null) {
+                        put2SeqNumber.append(((String) retVal.get(3).get("sequenceNumber")));
                     }
                     return retVal;
                 },
                 /* The above actions should trigger the following three change events (initEvent is also present) */
-                list -> list.size() == 2
+                list -> list.size() == 4
 
                         && key1.equals(list.get(0).get("key"))
                         && msg1.equals(list.get(0).get("new"))
 
-                        && key2.equals(list.get(1).get("key"))
-                        && msg2.equals(list.get(1).get("new")));
+                        && key1.equals(list.get(1).get("key"))
+                        && msg1.equals(list.get(1).get("old"))
+                        && newMsg.equals(list.get(1).get("new"))
 
+                        && key1.equals(list.get(2).get("key"))
+                        && newMsg.equals(list.get(2).get("old"))
+
+                        && key2.equals(list.get(3).get("key"))
+                        && msg2.equals(list.get(3).get("new"))
+
+                        && put2SeqNumber.length() > 0);
 
         /* SequenceNumber */
 
@@ -116,7 +138,7 @@ class Aws2DdbStreamTest {
         routeController("status", ServiceStatus.Stopped.name());
 
         RestAssured.given()
-                .body(put1SeqNumber.toString())
+                .body(put2SeqNumber.toString())
                 .post("/aws2-ddbstream/setSequenceNumber")
                 .then()
                 .statusCode(204);
@@ -134,7 +156,7 @@ class Aws2DdbStreamTest {
                 .then()
                 .statusCode(201);
 
-        /* There should be only key2 and key3, because route is started with parameter "AFTER_SEQUENCE_NUMBER" of put #1. */
+        /* There should be only key2 and key3, because route is started with parameter "AT_SEQUENCE_NUMBER" of put #2. */
         Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(120, TimeUnit.SECONDS).until(
                 () -> {
                     ExtractableResponse<Response> result = RestAssured.get("/aws2-ddbstream/change")
@@ -145,10 +167,10 @@ class Aws2DdbStreamTest {
                     List<Map> retVal = result.jsonPath().getList("$", Map.class);
 
                     //remove init events
-                    retVal =  retVal.stream().filter(m -> !String.valueOf(m.get("key")).startsWith("initKey"))
+                    retVal = retVal.stream().filter(m -> !String.valueOf(m.get("key")).startsWith("initKey"))
                             .collect(Collectors.toList());
 
-                    LOG.info("Expecting 1 event, got " + result.statusCode() + ": " + retVal);
+                    LOG.info("Expecting 2 event2, got " + result.statusCode() + ": " + retVal);
 
                     return retVal;
                 },

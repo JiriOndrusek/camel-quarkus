@@ -22,7 +22,6 @@ import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -31,8 +30,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.component.aws2.ddbstream.SequenceNumberProvider;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @Path("/aws2-ddbstream")
 @ApplicationScoped
@@ -62,7 +59,6 @@ public class Aws2DdbStreamResource {
         aws2DdbStreamReceivedEvents.clear();
     }
 
-
     @Path("/setSequenceNumber")
     @POST
     public void setSequenceNumber(String newSn) {
@@ -74,19 +70,18 @@ public class Aws2DdbStreamResource {
     @Produces(MediaType.TEXT_PLAIN)
     public String route(@PathParam("routeId") String routeId, @PathParam("operation") String operation) throws Exception {
         switch (operation) {
-            case "stop":
-                camelContext.getRouteController().stopRoute(routeId);
-                break;
-            case "start":
-                camelContext.getRouteController().startRoute(routeId);
-                break;
-            case "status":
-                return camelContext.getRouteController().getRouteStatus(routeId).name();
+        case "stop":
+            camelContext.getRouteController().stopRoute(routeId);
+            break;
+        case "start":
+            camelContext.getRouteController().startRoute(routeId);
+            break;
+        case "status":
+            return camelContext.getRouteController().getRouteStatus(routeId).name();
 
         }
 
         return null;
     }
-
 
 }

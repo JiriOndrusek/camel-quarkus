@@ -81,13 +81,12 @@ public class Aws2DdbTestEnvCustomizer implements Aws2TestEnvCustomizer {
                 envContext.closeable(() -> client.deleteTable(DeleteTableRequest.builder().tableName(table).build()));
             }
 
-
         }
 
     }
 
     private CreateTableRequest.Builder createTableRequest(String tableName, String keyColumn) {
-        CreateTableRequest.Builder builder =  CreateTableRequest.builder()
+        CreateTableRequest.Builder builder = CreateTableRequest.builder()
                 .attributeDefinitions(AttributeDefinition.builder()
                         .attributeName(keyColumn)
                         .attributeType(ScalarAttributeType.S)
@@ -100,11 +99,11 @@ public class Aws2DdbTestEnvCustomizer implements Aws2TestEnvCustomizer {
                         .readCapacityUnits(new Long(10))
                         .writeCapacityUnits(new Long(10))
                         .build());
-        if(tableName.contains("streams")) {
-                builder.streamSpecification(StreamSpecification.builder()
-                        .streamEnabled(true)
-                        .streamViewType(StreamViewType.NEW_AND_OLD_IMAGES)
-                        .build());
+        if (tableName.contains("streams")) {
+            builder.streamSpecification(StreamSpecification.builder()
+                    .streamEnabled(true)
+                    .streamViewType(StreamViewType.NEW_AND_OLD_IMAGES)
+                    .build());
         }
 
         return builder.tableName(tableName);

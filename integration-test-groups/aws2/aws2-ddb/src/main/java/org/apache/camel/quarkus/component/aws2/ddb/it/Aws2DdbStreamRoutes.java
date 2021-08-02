@@ -27,7 +27,6 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.aws2.ddbstream.SequenceNumberProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import software.amazon.awssdk.services.dynamodb.model.Record;
 import software.amazon.awssdk.services.dynamodb.model.StreamRecord;
@@ -44,22 +43,23 @@ public class Aws2DdbStreamRoutes extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        from("aws2-ddbstream://" + streamTableName + "?sequenceNumberProvider=#aws2DdbStreamSequenceNumberProvider&iteratorType=AFTER_SEQUENCE_NUMBER")
-                .id("aws2DdbStreamRoute")
-                .process(e -> {
-                    Record record = e.getMessage().getBody(Record.class);
-                    StreamRecord item = record.dynamodb();
-                    Map<String, String> result = new LinkedHashMap<>();
-                    result.put("key", item.keys().get("key").s());
-                    if (item.hasOldImage()) {
-                        result.put("old", item.oldImage().get("value").s());
-                    }
-                    if (item.hasNewImage()) {
-                        result.put("new", item.newImage().get("value").s());
-                    }
-                    result.put("sequenceNumber", item.sequenceNumber());
-                    aws2DdbStreamReceivedEvents.add(result);
-                });
+        from("aws2-ddbstream://" + streamTableName
+                + "?sequenceNumberProvider=#aws2DdbStreamSequenceNumberProvider&iteratorType=AT_SEQUENCE_NUMBER")
+                        .id("aws2DdbStreamRoute")
+                        .process(e -> {
+                            Record record = e.getMessage().getBody(Record.class);
+                            StreamRecord item = record.dynamodb();
+                            Map<String, String> result = new LinkedHashMap<>();
+                            result.put("key", item.keys().get("key").s());
+                            if (item.hasOldImage()) {
+                                result.put("old", item.oldImage().get("value").s());
+                            }
+                            if (item.hasNewImage()) {
+                                result.put("new", item.newImage().get("value").s());
+                            }
+                            result.put("sequenceNumber", item.sequenceNumber());
+                            aws2DdbStreamReceivedEvents.add(result);
+                        });
     }
 
     static class Producers {
@@ -69,13 +69,6 @@ public class Aws2DdbStreamRoutes extends RouteBuilder {
         List<Map<String, String>> aws2DdbStreamReceivedEvents() {
             return new CopyOnWriteArrayList<>();
         }
-
-//        @Singleton
-//        @javax.enterprise.inject.Produces
-//        @Named("aws2DdbStreamSequenceNumberProvider")
-//        SequenceNumberProvider aws2DdbStreamSequenceNumberProvider() {
-//            return new TestSequenceNumberProvider();
-//        }
     }
 
 }

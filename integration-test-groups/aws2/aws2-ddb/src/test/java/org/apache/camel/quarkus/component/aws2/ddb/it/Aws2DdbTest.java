@@ -16,7 +16,6 @@
  */
 package org.apache.camel.quarkus.component.aws2.ddb.it;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -46,7 +45,7 @@ class Aws2DdbTest {
 
     private static final Logger LOG = Logger.getLogger(Aws2DdbTest.class);
 
-        @Test
+    @Test
     public void crud() {
         final String key = "key" + UUID.randomUUID().toString().replace("-", "");
         final String msg = "val" + UUID.randomUUID().toString().replace("-", "");
@@ -79,6 +78,7 @@ class Aws2DdbTest {
         /* Update */
         final String newMsg = "newVal" + UUID.randomUUID().toString().replace("-", "");
         RestAssured.given()
+                .queryParam("table", Table.basic)
                 .body(newMsg)
                 .put("/aws2-ddb/item/" + key)
                 .then()
@@ -96,6 +96,7 @@ class Aws2DdbTest {
 
         /* Delete */
         RestAssured.given()
+                .queryParam("table", Table.basic)
                 .delete("/aws2-ddb/item/" + key)
                 .then()
                 .statusCode(204);
