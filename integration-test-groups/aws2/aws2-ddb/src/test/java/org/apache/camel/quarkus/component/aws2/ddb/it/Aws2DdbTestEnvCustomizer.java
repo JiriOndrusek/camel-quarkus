@@ -53,11 +53,11 @@ public class Aws2DdbTestEnvCustomizer implements Aws2TestEnvCustomizer {
 
         final String tableNameOperations = "camel-quarkus-operations-"
                 + RandomStringUtils.randomAlphanumeric(16).toLowerCase(Locale.ROOT);
-        envContext.property("aws-ddb.table-name-operations", tableNameOperations);
+        envContext.property("aws-ddb.operations-table-name", tableNameOperations);
 
         final String tableNameStreams = "camel-quarkus-streams-"
                 + RandomStringUtils.randomAlphanumeric(16).toLowerCase(Locale.ROOT);
-        envContext.property("aws-ddb.table-name-streams", tableNameStreams);
+        envContext.property("aws-ddb.stream-table-name", tableNameStreams);
 
         List<String> tableNames = Stream.of(tableName, tableNameStreams, tableNameOperations).collect(Collectors.toList());
 
@@ -74,18 +74,20 @@ public class Aws2DdbTestEnvCustomizer implements Aws2TestEnvCustomizer {
             for (String table : tableNames) {
                 try (DynamoDbWaiter dbWaiter = client.waiter()) {
                     dbWaiter.waitUntilTableExists(DescribeTableRequest.builder()
-                            .tableName(tableName)
+                            .tableName(table)
                             .build());
                 }
+
+                envContext.closeable(() -> client.deleteTable(DeleteTableRequest.builder().tableName(table).build()));
             }
 
-            envContext.closeable(() -> client.deleteTable(DeleteTableRequest.builder().tableName(tableName).build()));
+
         }
 
     }
 
     private CreateTableRequest.Builder createTableRequest(String tableName, String keyColumn) {
-        return CreateTableRequest.builder()
+        CreateTableRequest.Builder builder =  CreateTableRequest.builder()
                 .attributeDefinitions(AttributeDefinition.builder()
                         .attributeName(keyColumn)
                         .attributeType(ScalarAttributeType.S)
@@ -97,11 +99,14 @@ public class Aws2DdbTestEnvCustomizer implements Aws2TestEnvCustomizer {
                 .provisionedThroughput(ProvisionedThroughput.builder()
                         .readCapacityUnits(new Long(10))
                         .writeCapacityUnits(new Long(10))
-                        .build())
-                .streamSpecification(StreamSpecification.builder()
+                        .build());
+        if(tableName.contains("streams")) {
+                builder.streamSpecification(StreamSpecification.builder()
                         .streamEnabled(true)
                         .streamViewType(StreamViewType.NEW_AND_OLD_IMAGES)
-                        .build())
-                .tableName(tableName);
+                        .build());
+        }
+
+        return builder.tableName(tableName);
     }
 }

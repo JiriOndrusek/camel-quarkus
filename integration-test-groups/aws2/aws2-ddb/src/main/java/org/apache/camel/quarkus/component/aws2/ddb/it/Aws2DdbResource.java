@@ -65,11 +65,11 @@ public class Aws2DdbResource {
     @ConfigProperty(name = "aws-ddb.table-name")
     String tableName;
 
-    @ConfigProperty(name = "aws-ddb.table-name-operations")
+    @ConfigProperty(name = "aws-ddb.operations-table-name")
     String operationsTableName;
 
-    @ConfigProperty(name = "aws-ddb.table-name-streams")
-    String streamsTableName;
+    @ConfigProperty(name = "aws-ddb.stream-table-name")
+    String streamTableName;
 
     @Inject
     ProducerTemplate producerTemplate;
@@ -128,9 +128,9 @@ public class Aws2DdbResource {
     @Path("/item/{key}")
     @PUT
     @Produces(MediaType.TEXT_PLAIN)
-    public void updateItem(String message, @PathParam("key") String key) throws Exception {
+    public void updateItem(String message, @PathParam("key") String key, @QueryParam("table") String table) throws Exception {
         producerTemplate.sendBodyAndHeaders(
-                componentUri(Ddb2Operations.UpdateItem),
+                componentUri(Table.valueOf(table), Ddb2Operations.UpdateItem),
                 null,
                 new HashMap<String, Object>() {
                     {
@@ -153,9 +153,9 @@ public class Aws2DdbResource {
     @Path("/item/{key}")
     @DELETE
     @Produces(MediaType.TEXT_PLAIN)
-    public void deleteItem(@PathParam("key") String key) throws Exception {
+    public void deleteItem(@PathParam("key") String key, @QueryParam("table") String table) throws Exception {
         producerTemplate.sendBodyAndHeaders(
-                componentUri(Ddb2Operations.DeleteItem),
+                componentUri(Table.valueOf(table), Ddb2Operations.DeleteItem),
                 null,
                 new HashMap<String, Object>() {
                     {
@@ -291,7 +291,7 @@ public class Aws2DdbResource {
             tableName = this.operationsTableName;
             break;
         case stream:
-            tableName = this.streamsTableName;
+            tableName = this.streamTableName;
             break;
         default:
             tableName = this.tableName;
