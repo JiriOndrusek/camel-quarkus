@@ -72,13 +72,6 @@ class Aws2DdbStreamTest {
                 .then()
                 .statusCode(204);
 
-        /* Delete #1 */
-        RestAssured.given()
-                .queryParam("table", Table.stream)
-                .delete("/aws2-ddb/item/" + key1)
-                .then()
-                .statusCode(204);
-
         /* PUT #2 */
         RestAssured.given()
                 .contentType(ContentType.TEXT)
@@ -98,18 +91,18 @@ class Aws2DdbStreamTest {
                             .extract();
 
                     List<Map> retVal = result.jsonPath().getList("$", Map.class);
-                    LOG.info("Expecting 4 (+ 1 init) events got " + result.statusCode() + ": " + result.body().asString());
+                    LOG.info("Expecting 3 (+ 1 init) events got " + result.statusCode() + ": " + result.body().asString());
                     //remove init events
                     retVal = retVal.stream().filter(m -> !String.valueOf(m.get("key")).startsWith("initKey"))
                             .collect(Collectors.toList());
 
-                    if (retVal.size() == 4 && retVal.get(3) != null && retVal.get(3).get("sequenceNumber") != null) {
-                        put2SeqNumber.append(((String) retVal.get(3).get("sequenceNumber")));
+                    if (retVal.size() == 3 && retVal.get(2) != null && retVal.get(2).get("sequenceNumber") != null) {
+                        put2SeqNumber.append(((String) retVal.get(2).get("sequenceNumber")));
                     }
                     return retVal;
                 },
                 /* The above actions should trigger the following three change events (initEvent is also present) */
-                list -> list.size() == 4
+                list -> list.size() == 3
 
                         && key1.equals(list.get(0).get("key"))
                         && msg1.equals(list.get(0).get("new"))
@@ -118,11 +111,8 @@ class Aws2DdbStreamTest {
                         && msg1.equals(list.get(1).get("old"))
                         && newMsg.equals(list.get(1).get("new"))
 
-                        && key1.equals(list.get(2).get("key"))
-                        && newMsg.equals(list.get(2).get("old"))
-
-                        && key2.equals(list.get(3).get("key"))
-                        && msg2.equals(list.get(3).get("new"))
+                        && key2.equals(list.get(2).get("key"))
+                        && msg2.equals(list.get(2).get("new"))
 
                         && put2SeqNumber.length() > 0);
 
@@ -156,6 +146,13 @@ class Aws2DdbStreamTest {
                 .then()
                 .statusCode(201);
 
+        /* Delete #3 */
+        RestAssured.given()
+                .queryParam("table", Table.stream)
+                .delete("/aws2-ddb/item/" + key3)
+                .then()
+                .statusCode(204);
+
         /* There should be only key2 and key3, because route is started with parameter "AT_SEQUENCE_NUMBER" of put #2. */
         Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(120, TimeUnit.SECONDS).until(
                 () -> {
@@ -170,17 +167,20 @@ class Aws2DdbStreamTest {
                     retVal = retVal.stream().filter(m -> !String.valueOf(m.get("key")).startsWith("initKey"))
                             .collect(Collectors.toList());
 
-                    LOG.info("Expecting 2 event2, got " + result.statusCode() + ": " + retVal);
+                    LOG.info("Expecting 3 events, got " + result.statusCode() + ": " + retVal);
 
                     return retVal;
                 },
-                list -> list.size() == 2
+                list -> list.size() == 3
 
                         && key2.equals(list.get(0).get("key"))
                         && msg2.equals(list.get(0).get("new"))
 
                         && key3.equals(list.get(1).get("key"))
-                        && msg3.equals(list.get(1).get("new")));
+                        && msg3.equals(list.get(1).get("new"))
+
+                        && key3.equals(list.get(2).get("key"))
+                        && msg3.equals(list.get(2).get("old")));
     }
 
     private void waitForStreamConsumerToStart() {
