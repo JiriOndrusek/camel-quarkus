@@ -33,23 +33,18 @@ import org.apache.camel.component.aws2.ddb.Ddb2Constants;
 import org.apache.camel.component.aws2.ddb.Ddb2Operations;
 import org.apache.camel.quarkus.test.support.aws2.Aws2TestResource;
 import org.awaitility.Awaitility;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.hamcrest.Matchers;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.services.dynamodb.model.TableStatus;
+
+import static org.apache.camel.quarkus.component.aws2.ddb.it.Aws2DdbResource.Table;
 
 @QuarkusTest
 @QuarkusTestResource(Aws2TestResource.class)
 class Aws2DdbTest {
 
     private static final Logger LOG = Logger.getLogger(Aws2DdbTest.class);
-
-    @ConfigProperty(name = "aws-ddb.table-name")
-    String tableName;
-
-    @ConfigProperty(name = "aws-ddb.movie-table-name")
-    String movieTableName;
 
     //    @Test
     public void crud() {
@@ -61,7 +56,8 @@ class Aws2DdbTest {
         /* Wait for the consumer to start. Test event has to be created periodically to ensure consumer reception */
         RestAssured.given()
                 .contentType(ContentType.TEXT)
-                .body("")
+                .body(initMsg)
+                .queryParam("table", Table.basic)
                 .post("/aws2-ddb/item/" + initKeyPrefix + UUID.randomUUID().toString().replace("-", ""))
                 .then()
                 .statusCode(201);
@@ -83,6 +79,7 @@ class Aws2DdbTest {
                         RestAssured.given()
                                 .contentType(ContentType.TEXT)
                                 .body(initMsg)
+                                .queryParam("table", Table.basic)
                                 .post("/aws2-ddb/item/initKey" + UUID.randomUUID().toString().replace("-", ""))
                                 .then()
                                 .statusCode(201);
@@ -101,6 +98,7 @@ class Aws2DdbTest {
         RestAssured.given()
                 .contentType(ContentType.TEXT)
                 .body(msg)
+                .queryParam("table", Table.basic)
                 .post("/aws2-ddb/item/" + key)
                 .then()
                 .statusCode(201);
@@ -189,6 +187,7 @@ class Aws2DdbTest {
 
         RestAssured.given()
                 .contentType(ContentType.TEXT)
+                .queryParam("table", Table.operations)
                 .body(msg1)
                 .post("/aws2-ddb/item/" + key1)
                 .then()
@@ -197,6 +196,7 @@ class Aws2DdbTest {
         RestAssured.given()
                 .contentType(ContentType.TEXT)
                 .body(msg2)
+                .queryParam("table", Table.operations)
                 .post("/aws2-ddb/item/" + key2)
                 .then()
                 .statusCode(201);
@@ -204,6 +204,7 @@ class Aws2DdbTest {
         RestAssured.given()
                 .contentType(ContentType.TEXT)
                 .body(msg3)
+                .queryParam("table", Table.operations)
                 .post("/aws2-ddb/item/" + key3)
                 .then()
                 .statusCode(201);
@@ -211,6 +212,7 @@ class Aws2DdbTest {
         /* Batch items */
         Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(120, TimeUnit.SECONDS).until(
                 () -> {
+
                     ExtractableResponse<Response> result = RestAssured.given()
                             .contentType(ContentType.JSON)
                             .body(Stream.of(key1, key2).collect(Collectors.toList()))
@@ -218,6 +220,8 @@ class Aws2DdbTest {
                             .then()
                             .statusCode(200)
                             .extract();
+
+                    LOG.info("Expecting 2 items, got " + result.statusCode() + ": " + result.body().asString());
 
                     return result.jsonPath().getMap("$");
                 },
@@ -237,6 +241,8 @@ class Aws2DdbTest {
                             .statusCode(200)
                             .extract();
 
+                    LOG.info("Expecting 1 item, got " + result.statusCode() + ": " + result.body().asString());
+
                     return result.jsonPath().getMap("$");
                 },
                 map -> map.size() == 1
@@ -249,6 +255,8 @@ class Aws2DdbTest {
                             .then()
                             .statusCode(200)
                             .extract();
+
+                    LOG.info("Expecting 3 items, got " + result.statusCode() + ": " + result.body().asString());
 
                     return result.jsonPath().getMap("$");
                 },
@@ -267,6 +275,9 @@ class Aws2DdbTest {
                             .then()
                             .statusCode(200)
                             .extract();
+
+                    LOG.info("Expecting table description, got " + result.statusCode() + ": " + result.body().asString());
+
                     return result.jsonPath().getMap("$");
                 },
                 map -> map.size() == 8
@@ -277,17 +288,20 @@ class Aws2DdbTest {
                         && map.containsKey(Ddb2Constants.TABLE_SIZE)
                         && map.containsKey(Ddb2Constants.KEY_SCHEMA)
                         && map.containsKey(Ddb2Constants.ITEM_COUNT)
-                        && tableName.equals(map.get(Ddb2Constants.TABLE_NAME)));
-
+                        && Table.operations == Table.valueOf((String) map.get(Ddb2Constants.TABLE_NAME)));
 
         /* Update table */
         Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(120, TimeUnit.SECONDS).until(
-                () -> RestAssured.get("/aws2-ddb/updateTable")
+                () -> {
+                    ExtractableResponse<Response> result = RestAssured.get("/aws2-ddb/updateTable")
                             .then()
-                            .extract()
-                            .statusCode(),
-                Matchers.is(201)
-        );
+                            .extract();
+
+                    LOG.info("Expecting table update, got " + result.statusCode() + ": " + result.body().asString());
+
+                    return result.statusCode();
+                },
+                Matchers.is(201));
 
         /* Delete table (also verify that update from previous step took effect) */
         Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(120, TimeUnit.SECONDS).until(
@@ -299,19 +313,22 @@ class Aws2DdbTest {
                             .then()
                             .statusCode(200)
                             .extract();
+
+                    LOG.info("Expecting table deletion, got " + result.statusCode() + ": " + result.body().asString());
+
                     return result.jsonPath().getMap("$");
                 },
                 map -> map.size() == 7
                         && map.containsKey(Ddb2Constants.CREATION_DATE)
-                        && TableStatus.ACTIVE.name().equals(map.get(Ddb2Constants.TABLE_STATUS))
+                        && map.containsKey(Ddb2Constants.TABLE_STATUS)
                         && map.containsKey(Ddb2Constants.TABLE_SIZE)
                         && map.containsKey(Ddb2Constants.KEY_SCHEMA)
                         && map.containsKey(Ddb2Constants.ITEM_COUNT)
-                        && tableName.equals(map.get(Ddb2Constants.TABLE_NAME))
+                        && Table.operations == Table.valueOf((String) map.get(Ddb2Constants.TABLE_NAME))
                         //previous update changed throughput capacity from 10 to 5
-                        && ((Map)map.get(Ddb2Constants.PROVISIONED_THROUGHPUT)).size() == 2
-                        && ((Map)map.get(Ddb2Constants.PROVISIONED_THROUGHPUT)).get(Ddb2Constants.READ_CAPACITY).equals(5)
-                        && ((Map)map.get(Ddb2Constants.PROVISIONED_THROUGHPUT)).get(Ddb2Constants.WRITE_CAPACITY).equals(5));
+                        && ((Map) map.get(Ddb2Constants.PROVISIONED_THROUGHPUT)).size() == 2
+                        && ((Map) map.get(Ddb2Constants.PROVISIONED_THROUGHPUT)).get(Ddb2Constants.READ_CAPACITY).equals(5)
+                        && ((Map) map.get(Ddb2Constants.PROVISIONED_THROUGHPUT)).get(Ddb2Constants.WRITE_CAPACITY).equals(5));
 
         /* Verify delete with describe table */
         Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(120, TimeUnit.SECONDS).until(
@@ -323,6 +340,10 @@ class Aws2DdbTest {
                             .then()
                             .statusCode(200)
                             .extract();
+
+                    LOG.info("Expecting table description of non-existing table, got " + result.statusCode() + ": "
+                            + result.body().asString());
+
                     return result.jsonPath().getMap("$");
                 },
                 map -> map.isEmpty());
