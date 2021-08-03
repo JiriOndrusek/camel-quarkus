@@ -18,6 +18,7 @@ package org.apache.camel.quarkus.component.aws2.ddb.it;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -83,6 +84,21 @@ public class Aws2DdbTestEnvCustomizer implements Aws2TestEnvCustomizer {
 
         }
 
+        //copy local properties for the quarkus client
+        replaceEnvProperty(envContext, "camel.component.aws2-ddb.access-key",
+                "quarkus.dynamodb.aws.credentials.static-provider.access-key-id");
+        replaceEnvProperty(envContext, "camel.component.aws2-ddb.secret-key",
+                "quarkus.dynamodb.aws.credentials.static-provider.secret-access-key");
+        replaceEnvProperty(envContext, "camel.component.aws2-ddb.uri-endpoint-override",
+                "quarkus.dynamodb.endpoint-override");
+    }
+
+    private void replaceEnvProperty(Aws2TestEnvContext envContext, String oldKey, String newKey) {
+        Map<String, String> props = envContext.getProperies();
+        if (props.containsKey(oldKey)) {
+            envContext.property(newKey, props.get(oldKey));
+            envContext.property(oldKey, "");
+        }
     }
 
     private CreateTableRequest.Builder createTableRequest(String tableName, String keyColumn) {
