@@ -18,7 +18,6 @@ package org.apache.camel.quarkus.component.aws2.ddb.it;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -94,11 +93,8 @@ public class Aws2DdbTestEnvCustomizer implements Aws2TestEnvCustomizer {
     }
 
     private void replaceEnvProperty(Aws2TestEnvContext envContext, String oldKey, String newKey) {
-        Map<String, String> props = envContext.getProperies();
-        if (props.containsKey(oldKey)) {
-            envContext.property(newKey, props.get(oldKey));
-            envContext.property(oldKey, "");
-        }
+        String value = envContext.removeProperty(oldKey);
+        envContext.property(newKey, value);
     }
 
     private CreateTableRequest.Builder createTableRequest(String tableName, String keyColumn) {
