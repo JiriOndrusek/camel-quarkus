@@ -231,7 +231,10 @@ class Aws2DdbTest {
         /* Update table */
         Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(120, TimeUnit.SECONDS).until(
                 () -> {
-                    ExtractableResponse<Response> result = RestAssured.get("/aws2-ddb/updateTable")
+                    ExtractableResponse<Response> result = RestAssured.given()
+                            .contentType(ContentType.JSON)
+                            .body(5)
+                            .post("/aws2-ddb/updateTable")
                             .then()
                             .extract();
 

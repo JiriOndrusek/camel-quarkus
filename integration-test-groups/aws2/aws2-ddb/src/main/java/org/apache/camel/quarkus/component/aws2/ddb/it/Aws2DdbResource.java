@@ -246,13 +246,14 @@ public class Aws2DdbResource {
     }
 
     @Path("/updateTable")
-    @GET
-    public Response updateTable() throws Exception {
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updateTable(int capacity) throws Exception {
         producerTemplate
                 .send(componentUri(Table.operations, Ddb2Operations.UpdateTable),
                         e -> {
-                            e.getIn().setHeader(Ddb2Constants.READ_CAPACITY, 5);
-                            e.getIn().setHeader(Ddb2Constants.WRITE_CAPACITY, 5);
+                            e.getIn().setHeader(Ddb2Constants.READ_CAPACITY, capacity);
+                            e.getIn().setHeader(Ddb2Constants.WRITE_CAPACITY, capacity);
                         });
         return Response.created(new URI("https://camel.apache.org/")).build();
     }
