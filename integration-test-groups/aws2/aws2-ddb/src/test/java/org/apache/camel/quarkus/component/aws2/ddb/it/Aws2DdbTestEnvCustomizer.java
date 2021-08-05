@@ -83,13 +83,13 @@ public class Aws2DdbTestEnvCustomizer implements Aws2TestEnvCustomizer {
 
         }
 
-        //        //copy local properties for the quarkus client
-        //        replaceEnvProperty(envContext, "camel.component.aws2-ddb.access-key",
-        //                "quarkus.dynamodb.aws.credentials.static-provider.access-key-id");
-        //        replaceEnvProperty(envContext, "camel.component.aws2-ddb.secret-key",
-        //                "quarkus.dynamodb.aws.credentials.static-provider.secret-access-key");
-        //        replaceEnvProperty(envContext, "camel.component.aws2-ddb.uri-endpoint-override",
-        //                "quarkus.dynamodb.endpoint-override");
+        //copy local properties for the quarkus client
+        replaceEnvProperty(envContext, "camel.component.aws2-ddb.access-key",
+                "aws.accessKeyId");
+        replaceEnvProperty(envContext, "camel.component.aws2-ddb.secret-key",
+                "AWS_SECRET_ACCESS_KEY");
+        replaceEnvProperty(envContext, "camel.component.aws2-ddb.uri-endpoint-override",
+                "AWS_CONTAINER_CREDENTIALS_FULL_URI");
     }
 
     private void replaceEnvProperty(Aws2TestEnvContext envContext, String oldKey, String newKey) {
