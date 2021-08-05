@@ -30,7 +30,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.camel.CamelContext;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 @Path("/aws2-ddbstream")
 @ApplicationScoped
@@ -47,8 +46,8 @@ public class Aws2DdbStreamResource {
     @Named("aws2DdbStreamReceivedEvents")
     List<Map<String, String>> aws2DdbStreamReceivedEvents;
 
-    @Inject
-    DynamoDbClient dynamoDbClient;
+    //    @Inject
+    //    DynamoDbClient dynamoDbClient;
 
     @Path("/change")
     @GET

@@ -6,8 +6,11 @@ import io.quarkus.runtime.annotations.ConfigRoot;
 @ConfigRoot(name = "camel.aws2ddb", phase = ConfigPhase.BUILD_AND_RUN_TIME_FIXED)
 public class CamelAws2ddbConfig {
 
+    //    @ConfigItem(name = "<<parent>>")
+    //    public SdkBuildTimeConfig sdk;
     //    @ConfigItem
-    //    public Optional<Region> region;
-    //    @ConfigItem
-    //    public AwsCredentialsProviderConfig credentials;
+    //    public SyncHttpClientBuildTimeConfig syncClient;
+    //
+    //    public CamelAws2ddbConfig() {
+    //    }
 }

@@ -16,84 +16,76 @@
  */
 package org.apache.camel.quarkus.component.aws2.ddb.deployment;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
+import io.quarkus.amazon.common.deployment.AbstractAmazonServiceProcessor;
+import io.quarkus.amazon.common.deployment.AmazonClientAsyncTransportBuildItem;
 import io.quarkus.amazon.common.deployment.AmazonClientBuildItem;
+import io.quarkus.amazon.common.deployment.AmazonClientInterceptorsPathBuildItem;
+import io.quarkus.amazon.common.deployment.AmazonClientSyncTransportBuildItem;
+import io.quarkus.amazon.common.deployment.AmazonHttpClients;
+import io.quarkus.amazon.common.runtime.AmazonClientApacheTransportRecorder;
+import io.quarkus.amazon.common.runtime.AmazonClientNettyTransportRecorder;
+import io.quarkus.amazon.common.runtime.AmazonClientRecorder;
+import io.quarkus.amazon.common.runtime.AmazonClientUrlConnectionTransportRecorder;
 import io.quarkus.amazon.common.runtime.SdkBuildTimeConfig;
 import io.quarkus.amazon.common.runtime.SyncHttpClientBuildTimeConfig;
+import io.quarkus.amazon.dynamodb.runtime.DynamodbBuildTimeConfig;
+import io.quarkus.amazon.dynamodb.runtime.DynamodbClientProducer;
+import io.quarkus.amazon.dynamodb.runtime.DynamodbConfig;
+import io.quarkus.amazon.dynamodb.runtime.DynamodbRecorder;
+import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
+import io.quarkus.arc.deployment.BeanRegistrationPhaseBuildItem;
+import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
+import io.quarkus.deployment.Feature;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.builditem.AdditionalApplicationArchiveMarkerBuildItem;
-import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
+import io.quarkus.deployment.annotations.ExecutionTime;
+import io.quarkus.deployment.annotations.Record;
+import io.quarkus.deployment.builditem.ExtensionSslNativeSupportBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
-import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
-import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import org.jboss.jandex.DotName;
-import software.amazon.awssdk.core.interceptor.ExecutionInterceptor;
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClientBuilder;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClientBuilder;
 
-class Aws2DdbProcessor {
+public class Aws2DdbProcessor extends AbstractAmazonServiceProcessor {
+
     private static final String FEATURE = "camel-aws2-ddb";
 
-    public static final String AWS_SDK_APPLICATION_ARCHIVE_MARKERS = "software/amazon/awssdk";
+    DynamodbBuildTimeConfig buildTimeConfig;
 
-    private static final List<String> INTERCEPTOR_PATHS = Arrays.asList(
-            "software/amazon/awssdk/global/handlers/execution.interceptors",
-            "software/amazon/awssdk/services/dynamodb/execution.interceptors");
-
-    private static final DotName EXECUTION_INTERCEPTOR_NAME = DotName.createSimple(ExecutionInterceptor.class.getName());
+    public Aws2DdbProcessor() {
+    }
 
     @BuildStep
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
     }
 
-    @BuildStep
-    void process(CombinedIndexBuildItem combinedIndexBuildItem,
-            BuildProducer<ReflectiveClassBuildItem> reflectiveClasses,
-            BuildProducer<NativeImageResourceBuildItem> resource) {
-
-        INTERCEPTOR_PATHS.forEach(path -> resource.produce(new NativeImageResourceBuildItem(path)));
-
-        List<String> knownInterceptorImpls = combinedIndexBuildItem.getIndex()
-                .getAllKnownImplementors(EXECUTION_INTERCEPTOR_NAME)
-                .stream()
-                .map(c -> c.name().toString()).collect(Collectors.toList());
-
-        reflectiveClasses.produce(new ReflectiveClassBuildItem(false, false,
-                knownInterceptorImpls.toArray(new String[knownInterceptorImpls.size()])));
-
-        reflectiveClasses.produce(new ReflectiveClassBuildItem(true, false,
-                String.class.getCanonicalName()));
+    //TODO how to avoid this?
+    protected Feature amazonServiceClientName() {
+        return Feature.WEBSOCKETS;
     }
 
-    @BuildStep
-    void archiveMarkers(BuildProducer<AdditionalApplicationArchiveMarkerBuildItem> archiveMarkers) {
-        archiveMarkers.produce(new AdditionalApplicationArchiveMarkerBuildItem(AWS_SDK_APPLICATION_ARCHIVE_MARKERS));
+    protected String configName() {
+        return FEATURE;
     }
 
-    @BuildStep
-    void runtimeInitialize(BuildProducer<RuntimeInitializedClassBuildItem> producer) {
-        // This class triggers initialization of FullJitterBackoffStragegy so needs to get runtime-initialized
-        // as well
-        producer.produce(
-                new RuntimeInitializedClassBuildItem("software.amazon.awssdk.services.dynamodb.DynamoDbRetryPolicy"));
+    protected DotName syncClientName() {
+        return DotName.createSimple(DynamoDbClient.class.getName());
     }
 
-    //    void crerateClient(BuildProducer<AmazonClientBuildItem> clientBuilder) {
-    //        clientBuilder.produce();
-    //    }
+    protected DotName asyncClientName() {
+        return DotName.createSimple(DynamoDbAsyncClient.class.getName());
+    }
 
-    //    AutoInjectAnnotationBuildItem test() {
-    //        return AutoInjectAnnotationBuildItem.beanClassNames(DynamoDbClient.class.getName());
-    //    }
-    //
-    //    ConfigPropertyBuildItem test() {
-    //        return new ConfigPropertyBuildItem("quarkus.dynamodb.sync-client.type", "apache")
-    //    }
+    protected String builtinInterceptorsPath() {
+        return "software/amazon/awssdk/services/dynamodb/execution.interceptors";
+    }
 
     @BuildStep
     protected void setupExtension(BuildProducer<AmazonClientBuildItem> clientProducer) {
@@ -109,9 +101,70 @@ class Aws2DdbProcessor {
             SdkBuildTimeConfig buildTimeSdkConfig = new SdkBuildTimeConfig();
             buildTimeSdkConfig.interceptors = Optional.empty();
 
-            clientProducer.produce(new AmazonClientBuildItem(syncClassName, Optional.empty(), "dynamoDb",
+            clientProducer.produce(new AmazonClientBuildItem(syncClassName, Optional.empty(), FEATURE,
                     buildTimeSdkConfig, buildTimeSyncConfig));
         }
     }
 
+    @BuildStep
+    AdditionalBeanBuildItem producer() {
+        return AdditionalBeanBuildItem.unremovableOf(DynamodbClientProducer.class);
+    }
+
+    @BuildStep
+    void runtimeInitialize(BuildProducer<RuntimeInitializedClassBuildItem> producer) {
+        producer.produce(new RuntimeInitializedClassBuildItem("software.amazon.awssdk.services.dynamodb.DynamoDbRetryPolicy"));
+    }
+
+    @BuildStep
+    void setup(BeanRegistrationPhaseBuildItem beanRegistrationPhase,
+            BuildProducer<ExtensionSslNativeSupportBuildItem> extensionSslNativeSupport,
+            BuildProducer<FeatureBuildItem> feature, BuildProducer<AmazonClientInterceptorsPathBuildItem> interceptors,
+            BuildProducer<AmazonClientBuildItem> clientProducer) {
+        this.setupExtension(beanRegistrationPhase, extensionSslNativeSupport, feature, interceptors, clientProducer,
+                this.buildTimeConfig.sdk, this.buildTimeConfig.syncClient);
+    }
+
+    @BuildStep(onlyIf = { AmazonHttpClients.IsAmazonApacheHttpServicePresent.class })
+    @Record(ExecutionTime.RUNTIME_INIT)
+    void setupApacheSyncTransport(List<AmazonClientBuildItem> amazonClients, DynamodbRecorder recorder,
+            AmazonClientApacheTransportRecorder transportRecorder, DynamodbConfig runtimeConfig,
+            BuildProducer<AmazonClientSyncTransportBuildItem> syncTransports) {
+        SyncHttpClientBuildTimeConfig buildTimeSyncConfig = new SyncHttpClientBuildTimeConfig();
+        buildTimeSyncConfig.type = SyncHttpClientBuildTimeConfig.SyncClientType.APACHE;
+
+        this.createApacheSyncTransportBuilder(amazonClients, transportRecorder, buildTimeSyncConfig,
+                recorder.getSyncConfig(runtimeConfig), syncTransports);
+    }
+
+    @BuildStep(onlyIf = { AmazonHttpClients.IsAmazonUrlConnectionHttpServicePresent.class })
+    @Record(ExecutionTime.RUNTIME_INIT)
+    void setupUrlConnectionSyncTransport(List<AmazonClientBuildItem> amazonClients, DynamodbRecorder recorder,
+            AmazonClientUrlConnectionTransportRecorder transportRecorder, DynamodbConfig runtimeConfig,
+            BuildProducer<AmazonClientSyncTransportBuildItem> syncTransports) {
+        this.createUrlConnectionSyncTransportBuilder(amazonClients, transportRecorder, this.buildTimeConfig.syncClient,
+                recorder.getSyncConfig(runtimeConfig), syncTransports);
+    }
+
+    @BuildStep(onlyIf = { AmazonHttpClients.IsAmazonNettyHttpServicePresent.class })
+    @Record(ExecutionTime.RUNTIME_INIT)
+    void setupNettyAsyncTransport(List<AmazonClientBuildItem> amazonClients, DynamodbRecorder recorder,
+            AmazonClientNettyTransportRecorder transportRecorder, DynamodbConfig runtimeConfig,
+            BuildProducer<AmazonClientAsyncTransportBuildItem> asyncTransports) {
+        this.createNettyAsyncTransportBuilder(amazonClients, transportRecorder, recorder.getAsyncConfig(runtimeConfig),
+                asyncTransports);
+    }
+
+    @BuildStep
+    @Record(ExecutionTime.RUNTIME_INIT)
+    void createClientBuilders(DynamodbRecorder recorder, AmazonClientRecorder commonRecorder, DynamodbConfig runtimeConfig,
+            List<AmazonClientSyncTransportBuildItem> syncTransports, List<AmazonClientAsyncTransportBuildItem> asyncTransports,
+            BuildProducer<SyntheticBeanBuildItem> syntheticBeans) {
+        this.createClientBuilders(commonRecorder, recorder.getAwsConfig(runtimeConfig), recorder.getSdkConfig(runtimeConfig),
+                this.buildTimeConfig.sdk, syncTransports, asyncTransports, DynamoDbClientBuilder.class, (syncTransport) -> {
+                    return recorder.createSyncBuilder(runtimeConfig, syncTransport);
+                }, DynamoDbAsyncClientBuilder.class, (asyncTransport) -> {
+                    return recorder.createAsyncBuilder(runtimeConfig, asyncTransport);
+                }, syntheticBeans);
+    }
 }
