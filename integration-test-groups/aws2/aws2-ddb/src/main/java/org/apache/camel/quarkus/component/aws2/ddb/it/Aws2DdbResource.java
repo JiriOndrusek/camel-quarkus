@@ -74,6 +74,9 @@ public class Aws2DdbResource {
     @Inject
     ProducerTemplate producerTemplate;
 
+    //    @Inject
+    //    DynamoDbClient dynamoDbClient;
+
     @SuppressWarnings("serial")
     @Path("/item/{key}")
     @POST

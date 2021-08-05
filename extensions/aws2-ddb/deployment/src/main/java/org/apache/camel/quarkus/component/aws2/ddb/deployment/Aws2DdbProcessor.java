@@ -18,8 +18,12 @@ package org.apache.camel.quarkus.component.aws2.ddb.deployment;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import io.quarkus.amazon.common.deployment.AmazonClientBuildItem;
+import io.quarkus.amazon.common.runtime.SdkBuildTimeConfig;
+import io.quarkus.amazon.common.runtime.SyncHttpClientBuildTimeConfig;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.AdditionalApplicationArchiveMarkerBuildItem;
@@ -77,6 +81,37 @@ class Aws2DdbProcessor {
         // as well
         producer.produce(
                 new RuntimeInitializedClassBuildItem("software.amazon.awssdk.services.dynamodb.DynamoDbRetryPolicy"));
+    }
+
+    //    void crerateClient(BuildProducer<AmazonClientBuildItem> clientBuilder) {
+    //        clientBuilder.produce();
+    //    }
+
+    //    AutoInjectAnnotationBuildItem test() {
+    //        return AutoInjectAnnotationBuildItem.beanClassNames(DynamoDbClient.class.getName());
+    //    }
+    //
+    //    ConfigPropertyBuildItem test() {
+    //        return new ConfigPropertyBuildItem("quarkus.dynamodb.sync-client.type", "apache")
+    //    }
+
+    @BuildStep
+    protected void setupExtension(BuildProducer<AmazonClientBuildItem> clientProducer) {
+
+        Optional<DotName> syncClassName = Optional
+                .of(DotName.createSimple("software.amazon.awssdk.services.dynamodb.DynamoDbClient"));
+        Optional<DotName> asyncClassName = Optional.empty();
+
+        if (syncClassName.isPresent() || asyncClassName.isPresent()) {
+            SyncHttpClientBuildTimeConfig buildTimeSyncConfig = new SyncHttpClientBuildTimeConfig();
+            buildTimeSyncConfig.type = SyncHttpClientBuildTimeConfig.SyncClientType.APACHE;
+
+            SdkBuildTimeConfig buildTimeSdkConfig = new SdkBuildTimeConfig();
+            buildTimeSdkConfig.interceptors = Optional.empty();
+
+            clientProducer.produce(new AmazonClientBuildItem(syncClassName, Optional.empty(), "dynamoDb",
+                    buildTimeSdkConfig, buildTimeSyncConfig));
+        }
     }
 
 }

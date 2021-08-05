@@ -87,16 +87,6 @@ public class Aws2TestEnvContext {
     }
 
     /**
-     * Remove key-value pair by key from the system properties seen by AWS 2 tests
-     *
-     * @param  key
-     * @return     value
-     */
-    public String removeProperty(String key) {
-        return properties.remove(key);
-    }
-
-    /**
      * Add an {@link AutoCloseable} to be closed after running AWS 2 tests
      *
      * @param  closeable the {@link AutoCloseable} to add
