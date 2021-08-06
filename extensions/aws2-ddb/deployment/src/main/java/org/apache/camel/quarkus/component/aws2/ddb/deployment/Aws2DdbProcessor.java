@@ -16,31 +16,25 @@
  */
 package org.apache.camel.quarkus.component.aws2.ddb.deployment;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
+import io.quarkus.amazon.common.deployment.AmazonClientBuildItem;
+import io.quarkus.amazon.common.runtime.SdkBuildTimeConfig;
+import io.quarkus.amazon.common.runtime.SyncHttpClientBuildTimeConfig;
+import io.quarkus.arc.deployment.BeanRegistrationPhaseBuildItem;
+import io.quarkus.arc.processor.BuildExtension;
+import io.quarkus.arc.processor.DotNames;
+import io.quarkus.arc.processor.InjectionPointInfo;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.builditem.AdditionalApplicationArchiveMarkerBuildItem;
-import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
-import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
-import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
-import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import org.jboss.jandex.DotName;
-import software.amazon.awssdk.core.interceptor.ExecutionInterceptor;
+import org.jboss.jandex.ParameterizedType;
+import org.jboss.jandex.Type;
 
-class Aws2DdbProcessor {
+public class Aws2DdbProcessor {
+
     private static final String FEATURE = "camel-aws2-ddb";
-
-    public static final String AWS_SDK_APPLICATION_ARCHIVE_MARKERS = "software/amazon/awssdk";
-
-    private static final List<String> INTERCEPTOR_PATHS = Arrays.asList(
-            "software/amazon/awssdk/global/handlers/execution.interceptors",
-            "software/amazon/awssdk/services/dynamodb/execution.interceptors");
-
-    private static final DotName EXECUTION_INTERCEPTOR_NAME = DotName.createSimple(ExecutionInterceptor.class.getName());
 
     @BuildStep
     FeatureBuildItem feature() {
@@ -48,35 +42,42 @@ class Aws2DdbProcessor {
     }
 
     @BuildStep
-    void process(CombinedIndexBuildItem combinedIndexBuildItem,
-            BuildProducer<ReflectiveClassBuildItem> reflectiveClasses,
-            BuildProducer<NativeImageResourceBuildItem> resource) {
+    protected void setupExtension(BuildProducer<AmazonClientBuildItem> clientProducer,
+            BeanRegistrationPhaseBuildItem beanRegistrationPhase) {
 
-        INTERCEPTOR_PATHS.forEach(path -> resource.produce(new NativeImageResourceBuildItem(path)));
+        //Discover all clients injections in order to determine if async or sync client is required
+        for (InjectionPointInfo injectionPoint : beanRegistrationPhase.getContext().get(BuildExtension.Key.INJECTION_POINTS)) {
+            Type injectedType = getInjectedType(injectionPoint);
 
-        List<String> knownInterceptorImpls = combinedIndexBuildItem.getIndex()
-                .getAllKnownImplementors(EXECUTION_INTERCEPTOR_NAME)
-                .stream()
-                .map(c -> c.name().toString()).collect(Collectors.toList());
+            if ("software.amazon.awssdk.services.dynamodb.DynamoDbClient".equals(injectedType.name())) {
+                //registration is done via DynamoDbProcessor
+                return;
+            }
+        }
 
-        reflectiveClasses.produce(new ReflectiveClassBuildItem(false, false,
-                knownInterceptorImpls.toArray(new String[knownInterceptorImpls.size()])));
+        SyncHttpClientBuildTimeConfig buildTimeSyncConfig = new SyncHttpClientBuildTimeConfig();
+        buildTimeSyncConfig.type = SyncHttpClientBuildTimeConfig.SyncClientType.APACHE;
 
-        reflectiveClasses.produce(new ReflectiveClassBuildItem(true, false,
-                String.class.getCanonicalName()));
+        SdkBuildTimeConfig buildTimeSdkConfig = new SdkBuildTimeConfig();
+        buildTimeSdkConfig.interceptors = Optional.empty();
+
+        clientProducer.produce(new AmazonClientBuildItem(
+                Optional.of(DotName.createSimple("software.amazon.awssdk.services.dynamodb.DynamoDbClient")),
+                Optional.empty(),
+                "dynamodb", //String from quarkus-amazon-dynamodb, has to be the same
+                buildTimeSdkConfig,
+                buildTimeSyncConfig));
     }
 
-    @BuildStep
-    void archiveMarkers(BuildProducer<AdditionalApplicationArchiveMarkerBuildItem> archiveMarkers) {
-        archiveMarkers.produce(new AdditionalApplicationArchiveMarkerBuildItem(AWS_SDK_APPLICATION_ARCHIVE_MARKERS));
-    }
+    private Type getInjectedType(InjectionPointInfo injectionPoint) {
+        Type requiredType = injectionPoint.getRequiredType();
+        Type injectedType = requiredType;
 
-    @BuildStep
-    void runtimeInitialize(BuildProducer<RuntimeInitializedClassBuildItem> producer) {
-        // This class triggers initialization of FullJitterBackoffStragegy so needs to get runtime-initialized
-        // as well
-        producer.produce(
-                new RuntimeInitializedClassBuildItem("software.amazon.awssdk.services.dynamodb.DynamoDbRetryPolicy"));
+        if (DotNames.INSTANCE.equals(requiredType.name()) && requiredType instanceof ParameterizedType) {
+            injectedType = requiredType.asParameterizedType().arguments().get(0);
+        }
+
+        return injectedType;
     }
 
 }
