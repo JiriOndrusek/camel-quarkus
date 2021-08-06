@@ -46,6 +46,9 @@ public class Aws2DdbStreamResource {
     @Named("aws2DdbStreamReceivedEvents")
     List<Map<String, String>> aws2DdbStreamReceivedEvents;
 
+    //    @Inject
+    //    DynamoDbClient dynamoDbClient;
+
     @Path("/change")
     @GET
     @Produces(MediaType.APPLICATION_JSON)

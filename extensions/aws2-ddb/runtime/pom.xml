@@ -64,6 +64,14 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-jaxp</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-amazon-dynamodb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-apache-httpclient</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
