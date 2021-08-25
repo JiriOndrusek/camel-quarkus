@@ -30,7 +30,11 @@ import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 import org.apache.camel.component.sql.SqlConstants;
 import org.apache.camel.util.CollectionHelper;
+import org.hamcrest.Matcher;
+import org.hamcrest.collection.IsMapContaining;
+import org.hamcrest.text.IsEqualIgnoringCase;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 
 import static io.restassured.RestAssured.given;
 import static org.awaitility.Awaitility.await;
@@ -55,7 +59,7 @@ class SqlTest {
         RestAssured.get("/sql/get/Dromedarius")
                 .then()
                 .statusCode(200)
-                .body(is("[{ID=1, SPECIES=Dromedarius}]"));
+                .body(containsStringIgnoringCase("[{ID=1, SPECIES=Dromedarius}]"));
 
         // Retrieve camel species as list
         RestAssured.get("/sql/get/Dromedarius/list")
@@ -71,6 +75,7 @@ class SqlTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "SQL_JDBC_DB_KIND", matches = ".+")
     public void testSqlStoredComponent() {
         // Invoke ADD_NUMS stored procedure
         RestAssured.given()
@@ -109,9 +114,9 @@ class SqlTest {
                         .statusCode(201);
 
         //wait for the record to be caught
-        await().atMost(5, TimeUnit.SECONDS).until(() -> (Iterable<Object>) RestAssured
+        await().atMost(10, TimeUnit.SECONDS).until(() -> (Iterable<Object>) RestAssured
                 .get("/sql/get/results/" + routeId).then().extract().as(List.class),
-                both(iterableWithSize(1)).and(contains(project)));
+                both(iterableWithSize(1)).and(hasItem(matchMapIgnoringCase(project))));
 
         //update
         postMapWithParam("/sql/update",
@@ -120,9 +125,9 @@ class SqlTest {
                         .statusCode(201);
 
         //wait for the record to be caught
-        await().atMost(5, TimeUnit.SECONDS).until(() -> (Iterable<Object>) RestAssured
+        await().atMost(10, TimeUnit.SECONDS).until(() -> (Iterable<Object>) RestAssured
                 .get("/sql/get/results/" + routeId).then().extract().as(List.class),
-                both(iterableWithSize(1)).and(contains(updatedProject)));
+                both(iterableWithSize(1)).and(hasItem(matchMapIgnoringCase(updatedProject))));
 
         route(routeId, "stop", "Stopped");
     }
@@ -240,5 +245,18 @@ class SqlTest {
                     .then()
                     .extract().asString(), equalTo(expectedOutput));
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static org.hamcrest.Matcher<java.util.Map<String, Object>> matchMapIgnoringCase(Map<String, Object> map) {
+        Matcher m = null;
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            if (m == null) {
+                m = new IsMapContaining(new IsEqualIgnoringCase(entry.getKey()), is(entry.getValue()));
+            } else {
+                m = both(m).and(new IsMapContaining(new IsEqualIgnoringCase(entry.getKey()), is(entry.getValue())));
+            }
+        }
+        return m;
     }
 }

@@ -15,6 +15,8 @@
 -- limitations under the License.
 --
 
+
+--H2
 DROP TABLE IF EXISTS camel
 CREATE TABLE camel (id int AUTO_INCREMENT, species VARCHAR(255))
 CREATE ALIAS ADD_NUMS FOR "org.apache.camel.quarkus.component.sql.it.storedproc.NumberAddStoredProcedure.addNumbers"

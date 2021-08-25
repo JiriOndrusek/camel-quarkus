@@ -20,15 +20,21 @@ import java.io.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
 public class SqlDbInitializer {
+
+    @ConfigProperty(name = "quarkus.camel.sql.script-files")
+    List<String> initScripts;
 
     @Inject
     @DataSource("camel-sql")
@@ -37,17 +43,23 @@ public class SqlDbInitializer {
     public void initDb() throws SQLException, IOException {
         try (Connection conn = dataSource.getConnection()) {
             try (Statement statement = conn.createStatement()) {
-                try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("sql/initDb.sql");
-                        InputStreamReader isr = new InputStreamReader(is);
-                        BufferedReader reader = new BufferedReader(isr)) {
 
-                    reader.lines().filter(s -> s != null && !"".equals(s) && !s.startsWith("--")).forEach(s -> {
-                        try {
-                            statement.execute(s);
-                        } catch (SQLException e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
+                List<String> scripts = initScripts.stream().filter(s -> s.contains("initDb")).collect(Collectors.toList());
+
+                for (String script : scripts) {
+                    try (InputStream is = Thread.currentThread().getContextClassLoader()
+                            .getResourceAsStream(script);
+                            InputStreamReader isr = new InputStreamReader(is);
+                            BufferedReader reader = new BufferedReader(isr)) {
+
+                        reader.lines().filter(s -> s != null && !"".equals(s) && !s.startsWith("--")).forEach(s -> {
+                            try {
+                                statement.execute(s);
+                            } catch (SQLException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+                    }
                 }
             }
         }
