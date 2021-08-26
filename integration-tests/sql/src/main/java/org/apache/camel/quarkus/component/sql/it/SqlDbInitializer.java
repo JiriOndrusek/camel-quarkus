@@ -25,6 +25,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import io.agroal.api.AgroalDataSource;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
 public class SqlDbInitializer {
@@ -32,10 +33,15 @@ public class SqlDbInitializer {
     @Inject
     AgroalDataSource dataSource;
 
+    @ConfigProperty(name = "quarkus.datasource.db-kind")
+    String dbKind;
+
     public void initDb() throws SQLException, IOException {
+
         try (Connection conn = dataSource.getConnection()) {
             try (Statement statement = conn.createStatement()) {
-                try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("sql/initDb.sql");
+                try (InputStream is = Thread.currentThread().getContextClassLoader()
+                        .getResourceAsStream("sql/initDb_" + dbKind + ".sql");
                         InputStreamReader isr = new InputStreamReader(is);
                         BufferedReader reader = new BufferedReader(isr)) {
 
@@ -49,6 +55,6 @@ public class SqlDbInitializer {
                 }
             }
         }
-    }
 
+    }
 }
