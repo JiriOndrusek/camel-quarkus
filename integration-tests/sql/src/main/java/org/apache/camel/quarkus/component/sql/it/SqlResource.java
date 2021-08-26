@@ -33,7 +33,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import io.agroal.api.AgroalDataSource;
 import org.apache.camel.CamelContext;
 import org.apache.camel.CamelExecutionException;
 import org.apache.camel.ProducerTemplate;
@@ -44,8 +43,9 @@ import org.springframework.util.LinkedCaseInsensitiveMap;
 @ApplicationScoped
 public class SqlResource {
 
-    @Inject
-    AgroalDataSource dataSource;
+    //    @Inject
+    //    @DataSource("camel-sql")
+    //    AgroalDataSource dataSource;
 
     @Inject
     ProducerTemplate producerTemplate;
