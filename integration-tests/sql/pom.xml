@@ -151,10 +151,23 @@
             <properties>
                 <db.driver.artifactId>quarkus-jdbc-h2</db.driver.artifactId>
             </properties>
-        </profile><profile>
+        </profile>
+        <profile>
             <id>postgresql</id>
             <properties>
                 <db.driver.artifactId>quarkus-jdbc-postgresql</db.driver.artifactId>
+            </properties>
+        </profile>
+        <profile>
+            <id>db2</id>
+            <properties>
+                <db.driver.artifactId>quarkus-jdbc-db2</db.driver.artifactId>
+            </properties>
+        </profile>
+        <profile>
+            <id>mssql</id>
+            <properties>
+                <db.driver.artifactId>quarkus-jdbc-mssql</db.driver.artifactId>
             </properties>
         </profile>
     </profiles>

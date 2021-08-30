@@ -37,15 +37,15 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.CamelExecutionException;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.quarkus.component.sql.it.model.Camel;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 
 @Path("/sql")
 @ApplicationScoped
 public class SqlResource {
 
-    //    @Inject
-    //    @DataSource("camel-sql")
-    //    AgroalDataSource dataSource;
+    @ConfigProperty(name = "quarkus.datasource.db-kind")
+    String dbKind;
 
     @Inject
     ProducerTemplate producerTemplate;
@@ -64,7 +64,7 @@ public class SqlResource {
         Map<String, Object> params = new HashMap<>();
         params.put("species", species);
 
-        return producerTemplate.requestBodyAndHeaders("sql:classpath:sql/get-camels.sql",
+        return producerTemplate.requestBodyAndHeaders("sql:classpath:sql/" + dbKind + "/get-camels.sql",
                 null, params,
                 String.class);
     }

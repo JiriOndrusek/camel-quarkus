@@ -37,10 +37,14 @@ import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.processor.aggregate.jdbc.JdbcAggregationRepository;
 import org.apache.camel.processor.idempotent.jdbc.JdbcMessageIdRepository;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
 @ApplicationScoped
 public class SqlRoutes extends RouteBuilder {
+
+    @ConfigProperty(name = "quarkus.datasource.db-kind")
+    String dbKind;
 
     @Inject
     @Named("results")
@@ -67,11 +71,12 @@ public class SqlRoutes extends RouteBuilder {
                 .id("consumerRoute").autoStartup(false)
                 .process(e -> results.get("consumerRoute").add(e.getMessage().getBody(Map.class)));
 
-        from("sql:classpath:sql/selectProjects.sql?initialDelay=0&delay=50&consumer.onConsume=update projects set processed = true")
-                .id("consumerClasspathRoute").autoStartup(false)
-                .process(e -> results.get("consumerClasspathRoute").add(e.getMessage().getBody(Map.class)));
+        from("sql:classpath:sql/" + dbKind
+                + "/selectProjects.sql?initialDelay=0&delay=50&consumer.onConsume=update projects set processed = true")
+                        .id("consumerClasspathRoute").autoStartup(false)
+                        .process(e -> results.get("consumerClasspathRoute").add(e.getMessage().getBody(Map.class)));
 
-        Path tmpFile = createTmpFileFrom("sql/selectProjects.sql");
+        Path tmpFile = createTmpFileFrom("sql/h2/selectProjects.sql");
         from("sql:file:" + tmpFile
                 + "?initialDelay=0&delay=50&consumer.onConsume=update projects set processed = true")
                         .id("consumerFileRoute").autoStartup(false)

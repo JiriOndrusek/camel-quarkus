@@ -20,6 +20,7 @@ import java.io.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -41,17 +42,26 @@ public class SqlDbInitializer {
         try (Connection conn = dataSource.getConnection()) {
             try (Statement statement = conn.createStatement()) {
                 try (InputStream is = Thread.currentThread().getContextClassLoader()
-                        .getResourceAsStream("sql/initDb_" + dbKind + ".sql");
+                        .getResourceAsStream("sql/" + dbKind + "/initDb.sql");
                         InputStreamReader isr = new InputStreamReader(is);
                         BufferedReader reader = new BufferedReader(isr)) {
 
-                    reader.lines().filter(s -> s != null && !"".equals(s) && !s.startsWith("--")).forEach(s -> {
-                        try {
-                            statement.execute(s);
-                        } catch (SQLException e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
+                    //                    reader.lines().filter(s -> s != null && !"".equals(s) && !s.startsWith("--")).forEach(s -> {
+                    //                                try {
+                    //                                    statement.execute(s);
+                    //                                } catch (SQLException e) {
+                    //                                    throw new RuntimeException(e);
+                    //                                }
+                    //                            });
+
+                    String sql = reader.lines()
+                            .filter(s -> s != null && !"".equals(s) && !s.startsWith("--"))
+                            .collect(Collectors.joining("\n"));
+                    try {
+                        statement.execute(sql);
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
         }
