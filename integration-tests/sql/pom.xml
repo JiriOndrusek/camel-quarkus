@@ -29,6 +29,10 @@
     <name>Camel Quarkus :: Integration Tests :: SQL</name>
     <description>Integration tests for Camel Quarkus SQL extension</description>
 
+    <properties>
+        <db.driver.artifactId>quarkus-jdbc-h2</db.driver.artifactId>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
@@ -142,33 +146,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-        <profile>
-            <id>h2</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <db.driver.artifactId>quarkus-jdbc-h2</db.driver.artifactId>
-            </properties>
-        </profile>
-        <profile>
-            <id>postgresql</id>
-            <properties>
-                <db.driver.artifactId>quarkus-jdbc-postgresql</db.driver.artifactId>
-            </properties>
-        </profile>
-        <profile>
-            <id>db2</id>
-            <properties>
-                <db.driver.artifactId>quarkus-jdbc-db2</db.driver.artifactId>
-            </properties>
-        </profile>
-        <profile>
-            <id>mssql</id>
-            <properties>
-                <db.driver.artifactId>quarkus-jdbc-mssql</db.driver.artifactId>
-            </properties>
         </profile>
     </profiles>
 </project>
