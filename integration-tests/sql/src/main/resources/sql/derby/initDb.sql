@@ -16,18 +16,18 @@
 --
 
 -- -- Postresql
-DROP TABLE IF EXISTS camel;
-CREATE TABLE camel (id INT AUTO_INCREMENT PRIMARY KEY,species VARCHAR(50) NOT NULL);
+DROP TABLE camel
+CREATE TABLE camel (id INT NOT NULL GENERATED ALWAYS AS IDENTITY,species VARCHAR(50) NOT NULL)
 -- for consumer
-DROP TABLE IF EXISTS projects
-CREATE TABLE projects (id INT PRIMARY KEY, project VARCHAR(25), license VARCHAR(5), processed BOOLEAN);
+DROP TABLE projects
+CREATE TABLE projects (id INT NOT NULL, project VARCHAR(25), license VARCHAR(5), processed BOOLEAN, PRIMARY KEY (id))
 
 -- idempotent repo
-DROP TABLE IF EXISTS CAMEL_MESSAGEPROCESSED
+DROP TABLE CAMEL_MESSAGEPROCESSED
 CREATE TABLE CAMEL_MESSAGEPROCESSED ( processorName VARCHAR(255), messageId VARCHAR(100), createdAt TIMESTAMP )
 
 -- aggregation repo
-DROP TABLE IF EXISTS aggregation
-CREATE TABLE aggregation (id VARCHAR(255) NOT NULL, exchange BLOB NOT NULL, version BIGINT NOT NULL, constraint aggregation_pk PRIMARY KEY (id));
-DROP TABLE IF EXISTS aggregation_completed
-CREATE TABLE aggregation_completed (id VARCHAR(255) NOT NULL, exchange BLOB NOT NULL, version BIGINT NOT NULL, constraint aggregation_completed_pk PRIMARY KEY (id));
+DROP TABLE aggregation
+CREATE TABLE aggregation (id VARCHAR(255) NOT NULL, exchange BLOB NOT NULL, version BIGINT NOT NULL, constraint aggregation_pk PRIMARY KEY (id))
+DROP TABLE aggregation_completed
+CREATE TABLE aggregation_completed (id VARCHAR(255) NOT NULL, exchange BLOB NOT NULL, version BIGINT NOT NULL, constraint aggregation_completed_pk PRIMARY KEY (id))

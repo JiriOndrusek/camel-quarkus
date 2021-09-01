@@ -115,7 +115,6 @@ class SqlTest {
                 .get("/sql/get/results/" + routeId).then().extract().as(List.class),
                 hasItem(matchMapIgnoringCase(project)));
 
-        System.out.println("=============== update ======================");
         //update
         postMapWithParam("/sql/update",
                 "table", "projects",
