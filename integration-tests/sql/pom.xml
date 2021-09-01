@@ -29,10 +29,6 @@
     <name>Camel Quarkus :: Integration Tests :: SQL</name>
     <description>Integration tests for Camel Quarkus SQL extension</description>
 
-    <properties>
-        <db.driver.artifactId>quarkus-jdbc-h2</db.driver.artifactId>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
@@ -45,10 +41,6 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-resteasy-jackson</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>${db.driver.artifactId}</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
@@ -146,6 +138,93 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>postgresql</id>
+            <activation>
+                <property>
+                    <name>SQL_JDBC_DB_KIND</name>
+                    <value>postgresql</value>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>io.quarkus</groupId>
+                    <artifactId>quarkus-jdbc-postgresql</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>h2</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>io.quarkus</groupId>
+                    <artifactId>quarkus-jdbc-h2</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>mssql</id>
+            <activation>
+                <property>
+                    <name>SQL_JDBC_DB_KIND</name>
+                    <value>mssql</value>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>io.quarkus</groupId>
+                    <artifactId>quarkus-jdbc-mssql</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>db2</id>
+            <activation>
+                <property>
+                    <name>SQL_JDBC_DB_KIND</name>
+                    <value>db2</value>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>io.quarkus</groupId>
+                    <artifactId>quarkus-jdbc-db2</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>mysql</id>
+            <activation>
+                <property>
+                    <name>SQL_JDBC_DB_KIND</name>
+                    <value>mysql</value>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>io.quarkus</groupId>
+                    <artifactId>quarkus-jdbc-mysql</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>mariadb</id>
+            <activation>
+                <property>
+                    <name>SQL_JDBC_DB_KIND</name>
+                    <value>mariadb</value>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>io.quarkus</groupId>
+                    <artifactId>quarkus-jdbc-mariadb</artifactId>
+                </dependency>
+            </dependencies>
         </profile>
     </profiles>
 </project>
