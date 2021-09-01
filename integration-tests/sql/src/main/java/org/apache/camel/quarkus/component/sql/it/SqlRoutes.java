@@ -67,18 +67,24 @@ public class SqlRoutes extends RouteBuilder {
         //db has to be initialized before routes are started
         sqlDbInitializer.initDb();
 
-        from("sql:select * from projects where processed = false order by id?initialDelay=0&delay=50&consumer.onConsume=update projects set processed = true where id = :#id")
-                .id("consumerRoute").autoStartup(false)
-                .process(e -> results.get("consumerRoute").add(e.getMessage().getBody(Map.class)));
+        String representationOfTrue = SqlHelper.convertBooleanToSqlDialec(dbKind, true);
+        String representationOfFalse = SqlHelper.convertBooleanToSqlDialec(dbKind, false);
+
+        from("sql:select * from projects where processed = " + representationOfFalse
+                + " order by id?initialDelay=0&delay=50&consumer.onConsume=update projects set processed = "
+                + representationOfTrue + " where id = :#id")
+                        .id("consumerRoute").autoStartup(false)
+                        .process(e -> results.get("consumerRoute").add(e.getMessage().getBody(Map.class)));
 
         from("sql:classpath:sql/" + dbKind
-                + "/selectProjects.sql?initialDelay=0&delay=50&consumer.onConsume=update projects set processed = true")
+                + "/selectProjects.sql?initialDelay=0&delay=50&consumer.onConsume=update projects set processed = "
+                + representationOfTrue)
                         .id("consumerClasspathRoute").autoStartup(false)
                         .process(e -> results.get("consumerClasspathRoute").add(e.getMessage().getBody(Map.class)));
 
-        Path tmpFile = createTmpFileFrom("sql/h2/selectProjects.sql");
+        Path tmpFile = createTmpFileFrom("sql/" + dbKind + "/selectProjects.sql");
         from("sql:file:" + tmpFile
-                + "?initialDelay=0&delay=50&consumer.onConsume=update projects set processed = true")
+                + "?initialDelay=0&delay=50&consumer.onConsume=update projects set processed = " + representationOfTrue)
                         .id("consumerFileRoute").autoStartup(false)
                         .process(e -> results.get("consumerFileRoute").add(e.getMessage().getBody(Map.class)));
 

@@ -155,7 +155,7 @@ class SqlTest {
 
     @Test
     public void testDefaultErrorCode() throws InterruptedException {
-        postMap("/sql/toDirect/transacted", CollectionHelper.mapOf(SqlConstants.SQL_QUERY, "select * from NOT_EXIST order id"))
+        postMap("/sql/toDirect/transacted", CollectionHelper.mapOf(SqlConstants.SQL_QUERY, "select * from NOT_EXIST"))
                 .statusCode(200)
                 .body(startsWith("org.springframework.jdbc.BadSqlGrammarException"));
     }

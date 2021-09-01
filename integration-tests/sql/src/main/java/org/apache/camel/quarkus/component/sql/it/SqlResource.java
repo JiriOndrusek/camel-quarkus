@@ -36,6 +36,7 @@ import javax.ws.rs.core.Response;
 import org.apache.camel.CamelContext;
 import org.apache.camel.CamelExecutionException;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.component.sql.SqlConstants;
 import org.apache.camel.quarkus.component.sql.it.model.Camel;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.springframework.util.LinkedCaseInsensitiveMap;
@@ -195,6 +196,11 @@ public class SqlResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Object toDirect(@PathParam("directId") String directId, @QueryParam("body") String body, Map<String, Object> headers)
             throws Exception {
+        String sql = (String) headers.get(SqlConstants.SQL_QUERY);
+        if (sql != null) {
+            headers.put(SqlConstants.SQL_QUERY, sql.replaceAll("false", SqlHelper.convertBooleanToSqlDialec(dbKind, false)));
+        }
+
         try {
             return producerTemplate.requestBodyAndHeaders("direct:" + directId, body, headers, Object.class);
         } catch (CamelExecutionException e) {
