@@ -246,6 +246,10 @@ class SqlTest {
     public static org.hamcrest.Matcher<java.util.Map<String, Object>> matchMapIgnoringCase(Map<String, Object> map) {
         Matcher m = null;
         for (Map.Entry<String, Object> entry : map.entrySet()) {
+            if (entry.getKey().toUpperCase().equals("PROCESSED")) {
+                //it is boolean type and different dbs return different representations of boolean
+                continue;
+            }
             if (m == null) {
                 m = new IsMapContaining(new IsEqualIgnoringCase(entry.getKey()), is(entry.getValue()));
             } else {
@@ -254,4 +258,26 @@ class SqlTest {
         }
         return m;
     }
+
+    //    @SuppressWarnings("unchecked")
+    //    public static org.hamcrest.Matcher<java.util.Map<String, Object>> matchMapIgnoringCase(Map<String, Object> map) {
+    //        Matcher m = null;
+    //        for (Map.Entry<String, Object> entry : map.entrySet()) {
+    //            Matcher c;
+    //            if (entry.getValue() instanceof Boolean) {
+    //                //oracle returns int(1) instead of true/false
+    //                boolean v = (Boolean) entry.getValue();
+    //                c = either(new IsMapContaining(new IsEqualIgnoringCase(entry.getKey()), is(v)))
+    //                        .or(new IsMapContaining(new IsEqualIgnoringCase(entry.getKey()), is(v ? 1 : 0)));
+    //            } else {
+    //                c = new IsMapContaining(new IsEqualIgnoringCase(entry.getKey()), is(entry.getValue()));
+    //            }
+    //            if (m == null) {
+    //                m = c;
+    //            } else {
+    //                m = both(m).and(c);
+    //            }
+    //        }
+    //        return m;
+    //    }
 }

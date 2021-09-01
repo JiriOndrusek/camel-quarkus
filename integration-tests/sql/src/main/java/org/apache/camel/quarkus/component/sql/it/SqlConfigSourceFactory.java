@@ -13,7 +13,7 @@ public class SqlConfigSourceFactory implements ConfigSourceFactory {
     private final static MapBackedConfigSource source;
 
     static {
-        String dbKind = System.getenv("SQL_JDBC_DB_KIND");
+        String dbKind = System.getProperty("SQL_JDBC_DB_KIND");
         String jdbcUrl = System.getenv("SQL_JDBC_URL");
 
         //external db
@@ -21,6 +21,7 @@ public class SqlConfigSourceFactory implements ConfigSourceFactory {
             source = new MapBackedConfigSource("env_database", new HashMap() {
                 {
                     put("quarkus.datasource.jdbc.url", jdbcUrl);
+                    put("quarkus.datasource.db-kind", dbKind);
                     put("quarkus.datasource.username", System.getenv("SQL_JDBC_USERNAME"));
                     put("quarkus.datasource.password", System.getenv("SQL_JDBC_PASSWORD"));
                 }

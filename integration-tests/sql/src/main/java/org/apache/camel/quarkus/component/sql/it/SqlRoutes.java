@@ -67,8 +67,8 @@ public class SqlRoutes extends RouteBuilder {
         //db has to be initialized before routes are started
         sqlDbInitializer.initDb();
 
-        String representationOfTrue = SqlHelper.convertBooleanToSqlDialec(dbKind, true);
-        String representationOfFalse = SqlHelper.convertBooleanToSqlDialec(dbKind, false);
+        String representationOfTrue = SqlHelper.convertBooleanToSqlDialect(dbKind, true);
+        String representationOfFalse = SqlHelper.convertBooleanToSqlDialect(dbKind, false);
 
         from("sql:select * from projects where processed = " + representationOfFalse
                 + " order by id?initialDelay=0&delay=50&consumer.onConsume=update projects set processed = "

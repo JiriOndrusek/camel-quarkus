@@ -17,5 +17,5 @@
 
 select *
 from projects
-where processed = false
+where processed = 0
 order by id

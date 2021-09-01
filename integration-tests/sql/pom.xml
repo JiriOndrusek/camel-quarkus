@@ -226,5 +226,35 @@
                 </dependency>
             </dependencies>
         </profile>
+        <profile>
+            <id>debrby</id>
+            <activation>
+                <property>
+                    <name>SQL_JDBC_DB_KIND</name>
+                    <value>derby</value>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>io.quarkus</groupId>
+                    <artifactId>quarkus-jdbc-derby</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>oracle</id>
+            <activation>
+                <property>
+                    <name>SQL_JDBC_DB_KIND</name>
+                    <value>oracle</value>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>io.quarkus</groupId>
+                    <artifactId>quarkus-jdbc-oracle</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
     </profiles>
 </project>

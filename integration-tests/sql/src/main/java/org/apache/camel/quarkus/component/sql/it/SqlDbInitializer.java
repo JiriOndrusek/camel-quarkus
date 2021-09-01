@@ -49,7 +49,11 @@ public class SqlDbInitializer {
                         try {
                             statement.execute(s);
                         } catch (SQLException e) {
-                            throw new RuntimeException(e);
+                            if (!s.toUpperCase().startsWith("DROP TABLE")) {
+                                throw new RuntimeException(e);
+                            } else {
+                                System.out.println("dropping table failed.");
+                            }
                         }
                     });
 

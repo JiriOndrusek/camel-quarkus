@@ -198,7 +198,7 @@ public class SqlResource {
             throws Exception {
         String sql = (String) headers.get(SqlConstants.SQL_QUERY);
         if (sql != null) {
-            headers.put(SqlConstants.SQL_QUERY, sql.replaceAll("false", SqlHelper.convertBooleanToSqlDialec(dbKind, false)));
+            headers.put(SqlConstants.SQL_QUERY, sql.replaceAll("false", SqlHelper.convertBooleanToSqlDialect(dbKind, false)));
         }
 
         try {
