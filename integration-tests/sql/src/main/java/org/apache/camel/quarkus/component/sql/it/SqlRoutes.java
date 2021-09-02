@@ -73,18 +73,12 @@ public class SqlRoutes extends RouteBuilder {
         from("sql:select * from projectsViaSql where processed = " + representationOfFalse
                 + " order by id?initialDelay=0&delay=50&consumer.onConsume=update projectsViaSql set processed = "
                 + representationOfTrue + " where id = :#id")
-                        .process(e -> {
-                            System.out.println("++++++++++++++ adding to consumerRoute: " + e.getMessage().getBody());
-                            results.get("consumerRoute").add(e.getMessage().getBody(Map.class));
-                        });
+                        .process(e -> results.get("consumerRoute").add(e.getMessage().getBody(Map.class)));
 
         from("sql:classpath:sql/" + dbKind
                 + "/selectProjects.sql?initialDelay=0&delay=50&consumer.onConsume=update projectsViaClasspath set processed = "
                 + representationOfTrue)
-                        .process(e -> {
-                            System.out.println("++++++++++++++ adding to consumerClasspathRoute: " + e.getMessage().getBody());
-                            results.get("consumerClasspathRoute").add(e.getMessage().getBody(Map.class));
-                        });
+                        .process(e -> results.get("consumerClasspathRoute").add(e.getMessage().getBody(Map.class)));
 
         Path tmpFile = createTmpFileFrom("sql/" + dbKind + "/selectProjects.sql");
         from("sql:file:" + tmpFile

@@ -99,27 +99,19 @@ class SqlTest {
     }
 
     private void testConsumer(int id, String routeId, String via) throws InterruptedException {
-        //        Thread.sleep(15000); //todo quick fix because of oracle, it seems that ConsumerClasspathTest gets data already received by consumer in consumerTest
-        //        route(routeId, "start", "Started");
-
         Map project = CollectionHelper.mapOf("ID", id, "PROJECT", routeId, "LICENSE", "222", "PROCESSED", false);
         Map updatedProject = CollectionHelper.mapOf("ID", id, "PROJECT", routeId, "LICENSE", "XXX", "PROCESSED", false);
-
-        System.out.println("=============== inserting " + project + " ======================");
 
         postMapWithParam("/sql/insert",
                 "table", "projects" + via,
                 project)
                         .statusCode(201);
 
-        System.out.println("=============== inserted ======================");
-
         //wait for the record to be caught
         await().atMost(30, TimeUnit.SECONDS).until(() -> (Iterable<Object>) RestAssured
                 .get("/sql/get/results/" + routeId).then().extract().as(List.class),
                 hasItem(matchMapIgnoringCase(project)));
 
-        System.out.println("=============== update ======================");
         //update
         postMapWithParam("/sql/update",
                 "table", "projects" + via,
@@ -130,8 +122,6 @@ class SqlTest {
         await().atMost(30, TimeUnit.SECONDS).until(() -> (Iterable<Object>) RestAssured
                 .get("/sql/get/results/" + routeId).then().extract().as(List.class),
                 hasItem(matchMapIgnoringCase(updatedProject)));
-
-        //        route(routeId, "stop", "Stopped");
     }
 
     @Test
@@ -234,19 +224,6 @@ class SqlTest {
                 .post(toUrl)
                 .then();
     }
-    //
-    //    private void route(String routeId, String operation, String expectedOutput) {
-    //        RestAssured.given()
-    //                .get("/sql/route/" + routeId + "/" + operation)
-    //                .then().statusCode(204);
-    //
-    //        if (expectedOutput != null) {
-    //            await().atMost(5, TimeUnit.SECONDS).until(() -> RestAssured
-    //                    .get("/sql/route/" + routeId + "/status")
-    //                    .then()
-    //                    .extract().asString(), equalTo(expectedOutput));
-    //        }
-    //    }
 
     @SuppressWarnings("unchecked")
     public static org.hamcrest.Matcher<java.util.Map<String, Object>> matchMapIgnoringCase(Map<String, Object> map) {
