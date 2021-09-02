@@ -26,14 +26,26 @@
 -- IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'camel' AND TABLE_SCHEMA = 'dbo')
 -- DROP TABLE [dbo].camel;
 --
+DROP TABLE camel
 CREATE TABLE camel (id int NOT NULL IDENTITY PRIMARY KEY,species varchar(50));
 
 -- for consumer
-CREATE TABLE projects (id int NOT NULL, project varchar(25), license varchar(5), processed BIT);
+DROP TABLE projectsViaClasspath
+CREATE TABLE projectsViaClasspath (id int NOT NULL, project varchar(25), license varchar(5), processed BIT);
+
+DROP TABLE projectsViaFile
+CREATE TABLE projectsViaFile (id int NOT NULL, project varchar(25), license varchar(5), processed BIT);
+
+DROP TABLE projectsViaSql
+CREATE TABLE projectsViaSql (id int NOT NULL, project varchar(25), license varchar(5), processed BIT);
 
 -- idempotent repo
+DROP TABLE CAMEL_MESSAGEPROCESSED
 CREATE TABLE CAMEL_MESSAGEPROCESSED (processorName varchar(255), messageId varchar(100), createdAt datetime)
 
 -- aggregation repo
+DROP TABLE aggregation
 CREATE TABLE aggregation (id varchar(255), exchange Image, version bigint);
+
+DROP TABLE aggregation_completed
 CREATE TABLE aggregation_completed (id varchar(255), exchange Image, version bigint);

@@ -19,8 +19,12 @@
 DROP TABLE camel
 CREATE TABLE camel (id INT NOT NULL GENERATED ALWAYS AS IDENTITY,species VARCHAR(50) NOT NULL)
 -- for consumer
-DROP TABLE projects
-CREATE TABLE projects (id INT NOT NULL, project VARCHAR(25), license VARCHAR(5), processed BOOLEAN, PRIMARY KEY (id))
+DROP TABLE projectsViaClasspath
+CREATE TABLE projectsViaClasspath (id INT NOT NULL, project VARCHAR(25), license VARCHAR(5), processed BOOLEAN, PRIMARY KEY (id))
+DROP TABLE projectsViaSql
+CREATE TABLE projectsViaSql (id INT NOT NULL, project VARCHAR(25), license VARCHAR(5), processed BOOLEAN, PRIMARY KEY (id))
+DROP TABLE projectsViaFile
+CREATE TABLE projectsViaFile (id INT NOT NULL, project VARCHAR(25), license VARCHAR(5), processed BOOLEAN, PRIMARY KEY (id))
 
 -- idempotent repo
 DROP TABLE CAMEL_MESSAGEPROCESSED

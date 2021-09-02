@@ -168,27 +168,27 @@ public class SqlResource {
         results.get(resultId).clear();
         return list;
     }
-
-    @GET
-    @Path("/route/{routeId}/{operation}")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String route(@PathParam("routeId") String routeId, @PathParam("operation") String operation)
-            throws Exception {
-        //is start enough
-        switch (operation) {
-        case "stop":
-            camelContext.getRouteController().stopRoute(routeId);
-            break;
-        case "start":
-            camelContext.getRouteController().startRoute(routeId);
-            break;
-        case "status":
-            return camelContext.getRouteController().getRouteStatus(routeId).name();
-
-        }
-
-        return null;
-    }
+    //
+    //    @GET
+    //    @Path("/route/{routeId}/{operation}")
+    //    @Produces(MediaType.TEXT_PLAIN)
+    //    public String route(@PathParam("routeId") String routeId, @PathParam("operation") String operation)
+    //            throws Exception {
+    //        //is start enough
+    //        switch (operation) {
+    //        case "stop":
+    //            camelContext.getRouteController().stopRoute(routeId);
+    //            break;
+    //        case "start":
+    //            camelContext.getRouteController().startRoute(routeId);
+    //            break;
+    //        case "status":
+    //            return camelContext.getRouteController().getRouteStatus(routeId).name();
+    //
+    //        }
+    //
+    //        return null;
+    //    }
 
     @Path("/toDirect/{directId}")
     @POST

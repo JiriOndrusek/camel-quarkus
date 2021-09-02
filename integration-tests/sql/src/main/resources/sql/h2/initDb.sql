@@ -20,8 +20,14 @@ CREATE TABLE camel (id int AUTO_INCREMENT, species VARCHAR(255));
 CREATE ALIAS ADD_NUMS FOR "org.apache.camel.quarkus.component.sql.it.storedproc.NumberAddStoredProcedure.addNumbers";
 
 -- for consumer
-DROP TABLE IF EXISTS projects;
-create table projects (id integer primary key, project varchar(25), license varchar(5), processed BOOLEAN);;
+DROP TABLE IF EXISTS projectsViaClasspath;
+create table projectsViaClasspath (id integer primary key, project varchar(25), license varchar(5), processed BOOLEAN);
+
+DROP TABLE IF EXISTS projectsViaSql;
+create table projectsViaSql (id integer primary key, project varchar(25), license varchar(5), processed BOOLEAN);
+
+DROP TABLE IF EXISTS projectsViaFile;
+create table projectsViaFile(id integer primary key, project varchar(25), license varchar(5), processed BOOLEAN);
 
 -- idempotent repo
 DROP TABLE IF EXISTS CAMEL_MESSAGEPROCESSED;

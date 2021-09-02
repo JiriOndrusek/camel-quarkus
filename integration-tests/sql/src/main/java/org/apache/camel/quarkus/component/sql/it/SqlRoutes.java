@@ -70,22 +70,25 @@ public class SqlRoutes extends RouteBuilder {
         String representationOfTrue = SqlHelper.convertBooleanToSqlDialect(dbKind, true);
         String representationOfFalse = SqlHelper.convertBooleanToSqlDialect(dbKind, false);
 
-        from("sql:select * from projects where processed = " + representationOfFalse
-                + " order by id?initialDelay=0&delay=50&consumer.onConsume=update projects set processed = "
+        from("sql:select * from projectsViaSql where processed = " + representationOfFalse
+                + " order by id?initialDelay=0&delay=50&consumer.onConsume=update projectsViaSql set processed = "
                 + representationOfTrue + " where id = :#id")
-                        .id("consumerRoute").autoStartup(false)
-                        .process(e -> results.get("consumerRoute").add(e.getMessage().getBody(Map.class)));
+                        .process(e -> {
+                            System.out.println("++++++++++++++ adding to consumerRoute: " + e.getMessage().getBody());
+                            results.get("consumerRoute").add(e.getMessage().getBody(Map.class));
+                        });
 
         from("sql:classpath:sql/" + dbKind
-                + "/selectProjects.sql?initialDelay=0&delay=50&consumer.onConsume=update projects set processed = "
+                + "/selectProjects.sql?initialDelay=0&delay=50&consumer.onConsume=update projectsViaClasspath set processed = "
                 + representationOfTrue)
-                        .id("consumerClasspathRoute").autoStartup(false)
-                        .process(e -> results.get("consumerClasspathRoute").add(e.getMessage().getBody(Map.class)));
+                        .process(e -> {
+                            System.out.println("++++++++++++++ adding to consumerClasspathRoute: " + e.getMessage().getBody());
+                            results.get("consumerClasspathRoute").add(e.getMessage().getBody(Map.class));
+                        });
 
         Path tmpFile = createTmpFileFrom("sql/" + dbKind + "/selectProjects.sql");
         from("sql:file:" + tmpFile
-                + "?initialDelay=0&delay=50&consumer.onConsume=update projects set processed = " + representationOfTrue)
-                        .id("consumerFileRoute").autoStartup(false)
+                + "?initialDelay=0&delay=50&consumer.onConsume=update projectsViaFile set processed = " + representationOfTrue)
                         .process(e -> results.get("consumerFileRoute").add(e.getMessage().getBody(Map.class)));
 
         from("direct:transacted")
@@ -125,7 +128,9 @@ public class SqlRoutes extends RouteBuilder {
             while ((c = is.read()) >= 0) {
                 baos.write(c);
             }
-            fos.write(baos.toByteArray());
+            String content = new String(baos.toByteArray());
+            content = content.replaceAll("projectsViaClasspath", "projectsViaFile");
+            fos.write(content.getBytes());
         }
         return tmpFile.toPath();
     }

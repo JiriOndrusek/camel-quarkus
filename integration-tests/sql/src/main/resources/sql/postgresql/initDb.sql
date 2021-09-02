@@ -20,8 +20,14 @@
 DROP TABLE IF EXISTS camel
 CREATE TABLE camel (id serial PRIMARY KEY, species VARCHAR ( 50 ) NOT NULL)
 -- for consumer
-DROP TABLE IF EXISTS projects
-create table projects (id integer primary key, project varchar(25), license varchar(5), processed BOOLEAN);
+DROP TABLE IF EXISTS projectsViaSql
+create table projectsViaSql (id integer primary key, project varchar(25), license varchar(5), processed BOOLEAN);
+
+DROP TABLE IF EXISTS projectsViaClasspath
+create table projectsViaClasspath (id integer primary key, project varchar(25), license varchar(5), processed BOOLEAN);
+
+DROP TABLE IF EXISTS projectsViaFile
+create table projectsViaFile (id integer primary key, project varchar(25), license varchar(5), processed BOOLEAN);
 
 -- idempotent repo
 DROP TABLE IF EXISTS CAMEL_MESSAGEPROCESSED

@@ -19,8 +19,12 @@
 DROP TABLE IF EXISTS camel;
 CREATE TABLE camel (id INT AUTO_INCREMENT PRIMARY KEY,species VARCHAR(50) NOT NULL);
 -- for consumer
-DROP TABLE IF EXISTS projects
-CREATE TABLE projects (id INT PRIMARY KEY, project VARCHAR(25), license VARCHAR(5), processed BOOLEAN);
+DROP TABLE IF EXISTS projectsViaClasspath
+CREATE TABLE projectsViaClasspath (id INT PRIMARY KEY, project VARCHAR(25), license VARCHAR(5), processed BOOLEAN);
+DROP TABLE IF EXISTS projectsViaFile
+CREATE TABLE projectsViaFile (id INT PRIMARY KEY, project VARCHAR(25), license VARCHAR(5), processed BOOLEAN);
+DROP TABLE IF EXISTS projectsViaSql
+CREATE TABLE projectsViaSql (id INT PRIMARY KEY, project VARCHAR(25), license VARCHAR(5), processed BOOLEAN);
 
 -- idempotent repo
 DROP TABLE IF EXISTS CAMEL_MESSAGEPROCESSED
