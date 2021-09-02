@@ -52,7 +52,7 @@ public class SqlDbInitializer {
                             if (!s.toUpperCase().startsWith("DROP TABLE")) {
                                 throw new RuntimeException(e);
                             } else {
-                                System.out.println("dropping table failed.");
+                                System.out.println("dropping table failed."); //use debug logging
                             }
                         }
                     });
