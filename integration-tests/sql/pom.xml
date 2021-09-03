@@ -27,6 +27,7 @@
 
     <artifactId>camel-quarkus-integration-test-sql</artifactId>
     <name>Camel Quarkus :: Integration Tests :: SQL</name>
+    <description>Integration tests for Camel Quarkus SQL extension</description>
 
     <properties>
         <cq.sqlJdbcKind>h2</cq.sqlJdbcKind>
