@@ -31,7 +31,6 @@ import org.hamcrest.Matcher;
 import org.hamcrest.collection.IsMapContaining;
 import org.hamcrest.text.IsEqualIgnoringCase;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 
 import static io.restassured.RestAssured.given;
 import static org.awaitility.Awaitility.await;
@@ -71,7 +70,7 @@ class SqlTest {
     }
 
     @Test
-    @DisabledIfSystemProperty(named = "cq.sqlJdbcKind", matches = "[^h][^2].*", disabledReason = "https://github.com/apache/camel-quarkus/issues/3080")
+    //    @DisabledIfSystemProperty(named = "cq.sqlJdbcKind", matches = "[^h][^2].*", disabledReason = "https://github.com/apache/camel-quarkus/issues/3080")
     public void testSqlStoredComponent() {
         // Invoke ADD_NUMS stored procedure
         RestAssured.given()

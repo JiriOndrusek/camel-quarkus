@@ -162,7 +162,10 @@ public class SqlResource {
                 .requestBodyAndHeaders("sql-stored:ADD_NUMS(INTEGER ${headers.num1},INTEGER ${headers.num2})", null, args,
                         Map.class);
 
-        return results.get("#result-set-1").get(0).get("PUBLIC.ADD_NUMS(?1, ?2)").toString();
+        if (results.get("#result-set-1").get(0).size() == 1) {
+            return results.get("#result-set-1").get(0).values().iterator().next().toString();
+        }
+        return null;
     }
 
     @Path("/get/results/{resultId}")
