@@ -32,6 +32,7 @@ import org.testcontainers.utility.TestcontainersConfiguration;
  * Abstract parent for debezium test resources.
  * Parent starts using abstract method.
  */
+
 public abstract class AbstractDebeziumTestResource<T extends GenericContainer> implements QuarkusTestResourceLifecycleManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDebeziumTestResource.class);
 
