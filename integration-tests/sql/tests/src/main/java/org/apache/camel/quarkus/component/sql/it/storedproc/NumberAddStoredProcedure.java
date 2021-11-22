@@ -16,17 +16,9 @@
  */
 package org.apache.camel.quarkus.component.sql.it.storedproc;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+public class NumberAddStoredProcedure {
 
-public class DerbyNumberAddStoredProcedure {
-
-    public static void testProc(int a, int b, String fileName) throws Exception {
-        Path path = Paths.get("target", fileName);
-        byte[] strToBytes = String.valueOf(a + b).getBytes(StandardCharsets.UTF_8);
-
-        Files.write(path, strToBytes);
+    public static int addNumbers(int numA, int numB) {
+        return numA + numB;
     }
 }
