@@ -18,8 +18,6 @@ package org.apache.camel.quarkus.component.sql.it;
 
 import java.io.File;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,7 +35,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import io.agroal.api.AgroalDataSource;
 import org.apache.camel.CamelContext;
 import org.apache.camel.CamelExecutionException;
 import org.apache.camel.ProducerTemplate;
@@ -52,9 +49,6 @@ public class SqlResource {
 
     @ConfigProperty(name = "quarkus.datasource.db-kind")
     String dbKind;
-
-    @Inject
-    AgroalDataSource dataSource;
 
     @Inject
     ProducerTemplate producerTemplate;
@@ -185,6 +179,7 @@ public class SqlResource {
         case "db2":
         case "mssql":
         case "oracle":
+        case "derby":
         case "mariadb":
         case "mysql":
             List<LinkedCaseInsensitiveMap> addNumsResults = producerTemplate.requestBody(
@@ -193,8 +188,6 @@ public class SqlResource {
                     List.class);
 
             return String.valueOf(addNumsResults.get(0).get("value"));
-        case "derby":
-            return Files.readString(Paths.get("target", fileName), StandardCharsets.UTF_8);
         default:
             return results.get("#result-set-1").get(0).values().iterator().next().toString();
         }
