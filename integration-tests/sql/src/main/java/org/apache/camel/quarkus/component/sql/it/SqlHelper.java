@@ -39,4 +39,18 @@ public class SqlHelper {
     static String getSelectProjectsScriptName(String dbKind) {
         return BOOLEAN_AS_NUMBER.contains(dbKind) ? "selectProjectsAsNumber.sql" : "selectProjectsAsBoolean.sql";
     }
+
+    public static boolean shouldStartDevService() {
+        String jdbcUrl = System.getenv("SQL_JDBC_URL");
+        return jdbcUrl == null && !isDerbyInDocker();
+    }
+
+    public static boolean isDerbyInDocker() {
+        return "derby".equals(System.getProperty("cq.sqlJdbcKind"))
+                && Boolean.parseBoolean(System.getenv("SQL_USE_DERBY_DOCKER"));
+    }
+
+    public static Integer getDerbyDockerPort() {
+        return isDerbyInDocker() ? Integer.parseInt(System.getenv("SQL_USE_DERBY_PORT")) : null;
+    }
 }
