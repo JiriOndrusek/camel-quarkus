@@ -197,6 +197,7 @@
         <module>splunk</module>
         <module>spring-rabbitmq</module>
         <module>sql</module>
+        <module>sql-derby</module>
         <module>ssh</module>
         <module>stax</module>
         <module>stringtemplate</module>

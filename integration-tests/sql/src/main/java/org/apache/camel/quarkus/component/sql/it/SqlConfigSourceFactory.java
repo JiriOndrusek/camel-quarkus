@@ -18,6 +18,8 @@ package org.apache.camel.quarkus.component.sql.it;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.OptionalInt;
 
 import io.smallrye.config.ConfigSourceContext;
 import io.smallrye.config.ConfigSourceFactory;
@@ -26,29 +28,37 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
 
 public class SqlConfigSourceFactory implements ConfigSourceFactory {
 
-    private final static MapBackedConfigSource source;
+    private static MapBackedConfigSource source;
 
     static {
         String jdbcUrl = System.getenv("SQL_JDBC_URL");
 
+        Map<String, String> props = new HashMap();
         //external db
         if (jdbcUrl != null) {
-            source = new MapBackedConfigSource("env_database", new HashMap() {
-                {
-                    put("quarkus.datasource.jdbc.url", jdbcUrl);
-                    put("quarkus.datasource.username", System.getenv("SQL_JDBC_USERNAME"));
-                    put("quarkus.datasource.password", System.getenv("SQL_JDBC_PASSWORD"));
-                }
-            }) {
-            };
-        } else {
-            source = new MapBackedConfigSource("env_database", new HashMap()) {
-            };
+            props.put("quarkus.datasource.jdbc.url", jdbcUrl);
+            props.put("quarkus.datasource.username", System.getenv("SQL_JDBC_USERNAME"));
+            props.put("quarkus.datasource.password", System.getenv("SQL_JDBC_PASSWORD"));
         }
+
+        if (SqlHelper.isDerbyInDocker()) {
+            props.put("quarkus.datasource.jdbc.url",
+                    "jdbc:derby://localhost:" + SqlHelper.getDerbyDockerPort() + "/DOCKERDB;create=true");
+        }
+
+        props.put("quarkus.devservices.enabled", SqlHelper.shouldStartDevService() + "");
+
+        source = new MapBackedConfigSource("env_database", props) {
+        };
     }
 
     @Override
     public Iterable<ConfigSource> getConfigSources(ConfigSourceContext configSourceContext) {
         return Collections.singletonList(source);
+    }
+
+    @Override
+    public OptionalInt getPriority() {
+        return OptionalInt.of(999);
     }
 }
