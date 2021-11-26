@@ -37,7 +37,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import io.agroal.api.AgroalDataSource;
 import org.apache.camel.CamelContext;
 import org.apache.camel.CamelExecutionException;
 import org.apache.camel.ProducerTemplate;
@@ -53,8 +52,8 @@ public class SqlResource {
     @ConfigProperty(name = "quarkus.datasource.db-kind")
     String dbKind;
 
-    @Inject
-    AgroalDataSource dataSource;
+    //    @Inject
+    //    AgroalDataSource dataSource;
 
     @Inject
     ProducerTemplate producerTemplate;

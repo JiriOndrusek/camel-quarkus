@@ -19,7 +19,6 @@ package org.apache.camel.quarkus.component.sql.it;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +63,7 @@ public class SqlRoutes extends RouteBuilder {
     SqlDbInitializer sqlDbInitializer;
 
     @Override
-    public void configure() throws IOException, SQLException {
+    public void configure() throws Exception {
         //db has to be initialized before routes are started
         sqlDbInitializer.initDb();
 

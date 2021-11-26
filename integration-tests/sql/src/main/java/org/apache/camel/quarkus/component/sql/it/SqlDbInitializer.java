@@ -17,17 +17,16 @@
 package org.apache.camel.quarkus.component.sql.it;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 
-import io.agroal.api.AgroalDataSource;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,15 +36,17 @@ public class SqlDbInitializer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SqlDbInitializer.class);
 
-    @Inject
-    AgroalDataSource dataSource;
+    //    @Inject
+    //    AgroalDataSource dataSource;
 
     @ConfigProperty(name = "quarkus.datasource.db-kind")
     String dbKind;
 
-    public void initDb() throws SQLException, IOException {
-
-        try (Connection conn = dataSource.getConnection()) {
+    public void initDb() throws Exception {
+        Class cl = Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+        Integer port = ConfigProvider.getConfig().getValue("camel.sql.derby.port", Integer.class);
+        String dbURL = "jdbc:derby://localhost:" + port + "/DOCKERDB;create=true";
+        try (Connection conn = DriverManager.getConnection(dbURL)) {
             try (Statement statement = conn.createStatement()) {
                 try (InputStream is = Thread.currentThread().getContextClassLoader()
                         .getResourceAsStream("sql/" + dbKind + "/initDb.sql");
@@ -54,6 +55,9 @@ public class SqlDbInitializer {
 
                     reader.lines().filter(s -> s != null && !"".equals(s) && !s.startsWith("--")).forEach(s -> {
                         try {
+                            //                            URL u = SqlDbInitializer.class.getResource("/addNums.jar");
+                            //                            String s1 = "CALL sqlj.install_jar('" + u
+                            //                                    + "', 'org.apache.camel.quarkus.component.sql.it.storedproc.DerbyNumberAddStoredProcedure.testProc', 0)";
                             statement.execute(s);
                         } catch (SQLException e) {
                             if (!s.toUpperCase().startsWith("DROP")) {

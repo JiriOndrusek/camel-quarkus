@@ -22,6 +22,7 @@ import java.util.HashMap;
 import io.smallrye.config.ConfigSourceContext;
 import io.smallrye.config.ConfigSourceFactory;
 import io.smallrye.config.common.MapBackedConfigSource;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
 public class SqlConfigSourceFactory implements ConfigSourceFactory {
@@ -30,6 +31,10 @@ public class SqlConfigSourceFactory implements ConfigSourceFactory {
 
     static {
         String jdbcUrl = System.getenv("SQL_JDBC_URL");
+        Integer port = ConfigProvider.getConfig().getValue("camel.sql.derby.port", Integer.class);
+        if(port != null) {
+            jdbcUrl = jdbcUrl.replaceAll("1527", System.getProperty("port"));
+        }
 
         //external db
         if (jdbcUrl != null) {

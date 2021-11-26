@@ -3694,6 +3694,11 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.camel.quarkus</groupId>
+                <artifactId>camel-quarkus-integration-test-sql-derby-stored-procedure</artifactId>
+                <version>${camel-quarkus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel.quarkus</groupId>
                 <artifactId>camel-quarkus-iota</artifactId>
                 <version>${camel-quarkus.version}</version>
             </dependency>
