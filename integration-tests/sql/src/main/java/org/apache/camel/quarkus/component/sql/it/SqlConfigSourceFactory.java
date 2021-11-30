@@ -18,43 +18,56 @@ package org.apache.camel.quarkus.component.sql.it;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 import io.smallrye.config.ConfigSourceContext;
 import io.smallrye.config.ConfigSourceFactory;
 import io.smallrye.config.common.MapBackedConfigSource;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SqlConfigSourceFactory implements ConfigSourceFactory {
 
-    private final static MapBackedConfigSource source;
+    private static final Logger LOGGER = LoggerFactory.getLogger(SqlConfigSourceFactory.class);
+
+    private static MapBackedConfigSource source;
 
     static {
         String jdbcUrl = System.getenv("SQL_JDBC_URL");
+        String useDerbyDocker = System.getenv("SQL_USE_DERBY_DOCKER");
+        String dbKind = null;
+        Map<String, String> props = new HashMap();
 
+        try {
+            dbKind = ConfigProvider.getConfig().getOptionalValue("cq.sqlJdbcKind", String.class).orElse("h2");
+            if ("derby".equals(dbKind)) {
+                if (Boolean.parseBoolean(useDerbyDocker)) {
+                    Integer port = ConfigProvider.getConfig().getValue("camel.sql.derby.port", Integer.class);
+                    jdbcUrl = "jdbc:derby://localhost:" + port + "/DOCKERDB;create=true";
+                    dbKind = "derby-docker";
+                }
+            }
+
+        } catch (Exception e) {
+            //ConfigProvider.getConfig(... "cq.sqlJdbcKind" is not initialized yet, will be loaded in the second call
+            LOGGER.debug("Can not load config properties - should be loaded in the second call", e);
+        }
         //external db
         if (jdbcUrl != null) {
-            source = new MapBackedConfigSource("env_database", new HashMap() {
-                {
-                    //                    Integer port;
-                    //                    try {
-                    //                        port = ConfigProvider.getConfig().getValue("camel.sql.derby.port", Integer.class);
-                    //                    } catch (Exception e) {
-                    //                        port = 1527;
-                    //                    }
-                    String s = jdbcUrl;
-                    //                    if (port != null) {
-                    //                        s = s.replaceAll("1527", port + "");
-                    //                    }
-                    put("quarkus.datasource.jdbc.url", s);
-                    put("quarkus.datasource.username", System.getenv("SQL_JDBC_USERNAME"));
-                    put("quarkus.datasource.password", System.getenv("SQL_JDBC_PASSWORD"));
-                }
-            }) {
-            };
-        } else {
-            source = new MapBackedConfigSource("env_database", new HashMap()) {
-            };
+            props.put("quarkus.datasource.jdbc.url", jdbcUrl);
+            props.put("quarkus.datasource.username", System.getenv("SQL_JDBC_USERNAME"));
+            props.put("quarkus.datasource.password", System.getenv("SQL_JDBC_PASSWORD"));
+            if (dbKind != null) {
+                props.put("quarkus.native.resources.includes", "sql/" + dbKind + "*.sql,sql/common/*.sql");
+            }
         }
+
+        props.put("quarkus.devservices.enabled", String.valueOf(jdbcUrl != null && !Boolean.parseBoolean(useDerbyDocker)));
+
+        source = new MapBackedConfigSource("env_database", props) {
+        };
     }
 
     @Override

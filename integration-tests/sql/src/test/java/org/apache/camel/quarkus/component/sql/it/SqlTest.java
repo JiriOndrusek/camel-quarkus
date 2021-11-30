@@ -32,6 +32,7 @@ import org.hamcrest.Matcher;
 import org.hamcrest.collection.IsMapContaining;
 import org.hamcrest.text.IsEqualIgnoringCase;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 
 import static io.restassured.RestAssured.given;
 import static org.awaitility.Awaitility.await;
@@ -76,7 +77,7 @@ class SqlTest {
     }
 
     @Test
-    //    @DisabledIf("storedProcedureDisabled")
+    @DisabledIf("storedProcedureDisabled")
     public void testSqlStoredComponent() {
         // Invoke ADD_NUMS stored procedure
         RestAssured.given()

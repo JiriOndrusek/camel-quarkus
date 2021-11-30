@@ -39,6 +39,11 @@ public class DerbyTestResource<T extends GenericContainer> implements QuarkusTes
 
     @Override
     public Map<String, String> start() {
+        //should be executed only if cq.sqlJdbcKind=derby-docker
+        if (!"derby".equals(System.getProperty("cq.sqlJdbcKind"))) {
+            return CollectionHelper.mapOf("camel.sql.derby.port", "1527");
+        }
+
         LOGGER.info(TestcontainersConfiguration.getInstance().toString());
 
         try {

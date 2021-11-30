@@ -43,12 +43,14 @@ public class SqlDbInitializer {
     String dbKind;
 
     public void initDb() throws Exception {
-        //        Class cl = Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-        //        Integer port = ConfigProvider.getConfig().getValue("camel.sql.derby.port", Integer.class);
-        //        String dbURL = "jdbc:derby://localhost:" + port + "/DOCKERDB;create=true";
-        //        try (Connection conn = DriverManager.getConnection(dbURL)) {
-        //            try (Statement statement = conn.createStatement()) {
-        //                try (InputStream is = Thread.currentThread().getContextClassLoader()
+        String scriptsFolder = dbKind;
+        if ("derby".equals(dbKind)) {
+            String useDerbyDocker = System.getenv("SQL_USE_DERBY_DOCKER");
+            if (Boolean.parseBoolean(useDerbyDocker)) {
+                dbKind = dbKind + "_docker";
+            }
+        }
+
         try (Connection conn = dataSource.getConnection()) {
             try (Statement statement = conn.createStatement()) {
                 try (InputStream is = Thread.currentThread().getContextClassLoader()
@@ -58,9 +60,6 @@ public class SqlDbInitializer {
 
                     reader.lines().filter(s -> s != null && !"".equals(s) && !s.startsWith("--")).forEach(s -> {
                         try {
-                            //                            URL u = SqlDbInitializer.class.getResource("/addNums.jar");
-                            //                            String s1 = "CALL sqlj.install_jar('" + u
-                            //                                    + "', 'org.apache.camel.quarkus.component.sql.it.storedproc.DerbyNumberAddStoredProcedure.testProc', 0)";
                             statement.execute(s);
                         } catch (SQLException e) {
                             if (!s.toUpperCase().startsWith("DROP")) {

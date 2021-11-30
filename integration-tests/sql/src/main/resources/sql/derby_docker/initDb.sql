@@ -40,7 +40,15 @@ CREATE TABLE aggregation_completed (id VARCHAR(255) NOT NULL, exchange BLOB NOT 
 DROP TABLE ADD_NUMS_RESULTS
 CREATE TABLE ADD_NUMS_RESULTS (id INT PRIMARY KEY, value INT NOT NULL)
 
+CALL sqlj.install_jar('/dbs/storedProcedure.jar', 'AddNumsProcedure' , 0)
+
+CALL syscs_util.syscs_set_database_property('derby.database.classpath', 'APP.ADDNUMSPROCEDURE')
+
 CREATE PROCEDURE ADD_NUMS(IN a INTEGER, IN b INTEGER) PARAMETER STYLE JAVA LANGUAGE JAVA EXTERNAL NAME 'test.AddNumsProcedure.testProc'
 
+-- call ADD_NUMS(1, 2)
+-- CALL sqlj.install_jar('addNums1.jar', 'org.apache.camel.quarkus.component.sql.it.storedproc.DerbyNumberAddStoredProcedure.testProc', 0)
+
+-- CREATE PROCEDURE ADD_NUMS2(IN a INTEGER, IN b INTEGER, IN fileName VARCHAR(50)) PARAMETER STYLE JAVA READS SQL DATA LANGUAGE JAVA EXTERNAL NAME 'org.apache.camel.quarkus.component.sql.it.storedproc.DerbyNumberAddStoredProcedure.testProc'
 
 
