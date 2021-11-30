@@ -16,9 +16,19 @@
  */
 package test;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
 public class AddNumsProcedure {
 
-    public static void testProc(int a, int b) {
-        System.out.println("*****************************************");
+    public static void testProc(int a, int b) throws SQLException {
+        String sql = "insert into ADD_NUMS_RESULTS (id, value) VALUES (1, " + (a + b) + ")";
+
+        try (Connection con = DriverManager.getConnection("jdbc:default:connection");
+                PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.execute();
+        }
     }
 }

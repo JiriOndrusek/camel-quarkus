@@ -51,6 +51,7 @@ public class DerbyTestResource<T extends GenericContainer> implements QuarkusTes
             }
 
             container = new GenericContainer("az82/docker-derby")
+                    //                    .withFixedExposedPort(1527, 1527)
                     .withExposedPorts(1527)
                     .withCopyFileToContainer(
                             MountableFile.forClasspathResource(jars[0].getName()),
