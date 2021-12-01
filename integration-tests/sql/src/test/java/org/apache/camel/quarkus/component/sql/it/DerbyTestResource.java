@@ -18,6 +18,7 @@
 package org.apache.camel.quarkus.component.sql.it;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Map;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
@@ -39,9 +40,9 @@ public class DerbyTestResource<T extends GenericContainer> implements QuarkusTes
 
     @Override
     public Map<String, String> start() {
-        //should be executed only if cq.sqlJdbcKind=derby-docker
-        if (!"derby".equals(System.getProperty("cq.sqlJdbcKind"))) {
-            return CollectionHelper.mapOf("camel.sql.derby.port", "1527");
+        //should be started only for derby in docker
+        if (!SqlHelper.isDerbyInDocker()) {
+            return Collections.emptyMap();
         }
 
         LOGGER.info(TestcontainersConfiguration.getInstance().toString());

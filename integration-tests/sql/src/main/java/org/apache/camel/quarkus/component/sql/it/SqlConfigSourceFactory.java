@@ -36,35 +36,37 @@ public class SqlConfigSourceFactory implements ConfigSourceFactory {
 
     static {
         String jdbcUrl = System.getenv("SQL_JDBC_URL");
-        String useDerbyDocker = System.getenv("SQL_USE_DERBY_DOCKER");
-        String dbKind = null;
+        String dbKind = System.getProperty("cq.sqlJdbcKind");
+
         Map<String, String> props = new HashMap();
 
-        try {
-            dbKind = ConfigProvider.getConfig().getOptionalValue("cq.sqlJdbcKind", String.class).orElse("h2");
-            if ("derby".equals(dbKind)) {
-                if (Boolean.parseBoolean(useDerbyDocker)) {
-                    Integer port = ConfigProvider.getConfig().getValue("camel.sql.derby.port", Integer.class);
-                    jdbcUrl = "jdbc:derby://localhost:" + port + "/DOCKERDB;create=true";
-                    dbKind = "derby-docker";
-                }
+        if (SqlHelper.isDerbyInDocker()) {
+            //in he first call, ConfigProvider.getConfig() throws NPE - should be ignored
+            try {
+                Integer port = ConfigProvider.getConfig().getValue("camel.sql.derby.port", Integer.class);
+                jdbcUrl = "jdbc:derby://localhost:" + port + "/DOCKERDB;create=true";
+            } catch (NullPointerException e) {
+                //ignore NPE
             }
-
-        } catch (Exception e) {
-            //ConfigProvider.getConfig(... "cq.sqlJdbcKind" is not initialized yet, will be loaded in the second call
-            LOGGER.debug("Can not load config properties - should be loaded in the second call", e);
         }
+
         //external db
         if (jdbcUrl != null) {
             props.put("quarkus.datasource.jdbc.url", jdbcUrl);
             props.put("quarkus.datasource.username", System.getenv("SQL_JDBC_USERNAME"));
             props.put("quarkus.datasource.password", System.getenv("SQL_JDBC_PASSWORD"));
-            if (dbKind != null) {
-                props.put("quarkus.native.resources.includes", "sql/" + dbKind + "*.sql,sql/common/*.sql");
-            }
         }
 
-        props.put("quarkus.devservices.enabled", String.valueOf(jdbcUrl != null && !Boolean.parseBoolean(useDerbyDocker)));
+        if (SqlHelper.isDerbyInDocker()) {
+            props.put("quarkus.native.resources.includes", "sql/derby/*.sql,sql/derby_docker/*.sql,sql/common/*.sql");
+        } else {
+            props.put("quarkus.native.resources.includes", "sql/" + dbKind + "/*.sql,sql/common/*.sql");
+        }
+        props.put("quarkus.devservices.enabled", SqlHelper.shouldStartDevService() + "");
+
+        System.out.println("**********************************************");
+        System.out.println(props);
+        System.out.println("**********************************************");
 
         source = new MapBackedConfigSource("env_database", props) {
         };

@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.component.sql.it;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Connection;
@@ -43,18 +44,20 @@ public class SqlDbInitializer {
     String dbKind;
 
     public void initDb() throws Exception {
-        String scriptsFolder = dbKind;
-        if ("derby".equals(dbKind)) {
-            String useDerbyDocker = System.getenv("SQL_USE_DERBY_DOCKER");
-            if (Boolean.parseBoolean(useDerbyDocker)) {
-                dbKind = dbKind + "_docker";
-            }
+        //for serby in docker, more scripts are required
+        if (SqlHelper.isDerbyInDocker()) {
+            runScripts(dbKind + "_docker");
         }
 
+        runScripts(dbKind);
+    }
+
+    private void runScripts(String folderName) throws SQLException, IOException {
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>." + folderName);
         try (Connection conn = dataSource.getConnection()) {
             try (Statement statement = conn.createStatement()) {
                 try (InputStream is = Thread.currentThread().getContextClassLoader()
-                        .getResourceAsStream("sql/" + dbKind + "/initDb.sql");
+                        .getResourceAsStream("sql/" + folderName + "/initDb.sql");
                         InputStreamReader isr = new InputStreamReader(is);
                         BufferedReader reader = new BufferedReader(isr)) {
 
@@ -72,6 +75,5 @@ public class SqlDbInitializer {
                 }
             }
         }
-
     }
 }

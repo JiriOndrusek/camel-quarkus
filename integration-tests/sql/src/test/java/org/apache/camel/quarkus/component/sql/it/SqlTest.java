@@ -32,7 +32,6 @@ import org.hamcrest.Matcher;
 import org.hamcrest.collection.IsMapContaining;
 import org.hamcrest.text.IsEqualIgnoringCase;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIf;
 
 import static io.restassured.RestAssured.given;
 import static org.awaitility.Awaitility.await;
@@ -72,12 +71,7 @@ class SqlTest {
                 .body(is("Dromedarius 1"));
     }
 
-    public boolean storedProcedureDisabled() {
-        return "derby".equals(System.getProperty("cq.sqlJdbcKind")) && System.getenv().containsKey("SQL_JDBC_URL");
-    }
-
     @Test
-    @DisabledIf("storedProcedureDisabled")
     public void testSqlStoredComponent() {
         // Invoke ADD_NUMS stored procedure
         RestAssured.given()
