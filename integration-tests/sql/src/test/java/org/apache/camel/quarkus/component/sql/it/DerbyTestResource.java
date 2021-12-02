@@ -18,6 +18,7 @@
 package org.apache.camel.quarkus.component.sql.it;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
 
@@ -25,6 +26,7 @@ import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.apache.camel.util.CollectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.MountableFile;
@@ -38,6 +40,12 @@ public class DerbyTestResource<T extends GenericContainer> implements QuarkusTes
 
     private GenericContainer container;
 
+    private static int port;
+
+    //    public static int getPort() {
+    //        AvailablePortFinder
+    //    }
+
     @Override
     public Map<String, String> start() {
         //should be started only for derby in docker
@@ -48,7 +56,10 @@ public class DerbyTestResource<T extends GenericContainer> implements QuarkusTes
         LOGGER.info(TestcontainersConfiguration.getInstance().toString());
 
         try {
-            File[] jars = new File(Thread.currentThread().getContextClassLoader().getResource("/").toURI())
+            //            File[] jars = new File(Thread.currentThread().getContextClassLoader().getResource("/").toURI())
+            //                    .listFiles((d, n) -> n.startsWith("camel-quarkus-integration-test-sql-derby-stored-procedure"));
+            URL derby = Thread.currentThread().getContextClassLoader().getResource("derby");
+            File[] jars = new File(derby.toURI())
                     .listFiles((d, n) -> n.startsWith("camel-quarkus-integration-test-sql-derby-stored-procedure"));
             if (jars.length != 1) {
                 String msg = "There has to be one jar in target/test-classes with the name \"camel-quarkus-integration-test-sql-derby-stored-procedure-*.jar\", which contains stored procedure for the derby db.";
@@ -56,18 +67,19 @@ public class DerbyTestResource<T extends GenericContainer> implements QuarkusTes
                 throw new IllegalStateException(msg);
             }
 
-            container = new GenericContainer("az82/docker-derby")
-                    //                    .withFixedExposedPort(1527, 1527)
-                    .withExposedPorts(1527)
+            container = new FixedHostPortGenericContainer("az82/docker-derby")
+                    //            container = new GenericContainer("az82/docker-derby")
+                    //                    .withExposedPorts(1527)
+                    .withFixedExposedPort(SqlHelper.getDerbyDockerPort(), 1527)
                     .withCopyFileToContainer(
-                            MountableFile.forClasspathResource(jars[0].getName()),
+                            MountableFile.forClasspathResource("derby/" + jars[0].getName()),
                             "/dbs/storedProcedure.jar")
                     .waitingFor(Wait.forListeningPort());
 
             container.start();
 
             Map<String, String> map = CollectionHelper.mapOf("camel.sql.derby.port", container.getMappedPort(1527) + "");
-
+            System.out.println("----------------- returning port ------------------------");
             return map;
 
         } catch (Exception e) {

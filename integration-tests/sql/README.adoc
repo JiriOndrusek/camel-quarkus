@@ -62,10 +62,12 @@ To execute the tests against external derby database, set the environment variab
 
 ```
 export SQL_USE_DERBY_DOCKER=true
+export SQL_USE_DERBY_PORT="#port"
 ```
 
 or for windows:
 
 ```
 $Env:SQL_USE_DERBY_DOCKER = "true"
+$Env:SQL_USE_DERBY_PORT = "#port"
 ```

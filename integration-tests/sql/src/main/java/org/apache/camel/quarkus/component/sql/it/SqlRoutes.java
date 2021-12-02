@@ -37,17 +37,16 @@ import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.processor.aggregate.jdbc.JdbcAggregationRepository;
 import org.apache.camel.processor.idempotent.jdbc.JdbcMessageIdRepository;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
 @ApplicationScoped
 public class SqlRoutes extends RouteBuilder {
 
-    @ConfigProperty(name = "quarkus.datasource.db-kind")
-    String dbKind;
+    //    @ConfigProperty(name = "quarkus.datasource.db-kind")
+    //    String dbKind;
 
     @Inject
-    @Named("results")
+    //    @Named("results")
     Map<String, List> results;
 
     @Inject
@@ -57,6 +56,7 @@ public class SqlRoutes extends RouteBuilder {
     UserTransaction userTransaction;
 
     @Inject
+    //    @Named("test")
     AgroalDataSource dataSource;
 
     @Inject
@@ -66,6 +66,8 @@ public class SqlRoutes extends RouteBuilder {
     public void configure() throws Exception {
         //db has to be initialized before routes are started
         sqlDbInitializer.initDb();
+
+        String dbKind = System.getProperty("cq.sqlJdbcKind");
 
         String representationOfTrue = SqlHelper.convertBooleanToSqlDialect(dbKind, true);
         String representationOfFalse = SqlHelper.convertBooleanToSqlDialect(dbKind, false);

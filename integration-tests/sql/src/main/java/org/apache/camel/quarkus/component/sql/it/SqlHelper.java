@@ -49,4 +49,8 @@ public class SqlHelper {
         return "derby".equals(System.getProperty("cq.sqlJdbcKind"))
                 && Boolean.parseBoolean(System.getenv("SQL_USE_DERBY_DOCKER"));
     }
+
+    public static Integer getDerbyDockerPort() {
+        return isDerbyInDocker() ? Integer.parseInt(System.getenv("SQL_USE_DERBY_PORT")) : null;
+    }
 }

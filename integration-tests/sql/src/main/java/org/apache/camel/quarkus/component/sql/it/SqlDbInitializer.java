@@ -28,7 +28,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import io.agroal.api.AgroalDataSource;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,11 +38,12 @@ public class SqlDbInitializer {
 
     @Inject
     AgroalDataSource dataSource;
-
-    @ConfigProperty(name = "quarkus.datasource.db-kind")
-    String dbKind;
+    //
+    //    @ConfigProperty(name = "quarkus.datasource.db-kind")
+    //    String dbKind;
 
     public void initDb() throws Exception {
+        String dbKind = System.getProperty("cq.sqlJdbcKind");
         //for serby in docker, more scripts are required
         if (SqlHelper.isDerbyInDocker()) {
             runScripts(dbKind + "_docker");

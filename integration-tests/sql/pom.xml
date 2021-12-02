@@ -85,6 +85,11 @@
             <artifactId>testcontainers</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.camel.quarkus</groupId>
+            <artifactId>camel-quarkus-integration-test-support</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 
@@ -180,6 +185,11 @@
                     <artifactId>derbynet</artifactId>
                     <scope>test</scope>
                 </dependency>
+                <dependency> <!--todo workaround-->
+                    <groupId>org.apache.derby</groupId>
+                    <artifactId>derbyclient</artifactId>
+                    <scope>test</scope>
+                </dependency>
             </dependencies>
             <build>
                 <plugins>
@@ -193,7 +203,8 @@
                                 </goals>
                                 <configuration>
                                     <includeArtifactIds>camel-quarkus-integration-test-sql-derby-stored-procedure</includeArtifactIds>
-                                    <outputDirectory>target/test-classes</outputDirectory>
+<!--                                    <outputDirectory>src/test-classes</outputDirectory>-->
+                                    <outputDirectory>src/test/resources/derby/</outputDirectory>
                                 </configuration>
                             </execution>
                         </executions>

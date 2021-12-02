@@ -19,11 +19,11 @@ package org.apache.camel.quarkus.component.sql.it;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.OptionalInt;
 
 import io.smallrye.config.ConfigSourceContext;
 import io.smallrye.config.ConfigSourceFactory;
 import io.smallrye.config.common.MapBackedConfigSource;
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,15 +40,33 @@ public class SqlConfigSourceFactory implements ConfigSourceFactory {
 
         Map<String, String> props = new HashMap();
 
-        if (SqlHelper.isDerbyInDocker()) {
-            //in he first call, ConfigProvider.getConfig() throws NPE - should be ignored
-            try {
-                Integer port = ConfigProvider.getConfig().getValue("camel.sql.derby.port", Integer.class);
-                jdbcUrl = "jdbc:derby://localhost:" + port + "/DOCKERDB;create=true";
-            } catch (NullPointerException e) {
-                //ignore NPE
-            }
-        }
+        //        if (SqlHelper.isDerbyInDocker()) {
+        //            //in he first call, ConfigProvider.getConfig() throws NPE - should be ignored
+        //            try {
+        //                System.out.println("xxxxxx - reading port 1");
+        //                Integer port = ConfigProvider.getConfig().getValue("camel.sql.derby.port", Integer.class);
+        //                System.out.println("xxxxxx - read port " + port);
+        //                if (port != null) {
+        //                    jdbcUrl = "jdbc:derby://localhost:" + port + "/DOCKERDB;create=true";
+        //                }
+        //            } catch (NullPointerException e) {
+        //                //ignore NPE
+        //            }
+        //        }
+
+        //        if (jdbcUrl == null && SqlHelper.isDerbyInDocker()) {
+        //            //in he first call, ConfigProvider.getConfig() throws NPE - should be ignored
+        //            try {
+        //                System.out.println("xxxxxx - reading port 2");
+        //                String port = System.getProperty("camel.sql.derby.port");
+        //                System.out.println("xxxxxx - read port " + port);
+        //                if (port != null) {
+        //                    jdbcUrl = "jdbc:derby://localhost:" + port + "/DOCKERDB;create=true";
+        //                }
+        //            } catch (NullPointerException e) {
+        //                //ignore NPE
+        //            }
+        //        }
 
         //external db
         if (jdbcUrl != null) {
@@ -59,9 +77,20 @@ public class SqlConfigSourceFactory implements ConfigSourceFactory {
 
         if (SqlHelper.isDerbyInDocker()) {
             props.put("quarkus.native.resources.includes", "sql/derby/*.sql,sql/derby_docker/*.sql,sql/common/*.sql");
+            //            props.put("quarkus.datasource.db-kind=", dbKind);
+            //            props.put("quarkus.datasource.jdbc.url", "jdbc:derby://localhost:1527/DOCKERDB;create=true");
+            props.put("quarkus.datasource.jdbc.url",
+                    "jdbc:derby://localhost:" + SqlHelper.getDerbyDockerPort() + "/DOCKERDB;create=true");
+            //            props.put("quarkus.datasource.username", System.getenv("DOCKERDB"));
+            //            props.put("quarkus.datasource.password", System.getenv("DOCKERDB"));
+            //            System.out.println("==================================================================");
+            //            System.out.println("==================================================================");
+            //            System.out.println("====================== configuring ds        =====================");
+            //            System.out.println("==================================================================");
         } else {
             props.put("quarkus.native.resources.includes", "sql/" + dbKind + "/*.sql,sql/common/*.sql");
         }
+
         props.put("quarkus.devservices.enabled", SqlHelper.shouldStartDevService() + "");
 
         System.out.println("**********************************************");
@@ -75,5 +104,10 @@ public class SqlConfigSourceFactory implements ConfigSourceFactory {
     @Override
     public Iterable<ConfigSource> getConfigSources(ConfigSourceContext configSourceContext) {
         return Collections.singletonList(source);
+    }
+
+    @Override
+    public OptionalInt getPriority() {
+        return OptionalInt.of(999);
     }
 }

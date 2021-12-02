@@ -38,15 +38,14 @@ import org.apache.camel.CamelExecutionException;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.sql.SqlConstants;
 import org.apache.camel.quarkus.component.sql.it.model.Camel;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 
 @Path("/sql")
 @ApplicationScoped
 public class SqlResource {
 
-    @ConfigProperty(name = "quarkus.datasource.db-kind")
-    String dbKind;
+    //    @ConfigProperty(name = "quarkus.datasource.db-kind")
+    //    String dbKind;
 
     //    @Inject
     //    AgroalDataSource dataSource;
@@ -153,6 +152,7 @@ public class SqlResource {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String callStoredProcedure(@QueryParam("numA") int numA, @QueryParam("numB") int numB) {
+        String dbKind = System.getProperty("cq.sqlJdbcKind");
         Map<String, Object> args = new HashMap<>();
         args.put("num1", numA);
         args.put("num2", numB);
@@ -196,6 +196,7 @@ public class SqlResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Object toDirect(@PathParam("directId") String directId, @QueryParam("body") String body, Map<String, Object> headers)
             throws Exception {
+        String dbKind = System.getProperty("cq.sqlJdbcKind");
         String sql = (String) headers.get(SqlConstants.SQL_QUERY);
         if (sql != null) {
             headers.put(SqlConstants.SQL_QUERY,
