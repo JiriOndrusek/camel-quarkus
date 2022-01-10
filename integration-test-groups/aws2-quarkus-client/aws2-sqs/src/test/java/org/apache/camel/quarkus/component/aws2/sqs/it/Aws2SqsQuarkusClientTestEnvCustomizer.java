@@ -34,6 +34,11 @@ public class Aws2SqsQuarkusClientTestEnvCustomizer extends Aws2SqsTestEnvCustomi
 
         super.customize(envContext);
 
+        //remove camel properties to ensure that client is not created by camel compinent
+        envContext.remove("camel.component.aws2-sqs.access-key");
+        envContext.remove("camel.component.aws2-sqs.secret-key");
+        envContext.remove("camel.component.aws2-sqs.region");
+
         Map<String, String> envContextProperties = envContext.getProperies();
 
         envContext.property("quarkus.sqs.aws.credentials.static-provider.access-key-id", envContext.getAccessKey());
