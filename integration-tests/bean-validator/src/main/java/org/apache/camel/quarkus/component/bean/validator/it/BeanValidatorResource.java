@@ -28,6 +28,7 @@ import javax.ws.rs.core.Response;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.quarkus.component.bean.validator.it.model.Car;
+import org.apache.camel.quarkus.component.bean.validator.it.model.CarWithAnnotations;
 import org.jboss.logging.Logger;
 
 @Path("/bean-validator")
@@ -39,13 +40,36 @@ public class BeanValidatorResource {
     @Inject
     ProducerTemplate producerTemplate;
 
-    @Path("/get/{manufactor}/{plate}")
+    @Inject
+    ValidatorFactoryCustomizer.MyMessageInterpolator messageInterpolator;
+
+    @Path("/get/xml/{manufactor}/{plate}")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public Response get(@PathParam("manufactor") String manufactor, @PathParam("plate") String plate) throws Exception {
-        LOG.info("bean-validator: " + manufactor + "/" + plate);
-        Car car = new Car(manufactor, plate);
-        Exchange out = producerTemplate.request("direct:start", e -> e.getMessage().setBody(car));
+    public Response getXml(@PathParam("manufactor") String manufactor, @PathParam("plate") String plate) throws Exception {
+        return get(new CarWithAnnotations(manufactor, plate), "start");
+    }
+
+    @Path("/get/anot/{manufactor}/{plate}")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response getAnot(@PathParam("manufactor") String manufactor, @PathParam("plate") String plate) throws Exception {
+        return get(new CarWithAnnotations(manufactor, plate), "start");
+    }
+
+    @Path("/get/optional/{manufactor}/{plate}")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response getOptional(@PathParam("manufactor") String manufactor, @PathParam("plate") String plate) throws Exception {
+        return get(new CarWithAnnotations(manufactor, plate), "optional");
+    }
+
+    private Response get(Car car, String endpoint) throws Exception {
+        LOG.info("bean-validator: " + car.getManufacturer() + "/" + car.getLicensePlate());
+        Exchange out = producerTemplate.request("direct:" + endpoint, e -> e.getMessage().setBody(car));
+        if (messageInterpolator.getCount() == 0) {
+            return Response.status(500, "Interpolator was not used.").build();
+        }
         if (out.isFailed()) {
             return Response.status(400, "Invalid car").build();
         } else {

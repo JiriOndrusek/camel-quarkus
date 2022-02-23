@@ -16,13 +16,40 @@
  */
 package org.apache.camel.quarkus.component.bean.validator.it.model;
 
-public interface Car {
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
-    String getManufacturer();
+public class CarWithAnnotations implements Car {
 
-    void setManufacturer(String manufacturer);
+    @NotNull
+    private String manufacturer;
 
-    String getLicensePlate();
+    @NotNull
+    @Size(min = 5, max = 14)
+    private String licensePlate;
 
-    void setLicensePlate(String licensePlate);
+    public CarWithAnnotations(String manufacturer, String licencePlate) {
+        this.manufacturer = manufacturer;
+        this.licensePlate = licencePlate;
+    }
+
+    @Override
+    public String getManufacturer() {
+        return manufacturer;
+    }
+
+    @Override
+    public void setManufacturer(String manufacturer) {
+        this.manufacturer = manufacturer;
+    }
+
+    @Override
+    public String getLicensePlate() {
+        return licensePlate;
+    }
+
+    @Override
+    public void setLicensePlate(String licensePlate) {
+        this.licensePlate = licensePlate;
+    }
 }

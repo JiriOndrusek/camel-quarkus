@@ -1,0 +1,21 @@
+=== Configuring the ValidatorFactory
+
+Implementation of this extension leverages https://quarkus.io/guides/validation[Quarkus extension].
+
+Therefore it is not possible to configure ValidatorFactory by Camel's properties ('constraintValidatorFactory`, `messageInterpolator`, `traversableResolver`, `validationProviderResolver` and `validatorFactory`).
+
+You can configure ValidatorFactory by creation of beans which will be injected into the default validatorFactory (created by Quarkus).
+See https://quarkus.io/guides/validation#hibernate-validator-extension-and-cdi[documentation] for more information.
+
+=== Custom validation groups in native mode
+
+For native mode, it is necessary to register definitions of custom validation groups for reflection.
+To do this, annotate interface definition with `@RegisterForReflection`.
+
+Example:
+[source,java]
+----
+@RegisterForReflection
+public interface OptionalChecks {
+}
+----

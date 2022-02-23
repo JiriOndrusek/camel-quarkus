@@ -16,13 +16,8 @@
  */
 package org.apache.camel.quarkus.component.bean.validator.it.model;
 
-public interface Car {
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
-    String getManufacturer();
-
-    void setManufacturer(String manufacturer);
-
-    String getLicensePlate();
-
-    void setLicensePlate(String licensePlate);
+@RegisterForReflection
+public interface OptionalChecks {
 }

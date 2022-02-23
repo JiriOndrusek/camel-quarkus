@@ -25,9 +25,18 @@ class BeanValidatorTest {
 
     @Test
     public void test() {
-        RestAssured.get("/bean-validator/get/honda/123").then().statusCode(400);
+        RestAssured.get("/bean-validator/get/anot/honda/123").then().statusCode(400);
 
-        RestAssured.get("/bean-validator/get/honda/DD-AB-123").then().statusCode(200);
+        RestAssured.get("/bean-validator/get/anot/honda/DD-AB-123").then().statusCode(200);
+
+        RestAssured.get("/bean-validator/get/xml/honda/123").then().statusCode(400);
+
+        RestAssured.get("/bean-validator/get/xml/honda/DD-AB-123").then().statusCode(200);
+
+        RestAssured.get("/bean-validator/get/optional/honda/123").then().statusCode(200);
+
+        RestAssured.get("/bean-validator/get/optional/honda/DD-AB-12").then().statusCode(200);
+
     }
 
 }
