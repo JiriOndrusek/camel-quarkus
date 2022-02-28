@@ -23,10 +23,17 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
+import org.apache.camel.component.quartz.QuartzComponent;
+import org.apache.camel.component.quartz.QuartzEndpoint;
 
 @Path("/quartz")
 public class QuartzResource {
+
+
+    @Inject
+    CamelContext camelContext;
 
     @Inject
     ConsumerTemplate consumerTemplate;
@@ -35,6 +42,9 @@ public class QuartzResource {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String getSchedulerResult(@QueryParam("fromEndpoint") String fromEndpoint) throws Exception {
+
+        QuartzComponent comp = camelContext.getComponent("quartz", QuartzComponent.class);
+
         return consumerTemplate.receiveBody("seda:" + fromEndpoint + "-result", 5000, String.class);
     }
 

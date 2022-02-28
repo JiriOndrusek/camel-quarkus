@@ -16,7 +16,10 @@
  */
 package org.apache.camel.quarkus.component.quartz.it;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
+
+import javax.inject.Inject;
 
 public class QuartzRoutes extends RouteBuilder {
 
@@ -29,5 +32,9 @@ public class QuartzRoutes extends RouteBuilder {
         from("cron:tab?schedule=0/1 * * * * ?")
                 .setBody(constant("Hello Camel Quarkus cron"))
                 .to("seda:cron-result");
+
+        from("quartz:properties/1 * * * * ")
+                .setBody(constant("Hello Camel Quarkus Quartz Properties"))
+                .to("seda:quartz-properties-result");
     }
 }

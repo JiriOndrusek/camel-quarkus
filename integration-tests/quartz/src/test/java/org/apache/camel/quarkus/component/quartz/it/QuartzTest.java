@@ -18,13 +18,19 @@ package org.apache.camel.quarkus.component.quartz.it;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
+import org.apache.camel.CamelContext;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import javax.inject.Inject;
+
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 class QuartzTest {
+
 
     @ParameterizedTest()
     @ValueSource(strings = { "cron", "quartz" })
@@ -35,5 +41,19 @@ class QuartzTest {
                 .then()
                 .statusCode(200)
                 .body(is("Hello Camel Quarkus " + component));
+    }
+
+    @Test
+    public void testProperties() {
+        RestAssured.given()
+                .queryParam("fromEndpoint", "quartz-properties")
+                .get("/quartz/get")
+                .then()
+                .statusCode(200)
+                .body(is("Hello Camel Quarkus Quartz Properties"));
+
+//        assertEquals("MyScheduler-" + context.getName(), quartz.getScheduler().getSchedulerName());
+//        assertEquals("2", quartz.getScheduler().getSchedulerInstanceId());
+
     }
 }
