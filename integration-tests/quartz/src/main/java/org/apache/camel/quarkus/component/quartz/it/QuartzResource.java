@@ -33,6 +33,7 @@ import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.Exchange;
 import org.apache.camel.component.quartz.QuartzComponent;
 import org.apache.camel.util.CollectionHelper;
+import org.quartz.CronTrigger;
 
 @Path("/quartz")
 public class QuartzResource {
@@ -47,6 +48,13 @@ public class QuartzResource {
     @Singleton
     @Named("quartzFromProperties")
     public QuartzComponent createQuartzFromProperties() {
+        return new QuartzComponent();
+    }
+
+    @javax.enterprise.inject.Produces
+    @Singleton
+    @Named("quartzDelayed")
+    public QuartzComponent createQuartzDelayed() {
         return new QuartzComponent();
     }
 
@@ -84,5 +92,17 @@ public class QuartzResource {
 
         return exchange.getMessage().getHeaders().entrySet().stream().filter(e -> e.getValue() instanceof String)
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().toString()));
+    }
+
+    @Path("/getMisfire")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map<String, String> getMisfire(@QueryParam("fromEndpoint") String fromEndpoint) throws Exception {
+        Exchange exchange = consumerTemplate.receive("seda:" + fromEndpoint + "-result", 5000);
+
+        System.out.println(exchange.getMessage().getHeaders().keySet().stream().collect(Collectors.joining(",")));
+        return CollectionHelper.mapOf("timezone",
+                exchange.getMessage().getHeader("trigger", CronTrigger.class).getTimeZone().getID(),
+                "misfire", exchange.getMessage().getHeader("trigger", CronTrigger.class).getMisfireInstruction() + "");
     }
 }

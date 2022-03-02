@@ -39,8 +39,8 @@ public class QuartzRoutes extends RouteBuilder {
         //                .setBody(constant("Hello Camel Quarkus Quartz From Future"))
         //                .to("seda:quartz-delay-result");
         // cron trigger
-        from("quartz://cromTrigger?cron=0/1+*+*+*+*+?")
-                .setBody(constant("Hello Camel Quarkus Quartz From Cron Trigger"))
-                .to("seda:quartz-cron-trigger-result");
+        from("quartz://cromTrigger?cron=0/1+*+*+*+*+?&trigger.timeZone=Europe/Stockholm&trigger.misfireInstruction=2")
+                .to("seda:quartz-cron-misfire-result");
+
     }
 }
