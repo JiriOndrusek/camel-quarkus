@@ -16,7 +16,12 @@
  */
 package org.apache.camel.quarkus.component.quartz.it;
 
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -25,12 +30,12 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
+import org.apache.camel.Exchange;
 import org.apache.camel.component.quartz.QuartzComponent;
-import org.apache.camel.component.quartz.QuartzEndpoint;
+import org.apache.camel.util.CollectionHelper;
 
 @Path("/quartz")
 public class QuartzResource {
-
 
     @Inject
     CamelContext camelContext;
@@ -38,14 +43,46 @@ public class QuartzResource {
     @Inject
     ConsumerTemplate consumerTemplate;
 
+    @javax.enterprise.inject.Produces
+    @Singleton
+    @Named("quartzFromProperties")
+    public QuartzComponent createQuartzFromProperties() {
+        return new QuartzComponent();
+    }
+
+    @javax.enterprise.inject.Produces
+    @Singleton
+    @Named("quartzCronTrigger")
+    public QuartzComponent createQuartzCronTrigger() {
+        return new QuartzComponent();
+    }
+
+    @Path("/getNameAndResult")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map<String, String> getSchedulerNameAndResult(@QueryParam("componentName") String componentName,
+            @QueryParam("fromEndpoint") String fromEndpoint) throws Exception {
+
+        QuartzComponent comp = camelContext.getComponent(componentName, QuartzComponent.class);
+
+        return CollectionHelper.mapOf("name", comp.getScheduler().getSchedulerName().replaceFirst(camelContext.getName(), ""),
+                "result", consumerTemplate.receiveBody("seda:" + fromEndpoint + "-result", 5000, String.class));
+    }
+
     @Path("/get")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String getSchedulerResult(@QueryParam("fromEndpoint") String fromEndpoint) throws Exception {
-
-        QuartzComponent comp = camelContext.getComponent("quartz", QuartzComponent.class);
-
         return consumerTemplate.receiveBody("seda:" + fromEndpoint + "-result", 5000, String.class);
     }
 
+    @Path("/getHeaders")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map<String, String> getHeaders(@QueryParam("fromEndpoint") String fromEndpoint) throws Exception {
+        Exchange exchange = consumerTemplate.receive("seda:" + fromEndpoint + "-result", 5000);
+
+        return exchange.getMessage().getHeaders().entrySet().stream().filter(e -> e.getValue() instanceof String)
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().toString()));
+    }
 }

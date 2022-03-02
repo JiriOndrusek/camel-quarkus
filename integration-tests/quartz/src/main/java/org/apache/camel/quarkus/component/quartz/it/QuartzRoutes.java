@@ -16,16 +16,13 @@
  */
 package org.apache.camel.quarkus.component.quartz.it;
 
-import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
-
-import javax.inject.Inject;
 
 public class QuartzRoutes extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        from("quartz:0/1 * * * * ?")
+        from("quartz:quartz/1 * * * * ?")
                 .setBody(constant("Hello Camel Quarkus quartz"))
                 .to("seda:quartz-result");
 
@@ -33,8 +30,17 @@ public class QuartzRoutes extends RouteBuilder {
                 .setBody(constant("Hello Camel Quarkus cron"))
                 .to("seda:cron-result");
 
-        from("quartz:properties/1 * * * * ")
+        from("quartzFromProperties:properties/1 * * * * ")
                 .setBody(constant("Hello Camel Quarkus Quartz Properties"))
                 .to("seda:quartz-properties-result");
+
+        //        // delayed startup
+        //        from("quartzDelayed://delayed/1 * * * * ?startDelayedSeconds=60")
+        //                .setBody(constant("Hello Camel Quarkus Quartz From Future"))
+        //                .to("seda:quartz-delay-result");
+        // cron trigger
+        from("quartz://cromTrigger?cron=0/1+*+*+*+*+?")
+                .setBody(constant("Hello Camel Quarkus Quartz From Cron Trigger"))
+                .to("seda:quartz-cron-trigger-result");
     }
 }

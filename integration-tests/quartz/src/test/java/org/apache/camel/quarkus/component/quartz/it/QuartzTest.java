@@ -18,21 +18,15 @@ package org.apache.camel.quarkus.component.quartz.it;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
-import org.apache.camel.CamelContext;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import javax.inject.Inject;
-
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 class QuartzTest {
 
-
-    @ParameterizedTest()
+    //    @ParameterizedTest()
     @ValueSource(strings = { "cron", "quartz" })
     public void testSchedulerComponent(String component) {
         RestAssured.given()
@@ -47,13 +41,43 @@ class QuartzTest {
     public void testProperties() {
         RestAssured.given()
                 .queryParam("fromEndpoint", "quartz-properties")
+                .queryParam("componentName", "quartzFromProperties")
+                .get("/quartz/getNameAndResult")
+                .then()
+                .statusCode(200)
+                .body("name", is("MyScheduler-"),
+                        "result", is("Hello Camel Quarkus Quartz Properties"));
+    }
+
+    //    @Test
+    public void testDelay() {
+        RestAssured.given()
+                .queryParam("fromEndpoint", "quartz-delay")
                 .get("/quartz/get")
                 .then()
                 .statusCode(200)
-                .body(is("Hello Camel Quarkus Quartz Properties"));
+                .body("name", is("MyScheduler-"),
+                        "result", is("Hello Camel Quarkus Quartz Properties"));
+    }
 
-//        assertEquals("MyScheduler-" + context.getName(), quartz.getScheduler().getSchedulerName());
-//        assertEquals("2", quartz.getScheduler().getSchedulerInstanceId());
+    //    @Test
+    public void testCronTrigger() {
+        RestAssured.given()
+                .queryParam("fromEndpoint", "quartz-cron-trigger")
+                .get("/quartz/get")
+                .then()
+                .statusCode(200)
+                .body(is("Hello Camel Quarkus Quartz From Cron Trigger"));
 
+    }
+
+    //    @Test
+    public void testHeaders() {
+        RestAssured.given()
+                .queryParam("fromEndpoint", "quartz")
+                .get("/quartz/getHeaders")
+                .then()
+                .statusCode(200)
+                .body("triggerName", is("1 * * * * "));
     }
 }

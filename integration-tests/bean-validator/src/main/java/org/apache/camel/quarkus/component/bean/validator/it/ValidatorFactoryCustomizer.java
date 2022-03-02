@@ -19,7 +19,7 @@ package org.apache.camel.quarkus.component.bean.validator.it;
 import java.util.Locale;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Produces;
+ 
 import javax.inject.Singleton;
 import javax.validation.MessageInterpolator;
 
