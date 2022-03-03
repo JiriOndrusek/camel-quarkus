@@ -19,6 +19,7 @@ package org.apache.camel.quarkus.component.quartz.it;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.hamcrest.Matchers.is;
@@ -26,7 +27,7 @@ import static org.hamcrest.Matchers.is;
 @QuarkusTest
 class QuartzTest {
 
-    //    @ParameterizedTest()
+    @ParameterizedTest()
     @ValueSource(strings = { "cron", "quartz" })
     public void testSchedulerComponent(String component) {
         RestAssured.given()
@@ -50,17 +51,17 @@ class QuartzTest {
     }
 
     //    @Test
-    public void testDelay() {
-        RestAssured.given()
-                .queryParam("fromEndpoint", "quartz-delay")
-                .get("/quartz/get")
-                .then()
-                .statusCode(200)
-                .body("name", is("MyScheduler-"),
-                        "result", is("Hello Camel Quarkus Quartz Properties"));
-    }
+    //    public void testDelay() {
+    //        RestAssured.given()
+    //                .queryParam("fromEndpoint", "quartz-delay")
+    //                .get("/quartz/get")
+    //                .then()
+    //                .statusCode(200)
+    //                .body("name", is("MyScheduler-"),
+    //                        "result", is("Hello Camel Quarkus Quartz Properties"));
+    //    }
 
-    //    @Test
+    @Test
     public void testCronTrigger() {
         RestAssured.given()
                 .queryParam("fromEndpoint", "quartz-cron-trigger")
@@ -93,14 +94,12 @@ class QuartzTest {
     }
 
     @Test
-    public void testClustered() {
+    public void testClustered() throws InterruptedException {
         RestAssured.given()
-                .queryParam("fromEndpoint", "quartz-cron-misfire")
-                .get("/quartz/getMisfire")
+                .queryParam("fromEndpoint", "quartz-cluster")
+                .get("/quartz/get")
                 .then()
                 .statusCode(200)
-                .body("timezone", is("Europe/Stockholm"),
-                        "misfire", is("2"));
+                .body(is("Hello Camel Quarkus Quartz Clustered"));
     }
-
 }

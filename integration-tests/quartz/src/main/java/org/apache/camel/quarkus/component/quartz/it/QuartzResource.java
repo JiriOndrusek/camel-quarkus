@@ -53,15 +53,15 @@ public class QuartzResource {
 
     @javax.enterprise.inject.Produces
     @Singleton
-    @Named("quartzClusterA")
-    public QuartzComponent createQuartzClusterA() {
+    @Named("quartzNodeA")
+    public QuartzComponent createQuartzNodeA() {
         return new QuartzComponent();
     }
 
     @javax.enterprise.inject.Produces
     @Singleton
-    @Named("quartzClusterB")
-    public QuartzComponent createQuartzClusterB() {
+    @Named("quartzNodeB")
+    public QuartzComponent createQuartzNodeB() {
         return new QuartzComponent();
     }
 

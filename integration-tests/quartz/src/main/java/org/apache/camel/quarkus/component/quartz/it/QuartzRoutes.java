@@ -31,26 +31,26 @@ public class QuartzRoutes extends RouteBuilder {
                 .setBody(constant("Hello Camel Quarkus cron"))
                 .to("seda:cron-result");
 
-        from("quartzFromProperties:properties/1 * * * * ")
+        from("quartzFromProperties:properties/* 1 * * * ")
                 .setBody(constant("Hello Camel Quarkus Quartz Properties"))
                 .to("seda:quartz-properties-result");
 
-        //        // delayed startup
-        //        from("quartzDelayed://delayed/1 * * * * ?startDelayedSeconds=60")
-        //                .setBody(constant("Hello Camel Quarkus Quartz From Future"))
-        //                .to("seda:quartz-delay-result");
+        //                // delayed startup
+        //                from("quartzDelayed://delayed/1 * * * * ?startDelayedSeconds=60")
+        //                        .setBody(constant("Hello Camel Quarkus Quartz From Future"))
+        //                        .to("seda:quartz-delay-result");
+
         // cron trigger
-        from("quartz://cromTrigger?cron=0/1+*+*+*+*+?&trigger.timeZone=Europe/Stockholm&trigger.misfireInstruction=2")
+        from("quartz://cronTrigger?cron=0/1+*+*+*+*+?&trigger.timeZone=Europe/Stockholm")
+                .setBody(constant("Hello Camel Quarkus Quartz From Cron Trigger"))
+                .to("seda:quartz-cron-trigger-result");
+
+        from("quartz://misfire?cron=0/1+*+*+*+*+?&trigger.timeZone=Europe/Stockholm&trigger.misfireInstruction=2")
                 .to("seda:quartz-cron-misfire-result");
 
-        from("quartzClusterA:test/1 * * * * ")
-                .setBody(constant("Hello Node A"))
-                .log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        from("quartzNodeA:nodeA/1 * * * * ")
+                .setBody(constant("Hello Camel Quarkus Quartz Clustered"))
                 .to("seda:quartz-cluster-result");
 
-        from("quartzClusterB:test/1 * * * * ")
-                .setBody(constant("Hello Node B"))
-                .log("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBb")
-                .to("seda:quartz-cluster-result");
     }
 }
