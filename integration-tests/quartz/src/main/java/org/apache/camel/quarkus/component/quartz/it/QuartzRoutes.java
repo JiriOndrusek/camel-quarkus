@@ -22,6 +22,7 @@ public class QuartzRoutes extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
+
         from("quartz:quartz/1 * * * * ?")
                 .setBody(constant("Hello Camel Quarkus quartz"))
                 .to("seda:quartz-result");
@@ -42,5 +43,14 @@ public class QuartzRoutes extends RouteBuilder {
         from("quartz://cromTrigger?cron=0/1+*+*+*+*+?&trigger.timeZone=Europe/Stockholm&trigger.misfireInstruction=2")
                 .to("seda:quartz-cron-misfire-result");
 
+        from("quartzClusterA:test/1 * * * * ")
+                .setBody(constant("Hello Node A"))
+                .log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+                .to("seda:quartz-cluster-result");
+
+        from("quartzClusterB:test/1 * * * * ")
+                .setBody(constant("Hello Node B"))
+                .log("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBb")
+                .to("seda:quartz-cluster-result");
     }
 }
