@@ -27,7 +27,8 @@ class QuartzProcessor {
     private static final String[] QUARTZ_JOB_CLASSES = new String[] {
             "org.apache.camel.component.quartz.CamelJob",
             "org.apache.camel.component.quartz.StatefulCamelJob",
-            "org.apache.camel.pollconsumer.quartz.QuartzScheduledPollConsumerJob"
+            "org.apache.camel.pollconsumer.quartz.QuartzScheduledPollConsumerJob",
+            "org.quartz.utils.C3p0PoolingConnectionProvider"
     };
 
     @BuildStep

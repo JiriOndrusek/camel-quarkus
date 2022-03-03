@@ -37,7 +37,7 @@ class QuartzTest {
                 .body(is("Hello Camel Quarkus " + component));
     }
 
-    //    @Test
+    @Test
     public void testProperties() {
         RestAssured.given()
                 .queryParam("fromEndpoint", "quartz-properties")
@@ -83,6 +83,17 @@ class QuartzTest {
 
     @Test
     public void testMisfire() {
+        RestAssured.given()
+                .queryParam("fromEndpoint", "quartz-cron-misfire")
+                .get("/quartz/getMisfire")
+                .then()
+                .statusCode(200)
+                .body("timezone", is("Europe/Stockholm"),
+                        "misfire", is("2"));
+    }
+
+    @Test
+    public void testClustered() {
         RestAssured.given()
                 .queryParam("fromEndpoint", "quartz-cron-misfire")
                 .get("/quartz/getMisfire")
