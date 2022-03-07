@@ -188,6 +188,8 @@
         <protobuf-maven-plugin.version>${protobuf-maven-plugin-version}</protobuf-maven-plugin.version>
         <rpkgtests-maven-plugin.version>0.10.0</rpkgtests-maven-plugin.version>
 
+        <mchange.version>0.9.5.4</mchange.version>
+
         <!-- Plugin configuration through properties  -->
 
         <!-- maven-resources-plugin -->

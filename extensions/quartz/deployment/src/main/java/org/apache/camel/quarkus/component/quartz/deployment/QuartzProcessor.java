@@ -19,6 +19,7 @@ package org.apache.camel.quarkus.component.quartz.deployment;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.NativeImageSystemPropertyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 
 class QuartzProcessor {
@@ -27,7 +28,8 @@ class QuartzProcessor {
     private static final String[] QUARTZ_JOB_CLASSES = new String[] {
             "org.apache.camel.component.quartz.CamelJob",
             "org.apache.camel.component.quartz.StatefulCamelJob",
-            "org.apache.camel.pollconsumer.quartz.QuartzScheduledPollConsumerJob"
+            "org.apache.camel.pollconsumer.quartz.QuartzScheduledPollConsumerJob",
+            "org.quartz.utils.C3p0PoolingConnectionProvider"
     };
 
     @BuildStep
@@ -43,5 +45,16 @@ class QuartzProcessor {
     @BuildStep
     ReflectiveClassBuildItem registerForReflection() {
         return new ReflectiveClassBuildItem(false, false, QUARTZ_JOB_CLASSES);
+    }
+//
+//    @BuildStep
+//    ReflectiveClassBuildItem registerForReflection2() {
+//        return new ReflectiveClassBuildItem(true, false,"org.quartz.impl.jdbcjobstore.JobStoreTX");
+//    }
+
+    @BuildStep
+    NativeImageSystemPropertyBuildItem disavbleJMX() {
+
+        return new NativeImageSystemPropertyBuildItem("com.mchange.v2.c3p0.management.ManagementCoordinator", "com.mchange.v2.c3p0.management.NullManagementCoordinator");
     }
 }

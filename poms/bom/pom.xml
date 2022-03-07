@@ -6670,6 +6670,11 @@
                 <artifactId>xercesImpl</artifactId>
                 <version>${xerces.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.mchange</groupId>
+                <artifactId>c3p0</artifactId>
+                <version>${mchange.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
