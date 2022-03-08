@@ -1,0 +1,3 @@
+=== JDBC Job Store
+
+Quartz's property `org.quartz.jobStore.useProperties` is set to `true` and can not bet modified. Value is forced by Quarkus's extension. See the Quartz documentation for more information about `org.quartz.jobStore.useProperties`.
