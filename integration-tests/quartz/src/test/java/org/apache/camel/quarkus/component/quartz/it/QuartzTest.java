@@ -94,7 +94,7 @@ class QuartzTest {
 
     @Test
     public void testWrongClusteredWithNamedDS() throws InterruptedException {
-        //NodeB uses h2 db, which is not initialized and has to fail
+        //NodeB uses h2 db, which is not initialized therefore no message will be received
         RestAssured.given()
                 .queryParam("fromEndpoint", "quartz-nodeB")
                 .get("/quartz/get")

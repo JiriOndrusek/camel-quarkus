@@ -27,17 +27,13 @@ import io.quarkus.arc.InstanceHandle;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import org.quartz.utils.ConnectionProvider;
 
-@RegisterForReflection(methods = true)
+@RegisterForReflection
 public class CamelQuarkusQuartzConnectionProvider implements ConnectionProvider {
     private AgroalDataSource dataSource;
     private String dataSourceName;
-    private boolean initialized;
 
     @Override
     public Connection getConnection() throws SQLException {
-        if (!initialized) {
-            initDataSource();
-        }
         return dataSource.getConnection();
     }
 
@@ -48,32 +44,25 @@ public class CamelQuarkusQuartzConnectionProvider implements ConnectionProvider 
 
     @Override
     public void initialize() {
-
+        final ArcContainer container = Arc.container();
+        final InstanceHandle<AgroalDataSource> instanceHandle;
+        final boolean useDefaultDataSource = dataSourceName == null || "".equals(dataSourceName.trim());
+        if (useDefaultDataSource) {
+            instanceHandle = container.instance(AgroalDataSource.class);
+        } else {
+            instanceHandle = container.instance(AgroalDataSource.class, new DataSourceLiteral(dataSourceName));
+        }
+        if (instanceHandle.isAvailable()) {
+            this.dataSource = instanceHandle.get();
+        } else {
+            String message = String.format(
+                    "JDBC Store configured but '%s' datasource is missing. You can configure your datasource by following the guide available at: https://quarkus.io/guides/datasource",
+                    useDefaultDataSource ? "default" : dataSourceName);
+            throw new IllegalStateException(message);
+        }
     }
 
     public void setDataSourceName(String dataSourceName) {
         this.dataSourceName = dataSourceName;
-    }
-
-    private void initDataSource() {
-        synchronized (this) {
-            initialized = true;
-            final ArcContainer container = Arc.container();
-            final InstanceHandle<AgroalDataSource> instanceHandle;
-            final boolean useDefaultDataSource = dataSourceName == null || "".equals(dataSourceName.trim());
-            if (useDefaultDataSource) {
-                instanceHandle = container.instance(AgroalDataSource.class);
-            } else {
-                instanceHandle = container.instance(AgroalDataSource.class, new DataSourceLiteral(dataSourceName));
-            }
-            if (instanceHandle.isAvailable()) {
-                this.dataSource = instanceHandle.get();
-            } else {
-                String message = String.format(
-                        "JDBC Store configured but '%s' datasource is missing. You can configure your datasource by following the guide available at: https://quarkus.io/guides/datasource",
-                        useDefaultDataSource ? "default" : dataSourceName);
-                throw new IllegalStateException(message);
-            }
-        }
     }
 }

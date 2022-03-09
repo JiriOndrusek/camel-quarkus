@@ -26,6 +26,7 @@ final class QuartzClassLoaderHelperSubstitution {
     @Substitute
     public Class<?> loadClass(String name) throws ClassNotFoundException {
         //workaround until it is fixed in quartz codebase
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>.. loading " + name);
         return Thread.currentThread().getContextClassLoader().loadClass(name);
     }
 }

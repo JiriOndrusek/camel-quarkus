@@ -83,6 +83,7 @@ class QuartzProcessor {
     @BuildStep
     void indexSaxonHe(BuildProducer<IndexDependencyBuildItem> deps) {
         deps.produce(new IndexDependencyBuildItem("org.quartz-scheduler", "quartz"));
+        deps.produce(new IndexDependencyBuildItem("org.apache.camel.quarkus", "camel-quarkus-quartz"));
     }
 
     @BuildStep
