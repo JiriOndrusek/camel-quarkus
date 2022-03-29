@@ -35,6 +35,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 public class MailTest {
@@ -112,13 +113,8 @@ public class MailTest {
 
     @Test
     public void testConsumer() {
-        RestAssured.get("/mail/clearReceived/")
-                .then()
-                .statusCode(204);
         //start route
-        routeController("receiveRoute", "start", null);
-        //wait for start
-        routeController("receiveRoute", "status", ServiceStatus.Started.name());
+        routeController("receiveRoute", "start");
         //send messages
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -129,7 +125,7 @@ public class MailTest {
 
         Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
             //receive
-            return (List<Map <String, Object>>)RestAssured.get("/mail/getReceived/")
+            return (List<Map<String, Object>>) RestAssured.get("/mail/getReceived/")
                     .then()
                     .statusCode(200)
                     .extract().as(List.class);
@@ -138,6 +134,11 @@ public class MailTest {
                 && "message 2".equals(list.get(1).get("body"))
                 && "message 3".equals(list.get(2).get("body"))
                 && "message 4".equals(list.get(3).get("body")));
+
+        routeController("receiveRoute", "stop");
+        RestAssured.get("/mail/clearReceived/")
+                .then()
+                .statusCode(204);
     }
 
     @Test
@@ -146,9 +147,7 @@ public class MailTest {
                 .then()
                 .statusCode(204);
         //start route
-        routeController( "batchReceiveRoute", "start", null);
-        //wait for start
-        routeController( "batchReceiveRoute", "status", ServiceStatus.Started.name());
+        routeController("batchReceiveRoute", "start");
         //send messages
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -159,44 +158,74 @@ public class MailTest {
 
         Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
             //receive
-            return (List<Map <String, Object>>)RestAssured.get("/mail/getReceived/")
+            return (List<Map<String, Object>>) RestAssured.get("/mail/getReceived/")
                     .then()
                     .statusCode(200)
                     .extract().as(List.class);
         }, list -> list.size() == 4
 
                 && "message 1".equals(list.get(0).get("body"))
-                && 0 == (Integer)list.get(0).get(ExchangePropertyKey.BATCH_INDEX.getName())
-                && 3 == (Integer)list.get(0).get(ExchangePropertyKey.BATCH_SIZE.getName())
-                && !((Boolean)list.get(0).get(ExchangePropertyKey.BATCH_COMPLETE.getName()))
+                && 0 == (Integer) list.get(0).get(ExchangePropertyKey.BATCH_INDEX.getName())
+                && 3 == (Integer) list.get(0).get(ExchangePropertyKey.BATCH_SIZE.getName())
+                && !((Boolean) list.get(0).get(ExchangePropertyKey.BATCH_COMPLETE.getName()))
 
                 && "message 2".equals(list.get(1).get("body"))
-                && 1 == (Integer)list.get(1).get(ExchangePropertyKey.BATCH_INDEX.getName())
-                && !((Boolean)list.get(1).get(ExchangePropertyKey.BATCH_COMPLETE.getName()))
+                && 1 == (Integer) list.get(1).get(ExchangePropertyKey.BATCH_INDEX.getName())
+                && !((Boolean) list.get(1).get(ExchangePropertyKey.BATCH_COMPLETE.getName()))
 
                 && "message 3".equals(list.get(2).get("body"))
-                && 2 == (Integer)list.get(2).get(ExchangePropertyKey.BATCH_INDEX.getName())
-                && ((Boolean)list.get(2).get(ExchangePropertyKey.BATCH_COMPLETE.getName()))
+                && 2 == (Integer) list.get(2).get(ExchangePropertyKey.BATCH_INDEX.getName())
+                && ((Boolean) list.get(2).get(ExchangePropertyKey.BATCH_COMPLETE.getName()))
 
                 && "message 4".equals(list.get(3).get("body"))
-                && 0 == (Integer)list.get(3).get(ExchangePropertyKey.BATCH_INDEX.getName()));
+                && 0 == (Integer) list.get(3).get(ExchangePropertyKey.BATCH_INDEX.getName()));
+
+        routeController("batchReceiveRoute", "stop");
+        RestAssured.get("/mail/clearReceived/")
+                .then()
+                .statusCode(204);
     }
 
-    private String routeController(String routeId, String operation, String expectedResult) {
-        if (expectedResult == null) {
-            RestAssured.given()
-                    .get("/mail/route/" + routeId + "/" + operation)
-                    .then().statusCode(204);
-        } else {
-            Awaitility.await().atMost(5, TimeUnit.SECONDS).until(
-                    () -> RestAssured
-                            .get("/mail/route/" + routeId + "/" + operation)
-                            .then()
-                            .statusCode(200)
-                            .extract().asString(),
-                    Matchers.is(expectedResult));
-        }
+    @Test
+    public void attachmentTest() throws Exception {
+        routeController("attachmentRoute", "start");
 
-        return null;
+        RestAssured.get("/mail/sendAttachment/logo.jpeg")
+                .then()
+                .statusCode(204);
+
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            //receive
+            return (List<Map<String, Object>>) RestAssured.get("/mail/getReceived/")
+                    .then()
+                    .statusCode(200)
+                    .extract().as(List.class);
+        }, list -> list.size() == 1
+                && list.get(0).size() == 2
+                && "Sending logo.jpeg!".equals(list.get(0).get("body"))
+                && ("image/jpeg; name=logo.jpeg".equals(list.get(0).get("logo.jpeg_contentType")) ||
+                        "application/octet-stream; name=logo.jpeg".equals(list.get(0).get("logo.jpeg_contentType"))));
+
+        routeController("attachmentRoute", "stop");
+        RestAssured.get("/mail/clearReceived/")
+                .then()
+                .statusCode(204);
+    }
+
+    // helper methods
+
+    private void routeController(String routeId, String operation) {
+        RestAssured.given()
+                .get("/mail/route/" + routeId + "/" + operation)
+                .then().statusCode(204);
+
+        //wait for finish
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(
+                () -> RestAssured
+                        .get("/mail/route/" + routeId + "/status")
+                        .then()
+                        .statusCode(200)
+                        .extract().asString(),
+                Matchers.is("start".equals(operation) ? ServiceStatus.Started.name() : ServiceStatus.Stopped.name()));
     }
 }

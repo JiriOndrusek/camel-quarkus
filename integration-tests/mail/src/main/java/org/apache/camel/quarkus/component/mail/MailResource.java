@@ -19,6 +19,7 @@ package org.apache.camel.quarkus.component.mail;
 import java.util.List;
 import java.util.Map;
 
+import javax.activation.FileDataSource;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -36,7 +37,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
+import org.apache.camel.Producer;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.camel.attachment.DefaultAttachment;
@@ -141,8 +144,31 @@ public class MailResource {
             return camelContext.getRouteController().getRouteStatus(routeId).name();
 
         }
-
         return null;
+    }
+
+    @GET
+    @Path("/sendAttachment/{filename}")
+    public void sendAttachment(@PathParam("filename") String filename) throws Exception {
+        Endpoint endpoint = camelContext.getEndpoint("smtp://james@mymailserver.com?password=secret");
+
+        // create the exchange with the mail message that is multipart with a file and a Hello World text/plain message.
+        Exchange exchange = endpoint.createExchange();
+        AttachmentMessage in = exchange.getIn(AttachmentMessage.class);
+        in.setBody("Sending " + filename + "!");
+        DefaultAttachment att = new DefaultAttachment(
+                new FileDataSource(Thread.currentThread().getContextClassLoader().getResource("data/" + filename).getFile()));
+        att.addHeader("Content-Description", "some sample content");
+        in.addAttachmentObject(filename, att);
+
+        // create a producer that can produce the exchange (= send the mail)
+        Producer producer = endpoint.createProducer();
+        // start the producer
+        producer.start();
+        // and let it go (processes the exchange by sending the email)
+        producer.process(exchange);
+
+        producer.stop();
     }
 
 }

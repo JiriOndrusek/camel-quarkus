@@ -17,11 +17,13 @@
 package org.apache.camel.quarkus.component.mail;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.activation.DataHandler;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
@@ -32,6 +34,7 @@ import javax.mail.Store;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.ExchangePropertyKey;
+import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mail.DefaultJavaMailSender;
 import org.apache.camel.component.mail.JavaMailSender;
@@ -67,15 +70,30 @@ public class MailRoute extends RouteBuilder {
 
         from("pop3://jones@localhost?password=secret&initialDelay=100&delay=100"
                 + "&delete=true").id("receiveRoute").autoStartup(false)
-                        .process(e -> mailReceivedMessages.add(Collections.singletonMap("body", e.getIn().getBody(String.class))));
+                        .process(e -> mailReceivedMessages
+                                .add(Collections.singletonMap("body", e.getIn().getBody(String.class))));
 
         from("pop3://jones@localhost?password=secret&initialDelay=100&delay=100"
                 + "&delete=true&maxMessagesPerPoll=3").id("batchReceiveRoute").autoStartup(false)
                         .process(e -> mailReceivedMessages.add(
                                 CollectionHelper.mapOf("body", e.getIn().getBody(String.class),
-                                        ExchangePropertyKey.BATCH_INDEX.getName(), e.getProperty(ExchangePropertyKey.BATCH_INDEX),
-                                        ExchangePropertyKey.BATCH_COMPLETE.getName(), e.getProperty(ExchangePropertyKey.BATCH_COMPLETE),
-                                        ExchangePropertyKey.BATCH_SIZE.getName(), e.getProperty(ExchangePropertyKey.BATCH_SIZE))));
+                                        ExchangePropertyKey.BATCH_INDEX.getName(),
+                                        e.getProperty(ExchangePropertyKey.BATCH_INDEX),
+                                        ExchangePropertyKey.BATCH_COMPLETE.getName(),
+                                        e.getProperty(ExchangePropertyKey.BATCH_COMPLETE),
+                                        ExchangePropertyKey.BATCH_SIZE.getName(),
+                                        e.getProperty(ExchangePropertyKey.BATCH_SIZE))));
+
+        from("pop3://james@mymailserver.com?password=secret&initialDelay=100&delay=100")
+                .id("attachmentRoute").autoStartup(false).process(e -> {
+                    Map<String, Object> values = new HashMap<>();
+                    values.put("body", e.getIn().getBody(String.class));
+                    for (Map.Entry<String, DataHandler> entry : e.getIn(AttachmentMessage.class).getAttachments().entrySet()) {
+                        values.put(entry.getKey() + "_contentType", e.getIn(AttachmentMessage.class)
+                                .getAttachmentObject(entry.getKey()).getDataHandler().getContentType());
+                    }
+                    mailReceivedMessages.add(values);
+                });
 
     }
 
