@@ -16,7 +16,9 @@
  */
 package org.apache.camel.quarkus.component.mail;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -29,10 +31,12 @@ import javax.mail.Session;
 import javax.mail.Store;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.ExchangePropertyKey;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mail.DefaultJavaMailSender;
 import org.apache.camel.component.mail.JavaMailSender;
 import org.apache.camel.component.mail.MailComponent;
+import org.apache.camel.util.CollectionHelper;
 import org.jvnet.mock_javamail.Mailbox;
 
 @ApplicationScoped
@@ -40,7 +44,7 @@ public class MailRoute extends RouteBuilder {
 
     @Inject
     @Named("mailReceivedMessages")
-    List<String> mailReceivedMessages;
+    List<Map<String, Object>> mailReceivedMessages;
 
     @Inject
     CamelContext camelContext;
@@ -62,8 +66,16 @@ public class MailRoute extends RouteBuilder {
                 .marshal().mimeMultipart();
 
         from("pop3://jones@localhost?password=secret&initialDelay=100&delay=100"
-                + "&delete=true").id("receiveRoute").autoStartup(false).log(">>>>>>>>>>>>>>> ${body}")
-                        .process(e -> mailReceivedMessages.add(e.getIn().getBody(String.class)));
+                + "&delete=true").id("receiveRoute").autoStartup(false)
+                        .process(e -> mailReceivedMessages.add(Collections.singletonMap("body", e.getIn().getBody(String.class))));
+
+        from("pop3://jones@localhost?password=secret&initialDelay=100&delay=100"
+                + "&delete=true&maxMessagesPerPoll=3").id("batchReceiveRoute").autoStartup(false)
+                        .process(e -> mailReceivedMessages.add(
+                                CollectionHelper.mapOf("body", e.getIn().getBody(String.class),
+                                        ExchangePropertyKey.BATCH_INDEX.getName(), e.getProperty(ExchangePropertyKey.BATCH_INDEX),
+                                        ExchangePropertyKey.BATCH_COMPLETE.getName(), e.getProperty(ExchangePropertyKey.BATCH_COMPLETE),
+                                        ExchangePropertyKey.BATCH_SIZE.getName(), e.getProperty(ExchangePropertyKey.BATCH_SIZE))));
 
     }
 
@@ -79,7 +91,7 @@ public class MailRoute extends RouteBuilder {
         @Singleton
         @Produces
         @Named("mailReceivedMessages")
-        List<String> mailReceivedMessages() {
+        List<Map<String, Object>> mailReceivedMessages() {
             return new CopyOnWriteArrayList<>();
         }
 

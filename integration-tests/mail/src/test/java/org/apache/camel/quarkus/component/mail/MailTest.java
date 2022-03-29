@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.component.mail;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,6 +27,7 @@ import java.util.stream.IntStream;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import org.apache.camel.ExchangePropertyKey;
 import org.apache.camel.ServiceStatus;
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
@@ -110,11 +112,13 @@ public class MailTest {
 
     @Test
     public void testConsumer() {
-
+        RestAssured.get("/mail/clearReceived/")
+                .then()
+                .statusCode(204);
         //start route
-        routeController("start", null);
+        routeController("receiveRoute", "start", null);
         //wait for start
-        routeController("status", ServiceStatus.Started.name());
+        routeController("receiveRoute", "status", ServiceStatus.Started.name());
         //send messages
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -125,19 +129,60 @@ public class MailTest {
 
         Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
             //receive
-            return RestAssured.get("/mail/getReceived/")
+            return (List<Map <String, Object>>)RestAssured.get("/mail/getReceived/")
                     .then()
                     .statusCode(200)
                     .extract().as(List.class);
         }, list -> list.size() == 4
-                && "message 1".equals(list.get(0))
-                && "message 2".equals(list.get(1))
-                && "message 3".equals(list.get(2))
-                && "message 4".equals(list.get(3)));
+                && "message 1".equals(list.get(0).get("body"))
+                && "message 2".equals(list.get(1).get("body"))
+                && "message 3".equals(list.get(2).get("body"))
+                && "message 4".equals(list.get(3).get("body")));
     }
 
-    private String routeController(String operation, String expectedResult) {
-        String routeId = "receiveRoute";
+    @Test
+    public void testBatchConsumer() {
+        RestAssured.get("/mail/clearReceived/")
+                .then()
+                .statusCode(204);
+        //start route
+        routeController( "batchReceiveRoute", "start", null);
+        //wait for start
+        routeController( "batchReceiveRoute", "status", ServiceStatus.Started.name());
+        //send messages
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(IntStream.range(1, 5).boxed().map(i -> "message " + i).collect(Collectors.toList()))
+                .post("/mail/send")
+                .then()
+                .statusCode(204);
+
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            //receive
+            return (List<Map <String, Object>>)RestAssured.get("/mail/getReceived/")
+                    .then()
+                    .statusCode(200)
+                    .extract().as(List.class);
+        }, list -> list.size() == 4
+
+                && "message 1".equals(list.get(0).get("body"))
+                && 0 == (Integer)list.get(0).get(ExchangePropertyKey.BATCH_INDEX.getName())
+                && 3 == (Integer)list.get(0).get(ExchangePropertyKey.BATCH_SIZE.getName())
+                && !((Boolean)list.get(0).get(ExchangePropertyKey.BATCH_COMPLETE.getName()))
+
+                && "message 2".equals(list.get(1).get("body"))
+                && 1 == (Integer)list.get(1).get(ExchangePropertyKey.BATCH_INDEX.getName())
+                && !((Boolean)list.get(1).get(ExchangePropertyKey.BATCH_COMPLETE.getName()))
+
+                && "message 3".equals(list.get(2).get("body"))
+                && 2 == (Integer)list.get(2).get(ExchangePropertyKey.BATCH_INDEX.getName())
+                && ((Boolean)list.get(2).get(ExchangePropertyKey.BATCH_COMPLETE.getName()))
+
+                && "message 4".equals(list.get(3).get("body"))
+                && 0 == (Integer)list.get(3).get(ExchangePropertyKey.BATCH_INDEX.getName()));
+    }
+
+    private String routeController(String routeId, String operation, String expectedResult) {
         if (expectedResult == null) {
             RestAssured.given()
                     .get("/mail/route/" + routeId + "/" + operation)

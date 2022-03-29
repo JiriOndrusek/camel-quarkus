@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.component.mail;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -57,7 +58,7 @@ public class MailResource {
 
     @Inject
     @Named("mailReceivedMessages")
-    List<String> mailReceivedMessages;
+    List<Map<String, Object>> mailReceivedMessages;
 
     @Path("/route/{route}")
     @POST
@@ -114,8 +115,14 @@ public class MailResource {
     @Path("/getReceived")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<String> getReceived() {
+    public List<Map<String, Object>> getReceived() {
         return mailReceivedMessages;
+    }
+
+    @Path("/clearReceived")
+    @GET
+    public void clearReceived() {
+        mailReceivedMessages.clear();
     }
 
     @GET
