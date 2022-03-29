@@ -16,18 +16,38 @@
  */
 package org.apache.camel.quarkus.component.mail;
 
+import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import javax.mail.Session;
+import javax.mail.Store;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.mail.DefaultJavaMailSender;
+import org.apache.camel.component.mail.JavaMailSender;
 import org.apache.camel.component.mail.MailComponent;
+import org.jvnet.mock_javamail.Mailbox;
 
-public class CamelRoute extends RouteBuilder {
+@ApplicationScoped
+public class MailRoute extends RouteBuilder {
+
+    @Inject
+    @Named("mailReceivedMessages")
+    List<String> mailReceivedMessages;
+
+    @Inject
+    CamelContext camelContext;
+
     @Override
-    public void configure() {
-        bindToRegistry("smtp", smtp());
+    public void configure() throws Exception {
+        bindToRegistry("smtp", smtp(camelContext));
 
         from("direct:mailtext")
                 .setHeader("Subject", constant("Hello World"))
@@ -41,13 +61,36 @@ public class CamelRoute extends RouteBuilder {
                 .unmarshal().mimeMultipart()
                 .marshal().mimeMultipart();
 
+        from("pop3://jones@localhost?password=secret&initialDelay=100&delay=100"
+                + "&delete=true").id("receiveRoute").autoStartup(false).log(">>>>>>>>>>>>>>> ${body}")
+                        .process(e -> mailReceivedMessages.add(e.getIn().getBody(String.class)));
+
     }
 
-    @Produces
-    MailComponent smtp() {
-        MailComponent mail = new MailComponent(getContext());
+    MailComponent smtp(CamelContext camelContext) {
+        MailComponent mail = new MailComponent(camelContext);
         Session session = Session.getInstance(new Properties());
         mail.getConfiguration().setSession(session);
         return mail;
+    }
+
+    static class Producers {
+
+        @Singleton
+        @Produces
+        @Named("mailReceivedMessages")
+        List<String> mailReceivedMessages() {
+            return new CopyOnWriteArrayList<>();
+        }
+
+        @Produces
+        Store prepareMailbox() throws Exception {
+            // connect to mailbox
+            Mailbox.clearAll();
+            JavaMailSender sender = new DefaultJavaMailSender();
+            Store store = sender.getSession().getStore("pop3");
+            return store;
+        }
+
     }
 }

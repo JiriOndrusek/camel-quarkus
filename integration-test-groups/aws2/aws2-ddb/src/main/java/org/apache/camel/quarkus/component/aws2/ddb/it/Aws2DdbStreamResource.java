@@ -48,12 +48,6 @@ public class Aws2DdbStreamResource {
         return aws2DdbStreamReceivedEvents;
     }
 
-    @Path("/clear")
-    @GET
-    public void clear() {
-        aws2DdbStreamReceivedEvents.clear();
-    }
-
     @GET
     @Path("/route/{routeId}/{operation}")
     @Produces(MediaType.TEXT_PLAIN)

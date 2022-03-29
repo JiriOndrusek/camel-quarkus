@@ -16,27 +16,48 @@
  */
 package org.apache.camel.quarkus.component.mail;
 
+import java.util.List;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.Store;
+import javax.mail.internet.MimeMessage;
 import javax.mail.util.ByteArrayDataSource;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.camel.attachment.DefaultAttachment;
+import org.apache.camel.component.mail.DefaultJavaMailSender;
+import org.apache.camel.component.mail.JavaMailSender;
 
 @Path("/mail")
 @ApplicationScoped
-public class CamelResource {
+public class MailResource {
 
     @Inject
     ProducerTemplate template;
+
+    @Inject
+    Store store;
+
+    @Inject
+    CamelContext camelContext;
+
+    @Inject
+    @Named("mailReceivedMessages")
+    List<String> mailReceivedMessages;
 
     @Path("/route/{route}")
     @POST
@@ -65,6 +86,56 @@ public class CamelResource {
             in.addAttachmentObject(fileName, attachment);
 
         }).getMessage().getBody(String.class);
+    }
+
+    @Path("/send")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void send(List<String> messages) throws Exception {
+        JavaMailSender sender = new DefaultJavaMailSender();
+        store.connect("localhost", 25, "jones", "secret");
+        Folder folder = store.getFolder("INBOX");
+        folder.open(Folder.READ_WRITE);
+        folder.expunge();
+
+        // inserts new messages
+        Message[] msgs = new Message[messages.size()];
+        int i = 0;
+        for (String msg : messages) {
+            msgs[i] = new MimeMessage(sender.getSession());
+            msgs[i].setHeader("Message-ID", "" + i);
+            msgs[i++].setText(msg);
+        }
+        folder.appendMessages(msgs);
+        folder.close(true);
+        store.close();
+    }
+
+    @Path("/getReceived")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<String> getReceived() {
+        return mailReceivedMessages;
+    }
+
+    @GET
+    @Path("/route/{routeId}/{operation}")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String controlRoute(@PathParam("routeId") String routeId, @PathParam("operation") String operation)
+            throws Exception {
+        switch (operation) {
+        case "stop":
+            camelContext.getRouteController().stopRoute(routeId);
+            break;
+        case "start":
+            camelContext.getRouteController().startRoute(routeId);
+            break;
+        case "status":
+            return camelContext.getRouteController().getRouteStatus(routeId).name();
+
+        }
+
+        return null;
     }
 
 }

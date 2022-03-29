@@ -16,12 +16,19 @@
  */
 package org.apache.camel.quarkus.component.mail;
 
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import org.apache.camel.ServiceStatus;
+import org.awaitility.Awaitility;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -101,4 +108,50 @@ public class MailTest {
         Assertions.assertEquals(expected, actual);
     }
 
+    @Test
+    public void testConsumer() {
+
+        //start route
+        routeController("start", null);
+        //wait for start
+        routeController("status", ServiceStatus.Started.name());
+        //send messages
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(IntStream.range(1, 5).boxed().map(i -> "message " + i).collect(Collectors.toList()))
+                .post("/mail/send")
+                .then()
+                .statusCode(204);
+
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            //receive
+            return RestAssured.get("/mail/getReceived/")
+                    .then()
+                    .statusCode(200)
+                    .extract().as(List.class);
+        }, list -> list.size() == 4
+                && "message 1".equals(list.get(0))
+                && "message 2".equals(list.get(1))
+                && "message 3".equals(list.get(2))
+                && "message 4".equals(list.get(3)));
+    }
+
+    private String routeController(String operation, String expectedResult) {
+        String routeId = "receiveRoute";
+        if (expectedResult == null) {
+            RestAssured.given()
+                    .get("/mail/route/" + routeId + "/" + operation)
+                    .then().statusCode(204);
+        } else {
+            Awaitility.await().atMost(5, TimeUnit.SECONDS).until(
+                    () -> RestAssured
+                            .get("/mail/route/" + routeId + "/" + operation)
+                            .then()
+                            .statusCode(200)
+                            .extract().asString(),
+                    Matchers.is(expectedResult));
+        }
+
+        return null;
+    }
 }
