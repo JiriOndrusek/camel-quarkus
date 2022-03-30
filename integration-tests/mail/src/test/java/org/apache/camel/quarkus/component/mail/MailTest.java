@@ -16,6 +16,7 @@
  */
 package org.apache.camel.quarkus.component.mail;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -232,6 +233,26 @@ public class MailTest {
         routeController("convertersRoute", "stop");
     }
 
+    @Test
+    public void testSort() {
+        List<String> msgs = IntStream.range(1, 5).boxed().map(i -> ("message " + i)).collect(Collectors.toList());
+        Collections.reverse(msgs);
+        //send messages
+        List<String> sorted = RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(msgs)
+                .post("/mail/sort")
+                .then()
+                .statusCode(200)
+                .extract().as(List.class);
+
+        Assertions.assertEquals(4, sorted.size());
+        Assertions.assertTrue(sorted.get(0).contains("message 1"));
+        Assertions.assertTrue(sorted.get(1).contains("message 2"));
+        Assertions.assertTrue(sorted.get(2).contains("message 3"));
+        Assertions.assertTrue(sorted.get(3).contains("message 4"));
+    }
+
     // helper methods
 
     private void routeController(String routeId, String operation) {
@@ -248,4 +269,5 @@ public class MailTest {
                         .extract().asString(),
                 Matchers.is("start".equals(operation) ? ServiceStatus.Started.name() : ServiceStatus.Stopped.name()));
     }
+
 }

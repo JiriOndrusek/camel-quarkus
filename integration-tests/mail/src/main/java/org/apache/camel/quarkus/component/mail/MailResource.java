@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -40,6 +42,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import com.sun.mail.imap.SortTerm;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
@@ -51,6 +54,7 @@ import org.apache.camel.component.mail.DefaultJavaMailSender;
 import org.apache.camel.component.mail.JavaMailSender;
 import org.apache.camel.component.mail.MailConverters;
 import org.apache.camel.component.mail.MailMessage;
+import org.apache.camel.component.mail.MailSorter;
 import org.jvnet.mock_javamail.Mailbox;
 
 @Path("/mail")
@@ -205,6 +209,32 @@ public class MailResource {
         producer.process(exchange);
 
         producer.stop();
+    }
+
+    @Path("/sort")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<String> sort(List<String> messages) throws Exception {
+        JavaMailSender sender = new DefaultJavaMailSender();
+        // inserts new messages
+        Message[] msgs = new Message[messages.size()];
+        int i = 0;
+        for (String msg : messages) {
+            msgs[i] = new MimeMessage(sender.getSession());
+            msgs[i].setHeader("Subject", msg);
+            msgs[i++].setText(msg);
+        }
+        MailSorter.sortMessages(msgs, new SortTerm[] {
+                SortTerm.SUBJECT });
+
+        return Stream.of(msgs).map(m -> {
+            try {
+                return String.valueOf(m.getContent());
+            } catch (Exception e) {
+                return "error";
+            }
+        }).collect(Collectors.toList());
     }
 
 }
