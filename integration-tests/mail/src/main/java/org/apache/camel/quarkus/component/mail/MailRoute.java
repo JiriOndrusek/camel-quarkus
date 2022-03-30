@@ -39,6 +39,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mail.DefaultJavaMailSender;
 import org.apache.camel.component.mail.JavaMailSender;
 import org.apache.camel.component.mail.MailComponent;
+import org.apache.camel.component.mail.MailMessage;
 import org.apache.camel.util.CollectionHelper;
 import org.jvnet.mock_javamail.Mailbox;
 
@@ -74,7 +75,8 @@ public class MailRoute extends RouteBuilder {
                                 .add(Collections.singletonMap("body", e.getIn().getBody(String.class))));
 
         from("pop3://jones@localhost?password=secret&initialDelay=100&delay=100"
-                + "&delete=true&maxMessagesPerPoll=3").id("batchReceiveRoute").autoStartup(false)
+                + "&delete=true&maxMessagesPerPoll=3").id("batchReceiveRoute")
+                        .autoStartup(false)
                         .process(e -> mailReceivedMessages.add(
                                 CollectionHelper.mapOf("body", e.getIn().getBody(String.class),
                                         ExchangePropertyKey.BATCH_INDEX.getName(),
@@ -85,7 +87,8 @@ public class MailRoute extends RouteBuilder {
                                         e.getProperty(ExchangePropertyKey.BATCH_SIZE))));
 
         from("pop3://james@mymailserver.com?password=secret&initialDelay=100&delay=100")
-                .id("attachmentRoute").autoStartup(false).process(e -> {
+                .id("attachmentRoute").autoStartup(false)
+                .process(e -> {
                     Map<String, Object> values = new HashMap<>();
                     values.put("body", e.getIn().getBody(String.class));
                     for (Map.Entry<String, DataHandler> entry : e.getIn(AttachmentMessage.class).getAttachments().entrySet()) {
@@ -95,6 +98,12 @@ public class MailRoute extends RouteBuilder {
                     mailReceivedMessages.add(values);
                 });
 
+        from("direct:send").to("smtp://localhost?username=james@localhost");
+
+        from("pop3://localhost?username=james&password=secret&initialDelay=100&delay=100").id("convertersRoute")
+                .autoStartup(false)
+                .process(e -> mailReceivedMessages.add(
+                        CollectionHelper.mapOf("body", e.getIn().getBody(MailMessage.class))));
     }
 
     MailComponent smtp(CamelContext camelContext) {

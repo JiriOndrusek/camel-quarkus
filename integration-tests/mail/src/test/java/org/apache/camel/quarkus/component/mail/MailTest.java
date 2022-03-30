@@ -29,8 +29,10 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.ExchangePropertyKey;
 import org.apache.camel.ServiceStatus;
+import org.apache.camel.util.CollectionHelper;
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -54,6 +56,13 @@ public class MailTest {
             + "\r\n"
             + "Hello attachment!"
             + "${delimiter}--\r\n";
+
+    @AfterEach
+    void beforeEach() {
+        RestAssured.get("/mail/clear")
+                .then()
+                .statusCode(204);
+    }
 
     @Test
     public void testSendAsMail() {
@@ -123,7 +132,7 @@ public class MailTest {
                 .then()
                 .statusCode(204);
 
-        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+        Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
             //receive
             return (List<Map<String, Object>>) RestAssured.get("/mail/getReceived/")
                     .then()
@@ -136,16 +145,10 @@ public class MailTest {
                 && "message 4".equals(list.get(3).get("body")));
 
         routeController("receiveRoute", "stop");
-        RestAssured.get("/mail/clearReceived/")
-                .then()
-                .statusCode(204);
     }
 
     @Test
     public void testBatchConsumer() {
-        RestAssured.get("/mail/clearReceived/")
-                .then()
-                .statusCode(204);
         //start route
         routeController("batchReceiveRoute", "start");
         //send messages
@@ -156,7 +159,7 @@ public class MailTest {
                 .then()
                 .statusCode(204);
 
-        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+        Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
             //receive
             return (List<Map<String, Object>>) RestAssured.get("/mail/getReceived/")
                     .then()
@@ -181,9 +184,6 @@ public class MailTest {
                 && 0 == (Integer) list.get(3).get(ExchangePropertyKey.BATCH_INDEX.getName()));
 
         routeController("batchReceiveRoute", "stop");
-        RestAssured.get("/mail/clearReceived/")
-                .then()
-                .statusCode(204);
     }
 
     @Test
@@ -194,7 +194,7 @@ public class MailTest {
                 .then()
                 .statusCode(204);
 
-        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+        Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
             //receive
             return (List<Map<String, Object>>) RestAssured.get("/mail/getReceived/")
                     .then()
@@ -207,9 +207,29 @@ public class MailTest {
                         "application/octet-stream; name=logo.jpeg".equals(list.get(0).get("logo.jpeg_contentType"))));
 
         routeController("attachmentRoute", "stop");
-        RestAssured.get("/mail/clearReceived/")
+    }
+
+    @Test
+    public void testConverters() throws Exception {
+        routeController("convertersRoute", "start");
+
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(CollectionHelper.mapOf("Subject", "Camel rocks"))
+                .post("/mail/sendWithHeaders/send/Hello World")
                 .then()
                 .statusCode(204);
+
+        Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
+            //receive
+            return (List<Map<String, Object>>) RestAssured.get("/mail/getReceivedAsString/")
+                    .then()
+                    .statusCode(200)
+                    .extract().as(List.class);
+        }, list -> list.size() == 1
+                && "Hello World".equals(list.get(0).get("body")));
+
+        routeController("convertersRoute", "stop");
     }
 
     // helper methods

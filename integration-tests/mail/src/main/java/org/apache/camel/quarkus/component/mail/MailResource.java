@@ -16,15 +16,19 @@
  */
 package org.apache.camel.quarkus.component.mail;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.activation.FileDataSource;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.mail.Folder;
 import javax.mail.Message;
+import javax.mail.MessagingException;
 import javax.mail.Store;
 import javax.mail.internet.MimeMessage;
 import javax.mail.util.ByteArrayDataSource;
@@ -45,6 +49,9 @@ import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.camel.attachment.DefaultAttachment;
 import org.apache.camel.component.mail.DefaultJavaMailSender;
 import org.apache.camel.component.mail.JavaMailSender;
+import org.apache.camel.component.mail.MailConverters;
+import org.apache.camel.component.mail.MailMessage;
+import org.jvnet.mock_javamail.Mailbox;
 
 @Path("/mail")
 @ApplicationScoped
@@ -69,6 +76,14 @@ public class MailResource {
     @Produces(MediaType.TEXT_PLAIN)
     public String route(String statement, @PathParam("route") String route) throws Exception {
         return template.requestBody("direct:" + route, statement, String.class);
+    }
+
+    @Path("/sendWithHeaders/{direct}/{msg}")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void route(Map<String, Object> headers, @PathParam("direct") String direct, @PathParam("msg") String msg)
+            throws Exception {
+        template.requestBodyAndHeaders("direct:" + direct, msg, headers);
     }
 
     @Path("/mimeMultipartMarshal/{fileName}/{fileContent}")
@@ -122,10 +137,30 @@ public class MailResource {
         return mailReceivedMessages;
     }
 
-    @Path("/clearReceived")
+    @Path("/getReceivedAsString")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Map<String, Object>> getReceivedAsString() throws MessagingException, IOException {
+        List<Map<String, Object>> result = new LinkedList();
+        System.out.println("converters received: " + mailReceivedMessages);
+        for (Map<String, Object> email : mailReceivedMessages) {
+            Message mm = ((MailMessage) email.get("body")).getMessage();
+
+            InputStream is = MailConverters.toInputStream(mm);
+            result.add(Collections.singletonMap("body", (Object) camelContext.getTypeConverter().convertTo(String.class, is)));
+
+        }
+        System.out.println(result);
+        mailReceivedMessages.clear();
+        return result;
+
+    }
+
+    @Path("/clear")
     @GET
     public void clearReceived() {
         mailReceivedMessages.clear();
+        Mailbox.clearAll();
     }
 
     @GET
@@ -157,7 +192,8 @@ public class MailResource {
         AttachmentMessage in = exchange.getIn(AttachmentMessage.class);
         in.setBody("Sending " + filename + "!");
         DefaultAttachment att = new DefaultAttachment(
-                new FileDataSource(Thread.currentThread().getContextClassLoader().getResource("data/" + filename).getFile()));
+                new ByteArrayDataSource(Thread.currentThread().getContextClassLoader().getResourceAsStream("data/" + filename),
+                        "image/jpeg"));
         att.addHeader("Content-Description", "some sample content");
         in.addAttachmentObject(filename, att);
 
