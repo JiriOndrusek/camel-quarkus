@@ -16,16 +16,29 @@
  */
 package org.apache.camel.quarkus.component.mail;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import org.apache.camel.ExchangePropertyKey;
+import org.apache.camel.ServiceStatus;
+import org.apache.camel.util.CollectionHelper;
+import org.awaitility.Awaitility;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 public class MailTest {
@@ -44,6 +57,13 @@ public class MailTest {
             + "\r\n"
             + "Hello attachment!"
             + "${delimiter}--\r\n";
+
+    @AfterEach
+    void beforeEach() {
+        RestAssured.get("/mail/clear")
+                .then()
+                .statusCode(204);
+    }
 
     @Test
     public void testSendAsMail() {
@@ -99,6 +119,155 @@ public class MailTest {
         final String delim = m.group();
         final String expected = expectedPattern.replace("${delimiter}", delim);
         Assertions.assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testConsumer() {
+        //start route
+        routeController("receiveRoute", "start");
+        //send messages
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(IntStream.range(1, 5).boxed().map(i -> "message " + i).collect(Collectors.toList()))
+                .post("/mail/send")
+                .then()
+                .statusCode(204);
+
+        Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
+            //receive
+            return (List<Map<String, Object>>) RestAssured.get("/mail/getReceived/")
+                    .then()
+                    .statusCode(200)
+                    .extract().as(List.class);
+        }, list -> list.size() == 4
+                && "message 1".equals(list.get(0).get("body"))
+                && "message 2".equals(list.get(1).get("body"))
+                && "message 3".equals(list.get(2).get("body"))
+                && "message 4".equals(list.get(3).get("body")));
+
+        routeController("receiveRoute", "stop");
+    }
+
+    @Test
+    public void testBatchConsumer() {
+        //start route
+        routeController("batchReceiveRoute", "start");
+        //send messages
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(IntStream.range(1, 5).boxed().map(i -> "message " + i).collect(Collectors.toList()))
+                .post("/mail/send")
+                .then()
+                .statusCode(204);
+
+        Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
+            //receive
+            return (List<Map<String, Object>>) RestAssured.get("/mail/getReceived/")
+                    .then()
+                    .statusCode(200)
+                    .extract().as(List.class);
+        }, list -> list.size() == 4
+
+                && "message 1".equals(list.get(0).get("body"))
+                && 0 == (Integer) list.get(0).get(ExchangePropertyKey.BATCH_INDEX.getName())
+                && 3 == (Integer) list.get(0).get(ExchangePropertyKey.BATCH_SIZE.getName())
+                && !((Boolean) list.get(0).get(ExchangePropertyKey.BATCH_COMPLETE.getName()))
+
+                && "message 2".equals(list.get(1).get("body"))
+                && 1 == (Integer) list.get(1).get(ExchangePropertyKey.BATCH_INDEX.getName())
+                && !((Boolean) list.get(1).get(ExchangePropertyKey.BATCH_COMPLETE.getName()))
+
+                && "message 3".equals(list.get(2).get("body"))
+                && 2 == (Integer) list.get(2).get(ExchangePropertyKey.BATCH_INDEX.getName())
+                && ((Boolean) list.get(2).get(ExchangePropertyKey.BATCH_COMPLETE.getName()))
+
+                && "message 4".equals(list.get(3).get("body"))
+                && 0 == (Integer) list.get(3).get(ExchangePropertyKey.BATCH_INDEX.getName()));
+
+        routeController("batchReceiveRoute", "stop");
+    }
+
+    @Test
+    public void testAttachment() throws Exception {
+        routeController("attachmentRoute", "start");
+
+        RestAssured.get("/mail/sendAttachment/logo.jpeg")
+                .then()
+                .statusCode(204);
+
+        Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
+            //receive
+            return (List<Map<String, Object>>) RestAssured.get("/mail/getReceived/")
+                    .then()
+                    .statusCode(200)
+                    .extract().as(List.class);
+        }, list -> list.size() == 1
+                && list.get(0).size() == 2
+                && "Sending logo.jpeg!".equals(list.get(0).get("body"))
+                && ("image/jpeg; name=logo.jpeg".equals(list.get(0).get("logo.jpeg_contentType")) ||
+                        "application/octet-stream; name=logo.jpeg".equals(list.get(0).get("logo.jpeg_contentType"))));
+
+        routeController("attachmentRoute", "stop");
+    }
+
+    @Test
+    public void testConverters() throws Exception {
+        routeController("convertersRoute", "start");
+
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(CollectionHelper.mapOf("Subject", "Camel rocks"))
+                .post("/mail/sendWithHeaders/send/Hello World")
+                .then()
+                .statusCode(204);
+
+        Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
+            //receive
+            return (List<Map<String, Object>>) RestAssured.get("/mail/getReceivedAsString/")
+                    .then()
+                    .statusCode(200)
+                    .extract().as(List.class);
+        }, list -> list.size() == 1
+                && "Hello World".equals(list.get(0).get("body")));
+
+        routeController("convertersRoute", "stop");
+    }
+
+    @Test
+    public void testSort() {
+        List<String> msgs = IntStream.range(1, 5).boxed().map(i -> ("message " + i)).collect(Collectors.toList());
+        Collections.reverse(msgs);
+        //send messages
+        List<String> sorted = RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(msgs)
+                .post("/mail/sort")
+                .then()
+                .statusCode(200)
+                .extract().as(List.class);
+
+        Assertions.assertEquals(4, sorted.size());
+        Assertions.assertTrue(sorted.get(0).contains("message 1"));
+        Assertions.assertTrue(sorted.get(1).contains("message 2"));
+        Assertions.assertTrue(sorted.get(2).contains("message 3"));
+        Assertions.assertTrue(sorted.get(3).contains("message 4"));
+    }
+
+    // helper methods
+
+    private void routeController(String routeId, String operation) {
+        RestAssured.given()
+                .get("/mail/route/" + routeId + "/" + operation)
+                .then().statusCode(204);
+
+        //wait for finish
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(
+                () -> RestAssured
+                        .get("/mail/route/" + routeId + "/status")
+                        .then()
+                        .statusCode(200)
+                        .extract().asString(),
+                Matchers.is("start".equals(operation) ? ServiceStatus.Started.name() : ServiceStatus.Stopped.name()));
     }
 
 }
