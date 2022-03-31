@@ -64,7 +64,7 @@ public class CamelResource {
     @Inject
     ProducerTemplate template;
 
-    @Inject
+    //    @Inject
     Store store;
 
     @Inject
@@ -116,7 +116,7 @@ public class CamelResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public void send(List<String> messages) throws Exception {
         JavaMailSender sender = new DefaultJavaMailSender();
-        store.connect("localhost", "jones", "secret");
+        store.connect("localhost", 3110, "jones", "secret");
         Folder folder = store.getFolder("INBOX");
         folder.open(Folder.READ_WRITE);
         folder.expunge();
@@ -185,7 +185,7 @@ public class CamelResource {
     @GET
     @Path("/sendAttachment/{filename}")
     public void sendAttachment(@PathParam("filename") String filename) throws Exception {
-        Endpoint endpoint = camelContext.getEndpoint("smtp://james@mymailserver.com?password=secret");
+        Endpoint endpoint = camelContext.getEndpoint("smtp://localhost:3025?to=info@mycompany.com");
 
         // create the exchange with the mail message that is multipart with a file and a Hello World text/plain message.
         Exchange exchange = endpoint.createExchange();

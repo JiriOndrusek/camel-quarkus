@@ -23,8 +23,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import org.jvnet.mock_javamail.Mailbox;
-
 @Path("/mock/{username}")
 @ApplicationScoped
 public class MockMailbox {
@@ -33,23 +31,26 @@ public class MockMailbox {
     @Path("/size")
     @Produces(MediaType.TEXT_PLAIN)
     public String getSize(@PathParam("username") String username) throws Exception {
-        Mailbox mailbox = Mailbox.get(username);
-        return Integer.toString(mailbox.size());
+        //        Mailbox mailbox = Mailbox.get(username);
+        //        return Integer.toString(mailbox.size());
+        return "";
     }
 
     @GET
     @Path("/{id}/content")
     @Produces(MediaType.TEXT_PLAIN)
     public String getContent(@PathParam("username") String username, @PathParam("id") int id) throws Exception {
-        Mailbox mailbox = Mailbox.get(username);
-        return mailbox.get(id).getContent().toString();
+        //        Mailbox mailbox = Mailbox.get(username);
+        //        return mailbox.get(id).getContent().toString();
+        return "";
     }
 
     @GET
     @Path("/{id}/subject")
     @Produces(MediaType.TEXT_PLAIN)
     public String getSubject(@PathParam("username") String username, @PathParam("id") int id) throws Exception {
-        Mailbox mailbox = Mailbox.get(username);
-        return mailbox.get(id).getSubject();
+        //        Mailbox mailbox = Mailbox.get(username);
+        //        return mailbox.get(id).getSubject();
+        return "";
     }
 }

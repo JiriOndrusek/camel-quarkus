@@ -16,6 +16,7 @@
  */
 package org.apache.camel.quarkus.component.mail;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,14 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMultipart;
+
+import com.icegreen.greenmail.util.GreenMail;
+import com.icegreen.greenmail.util.GreenMailUtil;
+import com.icegreen.greenmail.util.ServerSetupTest;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -32,6 +41,8 @@ import org.apache.camel.ExchangePropertyKey;
 import org.apache.camel.ServiceStatus;
 import org.apache.camel.util.CollectionHelper;
 import org.awaitility.Awaitility;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -39,9 +50,62 @@ import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
+//@QuarkusTestResource(MailTestResource.class)
 public class MailTest {
+
+    @Test
+    public void testSend() throws MessagingException, IOException {
+        GreenMail greenMail = new GreenMail();
+        try {
+            greenMail.start();
+
+            //Use random content to avoid potential residual lingering problems
+            final String subject = GreenMailUtil.random();
+            final String body = GreenMailUtil.random();
+
+            sendTestMails(subject, body); // Place your sending code here
+
+            //wait for max 5s for 1 email to arrive
+            //waitForIncomingEmail() is useful if you're sending stuff asynchronously in a separate thread
+            assertTrue(greenMail.waitForIncomingEmail(5000, 2));
+
+            //Retrieve using GreenMail API
+            Message[] messages = greenMail.getReceivedMessages();
+            assertTrue(messages.length == 2);
+
+            // Simple message
+            assertTrue(messages[0].getSubject().equals(subject));
+            assertTrue(GreenMailUtil.getBody(messages[0]).trim().equals(body));
+
+            //            //if you send content as a 2 part multipart...
+            //            assertThat(messages[1].getContent() instanceof MimeMultipart).isTrue();
+            //            MimeMultipart mp = (MimeMultipart) messages[1].getContent();
+            //            assertThat(mp.getCount()).isEqualTo(2);
+            //            assertThat(GreenMailUtil.getBody(mp.getBodyPart(0)).trim()).isEqualTo("body1");
+            //            assertThat(GreenMailUtil.getBody(mp.getBodyPart(1)).trim()).isEqualTo("body2");
+        } finally {
+            greenMail.stop();
+        }
+    }
+
+    private void sendTestMails(String subject, String body) throws MessagingException {
+        GreenMailUtil.sendTextEmailTest("to@localhost", "from@localhost", subject, body);
+
+        // Create multipart
+        MimeMultipart multipart = new MimeMultipart();
+        final MimeBodyPart part1 = new MimeBodyPart();
+        part1.setContent("body1", "text/plain");
+        multipart.addBodyPart(part1);
+        final MimeBodyPart part2 = new MimeBodyPart();
+        part2.setContent("body2", "text/plain");
+        multipart.addBodyPart(part2);
+
+        GreenMailUtil.sendMessageBody("to@localhost", "from@localhost", subject + "__2", multipart, null, ServerSetupTest.SMTP);
+    }
+
     private static final Pattern DELIMITER_PATTERN = Pattern.compile("\r\n[^\r\n]+");
     private static final String EXPECTED_TEMPLATE = "${delimiter}\r\n"
             + "Content-Type: text/plain; charset=UTF8; other-parameter=true\r\n"
@@ -123,17 +187,31 @@ public class MailTest {
 
     @Test
     public void testConsumer() {
+        GreenMail greenMail = new GreenMail(); //uses test ports by default
+        greenMail.start();
+
         //start route
         routeController("receiveRoute", "start");
-        //send messages
-        RestAssured.given()
-                .contentType(ContentType.JSON)
-                .body(IntStream.range(1, 5).boxed().map(i -> "message " + i).collect(Collectors.toList()))
-                .post("/mail/send")
-                .then()
-                .statusCode(204);
 
-        Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
+        Config config = ConfigProvider.getConfig();
+        Integer port = config.getValue("camel.mail.smtp.port", Integer.class);
+        //send messages
+        //        GreenMailUtil.sendTextEmail("to@localhost", "from@localhost", "some subject", "some body",
+        //                new ServerSetup(port, (String)null, "smtp"));
+
+        GreenMailUtil.sendTextEmailTest("to@localhost", "from@localhost", "some subject",
+                "some body");
+
+        assertTrue(greenMail.waitForIncomingEmail(5000, 1));
+
+        //        RestAssured.given()
+        //                .contentType(ContentType.JSON)
+        //                .body(IntStream.range(1, 5).boxed().map(i -> "message " + i).collect(Collectors.toList()))
+        //                .post("/mail/send")
+        //                .then()
+        //                .statusCode(204);
+
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
             //receive
             return (List<Map<String, Object>>) RestAssured.get("/mail/getReceived/")
                     .then()
@@ -189,7 +267,7 @@ public class MailTest {
 
     @Test
     public void testAttachment() throws Exception {
-        routeController("attachmentRoute", "start");
+        //        routeController("attachmentRoute", "start");
 
         RestAssured.get("/mail/sendAttachment/logo.jpeg")
                 .then()
@@ -207,7 +285,7 @@ public class MailTest {
                 && ("image/jpeg; name=logo.jpeg".equals(list.get(0).get("logo.jpeg_contentType")) ||
                         "application/octet-stream; name=logo.jpeg".equals(list.get(0).get("logo.jpeg_contentType"))));
 
-        routeController("attachmentRoute", "stop");
+        //        routeController("attachmentRoute", "stop");
     }
 
     @Test
@@ -270,4 +348,40 @@ public class MailTest {
                 Matchers.is("start".equals(operation) ? ServiceStatus.Started.name() : ServiceStatus.Stopped.name()));
     }
 
+    //    @Test
+    //    public void testSendAndReceiveMails() throws Exception {
+    //
+    //        String email = "USERNAME@gmail.com";
+    //
+    //        MockEndpoint resultEndpoint = getMockEndpoint("mock:in");
+    //        resultEndpoint.expectedBodiesReceived("Test Email Body\r\n");
+    //
+    //        Map<String, Object> headers = new HashMap<>();
+    //        headers.put("To", email);
+    //        headers.put("From", email);
+    //        headers.put("Reply-to", email);
+    //        headers.put("Subject", "SSL/TLS Test");
+    //
+    //        template.sendBodyAndHeaders("direct:in", "Test Email Body", headers);
+    //
+    //        resultEndpoint.assertIsSatisfied();
+    //    }
+
+    //    @Test
+    //    public void testEmail() throws InterruptedException, MessagingException {
+    //        SimpleMailMessage message = new SimpleMailMessage();
+    //        message.setFrom("test@sender.com");
+    //        message.setTo("test@receiver.com");
+    //        message.setSubject("test subject");
+    //        message.setText("test message");
+    //        //First we need to call the actual method of EmailSErvice
+    //        emailSender.send(message);
+    //        //Then after that using GreenMail need to verify mail sent or not
+    //        assertTrue(testSmtp.waitForIncomingEmail(5000, 1));
+    //        Message[] messages = testSmtp.getReceivedMessages();
+    //        assertEquals(1, messages.length);
+    //        assertEquals("test subject", messages[0].getSubject());
+    //        String body = GreenMailUtil.getBody(messages[0]).replaceAll("=\r?\n", "");
+    //        assertEquals("test message", body);
+    //    }
 }
