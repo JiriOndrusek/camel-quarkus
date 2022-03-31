@@ -25,9 +25,14 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.activation.DataHandler;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -40,10 +45,12 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import com.sun.mail.imap.SortTerm;
 import org.apache.camel.CamelContext;
+import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.Producer;
@@ -55,7 +62,6 @@ import org.apache.camel.component.mail.JavaMailSender;
 import org.apache.camel.component.mail.MailConverters;
 import org.apache.camel.component.mail.MailMessage;
 import org.apache.camel.component.mail.MailSorter;
-import org.jvnet.mock_javamail.Mailbox;
 
 @Path("/mail")
 @ApplicationScoped
@@ -63,6 +69,9 @@ public class CamelResource {
 
     @Inject
     ProducerTemplate template;
+
+    @Inject
+    ConsumerTemplate consumerTemplate;
 
     //    @Inject
     Store store;
@@ -73,6 +82,68 @@ public class CamelResource {
     @Inject
     @Named("mailReceivedMessages")
     List<Map<String, Object>> mailReceivedMessages;
+
+    @Path("/send")
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
+    public void sendMail(
+            @QueryParam("subject") String subject,
+            @QueryParam("from") String from,
+            @QueryParam("to") String to,
+            String body) {
+
+        template.send("direct:sendMail", exchange -> {
+            org.apache.camel.Message message = exchange.getMessage();
+            message.setHeader("Subject", subject);
+            message.setHeader("From", from);
+            message.setHeader("To", to);
+            message.setBody(body);
+        });
+    }
+
+    @Path("/inbox/{protocol}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public JsonObject getMail(@PathParam("protocol") String protocol) throws Exception {
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+
+        Exchange exchange = consumerTemplate.receive("seda:mail-" + protocol, 5000);
+        if (exchange != null) {
+            MailMessage mailMessage = exchange.getMessage(MailMessage.class);
+            AttachmentMessage attachmentMessage = exchange.getMessage(AttachmentMessage.class);
+            Map<String, DataHandler> attachments = attachmentMessage.getAttachments();
+            if (attachments != null) {
+                JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+                attachments.forEach((id, dataHandler) -> {
+                    JsonObjectBuilder attachmentObject = Json.createObjectBuilder();
+                    attachmentObject.add("attachmentFilename", dataHandler.getName());
+
+                    try {
+                        String content = camelContext.getTypeConverter().convertTo(String.class, dataHandler.getInputStream());
+                        attachmentObject.add("attachmentContent", content);
+                    } catch (IOException e) {
+                        throw new IllegalStateException(e);
+                    }
+
+                    arrayBuilder.add(attachmentObject.build());
+                });
+
+                builder.add("attachments", arrayBuilder.build());
+            }
+
+            Folder folder = mailMessage.getOriginalMessage().getFolder();
+            if (!folder.isOpen()) {
+                folder.open(Folder.READ_ONLY);
+            }
+
+            builder.add("subject", mailMessage.getMessage().getSubject());
+            builder.add("content", mailMessage.getBody(String.class).trim());
+        }
+
+        return builder.build();
+    }
+
+    // --------------------------------------------------------------------
 
     @Path("/route/{route}")
     @POST
@@ -111,7 +182,7 @@ public class CamelResource {
         }).getMessage().getBody(String.class);
     }
 
-    @Path("/send")
+    @Path("/send2")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public void send(List<String> messages) throws Exception {
@@ -160,7 +231,7 @@ public class CamelResource {
     @GET
     public void clear() {
         mailReceivedMessages.clear();
-        Mailbox.clearAll();
+        //        Mailbox.clearAll();
     }
 
     @GET

@@ -14,53 +14,75 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.quarkus.component.mail;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
-import org.apache.camel.util.CollectionHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.utility.TestcontainersConfiguration;
+import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 public class MailTestResource implements QuarkusTestResourceLifecycleManager {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MailTestResource.class);
-    private static final int SMTP_PORT = 3025;
-    private static final int POP3_PORT = 3110;
-    private static final String GREENMAIL_IMAGE = "greenmail/standalone:1.6.7";
 
-    private GenericContainer container;
+    private static final String GREENMAIL_IMAGE_NAME = "greenmail/standalone:1.6.6";
+    private GenericContainer<?> container;
 
     @Override
     public Map<String, String> start() {
-        LOGGER.info(TestcontainersConfiguration.getInstance().toString());
+        container = new GenericContainer<>(DockerImageName.parse(GREENMAIL_IMAGE_NAME))
+                .withExposedPorts(MailProtocol.allPorts())
+                .waitingFor(new HttpWaitStrategy()
+                        .forPort(MailProtocol.API.getPort())
+                        .forPath("/api/service/readiness")
+                        .forStatusCode(200));
 
-        try {
-            container = new GenericContainer(GREENMAIL_IMAGE)
-                    .withEnv("GREENMAIL_OPTS", "-Dgreenmail.users=jones:secret")
-                    .withExposedPorts(SMTP_PORT, POP3_PORT)
-                    .waitingFor(Wait.forListeningPort());
-            container.start();
+        container.start();
 
-            return CollectionHelper.mapOf("camel.mail.smtp.port", container.getMappedPort(SMTP_PORT).toString(),
-                    "camel.mail.pop3.port", container.getMappedPort(POP3_PORT).toString());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        Map<String, String> options = new HashMap<>();
+        for (MailProtocol protocol : MailProtocol.values()) {
+            String optionName = String.format("mail.%s.port", protocol.name().toLowerCase());
+            Integer mappedPort = container.getMappedPort(protocol.getPort());
+            options.put(optionName, mappedPort.toString());
         }
+
+        return options;
     }
 
     @Override
     public void stop() {
-        try {
-            if (container != null) {
-                container.stop();
+        if (container != null) {
+            container.stop();
+        }
+    }
+
+    enum MailProtocol {
+        SMTP(3025),
+        POP3(3110),
+        IMAP(3143),
+        SMTPS(3465),
+        IMAPS(3993),
+        POP3s(3995),
+        API(8080);
+
+        private final int port;
+
+        MailProtocol(int port) {
+            this.port = port;
+        }
+
+        public int getPort() {
+            return port;
+        }
+
+        public static Integer[] allPorts() {
+            MailProtocol[] values = values();
+            Integer[] ports = new Integer[values.length];
+            for (int i = 0; i < values.length; i++) {
+                ports[i] = values[i].getPort();
             }
-        } catch (Exception e) {
-            // ignored
+            return ports;
         }
     }
 }

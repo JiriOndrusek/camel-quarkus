@@ -39,18 +39,18 @@
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-direct</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.camel.quarkus</groupId>
+            <artifactId>camel-quarkus-seda</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-resteasy</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jvnet.mock-javamail</groupId>
-            <artifactId>mock-javamail</artifactId>
-        </dependency>
-        <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-resteasy-jackson</artifactId>
+            <artifactId>quarkus-resteasy-jsonb</artifactId>
         </dependency>
 
         <!-- test dependencies -->
