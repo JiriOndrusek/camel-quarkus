@@ -34,21 +34,24 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import io.restassured.response.ExtractableResponse;
+import io.restassured.response.Response;
 import org.apache.camel.ExchangePropertyKey;
 import org.apache.camel.ServiceStatus;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 import static org.apache.camel.quarkus.component.mail.CamelRoute.EMAIL_ADDRESS;
 import static org.apache.camel.quarkus.component.mail.CamelRoute.PASSWORD;
 import static org.apache.camel.quarkus.component.mail.CamelRoute.USERNAME;
-import static org.hamcrest.core.Is.is;
 
 @QuarkusTest
 @QuarkusTestResource(MailTestResource.class)
@@ -76,19 +79,21 @@ public class MailTest {
         String userJson = String.format("{ \"email\": \"%s\", \"login\": \"%s\", \"password\": \"%s\"}", EMAIL_ADDRESS,
                 USERNAME, PASSWORD);
         RestAssured.given()
-                .port(config.getValue("mail.api.port", Integer.class))
                 .contentType(ContentType.JSON)
                 .body(userJson)
-                .post("/api/user")
+                .post("http://localhost:" + config.getValue("mail.api.port", Integer.class) + "/api/user")
                 .then()
                 .statusCode(200);
 
+        try {
+            Thread.sleep(3_000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         String users = RestAssured.get("http://localhost:" + config.getValue("mail.api.port", Integer.class) + "/api/user")
                 .then()
                 .statusCode(200)
                 .extract().asString();
-
-        System.out.println("**************************** Users: " + users);
     }
 
     @AfterEach
@@ -100,18 +105,22 @@ public class MailTest {
                 .post("/api/service/reset")
                 .then()
                 .statusCode(200)
-                .body("message", is("Performed reset"));
+                .body("message", Matchers.is("Performed reset"));
+
+        RestAssured.get("/mail/stopConsumers")
+                .then()
+                .statusCode(204);
 
         RestAssured.get("/mail/clear")
                 .then()
                 .statusCode(204);
     }
 
-    //    @ParameterizedTest
+    @ParameterizedTest
     @ValueSource(strings = { "pop3", "imap" })
     public void receive(String protocol) {
         //start route
-        routeController(protocol + "ReceiveRoute", "start");
+        startRoute("pop3".equals(protocol) ? CamelRoute.Routes.pop3ReceiveRoute : CamelRoute.Routes.imapReceiveRoute);
 
         RestAssured.given()
                 .contentType(ContentType.TEXT)
@@ -132,11 +141,9 @@ public class MailTest {
         }, list -> list.size() == 1
                 && "Hi how are you".equals(list.get(0).get("content"))
                 && "Hello World".equals(list.get(0).get("subject")));
-        //stop route
-        routeController(protocol + "ReceiveRoute", "stop");
     }
 
-    //    @Test
+    @Test
     public void mimeMultipartDataFormat() {
         final String actual = RestAssured.given()
                 .contentType(ContentType.TEXT)
@@ -168,9 +175,9 @@ public class MailTest {
         Assertions.assertEquals(expected, actual);
     }
 
-    //    @Test
+    @Test
     public void testAttachments() throws IOException, URISyntaxException {
-        routeController("pop3ReceiveRoute", "start");
+        startRoute(CamelRoute.Routes.pop3ReceiveRoute);
 
         String mailBodyContent = "Test mail content";
         String attachmentContent = "Attachment " + mailBodyContent;
@@ -194,21 +201,26 @@ public class MailTest {
                     .queryParam("from", "camel@localhost")
                     .queryParam("to", EMAIL_ADDRESS)
                     .body(mailBodyContent)
-                    .post("/mail/send/attachment/{fileName}", Path.of(Thread.currentThread().getContextClassLoader()
-                            .getResource("data/logo.jpeg").toURI()).toAbsolutePath().toString())
+                    .post("/mail/send/attachment/{fileName}", "logo.jpeg")
                     .then()
                     .statusCode(204);
 
-            Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> RestAssured.get("/mail/getReceived/")
-                    .then()
-                    .statusCode(200)
-                    .extract().jsonPath(),
+            Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
+                ExtractableResponse<Response> jp = RestAssured.get("/mail/getReceived/")
+                        .then()
+                        .statusCode(200)
+                        .extract();
+                return jp.jsonPath();
+            },
                     path -> 2 == (Integer) path.get("size")
 
                             && "Test mail content".equals(path.get("[0].content"))
                             && "Test attachment message".equals(path.get("[0].subject"))
                             && attachmentPath.getFileName().toString().equals(path.get("[0].attachments[0].attachmentFilename"))
                             && attachmentContent.equals(path.get("[0].attachments[0].attachmentContent"))
+                            && (path.get("[0].attachments[0].attachmentContentType").toString().startsWith("text/plain")
+                                    || path.get("[0].attachments[0].attachmentContentType").toString()
+                                            .startsWith("application/octet-stream"))
 
                             && "Test mail content".equals(path.get("[1].content"))
                             && "Test attachment message".equals(path.get("[1].subject"))
@@ -219,14 +231,12 @@ public class MailTest {
         } finally {
             Files.deleteIfExists(attachmentPath);
         }
-
-        routeController("pop3ReceiveRoute", "stop");
     }
 
-    //    @Test
+    @Test
     public void testBatchConsumer() {
         //start route
-        routeController("batchReceiveRoute", "start");
+        startRoute(CamelRoute.Routes.batchReceiveRoute);
         //send messages
         IntStream.range(1, 5).boxed().forEach(i -> RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -267,12 +277,11 @@ public class MailTest {
                 && "Test batch consumer".equals(list.get(3).get("subject"))
                 && "0".equals(list.get(3).get(ExchangePropertyKey.BATCH_INDEX.getName()).toString()));
 
-        routeController("batchReceiveRoute", "stop");
     }
 
     @Test
     public void testConverters() throws Exception {
-        routeController("convertersRoute", "start");
+        startRoute(CamelRoute.Routes.convertersRoute);
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -293,8 +302,6 @@ public class MailTest {
                     .extract().as(List.class);
         }, list -> list.size() == 1
                 && ((String) list.get(0).get("body")).matches("Hello World\\s*"));
-
-        routeController("convertersRoute", "stop");
     }
 
     @Test
@@ -320,22 +327,21 @@ public class MailTest {
 
     // helper methods
 
-    private void routeController(String routeId, String operation) {
+    private void startRoute(CamelRoute.Routes route) {
         RestAssured.given()
-                .get("/mail/route/" + routeId + "/" + operation)
+                .get("/mail/route/" + route.name() + "/start")
                 .then().statusCode(204);
 
         //wait for finish
         Awaitility.await().atMost(5, TimeUnit.SECONDS).until(
                 () -> {
                     String status = RestAssured
-                            .get("/mail/route/" + routeId + "/status")
+                            .get("/mail/route/" + route.name() + "/status")
                             .then()
                             .statusCode(200)
                             .extract().asString();
 
-                    return status
-                            .equals("start".equals(operation) ? ServiceStatus.Started.name() : ServiceStatus.Stopped.name());
+                    return status.equals(ServiceStatus.Started.name());
                 });
     }
 }

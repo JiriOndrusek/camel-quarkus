@@ -18,6 +18,7 @@ package org.apache.camel.quarkus.component.mail;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -48,6 +49,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.ServiceStatus;
 import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.camel.attachment.DefaultAttachment;
 import org.apache.camel.component.mail.DefaultJavaMailSender;
@@ -105,7 +107,16 @@ public class CamelResource {
         producerTemplate.send("direct:sendMail", exchange -> {
             AttachmentMessage in = exchange.getMessage(AttachmentMessage.class);
 
-            DefaultAttachment attachment = new DefaultAttachment(new FileDataSource(fileName));
+            DefaultAttachment attachment;
+            if (fileName.startsWith("/")) {
+                attachment = new DefaultAttachment(new FileDataSource(fileName));
+            } else {
+                attachment = new DefaultAttachment(
+                        new ByteArrayDataSource(
+                                Thread.currentThread().getContextClassLoader().getResourceAsStream("data/" + fileName),
+                                "image/jpeg"));
+            }
+
             in.addAttachmentObject(fileName, attachment);
 
             org.apache.camel.Message message = exchange.getMessage();
@@ -163,13 +174,6 @@ public class CamelResource {
         List<Map<String, Object>> result = new LinkedList();
         for (Map<String, Object> email : mailReceivedMessages) {
             InputStream is = (InputStream) email.get("convertedStream");
-
-            //            mm = ((MailMessage) email.get("body"));
-            //            Folder folder = mm.getOriginalMessage().getFolder();
-            //            if (!folder.isOpen()) {
-            //                folder.open(Folder.HOLDS_MESSAGES);
-            //            }
-            //            String is = MailConverters.toString(mm.getMessage());
             result.add(Collections.singletonMap("body", camelContext.getTypeConverter().convertTo(String.class, is)));
         }
         mailReceivedMessages.clear();
@@ -199,6 +203,22 @@ public class CamelResource {
             return camelContext.getRouteController().getRouteStatus(routeId).name();
         }
         return null;
+    }
+
+    @GET
+    @Path("/stopConsumers")
+    @Produces(MediaType.TEXT_PLAIN)
+    public void stopConsumers()
+            throws Exception {
+        Arrays.stream(CamelRoute.Routes.values()).forEach(r -> {
+            try {
+                if (camelContext.getRouteController().getRouteStatus(r.name()) == ServiceStatus.Started) {
+                    camelContext.getRouteController().stopRoute(r.name());
+                }
+            } catch (Exception e) {
+                //ignore
+            }
+        });
     }
 
     @Path("/sort")

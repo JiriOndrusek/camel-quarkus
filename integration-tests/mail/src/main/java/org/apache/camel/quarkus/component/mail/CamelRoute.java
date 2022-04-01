@@ -47,6 +47,10 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 @ApplicationScoped
 public class CamelRoute extends RouteBuilder {
 
+    enum Routes {
+        convertersRoute, batchReceiveRoute, imapReceiveRoute, pop3ReceiveRoute;
+    }
+
     @Inject
     @Named("mailReceivedMessages")
     List<Map<String, Object>> mailReceivedMessages;
@@ -56,6 +60,7 @@ public class CamelRoute extends RouteBuilder {
 
     static final String EMAIL_ADDRESS = "test@localhost";
     static final String USERNAME = "test";
+    //    static final String PASSWORD = "secret";
     static final String PASSWORD = "s3cr3t";
 
     @ConfigProperty(name = "mail.smtp.port")
@@ -81,19 +86,19 @@ public class CamelRoute extends RouteBuilder {
 
         fromF("pop3://localhost:%d?initialDelay=100&delay=500&username=%s&password=%s&delete=true", pop3Port, USERNAME,
                 PASSWORD)
-                        .id("pop3ReceiveRoute")
+                        .id(Routes.pop3ReceiveRoute.name())
                         .autoStartup(false)
                         .process(exchange -> handleMail(exchange));
 
         fromF("imap://localhost:%d?initialDelay=100&delay=500&username=%s&password=%s&delete=true", imapPort, USERNAME,
                 PASSWORD)
-                        .id("imapReceiveRoute")
+                        .id(Routes.imapReceiveRoute.name())
                         .autoStartup(false)
                         .process(exchange -> handleMail(exchange));
 
         fromF("pop3://localhost:%d?initialDelay=100&delay=500&username=%s&password=%s"
                 + "&delete=true&maxMessagesPerPoll=3", pop3Port, USERNAME, PASSWORD)
-                        .id("batchReceiveRoute")
+                        .id(Routes.batchReceiveRoute.name())
                         .autoStartup(false)
                         .process(e -> {
                             Map<String, Object> map = handleMail(e);
@@ -105,14 +110,11 @@ public class CamelRoute extends RouteBuilder {
 
         fromF("pop3://localhost:%d?initialDelay=100&delay=500&username=%s&password=%s&delete=true", pop3Port, USERNAME,
                 PASSWORD)
-                        .id("convertersRoute")
+                        .id(Routes.convertersRoute.name())
                         .autoStartup(false)
                         .process(e -> {
                             MailConverters.toInputStream(e.getIn().getBody(MailMessage.class).getMessage());
                             InputStream is = MailConverters.toInputStream(e.getIn().getBody(MailMessage.class).getMessage());
-                            System.out.println(
-                                    ">>>>>>>>>>>>>>> converters: " + e.getIn().getBody(MailMessage.class).getMessage() + ", "
-                                            + is);
                             Map<String, Object> map = handleMail(e);
                             map.put("convertedStream", is);
                         });
@@ -141,7 +143,7 @@ public class CamelRoute extends RouteBuilder {
                 attachmentObject.add("attachmentFilename", dataHandler.getName());
                 attachmentObject.add("attachmentContentType", dataHandler.getContentType());
 
-                if (dataHandler.getContentType().startsWith("text/plain")) {
+                if (dataHandler.getName().endsWith(".txt")) {
                     try {
                         String content = camelContext.getTypeConverter().convertTo(String.class,
                                 dataHandler.getInputStream());

@@ -33,6 +33,7 @@ public class MailTestResource implements QuarkusTestResourceLifecycleManager {
     public Map<String, String> start() {
         container = new GenericContainer<>(DockerImageName.parse(GREENMAIL_IMAGE_NAME))
                 .withExposedPorts(MailProtocol.allPorts())
+                //               todo .withEnv("GREENMAIL_OPTS", "-Dgreenmail.users=test:secret")
                 .waitingFor(new HttpWaitStrategy()
                         .forPort(MailProtocol.API.getPort())
                         .forPath("/api/service/readiness")
