@@ -23,7 +23,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -35,18 +34,14 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import io.restassured.path.json.JsonPath;
-import io.restassured.response.ExtractableResponse;
-import io.restassured.response.Response;
 import org.apache.camel.ExchangePropertyKey;
-import org.apache.camel.util.CollectionHelper;
+import org.apache.camel.ServiceStatus;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 
@@ -87,6 +82,13 @@ public class MailTest {
                 .post("/api/user")
                 .then()
                 .statusCode(200);
+
+        String users = RestAssured.get("http://localhost:" + config.getValue("mail.api.port", Integer.class) + "/api/user")
+                .then()
+                .statusCode(200)
+                .extract().asString();
+
+        System.out.println("**************************** Users: " + users);
     }
 
     @AfterEach
@@ -105,8 +107,8 @@ public class MailTest {
                 .statusCode(204);
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"pop3", "imap"})
+    //    @ParameterizedTest
+    @ValueSource(strings = { "pop3", "imap" })
     public void receive(String protocol) {
         //start route
         routeController(protocol + "ReceiveRoute", "start");
@@ -134,7 +136,7 @@ public class MailTest {
         routeController(protocol + "ReceiveRoute", "stop");
     }
 
-    @Test
+    //    @Test
     public void mimeMultipartDataFormat() {
         final String actual = RestAssured.given()
                 .contentType(ContentType.TEXT)
@@ -166,7 +168,7 @@ public class MailTest {
         Assertions.assertEquals(expected, actual);
     }
 
-    @Test
+    //    @Test
     public void testAttachments() throws IOException, URISyntaxException {
         routeController("pop3ReceiveRoute", "start");
 
@@ -198,22 +200,22 @@ public class MailTest {
                     .statusCode(204);
 
             Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> RestAssured.get("/mail/getReceived/")
-                        .then()
-                        .statusCode(200)
-                         .extract().jsonPath()
-            , path -> 2 == (Integer)path.get("size")
+                    .then()
+                    .statusCode(200)
+                    .extract().jsonPath(),
+                    path -> 2 == (Integer) path.get("size")
 
-                    && "Test mail content".equals(path.get("[0].content"))
-                    && "Test attachment message".equals(path.get("[0].subject"))
-                    && attachmentPath.getFileName().toString().equals(path.get("[0].attachments[0].attachmentFilename"))
-                    && attachmentContent.equals(path.get("[0].attachments[0].attachmentContent"))
+                            && "Test mail content".equals(path.get("[0].content"))
+                            && "Test attachment message".equals(path.get("[0].subject"))
+                            && attachmentPath.getFileName().toString().equals(path.get("[0].attachments[0].attachmentFilename"))
+                            && attachmentContent.equals(path.get("[0].attachments[0].attachmentContent"))
 
-                    && "Test mail content".equals(path.get("[1].content"))
-                    && "Test attachment message".equals(path.get("[1].subject"))
-                    && "logo.jpeg".equals(path.get("[1].attachments[0].attachmentFilename"))
-                    && (path.get("[1].attachments[0].attachmentContentType").toString().startsWith("image/jpeg")
-                        || path.get("[1].attachments[0].attachmentContentType").toString().startsWith("application/octet-stream"))
-            );
+                            && "Test mail content".equals(path.get("[1].content"))
+                            && "Test attachment message".equals(path.get("[1].subject"))
+                            && "logo.jpeg".equals(path.get("[1].attachments[0].attachmentFilename"))
+                            && (path.get("[1].attachments[0].attachmentContentType").toString().startsWith("image/jpeg")
+                                    || path.get("[1].attachments[0].attachmentContentType").toString()
+                                            .startsWith("application/octet-stream")));
         } finally {
             Files.deleteIfExists(attachmentPath);
         }
@@ -221,22 +223,21 @@ public class MailTest {
         routeController("pop3ReceiveRoute", "stop");
     }
 
-    @Test
+    //    @Test
     public void testBatchConsumer() {
         //start route
         routeController("batchReceiveRoute", "start");
         //send messages
-        IntStream.range(1, 5).boxed().forEach(i ->
-            RestAssured.given()
-                    .contentType(ContentType.JSON)
-                    .contentType(ContentType.TEXT)
-                    .queryParam("subject", "Test batch consumer")
-                    .queryParam("from", "camel@localhost")
-                    .queryParam("to", EMAIL_ADDRESS)
-                    .body("message " + i)
-                    .post("/mail/send")
-                    .then()
-                    .statusCode(204));
+        IntStream.range(1, 5).boxed().forEach(i -> RestAssured.given()
+                .contentType(ContentType.JSON)
+                .contentType(ContentType.TEXT)
+                .queryParam("subject", "Test batch consumer")
+                .queryParam("from", "camel@localhost")
+                .queryParam("to", EMAIL_ADDRESS)
+                .body("message " + i)
+                .post("/mail/send")
+                .then()
+                .statusCode(204));
 
         Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
             //receive
@@ -269,14 +270,18 @@ public class MailTest {
         routeController("batchReceiveRoute", "stop");
     }
 
-    //    @Test
+    @Test
     public void testConverters() throws Exception {
         routeController("convertersRoute", "start");
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
-                .body(CollectionHelper.mapOf("Subject", "Camel rocks"))
-                .post("/mail/sendWithHeaders/send/Hello World")
+                .contentType(ContentType.TEXT)
+                .queryParam("subject", "Camel Rocks")
+                .queryParam("from", "camel@localhost")
+                .queryParam("to", EMAIL_ADDRESS)
+                .body("Hello World ")
+                .post("/mail/send")
                 .then()
                 .statusCode(204);
 
@@ -287,16 +292,17 @@ public class MailTest {
                     .statusCode(200)
                     .extract().as(List.class);
         }, list -> list.size() == 1
-                && "Hello World".equals(list.get(0).get("body")));
+                && ((String) list.get(0).get("body")).matches("Hello World\\s*"));
 
         routeController("convertersRoute", "stop");
     }
 
-    //    @Test
+    @Test
     public void testSort() {
         List<String> msgs = IntStream.range(1, 5).boxed().map(i -> ("message " + i)).collect(Collectors.toList());
+        //messages will be sent in reverse order
         Collections.reverse(msgs);
-        //send messages
+
         List<String> sorted = RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(msgs)
@@ -319,50 +325,17 @@ public class MailTest {
                 .get("/mail/route/" + routeId + "/" + operation)
                 .then().statusCode(204);
 
-        //        //wait for finish
-        //        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(
-        //                () -> RestAssured
-        //                        .get("/mail/route/" + routeId + "/status")
-        //                        .then()
-        //                        .statusCode(200)
-        //                        .extract().asString(),
-        //                Matchers.is("start".equals(operation) ? ServiceStatus.Started.name() : ServiceStatus.Stopped.name()));
+        //wait for finish
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(
+                () -> {
+                    String status = RestAssured
+                            .get("/mail/route/" + routeId + "/status")
+                            .then()
+                            .statusCode(200)
+                            .extract().asString();
+
+                    return status
+                            .equals("start".equals(operation) ? ServiceStatus.Started.name() : ServiceStatus.Stopped.name());
+                });
     }
-
-    //    @Test
-    //    public void testSendAndReceiveMails() throws Exception {
-    //
-    //        String email = "USERNAME@gmail.com";
-    //
-    //        MockEndpoint resultEndpoint = getMockEndpoint("mock:in");
-    //        resultEndpoint.expectedBodiesReceived("Test Email Body\r\n");
-    //
-    //        Map<String, Object> headers = new HashMap<>();
-    //        headers.put("To", email);
-    //        headers.put("From", email);
-    //        headers.put("Reply-to", email);
-    //        headers.put("Subject", "SSL/TLS Test");
-    //
-    //        template.sendBodyAndHeaders("direct:in", "Test Email Body", headers);
-    //
-    //        resultEndpoint.assertIsSatisfied();
-    //    }
-
-    //    @Test
-    //    public void testEmail() throws InterruptedException, MessagingException {
-    //        SimpleMailMessage message = new SimpleMailMessage();
-    //        message.setFrom("test@sender.com");
-    //        message.setTo("test@receiver.com");
-    //        message.setSubject("test subject");
-    //        message.setText("test message");
-    //        //First we need to call the actual method of EmailSErvice
-    //        emailSender.send(message);
-    //        //Then after that using GreenMail need to verify mail sent or not
-    //        assertTrue(testSmtp.waitForIncomingEmail(5000, 1));
-    //        Message[] messages = testSmtp.getReceivedMessages();
-    //        assertEquals(1, messages.length);
-    //        assertEquals("test subject", messages[0].getSubject());
-    //        String body = GreenMailUtil.getBody(messages[0]).replaceAll("=\r?\n", "");
-    //        assertEquals("test message", body);
-    //    }
 }

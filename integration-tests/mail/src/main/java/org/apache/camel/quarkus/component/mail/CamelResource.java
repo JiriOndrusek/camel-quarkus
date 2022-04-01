@@ -25,16 +25,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Store;
@@ -52,16 +46,12 @@ import javax.ws.rs.core.MediaType;
 import com.sun.mail.imap.SortTerm;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
-import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
-import org.apache.camel.Producer;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.camel.attachment.DefaultAttachment;
 import org.apache.camel.component.mail.DefaultJavaMailSender;
 import org.apache.camel.component.mail.JavaMailSender;
-import org.apache.camel.component.mail.MailConverters;
-import org.apache.camel.component.mail.MailMessage;
 import org.apache.camel.component.mail.MailSorter;
 
 @Path("/mail")
@@ -93,7 +83,7 @@ public class CamelResource {
             @QueryParam("to") String to,
             String body) {
 
-        producerTemplate.send("direct:sendMail" , exchange -> {
+        producerTemplate.send("direct:sendMail", exchange -> {
             org.apache.camel.Message message = exchange.getMessage();
             message.setHeader("Subject", subject);
             message.setHeader("From", from);
@@ -101,7 +91,6 @@ public class CamelResource {
             message.setBody(body);
         });
     }
-
 
     @Path("/send/attachment/{fileName}")
     @POST
@@ -160,7 +149,6 @@ public class CamelResource {
 
     // ------------------------------------------------
 
-
     @Path("/getReceived")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -174,9 +162,15 @@ public class CamelResource {
     public List<Map<String, Object>> getReceivedAsString() throws MessagingException, IOException {
         List<Map<String, Object>> result = new LinkedList();
         for (Map<String, Object> email : mailReceivedMessages) {
-            Message mm = ((MailMessage) email.get("body")).getMessage();
-            InputStream is = MailConverters.toInputStream(mm);
-            result.add(Collections.singletonMap("body", (Object) camelContext.getTypeConverter().convertTo(String.class, is)));
+            InputStream is = (InputStream) email.get("convertedStream");
+
+            //            mm = ((MailMessage) email.get("body"));
+            //            Folder folder = mm.getOriginalMessage().getFolder();
+            //            if (!folder.isOpen()) {
+            //                folder.open(Folder.HOLDS_MESSAGES);
+            //            }
+            //            String is = MailConverters.toString(mm.getMessage());
+            result.add(Collections.singletonMap("body", camelContext.getTypeConverter().convertTo(String.class, is)));
         }
         mailReceivedMessages.clear();
         return result;
@@ -203,34 +197,8 @@ public class CamelResource {
             break;
         case "status":
             return camelContext.getRouteController().getRouteStatus(routeId).name();
-
         }
         return null;
-    }
-
-    @GET
-    @Path("/sendAttachment/{filename}")
-    public void sendAttachment(@PathParam("filename") String filename) throws Exception {
-        Endpoint endpoint = camelContext.getEndpoint("smtp://localhost:3025?to=info@mycompany.com");
-
-        // create the exchange with the mail message that is multipart with a file and a Hello World text/plain message.
-        Exchange exchange = endpoint.createExchange();
-        AttachmentMessage in = exchange.getIn(AttachmentMessage.class);
-        in.setBody("Sending " + filename + "!");
-        DefaultAttachment att = new DefaultAttachment(
-                new ByteArrayDataSource(Thread.currentThread().getContextClassLoader().getResourceAsStream("data/" + filename),
-                        "image/jpeg"));
-        att.addHeader("Content-Description", "some sample content");
-        in.addAttachmentObject(filename, att);
-
-        // create a producer that can produce the exchange (= send the mail)
-        Producer producer = endpoint.createProducer();
-        // start the producer
-        producer.start();
-        // and let it go (processes the exchange by sending the email)
-        producer.process(exchange);
-
-        producer.stop();
     }
 
     @Path("/sort")

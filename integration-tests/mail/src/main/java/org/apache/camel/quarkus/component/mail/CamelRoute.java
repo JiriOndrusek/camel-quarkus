@@ -17,10 +17,10 @@
 package org.apache.camel.quarkus.component.mail;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.activation.DataHandler;
@@ -34,16 +34,14 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.mail.Folder;
 import javax.mail.MessagingException;
-import javax.mail.Session;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePropertyKey;
 import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.mail.MailComponent;
+import org.apache.camel.component.mail.MailConverters;
 import org.apache.camel.component.mail.MailMessage;
-import org.apache.camel.util.CollectionHelper;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
@@ -81,43 +79,43 @@ public class CamelRoute extends RouteBuilder {
                 .unmarshal().mimeMultipart()
                 .marshal().mimeMultipart();
 
-        fromF("pop3://localhost:%d?initialDelay=100&delay=500&username=%s&password=%s&delete=true", pop3Port, USERNAME, PASSWORD)
-                .id("pop3ReceiveRoute")
-                .autoStartup(false)
-                .process(exchange -> handleMail(exchange));
+        fromF("pop3://localhost:%d?initialDelay=100&delay=500&username=%s&password=%s&delete=true", pop3Port, USERNAME,
+                PASSWORD)
+                        .id("pop3ReceiveRoute")
+                        .autoStartup(false)
+                        .process(exchange -> handleMail(exchange));
 
-        fromF("imap://localhost:%d?initialDelay=100&delay=500&username=%s&password=%s&delete=true", imapPort, USERNAME, PASSWORD)
-                .id("imapReceiveRoute")
-                .autoStartup(false)
-                .process(exchange -> handleMail(exchange));
+        fromF("imap://localhost:%d?initialDelay=100&delay=500&username=%s&password=%s&delete=true", imapPort, USERNAME,
+                PASSWORD)
+                        .id("imapReceiveRoute")
+                        .autoStartup(false)
+                        .process(exchange -> handleMail(exchange));
 
-//        fromF("pop3://localhost:%d?initialDelay=100&delay=500&username=%s&password=%s"
-//                + "&delete=true&maxMessagesPerPoll=3", pop3Port, USERNAME, PASSWORD)
-//                .id("batchReceiveRoute")
-//                .autoStartup(false)
-//                .process(e -> {
-//                    Map<String, Object> map = handleMail(e);
-//                    map.put(ExchangePropertyKey.BATCH_INDEX.getName(), e.getProperty(ExchangePropertyKey.BATCH_INDEX));
-//                    map.put(ExchangePropertyKey.BATCH_COMPLETE.getName(), e.getProperty(ExchangePropertyKey.BATCH_COMPLETE));
-//                    map.put(ExchangePropertyKey.BATCH_SIZE.getName(), e.getProperty(ExchangePropertyKey.BATCH_SIZE));
-//                });
+        fromF("pop3://localhost:%d?initialDelay=100&delay=500&username=%s&password=%s"
+                + "&delete=true&maxMessagesPerPoll=3", pop3Port, USERNAME, PASSWORD)
+                        .id("batchReceiveRoute")
+                        .autoStartup(false)
+                        .process(e -> {
+                            Map<String, Object> map = handleMail(e);
+                            map.put(ExchangePropertyKey.BATCH_INDEX.getName(), e.getProperty(ExchangePropertyKey.BATCH_INDEX));
+                            map.put(ExchangePropertyKey.BATCH_COMPLETE.getName(),
+                                    e.getProperty(ExchangePropertyKey.BATCH_COMPLETE));
+                            map.put(ExchangePropertyKey.BATCH_SIZE.getName(), e.getProperty(ExchangePropertyKey.BATCH_SIZE));
+                        });
 
-//        from("pop3://james@mymailserver.com?password=secret&initialDelay=100&delay=100")
-//                .id("attachmentRoute").autoStartup(false)
-//                .process(e -> {
-//                    Map<String, Object> map = handleMail(e);
-//                    for (Map.Entry<String, DataHandler> entry : e.getIn(AttachmentMessage.class).getAttachments().entrySet()) {
-//                        map.put(entry.getKey() + "_contentType", e.getIn(AttachmentMessage.class)
-//                                .getAttachmentObject(entry.getKey()).getDataHandler().getContentType());
-//                    }
-//                });
-        //
-        //        from("direct:send").to("smtp://localhost?username=james@localhost");
-        //
-        //        from("pop3://localhost?username=james&password=secret&initialDelay=100&delay=100").id("convertersRoute")
-        //                .autoStartup(false)
-        //                .process(e -> mailReceivedMessages.add(
-        //                        CollectionHelper.mapOf("body", e.getIn().getBody(MailMessage.class))));
+        fromF("pop3://localhost:%d?initialDelay=100&delay=500&username=%s&password=%s&delete=true", pop3Port, USERNAME,
+                PASSWORD)
+                        .id("convertersRoute")
+                        .autoStartup(false)
+                        .process(e -> {
+                            MailConverters.toInputStream(e.getIn().getBody(MailMessage.class).getMessage());
+                            InputStream is = MailConverters.toInputStream(e.getIn().getBody(MailMessage.class).getMessage());
+                            System.out.println(
+                                    ">>>>>>>>>>>>>>> converters: " + e.getIn().getBody(MailMessage.class).getMessage() + ", "
+                                            + is);
+                            Map<String, Object> map = handleMail(e);
+                            map.put("convertedStream", is);
+                        });
         //
         //        String username = "USERNAME@gmail.com";
         //        String imapHost = "imap.gmail.com";
@@ -131,8 +129,7 @@ public class CamelRoute extends RouteBuilder {
         //        from("direct:ssh").to("smtps://" + smtpHost + "?username=" + username + "&password=" + password);
     }
 
-
-    private  Map<String, Object> handleMail(Exchange exchange) throws MessagingException {
+    private Map<String, Object> handleMail(Exchange exchange) throws MessagingException {
         Map<String, Object> result = new HashMap<>();
         MailMessage mailMessage = exchange.getMessage(MailMessage.class);
         AttachmentMessage attachmentMessage = exchange.getMessage(AttachmentMessage.class);
@@ -144,7 +141,7 @@ public class CamelRoute extends RouteBuilder {
                 attachmentObject.add("attachmentFilename", dataHandler.getName());
                 attachmentObject.add("attachmentContentType", dataHandler.getContentType());
 
-                if(dataHandler.getContentType().startsWith("text/plain")) {
+                if (dataHandler.getContentType().startsWith("text/plain")) {
                     try {
                         String content = camelContext.getTypeConverter().convertTo(String.class,
                                 dataHandler.getInputStream());
@@ -154,18 +151,16 @@ public class CamelRoute extends RouteBuilder {
                     }
                 }
 
-
-
                 arrayBuilder.add(attachmentObject.build());
             });
 
             result.put("attachments", arrayBuilder.build());
         }
 
-//      todo  Folder folder = mailMessage.getOriginalMessage().getFolder();
-//        if (!folder.isOpen()) {
-//            folder.open(Folder.READ_ONLY);
-//        }
+        Folder folder = mailMessage.getOriginalMessage().getFolder();
+        if (!folder.isOpen()) {
+            folder.open(Folder.READ_ONLY);
+        }
 
         result.put("subject", mailMessage.getMessage().getSubject());
         result.put("content", mailMessage.getBody(String.class).trim());
@@ -173,13 +168,6 @@ public class CamelRoute extends RouteBuilder {
         mailReceivedMessages.add(result);
 
         return result;
-    }
-
-    MailComponent smtp() {
-        MailComponent mail = new MailComponent(camelContext);
-        Session session = Session.getInstance(new Properties());
-        mail.getConfiguration().setSession(session);
-        return mail;
     }
 
     static class Producers {
