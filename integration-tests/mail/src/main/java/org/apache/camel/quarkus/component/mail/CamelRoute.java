@@ -17,7 +17,6 @@
 package org.apache.camel.quarkus.component.mail;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,13 +33,17 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.mail.Folder;
+import javax.mail.MessagingException;
 import javax.mail.Session;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.ExchangePropertyKey;
 import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mail.MailComponent;
 import org.apache.camel.component.mail.MailMessage;
+import org.apache.camel.util.CollectionHelper;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
@@ -63,87 +66,51 @@ public class CamelRoute extends RouteBuilder {
     @ConfigProperty(name = "mail.pop3.port")
     int pop3Port;
 
+    @ConfigProperty(name = "mail.imap.port")
+    int imapPort;
+
     @Override
     public void configure() {
         from("direct:sendMail")
                 .toF("smtp://localhost:%d?username=%s&password=%s", smtpPort, USERNAME, PASSWORD);
-        //
-        //        from("direct:sendMailWithAttachment")
-        //                .toF("smtp://localhost:%d?username=%s&password=%s", smtpPort, USERNAME, PASSWORD);
-        //
-        //        from("direct:mimeMultipartMarshal")
-        //                .marshal().mimeMultipart();
-        //
-        //        from("direct:mimeMultipartUnmarshalMarshal")
-        //                .unmarshal().mimeMultipart()
-        //                .marshal().mimeMultipart();
 
-        fromF("pop3://localhost:%d?initialDelay=100&delay=500&username=%s&password=%s", pop3Port, USERNAME, PASSWORD)
-                .id("pop3ReceiveRoute").autoStartup(false)
-                .log(">>>>>>>>>>>>>>>>>> ${body}")
-                .process(exchange -> {
-                            Map<String, Object> result = new HashMap<>();
-                            MailMessage mailMessage = exchange.getMessage(MailMessage.class);
-                            AttachmentMessage attachmentMessage = exchange.getMessage(AttachmentMessage.class);
-                            Map<String, DataHandler> attachments = attachmentMessage.getAttachments();
-                            if (attachments != null) {
-                                JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-                                attachments.forEach((id, dataHandler) -> {
-                                    JsonObjectBuilder attachmentObject = Json.createObjectBuilder();
-                                    attachmentObject.add("attachmentFilename", dataHandler.getName());
+        from("direct:mimeMultipartMarshal")
+                .marshal().mimeMultipart();
 
-                                    try {
-                                        String content = camelContext.getTypeConverter().convertTo(String.class, dataHandler.getInputStream());
-                                        attachmentObject.add("attachmentContent", content);
-                                    } catch (IOException e) {
-                                        throw new IllegalStateException(e);
-                                    }
+        from("direct:mimeMultipartUnmarshalMarshal")
+                .unmarshal().mimeMultipart()
+                .marshal().mimeMultipart();
 
-                                    arrayBuilder.add(attachmentObject.build());
-                                });
+        fromF("pop3://localhost:%d?initialDelay=100&delay=500&username=%s&password=%s&delete=true", pop3Port, USERNAME, PASSWORD)
+                .id("pop3ReceiveRoute")
+                .autoStartup(false)
+                .process(exchange -> handleMail(exchange));
 
-                                result.put("attachments", arrayBuilder.build());
-                            }
+        fromF("imap://localhost:%d?initialDelay=100&delay=500&username=%s&password=%s&delete=true", imapPort, USERNAME, PASSWORD)
+                .id("imapReceiveRoute")
+                .autoStartup(false)
+                .process(exchange -> handleMail(exchange));
 
-                            Folder folder = mailMessage.getOriginalMessage().getFolder();
-                            if (!folder.isOpen()) {
-                                folder.open(Folder.READ_ONLY);
-                            }
+//        fromF("pop3://localhost:%d?initialDelay=100&delay=500&username=%s&password=%s"
+//                + "&delete=true&maxMessagesPerPoll=3", pop3Port, USERNAME, PASSWORD)
+//                .id("batchReceiveRoute")
+//                .autoStartup(false)
+//                .process(e -> {
+//                    Map<String, Object> map = handleMail(e);
+//                    map.put(ExchangePropertyKey.BATCH_INDEX.getName(), e.getProperty(ExchangePropertyKey.BATCH_INDEX));
+//                    map.put(ExchangePropertyKey.BATCH_COMPLETE.getName(), e.getProperty(ExchangePropertyKey.BATCH_COMPLETE));
+//                    map.put(ExchangePropertyKey.BATCH_SIZE.getName(), e.getProperty(ExchangePropertyKey.BATCH_SIZE));
+//                });
 
-                            result.put("subject", mailMessage.getMessage().getSubject());
-                            result.put("content", mailMessage.getBody(String.class).trim());
-
-                            mailReceivedMessages.add(result);
-                        });
-        //
-        //        from("pop3://jones@localhost?password=secret&initialDelay=100&delay=100"
-        //                + "&delete=true").id("receiveRoute").autoStartup(false)
-        //                        .process(e -> mailReceivedMessages
-        //                                .add(Collections.singletonMap("body", e.getIn().getBody(String.class))));
-
-        //        from("pop3://jones@localhost?password=secret&initialDelay=100&delay=100"
-        //                + "&delete=true&maxMessagesPerPoll=3").id("batchReceiveRoute")
-        //                        .autoStartup(false)
-        //                        .process(e -> mailReceivedMessages.add(
-        //                                CollectionHelper.mapOf("body", e.getIn().getBody(String.class),
-        //                                        ExchangePropertyKey.BATCH_INDEX.getName(),
-        //                                        e.getProperty(ExchangePropertyKey.BATCH_INDEX),
-        //                                        ExchangePropertyKey.BATCH_COMPLETE.getName(),
-        //                                        e.getProperty(ExchangePropertyKey.BATCH_COMPLETE),
-        //                                        ExchangePropertyKey.BATCH_SIZE.getName(),
-        //                                        e.getProperty(ExchangePropertyKey.BATCH_SIZE))));
-        //
-        //        from("pop3://james@mymailserver.com?password=secret&initialDelay=100&delay=100")
-        //                .id("attachmentRoute").autoStartup(false)
-        //                .process(e -> {
-        //                    Map<String, Object> values = new HashMap<>();
-        //                    values.put("body", e.getIn().getBody(String.class));
-        //                    for (Map.Entry<String, DataHandler> entry : e.getIn(AttachmentMessage.class).getAttachments().entrySet()) {
-        //                        values.put(entry.getKey() + "_contentType", e.getIn(AttachmentMessage.class)
-        //                                .getAttachmentObject(entry.getKey()).getDataHandler().getContentType());
-        //                    }
-        //                    mailReceivedMessages.add(values);
-        //                });
+//        from("pop3://james@mymailserver.com?password=secret&initialDelay=100&delay=100")
+//                .id("attachmentRoute").autoStartup(false)
+//                .process(e -> {
+//                    Map<String, Object> map = handleMail(e);
+//                    for (Map.Entry<String, DataHandler> entry : e.getIn(AttachmentMessage.class).getAttachments().entrySet()) {
+//                        map.put(entry.getKey() + "_contentType", e.getIn(AttachmentMessage.class)
+//                                .getAttachmentObject(entry.getKey()).getDataHandler().getContentType());
+//                    }
+//                });
         //
         //        from("direct:send").to("smtp://localhost?username=james@localhost");
         //
@@ -164,6 +131,50 @@ public class CamelRoute extends RouteBuilder {
         //        from("direct:ssh").to("smtps://" + smtpHost + "?username=" + username + "&password=" + password);
     }
 
+
+    private  Map<String, Object> handleMail(Exchange exchange) throws MessagingException {
+        Map<String, Object> result = new HashMap<>();
+        MailMessage mailMessage = exchange.getMessage(MailMessage.class);
+        AttachmentMessage attachmentMessage = exchange.getMessage(AttachmentMessage.class);
+        Map<String, DataHandler> attachments = attachmentMessage.getAttachments();
+        if (attachments != null) {
+            JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+            attachments.forEach((id, dataHandler) -> {
+                JsonObjectBuilder attachmentObject = Json.createObjectBuilder();
+                attachmentObject.add("attachmentFilename", dataHandler.getName());
+                attachmentObject.add("attachmentContentType", dataHandler.getContentType());
+
+                if(dataHandler.getContentType().startsWith("text/plain")) {
+                    try {
+                        String content = camelContext.getTypeConverter().convertTo(String.class,
+                                dataHandler.getInputStream());
+                        attachmentObject.add("attachmentContent", content);
+                    } catch (IOException e) {
+                        throw new IllegalStateException(e);
+                    }
+                }
+
+
+
+                arrayBuilder.add(attachmentObject.build());
+            });
+
+            result.put("attachments", arrayBuilder.build());
+        }
+
+//      todo  Folder folder = mailMessage.getOriginalMessage().getFolder();
+//        if (!folder.isOpen()) {
+//            folder.open(Folder.READ_ONLY);
+//        }
+
+        result.put("subject", mailMessage.getMessage().getSubject());
+        result.put("content", mailMessage.getBody(String.class).trim());
+
+        mailReceivedMessages.add(result);
+
+        return result;
+    }
+
     MailComponent smtp() {
         MailComponent mail = new MailComponent(camelContext);
         Session session = Session.getInstance(new Properties());
@@ -179,22 +190,5 @@ public class CamelRoute extends RouteBuilder {
         List<Map<String, Object>> mailReceivedMessages() {
             return new CopyOnWriteArrayList<>();
         }
-
-        //        @Produces
-        //        Store prepareMailbox() throws Exception {
-        //            // connect to mailbox
-        //            Mailbox.clearAll();
-        //            JavaMailSender sender = new DefaultJavaMailSender();
-        //            Store store = sender.getSession().getStore("pop3");
-        //            return store;
-        //        }
-
-        //        @Produces
-        //        Store prepareGreenmail() throws Exception {
-        //            // connect to mailbox
-        //            GreenMail greenMail = new GreenMail(); //uses test ports by default
-        //            greenMail.start();
-        //        }
-
     }
 }

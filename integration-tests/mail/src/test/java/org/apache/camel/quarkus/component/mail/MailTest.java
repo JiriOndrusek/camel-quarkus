@@ -16,8 +16,14 @@
  */
 package org.apache.camel.quarkus.component.mail;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -29,6 +35,9 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.ExtractableResponse;
+import io.restassured.response.Response;
 import org.apache.camel.ExchangePropertyKey;
 import org.apache.camel.util.CollectionHelper;
 import org.eclipse.microprofile.config.Config;
@@ -37,6 +46,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 import static org.apache.camel.quarkus.component.mail.CamelRoute.EMAIL_ADDRESS;
@@ -94,10 +105,11 @@ public class MailTest {
                 .statusCode(204);
     }
 
-    @Test
-    public void sendSmtp() {
+    @ParameterizedTest
+    @ValueSource(strings = {"pop3", "imap"})
+    public void receive(String protocol) {
         //start route
-        routeController("pop3ReceiveRoute", "start");
+        routeController(protocol + "ReceiveRoute", "start");
 
         RestAssured.given()
                 .contentType(ContentType.TEXT)
@@ -109,7 +121,6 @@ public class MailTest {
                 .then()
                 .statusCode(204);
 
-        // Need to receive using pop3 as there is no smtp consumer
         Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
             //receive
             return (List<Map<String, Object>>) RestAssured.get("/mail/getReceived/")
@@ -120,33 +131,10 @@ public class MailTest {
                 && "Hi how are you".equals(list.get(0).get("content"))
                 && "Hello World".equals(list.get(0).get("subject")));
         //stop route
-        routeController("pop3ReceiveRoute", "stop");
+        routeController(protocol + "ReceiveRoute", "stop");
     }
 
-    //    @Test
-    public void testSendAsMail() {
-        RestAssured.given()
-                .contentType(ContentType.TEXT)
-                .body("Hi how are you")
-                .post("/mail/route/mailtext")
-                .then()
-                .statusCode(200);
-
-        RestAssured.given()
-                .get("/mock/{username}/size", "james@localhost")
-                .then()
-                .body(is("1"));
-        RestAssured.given()
-                .get("/mock/{username}/{id}/content", "james@localhost", 0)
-                .then()
-                .body(is("Hi how are you"));
-        RestAssured.given()
-                .get("/mock/{username}/{id}/subject", "james@localhost", 0)
-                .then()
-                .body(is("Hello World"));
-    }
-
-    //    @Test
+    @Test
     public void mimeMultipartDataFormat() {
         final String actual = RestAssured.given()
                 .contentType(ContentType.TEXT)
@@ -160,13 +148,12 @@ public class MailTest {
         final String unmarshalMarshal = RestAssured.given()
                 .contentType(ContentType.TEXT)
                 .body(actual)
-                .post("/mail/route/mimeMultipartUnmarshalMarshal")
+                .post("/mail/mimeMultipartUnmarshalMarshal")
                 .then()
                 .statusCode(200)
                 .extract().body().asString();
 
         assertMultipart(EXPECTED_TEMPLATE, unmarshalMarshal);
-
     }
 
     private void assertMultipart(final String expectedPattern, final String actual) {
@@ -179,58 +166,77 @@ public class MailTest {
         Assertions.assertEquals(expected, actual);
     }
 
-    //    @Test
-    //    public void testConsumer() {
-    //        GreenMail greenMail = new GreenMail(); //uses test ports by default
-    //        greenMail.start();
-    //
-    //        //start route
-    //        routeController("receiveRoute", "start");
-    //
-    //        Config config = ConfigProvider.getConfig();
-    //        Integer port = config.getValue("camel.mail.smtp.port", Integer.class);
-    //        //send messages
-    //        //        GreenMailUtil.sendTextEmail("to@localhost", "from@localhost", "some subject", "some body",
-    //        //                new ServerSetup(port, (String)null, "smtp"));
-    //
-    //        GreenMailUtil.sendTextEmailTest("to@localhost", "from@localhost", "some subject",
-    //                "some body");
-    //
-    //        assertTrue(greenMail.waitForIncomingEmail(5000, 1));
-    //
-    //        //        RestAssured.given()
-    //        //                .contentType(ContentType.JSON)
-    //        //                .body(IntStream.range(1, 5).boxed().map(i -> "message " + i).collect(Collectors.toList()))
-    //        //                .post("/mail/send")
-    //        //                .then()
-    //        //                .statusCode(204);
-    //
-    //        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
-    //            //receive
-    //            return (List<Map<String, Object>>) RestAssured.get("/mail/getReceived/")
-    //                    .then()
-    //                    .statusCode(200)
-    //                    .extract().as(List.class);
-    //        }, list -> list.size() == 4
-    //                && "message 1".equals(list.get(0).get("body"))
-    //                && "message 2".equals(list.get(1).get("body"))
-    //                && "message 3".equals(list.get(2).get("body"))
-    //                && "message 4".equals(list.get(3).get("body")));
-    //
-    //        routeController("receiveRoute", "stop");
-    //    }
+    @Test
+    public void testAttachments() throws IOException, URISyntaxException {
+        routeController("pop3ReceiveRoute", "start");
 
-    //    @Test
+        String mailBodyContent = "Test mail content";
+        String attachmentContent = "Attachment " + mailBodyContent;
+        java.nio.file.Path attachmentPath = Files.createTempFile("cq-attachment", ".txt");
+        Files.write(attachmentPath, attachmentContent.getBytes(StandardCharsets.UTF_8));
+
+        try {
+            RestAssured.given()
+                    .contentType(ContentType.TEXT)
+                    .queryParam("subject", "Test attachment message")
+                    .queryParam("from", "camel@localhost")
+                    .queryParam("to", EMAIL_ADDRESS)
+                    .body(mailBodyContent)
+                    .post("/mail/send/attachment/{fileName}", attachmentPath.toAbsolutePath().toString())
+                    .then()
+                    .statusCode(204);
+
+            RestAssured.given()
+                    .contentType(ContentType.TEXT)
+                    .queryParam("subject", "Test attachment message")
+                    .queryParam("from", "camel@localhost")
+                    .queryParam("to", EMAIL_ADDRESS)
+                    .body(mailBodyContent)
+                    .post("/mail/send/attachment/{fileName}", Path.of(Thread.currentThread().getContextClassLoader()
+                            .getResource("data/logo.jpeg").toURI()).toAbsolutePath().toString())
+                    .then()
+                    .statusCode(204);
+
+            Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> RestAssured.get("/mail/getReceived/")
+                        .then()
+                        .statusCode(200)
+                         .extract().jsonPath()
+            , path -> 2 == (Integer)path.get("size")
+
+                    && "Test mail content".equals(path.get("[0].content"))
+                    && "Test attachment message".equals(path.get("[0].subject"))
+                    && attachmentPath.getFileName().toString().equals(path.get("[0].attachments[0].attachmentFilename"))
+                    && attachmentContent.equals(path.get("[0].attachments[0].attachmentContent"))
+
+                    && "Test mail content".equals(path.get("[1].content"))
+                    && "Test attachment message".equals(path.get("[1].subject"))
+                    && "logo.jpeg".equals(path.get("[1].attachments[0].attachmentFilename"))
+                    && (path.get("[1].attachments[0].attachmentContentType").toString().startsWith("image/jpeg")
+                        || path.get("[1].attachments[0].attachmentContentType").toString().startsWith("application/octet-stream"))
+            );
+        } finally {
+            Files.deleteIfExists(attachmentPath);
+        }
+
+        routeController("pop3ReceiveRoute", "stop");
+    }
+
+    @Test
     public void testBatchConsumer() {
         //start route
         routeController("batchReceiveRoute", "start");
         //send messages
-        RestAssured.given()
-                .contentType(ContentType.JSON)
-                .body(IntStream.range(1, 5).boxed().map(i -> "message " + i).collect(Collectors.toList()))
-                .post("/mail/send")
-                .then()
-                .statusCode(204);
+        IntStream.range(1, 5).boxed().forEach(i ->
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .contentType(ContentType.TEXT)
+                    .queryParam("subject", "Test batch consumer")
+                    .queryParam("from", "camel@localhost")
+                    .queryParam("to", EMAIL_ADDRESS)
+                    .body("message " + i)
+                    .post("/mail/send")
+                    .then()
+                    .statusCode(204));
 
         Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
             //receive
@@ -240,46 +246,27 @@ public class MailTest {
                     .extract().as(List.class);
         }, list -> list.size() == 4
 
-                && "message 1".equals(list.get(0).get("body"))
-                && 0 == (Integer) list.get(0).get(ExchangePropertyKey.BATCH_INDEX.getName())
-                && 3 == (Integer) list.get(0).get(ExchangePropertyKey.BATCH_SIZE.getName())
+                && "message 1".equals(list.get(0).get("content"))
+                && "Test batch consumer".equals(list.get(0).get("subject"))
+                && "0".equals(list.get(0).get(ExchangePropertyKey.BATCH_INDEX.getName()).toString())
+                && "3".equals(list.get(0).get(ExchangePropertyKey.BATCH_SIZE.getName()).toString())
                 && !((Boolean) list.get(0).get(ExchangePropertyKey.BATCH_COMPLETE.getName()))
 
-                && "message 2".equals(list.get(1).get("body"))
-                && 1 == (Integer) list.get(1).get(ExchangePropertyKey.BATCH_INDEX.getName())
+                && "message 2".equals(list.get(1).get("content"))
+                && "Test batch consumer".equals(list.get(1).get("subject"))
+                && "1".equals(list.get(1).get(ExchangePropertyKey.BATCH_INDEX.getName()).toString())
                 && !((Boolean) list.get(1).get(ExchangePropertyKey.BATCH_COMPLETE.getName()))
 
-                && "message 3".equals(list.get(2).get("body"))
-                && 2 == (Integer) list.get(2).get(ExchangePropertyKey.BATCH_INDEX.getName())
+                && "message 3".equals(list.get(2).get("content"))
+                && "Test batch consumer".equals(list.get(2).get("subject"))
+                && "2".equals(list.get(2).get(ExchangePropertyKey.BATCH_INDEX.getName()).toString())
                 && ((Boolean) list.get(2).get(ExchangePropertyKey.BATCH_COMPLETE.getName()))
 
-                && "message 4".equals(list.get(3).get("body"))
-                && 0 == (Integer) list.get(3).get(ExchangePropertyKey.BATCH_INDEX.getName()));
+                && "message 4".equals(list.get(3).get("content"))
+                && "Test batch consumer".equals(list.get(3).get("subject"))
+                && "0".equals(list.get(3).get(ExchangePropertyKey.BATCH_INDEX.getName()).toString()));
 
         routeController("batchReceiveRoute", "stop");
-    }
-
-    //    @Test
-    public void testAttachment() throws Exception {
-        //        routeController("attachmentRoute", "start");
-
-        RestAssured.get("/mail/sendAttachment/logo.jpeg")
-                .then()
-                .statusCode(204);
-
-        Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
-            //receive
-            return (List<Map<String, Object>>) RestAssured.get("/mail/getReceived/")
-                    .then()
-                    .statusCode(200)
-                    .extract().as(List.class);
-        }, list -> list.size() == 1
-                && list.get(0).size() == 2
-                && "Sending logo.jpeg!".equals(list.get(0).get("body"))
-                && ("image/jpeg; name=logo.jpeg".equals(list.get(0).get("logo.jpeg_contentType")) ||
-                        "application/octet-stream; name=logo.jpeg".equals(list.get(0).get("logo.jpeg_contentType"))));
-
-        //        routeController("attachmentRoute", "stop");
     }
 
     //    @Test

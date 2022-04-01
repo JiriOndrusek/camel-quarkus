@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -68,7 +69,7 @@ import org.apache.camel.component.mail.MailSorter;
 public class CamelResource {
 
     @Inject
-    ProducerTemplate template;
+    ProducerTemplate producerTemplate;
 
     @Inject
     ConsumerTemplate consumerTemplate;
@@ -92,7 +93,7 @@ public class CamelResource {
             @QueryParam("to") String to,
             String body) {
 
-        template.send("direct:sendMail", exchange -> {
+        producerTemplate.send("direct:sendMail" , exchange -> {
             org.apache.camel.Message message = exchange.getMessage();
             message.setHeader("Subject", subject);
             message.setHeader("From", from);
@@ -101,74 +102,49 @@ public class CamelResource {
         });
     }
 
-    @Path("/inbox/{protocol}")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public JsonObject getMail(@PathParam("protocol") String protocol) throws Exception {
-        JsonObjectBuilder builder = Json.createObjectBuilder();
 
-        Exchange exchange = consumerTemplate.receive("seda:mail-" + protocol, 5000);
-        if (exchange != null) {
-            MailMessage mailMessage = exchange.getMessage(MailMessage.class);
-            AttachmentMessage attachmentMessage = exchange.getMessage(AttachmentMessage.class);
-            Map<String, DataHandler> attachments = attachmentMessage.getAttachments();
-            if (attachments != null) {
-                JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-                attachments.forEach((id, dataHandler) -> {
-                    JsonObjectBuilder attachmentObject = Json.createObjectBuilder();
-                    attachmentObject.add("attachmentFilename", dataHandler.getName());
+    @Path("/send/attachment/{fileName}")
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
+    public void sendMailWithAttachment(
+            @PathParam("fileName") String fileName,
+            @QueryParam("subject") String subject,
+            @QueryParam("from") String from,
+            @QueryParam("to") String to,
+            String body) {
 
-                    try {
-                        String content = camelContext.getTypeConverter().convertTo(String.class, dataHandler.getInputStream());
-                        attachmentObject.add("attachmentContent", content);
-                    } catch (IOException e) {
-                        throw new IllegalStateException(e);
-                    }
+        producerTemplate.send("direct:sendMail", exchange -> {
+            AttachmentMessage in = exchange.getMessage(AttachmentMessage.class);
 
-                    arrayBuilder.add(attachmentObject.build());
-                });
+            DefaultAttachment attachment = new DefaultAttachment(new FileDataSource(fileName));
+            in.addAttachmentObject(fileName, attachment);
 
-                builder.add("attachments", arrayBuilder.build());
-            }
-
-            Folder folder = mailMessage.getOriginalMessage().getFolder();
-            if (!folder.isOpen()) {
-                folder.open(Folder.READ_ONLY);
-            }
-
-            builder.add("subject", mailMessage.getMessage().getSubject());
-            builder.add("content", mailMessage.getBody(String.class).trim());
-        }
-
-        return builder.build();
+            org.apache.camel.Message message = exchange.getMessage();
+            message.setHeader("Subject", subject);
+            message.setHeader("From", from);
+            message.setHeader("To", to);
+            message.setBody(body);
+        });
     }
 
-    // --------------------------------------------------------------------
-
-    @Path("/route/{route}")
+    @Path("/mimeMultipartUnmarshalMarshal")
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
-    public String route(String statement, @PathParam("route") String route) throws Exception {
-        return template.requestBody("direct:" + route, statement, String.class);
-    }
-
-    @Path("/sendWithHeaders/{direct}/{msg}")
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    public void sendWithHeaders(Map<String, Object> headers, @PathParam("direct") String direct, @PathParam("msg") String msg)
-            throws Exception {
-        template.requestBodyAndHeaders("direct:" + direct, msg, headers);
+    public String mimeMultipartUnmarshalMarshal(String body) {
+        return producerTemplate.requestBody("direct:mimeMultipartUnmarshalMarshal", body, String.class);
     }
 
     @Path("/mimeMultipartMarshal/{fileName}/{fileContent}")
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
-    public String mimeMultipart(String body, @PathParam("fileName") String fileName,
-            @PathParam("fileContent") String fileContent) throws Exception {
+    public String mimeMultipart(
+            @PathParam("fileName") String fileName,
+            @PathParam("fileContent") String fileContent,
+            String body) {
 
-        return template.request("direct:mimeMultipartMarshal", e -> {
+        return producerTemplate.request("direct:mimeMultipartMarshal", e -> {
             AttachmentMessage in = e.getMessage(AttachmentMessage.class);
             in.setBody(body);
             in.setHeader(Exchange.CONTENT_TYPE, "text/plain;charset=iso8859-1;other-parameter=true");
@@ -182,28 +158,8 @@ public class CamelResource {
         }).getMessage().getBody(String.class);
     }
 
-    @Path("/send2")
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    public void send(List<String> messages) throws Exception {
-        JavaMailSender sender = new DefaultJavaMailSender();
-        store.connect("localhost", 3110, "jones", "secret");
-        Folder folder = store.getFolder("INBOX");
-        folder.open(Folder.READ_WRITE);
-        folder.expunge();
+    // ------------------------------------------------
 
-        // inserts new messages
-        Message[] msgs = new Message[messages.size()];
-        int i = 0;
-        for (String msg : messages) {
-            msgs[i] = new MimeMessage(sender.getSession());
-            msgs[i].setHeader("Message-ID", "" + i);
-            msgs[i++].setText(msg);
-        }
-        folder.appendMessages(msgs);
-        folder.close(true);
-        store.close();
-    }
 
     @Path("/getReceived")
     @GET
@@ -231,7 +187,6 @@ public class CamelResource {
     @GET
     public void clear() {
         mailReceivedMessages.clear();
-        //        Mailbox.clearAll();
     }
 
     @GET
