@@ -19,16 +19,20 @@ package org.apache.camel.quarkus.component.quartz;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import javax.sql.DataSource;
+
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource.DataSourceLiteral;
+import io.quarkus.agroal.runtime.UnconfiguredDataSource;
 import io.quarkus.arc.Arc;
 import io.quarkus.arc.ArcContainer;
 import io.quarkus.arc.InstanceHandle;
-import org.quartz.utils.ConnectionProvider;
+import org.quartz.utils.PoolingConnectionProvider;
 
-public class CamelQuarkusQuartzConnectionProvider implements ConnectionProvider {
+public class CamelQuarkusQuartzConnectionProvider implements PoolingConnectionProvider {
     private AgroalDataSource dataSource;
-    private String dataSourceName;
+    private PropertiesDS propertiesDS = new PropertiesDS();
+    private boolean initialized;
 
     @Override
     public Connection getConnection() throws SQLException {
@@ -42,25 +46,61 @@ public class CamelQuarkusQuartzConnectionProvider implements ConnectionProvider 
 
     @Override
     public void initialize() {
-        final ArcContainer container = Arc.container();
-        final InstanceHandle<AgroalDataSource> instanceHandle;
-        final boolean useDefaultDataSource = dataSourceName == null || "".equals(dataSourceName.trim());
-        if (useDefaultDataSource) {
-            instanceHandle = container.instance(AgroalDataSource.class);
-        } else {
-            instanceHandle = container.instance(AgroalDataSource.class, new DataSourceLiteral(dataSourceName));
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>> initialize");
+
+        if (!initialized) {
+            final ArcContainer container = Arc.container();
+            final InstanceHandle<AgroalDataSource> instanceHandle;
+            final boolean useDefaultDataSource = propertiesDS.getDataSourceName() == null
+                    || "".equals(propertiesDS.getDataSourceName().trim());
+            if (useDefaultDataSource) {
+                instanceHandle = container.instance(AgroalDataSource.class);
+            } else {
+                instanceHandle = container.instance(AgroalDataSource.class,
+                        new DataSourceLiteral(propertiesDS.getDataSourceName()));
+            }
+            if (instanceHandle.isAvailable()) {
+                this.dataSource = instanceHandle.get();
+            } else {
+                String message = String.format(
+                        "JDBC Store configured but '%s' datasource is missing. You can configure your datasource by following the guide available at: https://quarkus.io/guides/datasource",
+                        useDefaultDataSource ? "default" : propertiesDS.getDataSourceName());
+                throw new IllegalStateException(message);
+            }
         }
-        if (instanceHandle.isAvailable()) {
-            this.dataSource = instanceHandle.get();
-        } else {
-            String message = String.format(
-                    "JDBC Store configured but '%s' datasource is missing. You can configure your datasource by following the guide available at: https://quarkus.io/guides/datasource",
-                    useDefaultDataSource ? "default" : dataSourceName);
-            throw new IllegalStateException(message);
-        }
+        initialized = true;
     }
 
-    public void setDataSourceName(String dataSourceName) {
-        this.dataSourceName = dataSourceName;
+    public CamelQuarkusQuartzConnectionProvider() {
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>.. create");
+
+    }
+
+    @Override
+    public DataSource getDataSource() {
+        if (!initialized && propertiesDS.getDataSourceName() != null) {
+            initialize();
+        }
+        if (dataSource != null) {
+            return dataSource;
+        }
+        return propertiesDS;
+    }
+
+    public static class PropertiesDS extends UnconfiguredDataSource {
+
+        public PropertiesDS() {
+            super(">>>>>>>>>>>>>>>>>>>");
+        }
+
+        private String dataSourceName;
+
+        public String getDataSourceName() {
+            return dataSourceName;
+        }
+
+        public void setDataSourceName(String dataSourceName) {
+            this.dataSourceName = dataSourceName;
+        }
     }
 }
