@@ -25,6 +25,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -193,6 +194,9 @@ class ElasticsearchRestTest {
     @ParameterizedTest
     @MethodSource("componentNames")
     public void testElasticsearchDeleteIndex(String component) {
+        // TODO: https://github.com/apache/camel-quarkus/issues/3831
+        Assumptions.assumeTrue(component.equals("elasticsearch-rest"));
+
         String indexName = UUID.randomUUID().toString();
         String indexKey = "test-key";
         String indexValue = "Hello Camel Quarkus ElasticSearch REST";
