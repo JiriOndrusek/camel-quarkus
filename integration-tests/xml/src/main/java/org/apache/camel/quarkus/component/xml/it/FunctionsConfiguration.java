@@ -16,8 +16,6 @@
  */
 package org.apache.camel.quarkus.component.xml.it;
 
-import io.quarkus.runtime.annotations.RegisterForReflection;
-
 //@RegisterForReflection(targets = { org.apache.camel.quarkus.component.xml.it.Functions.class })
 //@RegisterForReflection(targets = { org.apache.camel.quarkus.test.support.xslt.Functions.class })
 

@@ -21,6 +21,6 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 @RegisterForReflection
 public class Functions {
     public static String concatDash(String val1, String val2) {
-        return val1 + "+" + val2;
+        return val1 + "-" + val2;
     }
 }

@@ -10365,6 +10365,1052 @@
         <version>0.34.0</version><!-- org.amqphub.quarkus:quarkus-qpid-jms-bom:0.34.0 -->
       </dependency>
       <dependency>
+        <groupId>com.google.guava</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>guava</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>31.1-jre</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <exclusions>
+          <exclusion>
+            <groupId>com.google.code.findbugs</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>jsr305</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+          <exclusion>
+            <groupId>com.google.guava</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>listenablefuture</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>failureaccess</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>1.0.1</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.quarkus</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>quarkus-bootstrap-core</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>2.9.0.Final</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.quarkus</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>quarkus-bootstrap-app-model</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>2.9.0.Final</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.quarkus</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>quarkus-bootstrap-runner</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>2.9.0.Final</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.quarkus</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>quarkus-bootstrap-maven-resolver</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>2.9.0.Final</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.quarkus</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>quarkus-bootstrap-gradle-resolver</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>2.9.0.Final</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.quarkus</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>quarkus-fs-util</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>0.0.9</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>maven-plugin-api</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>3.8.4</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <exclusions>
+          <exclusion>
+            <groupId>javax.annotation</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>javax.annotation-api</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+          <exclusion>
+            <groupId>javax.inject</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>javax.inject</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>maven-model</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>3.8.4</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>maven-core</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>3.8.4</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <exclusions>
+          <exclusion>
+            <groupId>javax.inject</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>javax.inject</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+          <exclusion>
+            <groupId>org.checkerframework</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>checker-qual</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+          <exclusion>
+            <groupId>org.slf4j</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>slf4j-api</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>maven-embedder</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>3.8.4</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <exclusions>
+          <exclusion>
+            <groupId>org.sonatype.plexus</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>plexus-sec-dispatcher</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+          <exclusion>
+            <groupId>org.sonatype.plexus</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>plexus-cipher</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+          <exclusion>
+            <groupId>javax.annotation</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>javax.annotation-api</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+          <exclusion>
+            <groupId>javax.inject</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>javax.inject</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+          <exclusion>
+            <groupId>org.slf4j</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>slf4j-api</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+          <exclusion>
+            <groupId>org.codehaus.plexus</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>plexus-utils</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>maven-settings</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>3.8.4</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.shared</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>maven-shared-utils</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>3.3.4</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>maven-resolver-provider</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>3.8.4</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <exclusions>
+          <exclusion>
+            <groupId>javax.inject</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>javax.inject</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+          <exclusion>
+            <groupId>org.slf4j</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>slf4j-api</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>maven-settings-builder</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>3.8.4</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <exclusions>
+          <exclusion>
+            <groupId>javax.inject</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>javax.inject</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+          <exclusion>
+            <groupId>org.codehaus.plexus</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>plexus-utils</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.resolver</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>maven-resolver-connector-basic</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>1.6.3</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <exclusions>
+          <exclusion>
+            <groupId>org.slf4j</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>slf4j-api</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.resolver</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>maven-resolver-transport-wagon</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>1.6.3</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <exclusions>
+          <exclusion>
+            <groupId>org.slf4j</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>slf4j-api</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.resolver</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>maven-resolver-api</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>1.6.3</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.resolver</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>maven-resolver-util</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>1.6.3</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.wagon</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>wagon-file</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>3.4.3</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <exclusions>
+          <exclusion>
+            <groupId>org.codehaus.plexus</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>plexus-utils</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.wagon</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>wagon-http</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>3.4.3</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <exclusions>
+          <exclusion>
+            <groupId>org.slf4j</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>slf4j-api</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+          <exclusion>
+            <groupId>org.codehaus.plexus</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>plexus-utils</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+          <exclusion>
+            <groupId>commons-io</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>commons-io</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.wagon</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>wagon-provider-api</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>3.4.3</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.sisu</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>org.eclipse.sisu.inject</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>0.3.5</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.sisu</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>org.eclipse.sisu.plexus</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>0.3.5</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <exclusions>
+          <exclusion>
+            <groupId>*</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>*</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>plexus-classworlds</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>2.6.0</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <exclusions>
+          <exclusion>
+            <groupId>*</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+            <artifactId>*</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.jsoup</groupId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <artifactId>jsoup</artifactId><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+        <version>1.14.2</version><!-- io.quarkus:quarkus-bootstrap-bom:2.9.0.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.smallrye.common</groupId><!-- io.smallrye.common:smallrye-common-bom:1.11.0 -->
+        <artifactId>smallrye-common-annotation</artifactId><!-- io.smallrye.common:smallrye-common-bom:1.11.0 -->
+        <version>1.11.0</version><!-- io.smallrye.common:smallrye-common-bom:1.11.0 -->
+      </dependency>
+      <dependency>
+        <groupId>io.smallrye.common</groupId><!-- io.smallrye.common:smallrye-common-bom:1.11.0 -->
+        <artifactId>smallrye-common-classloader</artifactId><!-- io.smallrye.common:smallrye-common-bom:1.11.0 -->
+        <version>1.11.0</version><!-- io.smallrye.common:smallrye-common-bom:1.11.0 -->
+      </dependency>
+      <dependency>
+        <groupId>io.smallrye.common</groupId><!-- io.smallrye.common:smallrye-common-bom:1.11.0 -->
+        <artifactId>smallrye-common-constraint</artifactId><!-- io.smallrye.common:smallrye-common-bom:1.11.0 -->
+        <version>1.11.0</version><!-- io.smallrye.common:smallrye-common-bom:1.11.0 -->
+      </dependency>
+      <dependency>
+        <groupId>io.smallrye.common</groupId><!-- io.smallrye.common:smallrye-common-bom:1.11.0 -->
+        <artifactId>smallrye-common-function</artifactId><!-- io.smallrye.common:smallrye-common-bom:1.11.0 -->
+        <version>1.11.0</version><!-- io.smallrye.common:smallrye-common-bom:1.11.0 -->
+      </dependency>
+      <dependency>
+        <groupId>io.smallrye.common</groupId><!-- io.smallrye.common:smallrye-common-bom:1.11.0 -->
+        <artifactId>smallrye-common-expression</artifactId><!-- io.smallrye.common:smallrye-common-bom:1.11.0 -->
+        <version>1.11.0</version><!-- io.smallrye.common:smallrye-common-bom:1.11.0 -->
+      </dependency>
+      <dependency>
+        <groupId>io.smallrye.common</groupId><!-- io.smallrye.common:smallrye-common-bom:1.11.0 -->
+        <artifactId>smallrye-common-io</artifactId><!-- io.smallrye.common:smallrye-common-bom:1.11.0 -->
+        <version>1.11.0</version><!-- io.smallrye.common:smallrye-common-bom:1.11.0 -->
+      </dependency>
+      <dependency>
+        <groupId>io.smallrye.common</groupId><!-- io.smallrye.common:smallrye-common-bom:1.11.0 -->
+        <artifactId>smallrye-common-vertx-context</artifactId><!-- io.smallrye.common:smallrye-common-bom:1.11.0 -->
+        <version>1.11.0</version><!-- io.smallrye.common:smallrye-common-bom:1.11.0 -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-buffer</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-codec</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-codec-dns</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-codec-haproxy</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-codec-http</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-codec-http2</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-codec-socks</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-common</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-handler</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-handler-proxy</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-resolver</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-resolver-dns</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-transport</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-resolver-dns-classes-macos</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-resolver-dns-native-macos</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-resolver-dns-native-macos</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+        <classifier>osx-x86_64</classifier><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-resolver-dns-native-macos</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+        <classifier>osx-aarch_64</classifier><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-transport-native-unix-common</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-transport-native-unix-common</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+        <classifier>linux-aarch_64</classifier><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-transport-native-unix-common</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+        <classifier>linux-x86_64</classifier><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-transport-native-unix-common</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+        <classifier>osx-x86_64</classifier><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-transport-native-unix-common</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+        <classifier>osx-aarch_64</classifier><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-transport-classes-epoll</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-transport-native-epoll</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-transport-native-epoll</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+        <classifier>linux-aarch_64</classifier><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-transport-native-epoll</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+        <classifier>linux-x86_64</classifier><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-transport-classes-kqueue</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-transport-native-kqueue</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-transport-native-kqueue</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+        <classifier>osx-x86_64</classifier><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-transport-native-kqueue</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>4.1.74.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+        <classifier>osx-aarch_64</classifier><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-tcnative-classes</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>2.0.48.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-tcnative-boringssl-static</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>2.0.48.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-tcnative-boringssl-static</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>2.0.48.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+        <classifier>linux-x86_64</classifier><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-tcnative-boringssl-static</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>2.0.48.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+        <classifier>linux-aarch_64</classifier><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-tcnative-boringssl-static</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>2.0.48.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+        <classifier>osx-x86_64</classifier><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-tcnative-boringssl-static</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>2.0.48.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+        <classifier>osx-aarch_64</classifier><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <artifactId>netty-tcnative-boringssl-static</artifactId><!-- io.netty:netty-bom:4.1.74.Final -->
+        <version>2.0.48.Final</version><!-- io.netty:netty-bom:4.1.74.Final -->
+        <classifier>windows-x86_64</classifier><!-- io.netty:netty-bom:4.1.74.Final -->
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <artifactId>jackson-annotations</artifactId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <version>2.13.2</version><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <artifactId>jackson-core</artifactId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <version>2.13.2</version><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <artifactId>jackson-databind</artifactId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <version>2.13.2.2</version><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <artifactId>jackson-dataformat-avro</artifactId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <version>2.13.2</version><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <artifactId>jackson-dataformat-cbor</artifactId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <version>2.13.2</version><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <artifactId>jackson-dataformat-csv</artifactId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <version>2.13.2</version><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <artifactId>jackson-dataformat-properties</artifactId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <version>2.13.2</version><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <artifactId>jackson-dataformat-protobuf</artifactId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <version>2.13.2</version><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <artifactId>jackson-dataformat-xml</artifactId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <version>2.13.2</version><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <artifactId>jackson-dataformat-yaml</artifactId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <version>2.13.2</version><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <artifactId>jackson-datatype-guava</artifactId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <version>2.13.2</version><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <artifactId>jackson-datatype-joda</artifactId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <version>2.13.2</version><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <artifactId>jackson-datatype-jdk8</artifactId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <version>2.13.2</version><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <artifactId>jackson-datatype-jsr310</artifactId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <version>2.13.2</version><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.jaxrs</groupId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <artifactId>jackson-jaxrs-base</artifactId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <version>2.13.2</version><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.jaxrs</groupId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <artifactId>jackson-jaxrs-json-provider</artifactId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <version>2.13.2</version><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.jr</groupId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <artifactId>jackson-jr-objects</artifactId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <version>2.13.2</version><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.module</groupId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <artifactId>jackson-module-afterburner</artifactId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <version>2.13.2</version><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.module</groupId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <artifactId>jackson-module-jaxb-annotations</artifactId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <version>2.13.2</version><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <exclusions>
+          <exclusion>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.module</groupId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <artifactId>jackson-module-jsonSchema</artifactId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <version>2.13.2</version><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.module</groupId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <artifactId>jackson-module-parameter-names</artifactId><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+        <version>2.13.2</version><!-- com.fasterxml.jackson:jackson-bom:2.13.2.20220328 -->
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId><!-- org.junit:junit-bom:5.8.2 -->
+        <artifactId>junit-jupiter</artifactId><!-- org.junit:junit-bom:5.8.2 -->
+        <version>5.8.2</version><!-- org.junit:junit-bom:5.8.2 -->
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId><!-- org.junit:junit-bom:5.8.2 -->
+        <artifactId>junit-jupiter-api</artifactId><!-- org.junit:junit-bom:5.8.2 -->
+        <version>5.8.2</version><!-- org.junit:junit-bom:5.8.2 -->
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId><!-- org.junit:junit-bom:5.8.2 -->
+        <artifactId>junit-jupiter-engine</artifactId><!-- org.junit:junit-bom:5.8.2 -->
+        <version>5.8.2</version><!-- org.junit:junit-bom:5.8.2 -->
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId><!-- org.junit:junit-bom:5.8.2 -->
+        <artifactId>junit-jupiter-params</artifactId><!-- org.junit:junit-bom:5.8.2 -->
+        <version>5.8.2</version><!-- org.junit:junit-bom:5.8.2 -->
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId><!-- org.junit:junit-bom:5.8.2 -->
+        <artifactId>junit-platform-commons</artifactId><!-- org.junit:junit-bom:5.8.2 -->
+        <version>1.8.2</version><!-- org.junit:junit-bom:5.8.2 -->
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId><!-- org.junit:junit-bom:5.8.2 -->
+        <artifactId>junit-platform-engine</artifactId><!-- org.junit:junit-bom:5.8.2 -->
+        <version>1.8.2</version><!-- org.junit:junit-bom:5.8.2 -->
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId><!-- org.junit:junit-bom:5.8.2 -->
+        <artifactId>junit-platform-launcher</artifactId><!-- org.junit:junit-bom:5.8.2 -->
+        <version>1.8.2</version><!-- org.junit:junit-bom:5.8.2 -->
+      </dependency>
+      <dependency>
+        <groupId>io.fabric8</groupId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <artifactId>kubernetes-model-common</artifactId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <version>5.12.2</version><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+      </dependency>
+      <dependency>
+        <groupId>io.fabric8</groupId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <artifactId>kubernetes-model-core</artifactId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <version>5.12.2</version><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+      </dependency>
+      <dependency>
+        <groupId>io.fabric8</groupId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <artifactId>kubernetes-model-rbac</artifactId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <version>5.12.2</version><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+      </dependency>
+      <dependency>
+        <groupId>io.fabric8</groupId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <artifactId>kubernetes-model-admissionregistration</artifactId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <version>5.12.2</version><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+      </dependency>
+      <dependency>
+        <groupId>io.fabric8</groupId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <artifactId>kubernetes-model-apps</artifactId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <version>5.12.2</version><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+      </dependency>
+      <dependency>
+        <groupId>io.fabric8</groupId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <artifactId>openshift-model</artifactId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <version>5.12.2</version><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+      </dependency>
+      <dependency>
+        <groupId>io.fabric8</groupId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <artifactId>openshift-model-clusterautoscaling</artifactId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <version>5.12.2</version><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+      </dependency>
+      <dependency>
+        <groupId>io.fabric8</groupId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <artifactId>openshift-model-hive</artifactId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <version>5.12.2</version><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+      </dependency>
+      <dependency>
+        <groupId>io.fabric8</groupId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <artifactId>openshift-model-installer</artifactId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <version>5.12.2</version><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+      </dependency>
+      <dependency>
+        <groupId>io.fabric8</groupId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <artifactId>openshift-model-operator</artifactId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <version>5.12.2</version><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+      </dependency>
+      <dependency>
+        <groupId>io.fabric8</groupId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <artifactId>openshift-model-operatorhub</artifactId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <version>5.12.2</version><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+      </dependency>
+      <dependency>
+        <groupId>io.fabric8</groupId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <artifactId>openshift-model-machine</artifactId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <version>5.12.2</version><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+      </dependency>
+      <dependency>
+        <groupId>io.fabric8</groupId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <artifactId>openshift-model-monitoring</artifactId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <version>5.12.2</version><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+      </dependency>
+      <dependency>
+        <groupId>io.fabric8</groupId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <artifactId>openshift-model-console</artifactId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <version>5.12.2</version><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+      </dependency>
+      <dependency>
+        <groupId>io.fabric8</groupId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <artifactId>openshift-model-machineconfig</artifactId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <version>5.12.2</version><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+      </dependency>
+      <dependency>
+        <groupId>io.fabric8</groupId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <artifactId>openshift-model-tuned</artifactId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <version>5.12.2</version><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+      </dependency>
+      <dependency>
+        <groupId>io.fabric8</groupId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <artifactId>openshift-model-whereabouts</artifactId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <version>5.12.2</version><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+      </dependency>
+      <dependency>
+        <groupId>io.fabric8</groupId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <artifactId>openshift-model-storageversionmigrator</artifactId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <version>5.12.2</version><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+      </dependency>
+      <dependency>
+        <groupId>io.fabric8</groupId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <artifactId>openshift-model-miscellaneous</artifactId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <version>5.12.2</version><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+      </dependency>
+      <dependency>
+        <groupId>io.fabric8</groupId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <artifactId>openshift-client</artifactId><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+        <version>5.12.2</version><!-- io.fabric8:kubernetes-client-bom:5.12.2 -->
+      </dependency>
+      <dependency>
+        <groupId>io.vertx</groupId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <artifactId>vertx-codegen</artifactId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <version>4.2.7</version><!-- io.vertx:vertx-dependencies:4.2.7 -->
+      </dependency>
+      <dependency>
+        <groupId>io.vertx</groupId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <artifactId>vertx-codegen</artifactId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <version>4.2.7</version><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <classifier>processor</classifier><!-- io.vertx:vertx-dependencies:4.2.7 -->
+      </dependency>
+      <dependency>
+        <groupId>io.vertx</groupId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <artifactId>vertx-codegen</artifactId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <version>4.2.7</version><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <classifier>sources</classifier><!-- io.vertx:vertx-dependencies:4.2.7 -->
+      </dependency>
+      <dependency>
+        <groupId>io.vertx</groupId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <artifactId>vertx-codegen</artifactId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <version>4.2.7</version><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <classifier>tck</classifier><!-- io.vertx:vertx-dependencies:4.2.7 -->
+      </dependency>
+      <dependency>
+        <groupId>io.vertx</groupId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <artifactId>vertx-codegen</artifactId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <version>4.2.7</version><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <type>test-jar</type><!-- io.vertx:vertx-dependencies:4.2.7 -->
+      </dependency>
+      <dependency>
+        <groupId>io.vertx</groupId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <artifactId>vertx-codegen</artifactId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <version>4.2.7</version><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <classifier>tck-sources</classifier><!-- io.vertx:vertx-dependencies:4.2.7 -->
+      </dependency>
+      <dependency>
+        <groupId>io.vertx</groupId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <artifactId>vertx-core</artifactId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <version>4.2.7</version><!-- io.vertx:vertx-dependencies:4.2.7 -->
+      </dependency>
+      <dependency>
+        <groupId>io.vertx</groupId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <artifactId>vertx-core</artifactId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <version>4.2.7</version><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <classifier>sources</classifier><!-- io.vertx:vertx-dependencies:4.2.7 -->
+      </dependency>
+      <dependency>
+        <groupId>io.vertx</groupId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <artifactId>vertx-core</artifactId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <version>4.2.7</version><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <type>test-jar</type><!-- io.vertx:vertx-dependencies:4.2.7 -->
+      </dependency>
+      <dependency>
+        <groupId>io.vertx</groupId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <artifactId>vertx-auth-common</artifactId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <version>4.2.7</version><!-- io.vertx:vertx-dependencies:4.2.7 -->
+      </dependency>
+      <dependency>
+        <groupId>io.vertx</groupId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <artifactId>vertx-web</artifactId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <version>4.2.7</version><!-- io.vertx:vertx-dependencies:4.2.7 -->
+      </dependency>
+      <dependency>
+        <groupId>io.vertx</groupId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <artifactId>vertx-web</artifactId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <version>4.2.7</version><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <type>test-jar</type><!-- io.vertx:vertx-dependencies:4.2.7 -->
+      </dependency>
+      <dependency>
+        <groupId>io.vertx</groupId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <artifactId>vertx-web</artifactId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <version>4.2.7</version><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <type>js</type><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <classifier>client</classifier><!-- io.vertx:vertx-dependencies:4.2.7 -->
+      </dependency>
+      <dependency>
+        <groupId>io.vertx</groupId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <artifactId>vertx-web-common</artifactId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <version>4.2.7</version><!-- io.vertx:vertx-dependencies:4.2.7 -->
+      </dependency>
+      <dependency>
+        <groupId>io.vertx</groupId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <artifactId>vertx-web-client</artifactId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <version>4.2.7</version><!-- io.vertx:vertx-dependencies:4.2.7 -->
+      </dependency>
+      <dependency>
+        <groupId>io.vertx</groupId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <artifactId>vertx-bridge-common</artifactId><!-- io.vertx:vertx-dependencies:4.2.7 -->
+        <version>4.2.7</version><!-- io.vertx:vertx-dependencies:4.2.7 -->
+      </dependency>
+      <dependency>
+        <groupId>io.grpc</groupId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <artifactId>grpc-alts</artifactId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <version>1.45.1</version><!-- io.grpc:grpc-bom:1.45.1 -->
+      </dependency>
+      <dependency>
+        <groupId>io.grpc</groupId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <artifactId>grpc-api</artifactId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <version>1.45.1</version><!-- io.grpc:grpc-bom:1.45.1 -->
+      </dependency>
+      <dependency>
+        <groupId>io.grpc</groupId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <artifactId>grpc-auth</artifactId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <version>1.45.1</version><!-- io.grpc:grpc-bom:1.45.1 -->
+      </dependency>
+      <dependency>
+        <groupId>io.grpc</groupId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <artifactId>grpc-context</artifactId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <version>1.45.1</version><!-- io.grpc:grpc-bom:1.45.1 -->
+      </dependency>
+      <dependency>
+        <groupId>io.grpc</groupId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <artifactId>grpc-core</artifactId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <version>1.45.1</version><!-- io.grpc:grpc-bom:1.45.1 -->
+      </dependency>
+      <dependency>
+        <groupId>io.grpc</groupId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <artifactId>grpc-googleapis</artifactId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <version>1.45.1</version><!-- io.grpc:grpc-bom:1.45.1 -->
+      </dependency>
+      <dependency>
+        <groupId>io.grpc</groupId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <artifactId>grpc-grpclb</artifactId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <version>1.45.1</version><!-- io.grpc:grpc-bom:1.45.1 -->
+      </dependency>
+      <dependency>
+        <groupId>io.grpc</groupId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <artifactId>grpc-netty</artifactId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <version>1.45.1</version><!-- io.grpc:grpc-bom:1.45.1 -->
+        <exclusions>
+          <exclusion>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>io.grpc</groupId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <artifactId>grpc-netty-shaded</artifactId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <version>1.45.1</version><!-- io.grpc:grpc-bom:1.45.1 -->
+      </dependency>
+      <dependency>
+        <groupId>io.grpc</groupId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <artifactId>grpc-protobuf</artifactId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <version>1.45.1</version><!-- io.grpc:grpc-bom:1.45.1 -->
+      </dependency>
+      <dependency>
+        <groupId>io.grpc</groupId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <artifactId>grpc-protobuf-lite</artifactId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <version>1.45.1</version><!-- io.grpc:grpc-bom:1.45.1 -->
+      </dependency>
+      <dependency>
+        <groupId>io.grpc</groupId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <artifactId>grpc-services</artifactId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <version>1.45.1</version><!-- io.grpc:grpc-bom:1.45.1 -->
+      </dependency>
+      <dependency>
+        <groupId>io.grpc</groupId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <artifactId>grpc-stub</artifactId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <version>1.45.1</version><!-- io.grpc:grpc-bom:1.45.1 -->
+      </dependency>
+      <dependency>
+        <groupId>io.grpc</groupId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <artifactId>grpc-xds</artifactId><!-- io.grpc:grpc-bom:1.45.1 -->
+        <version>1.45.1</version><!-- io.grpc:grpc-bom:1.45.1 -->
+      </dependency>
+      <dependency>
+        <groupId>io.micrometer</groupId><!-- io.micrometer:micrometer-bom:1.8.5 -->
+        <artifactId>micrometer-core</artifactId><!-- io.micrometer:micrometer-bom:1.8.5 -->
+        <version>1.8.5</version><!-- io.micrometer:micrometer-bom:1.8.5 -->
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId><!-- org.testcontainers:testcontainers-bom:1.17.1 -->
+        <artifactId>database-commons</artifactId><!-- org.testcontainers:testcontainers-bom:1.17.1 -->
+        <version>1.17.1</version><!-- org.testcontainers:testcontainers-bom:1.17.1 -->
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId><!-- org.testcontainers:testcontainers-bom:1.17.1 -->
+        <artifactId>jdbc</artifactId><!-- org.testcontainers:testcontainers-bom:1.17.1 -->
+        <version>1.17.1</version><!-- org.testcontainers:testcontainers-bom:1.17.1 -->
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId><!-- org.testcontainers:testcontainers-bom:1.17.1 -->
+        <artifactId>postgresql</artifactId><!-- org.testcontainers:testcontainers-bom:1.17.1 -->
+        <version>1.17.1</version><!-- org.testcontainers:testcontainers-bom:1.17.1 -->
+      </dependency>
+      <dependency>
+        <groupId>io.opentelemetry</groupId><!-- io.opentelemetry:opentelemetry-bom:1.13.0 -->
+        <artifactId>opentelemetry-context</artifactId><!-- io.opentelemetry:opentelemetry-bom:1.13.0 -->
+        <version>1.13.0</version><!-- io.opentelemetry:opentelemetry-bom:1.13.0 -->
+      </dependency>
+      <dependency>
+        <groupId>io.opentelemetry</groupId><!-- io.opentelemetry:opentelemetry-bom:1.13.0 -->
+        <artifactId>opentelemetry-api</artifactId><!-- io.opentelemetry:opentelemetry-bom:1.13.0 -->
+        <version>1.13.0</version><!-- io.opentelemetry:opentelemetry-bom:1.13.0 -->
+      </dependency>
+      <dependency>
+        <groupId>io.opentelemetry</groupId><!-- io.opentelemetry:opentelemetry-bom:1.13.0 -->
+        <artifactId>opentelemetry-sdk</artifactId><!-- io.opentelemetry:opentelemetry-bom:1.13.0 -->
+        <version>1.13.0</version><!-- io.opentelemetry:opentelemetry-bom:1.13.0 -->
+      </dependency>
+      <dependency>
+        <groupId>io.opentelemetry</groupId><!-- io.opentelemetry:opentelemetry-bom:1.13.0 -->
+        <artifactId>opentelemetry-sdk-common</artifactId><!-- io.opentelemetry:opentelemetry-bom:1.13.0 -->
+        <version>1.13.0</version><!-- io.opentelemetry:opentelemetry-bom:1.13.0 -->
+      </dependency>
+      <dependency>
+        <groupId>io.opentelemetry</groupId><!-- io.opentelemetry:opentelemetry-bom:1.13.0 -->
+        <artifactId>opentelemetry-sdk-trace</artifactId><!-- io.opentelemetry:opentelemetry-bom:1.13.0 -->
+        <version>1.13.0</version><!-- io.opentelemetry:opentelemetry-bom:1.13.0 -->
+      </dependency>
+      <dependency>
+        <groupId>io.opentelemetry</groupId><!-- io.opentelemetry:opentelemetry-bom-alpha:1.13.0-alpha -->
+        <artifactId>opentelemetry-semconv</artifactId><!-- io.opentelemetry:opentelemetry-bom-alpha:1.13.0-alpha -->
+        <version>1.13.0-alpha</version><!-- io.opentelemetry:opentelemetry-bom-alpha:1.13.0-alpha -->
+      </dependency>
+      <dependency>
+        <groupId>io.opentelemetry</groupId><!-- io.opentelemetry:opentelemetry-bom-alpha:1.13.0-alpha -->
+        <artifactId>opentelemetry-sdk-logs</artifactId><!-- io.opentelemetry:opentelemetry-bom-alpha:1.13.0-alpha -->
+        <version>1.13.0-alpha</version><!-- io.opentelemetry:opentelemetry-bom-alpha:1.13.0-alpha -->
+      </dependency>
+      <dependency>
+        <groupId>io.opentelemetry</groupId><!-- io.opentelemetry:opentelemetry-bom-alpha:1.13.0-alpha -->
+        <artifactId>opentelemetry-sdk-metrics</artifactId><!-- io.opentelemetry:opentelemetry-bom-alpha:1.13.0-alpha -->
+        <version>1.13.0-alpha</version><!-- io.opentelemetry:opentelemetry-bom-alpha:1.13.0-alpha -->
+      </dependency>
+      <dependency>
+        <groupId>io.smallrye.reactive</groupId><!-- io.smallrye.reactive:mutiny-bom:1.4.0 -->
+        <artifactId>mutiny</artifactId><!-- io.smallrye.reactive:mutiny-bom:1.4.0 -->
+        <version>1.4.0</version><!-- io.smallrye.reactive:mutiny-bom:1.4.0 -->
+      </dependency>
+      <dependency>
+        <groupId>io.smallrye.reactive</groupId><!-- io.smallrye.reactive:mutiny-bom:1.4.0 -->
+        <artifactId>mutiny-smallrye-context-propagation</artifactId><!-- io.smallrye.reactive:mutiny-bom:1.4.0 -->
+        <version>1.4.0</version><!-- io.smallrye.reactive:mutiny-bom:1.4.0 -->
+      </dependency>
+      <dependency>
+        <groupId>io.smallrye.reactive</groupId><!-- io.smallrye.reactive:vertx-mutiny-clients-bom:2.21.0 -->
+        <artifactId>smallrye-mutiny-vertx-runtime</artifactId><!-- io.smallrye.reactive:vertx-mutiny-clients-bom:2.21.0 -->
+        <version>2.21.0</version><!-- io.smallrye.reactive:vertx-mutiny-clients-bom:2.21.0 -->
+      </dependency>
+      <dependency>
+        <groupId>io.smallrye.reactive</groupId><!-- io.smallrye.reactive:vertx-mutiny-clients-bom:2.21.0 -->
+        <artifactId>smallrye-mutiny-vertx-bridge-common</artifactId><!-- io.smallrye.reactive:vertx-mutiny-clients-bom:2.21.0 -->
+        <version>2.21.0</version><!-- io.smallrye.reactive:vertx-mutiny-clients-bom:2.21.0 -->
+      </dependency>
+      <dependency>
+        <groupId>io.smallrye.reactive</groupId><!-- io.smallrye.reactive:vertx-mutiny-clients-bom:2.21.0 -->
+        <artifactId>smallrye-mutiny-vertx-web-common</artifactId><!-- io.smallrye.reactive:vertx-mutiny-clients-bom:2.21.0 -->
+        <version>2.21.0</version><!-- io.smallrye.reactive:vertx-mutiny-clients-bom:2.21.0 -->
+      </dependency>
+      <dependency>
+        <groupId>io.smallrye.reactive</groupId><!-- io.smallrye.reactive:vertx-mutiny-clients-bom:2.21.0 -->
+        <artifactId>smallrye-mutiny-vertx-auth-common</artifactId><!-- io.smallrye.reactive:vertx-mutiny-clients-bom:2.21.0 -->
+        <version>2.21.0</version><!-- io.smallrye.reactive:vertx-mutiny-clients-bom:2.21.0 -->
+      </dependency>
+      <dependency>
+        <groupId>io.smallrye.reactive</groupId><!-- io.smallrye.reactive:vertx-mutiny-clients-bom:2.21.0 -->
+        <artifactId>smallrye-mutiny-vertx-web</artifactId><!-- io.smallrye.reactive:vertx-mutiny-clients-bom:2.21.0 -->
+        <version>2.21.0</version><!-- io.smallrye.reactive:vertx-mutiny-clients-bom:2.21.0 -->
+      </dependency>
+      <dependency>
+        <groupId>io.smallrye.reactive</groupId><!-- io.smallrye.reactive:vertx-mutiny-clients-bom:2.21.0 -->
+        <artifactId>vertx-mutiny-generator</artifactId><!-- io.smallrye.reactive:vertx-mutiny-clients-bom:2.21.0 -->
+        <version>2.21.0</version><!-- io.smallrye.reactive:vertx-mutiny-clients-bom:2.21.0 -->
+      </dependency>
+      <dependency>
+        <groupId>com.google.http-client</groupId><!-- com.google.http-client:google-http-client-bom:1.41.7 -->
+        <artifactId>google-http-client</artifactId><!-- com.google.http-client:google-http-client-bom:1.41.7 -->
+        <version>1.41.7</version><!-- com.google.http-client:google-http-client-bom:1.41.7 -->
+        <exclusions>
+          <exclusion>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>com.google.http-client</groupId><!-- com.google.http-client:google-http-client-bom:1.41.7 -->
+        <artifactId>google-http-client-apache-v2</artifactId><!-- com.google.http-client:google-http-client-bom:1.41.7 -->
+        <version>1.41.7</version><!-- com.google.http-client:google-http-client-bom:1.41.7 -->
+      </dependency>
+      <dependency>
+        <groupId>com.google.http-client</groupId><!-- com.google.http-client:google-http-client-bom:1.41.7 -->
+        <artifactId>google-http-client-appengine</artifactId><!-- com.google.http-client:google-http-client-bom:1.41.7 -->
+        <version>1.41.7</version><!-- com.google.http-client:google-http-client-bom:1.41.7 -->
+      </dependency>
+      <dependency>
+        <groupId>com.google.http-client</groupId><!-- com.google.http-client:google-http-client-bom:1.41.7 -->
+        <artifactId>google-http-client-gson</artifactId><!-- com.google.http-client:google-http-client-bom:1.41.7 -->
+        <version>1.41.7</version><!-- com.google.http-client:google-http-client-bom:1.41.7 -->
+      </dependency>
+      <dependency>
+        <groupId>com.google.http-client</groupId><!-- com.google.http-client:google-http-client-bom:1.41.7 -->
+        <artifactId>google-http-client-jackson2</artifactId><!-- com.google.http-client:google-http-client-bom:1.41.7 -->
+        <version>1.41.7</version><!-- com.google.http-client:google-http-client-bom:1.41.7 -->
+      </dependency>
+      <dependency>
+        <groupId>org.jetbrains.kotlinx</groupId><!-- org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.6.1 -->
+        <artifactId>kotlinx-coroutines-core-jvm</artifactId><!-- org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.6.1 -->
+        <version>1.6.1</version><!-- org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.6.1 -->
+      </dependency>
+      <dependency>
         <groupId>org.eclipse.jetty</groupId><!-- org.eclipse.jetty:jetty-bom:9.4.46.v20220331 -->
         <artifactId>jetty-alpn-client</artifactId><!-- org.eclipse.jetty:jetty-bom:9.4.46.v20220331 -->
         <version>9.4.46.v20220331</version><!-- org.eclipse.jetty:jetty-bom:9.4.46.v20220331 -->
