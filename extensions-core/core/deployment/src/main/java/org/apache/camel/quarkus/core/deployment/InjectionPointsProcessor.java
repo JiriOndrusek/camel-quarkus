@@ -56,6 +56,7 @@ import org.apache.camel.quarkus.core.CamelCapabilities;
 import org.apache.camel.quarkus.core.CamelRecorder;
 import org.apache.camel.quarkus.core.InjectionPointsRecorder;
 import org.apache.camel.quarkus.core.deployment.spi.CamelRuntimeTaskBuildItem;
+import org.apache.camel.quarkus.test.CamelQuarkusTest;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationTarget.Kind;
@@ -226,12 +227,16 @@ public class InjectionPointsProcessor {
             BuildProducer<SyntheticBeanBuildItem> syntheticBeans,
             BuildProducer<NativeImageProxyDefinitionBuildItem> proxyDefinitions) {
 
+        Set<String> alreadyCreated = new HashSet<>();
+
         for (AnnotationInstance annot : index.getIndex().getAnnotations(ENDPOINT_INJECT_ANNOTATION)) {
             final AnnotationTarget target = annot.target();
             switch (target.kind()) {
             case FIELD: {
                 final FieldInfo field = target.asField();
-                endpointInjectBeans(recorder, syntheticBeans, index.getIndex(), annot, field.type().name());
+                if (!excludeTestSyntheticBeanDuplicities(annot, alreadyCreated, field.declaringClass())) {
+                    endpointInjectBeans(recorder, syntheticBeans, index.getIndex(), annot, field.type().name());
+                }
                 break;
             }
             case METHOD: {
@@ -251,8 +256,10 @@ public class InjectionPointsProcessor {
             switch (target.kind()) {
             case FIELD: {
                 final FieldInfo field = target.asField();
-                produceBeans(recorder, capabilities, syntheticBeans, proxyDefinitions, beanCapabilityAvailable,
-                        index.getIndex(), annot, field.type().name(), field.name(), field.declaringClass().name());
+                if (!excludeTestSyntheticBeanDuplicities(annot, alreadyCreated, field.declaringClass())) {
+                    produceBeans(recorder, capabilities, syntheticBeans, proxyDefinitions, beanCapabilityAvailable,
+                            index.getIndex(), annot, field.type().name(), field.name(), field.declaringClass().name());
+                }
                 break;
             }
             case METHOD: {
@@ -263,6 +270,33 @@ public class InjectionPointsProcessor {
             default:
                 throw new IllegalStateException("Expected field, got " + target.kind());
             }
+        }
+    }
+
+    private boolean excludeTestSyntheticBeanDuplicities(AnnotationInstance annot, Set<String> alreadyCreated,
+            ClassInfo declaringClass) {
+        String identifier = annot.toString(false) + ":" + getTargetClass(annot).toString();
+
+        if (declaringClass.annotations().containsKey(DotName.createSimple(CamelQuarkusTest.class.getName()))) {
+            if (alreadyCreated.contains(identifier)) {
+                //                System.out.println(">>>>>>>>>> already exists: " + identifier);
+                return true;
+            } else {
+                //                System.out.println(">>>>>>>>>> creating: " + identifier);
+                alreadyCreated.add(identifier);
+            }
+        }
+        return false;
+    }
+
+    private DotName getTargetClass(AnnotationInstance annot) {
+        switch (annot.target().kind()) {
+        case FIELD:
+            return annot.target().asField().type().name();
+        case METHOD:
+            return annot.target().asMethod().returnType().name();
+        default:
+            return null;
         }
     }
 
