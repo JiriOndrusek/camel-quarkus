@@ -81,7 +81,10 @@ public class FastCamelContext extends DefaultCamelContext implements CatalogCame
     @Override
     protected Registry createRegistry() {
         // Registry creation is done at build time
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException(
+                "In case that the test based on CamelQuarkusTestSupport throws this exception, " +
+                        "be aware that re-starting of context is not possible. " +
+                        "(See https://camel.apache.org/camel-quarkus/2.10.x/user-guide/testing.html)");
     }
 
     @Override
