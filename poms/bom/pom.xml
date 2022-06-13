@@ -5301,6 +5301,11 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.camel</groupId>
+                <artifactId>camel-test-junit5</artifactId>
+                <version>${camel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel</groupId>
                 <artifactId>camel-threadpoolfactory-vertx</artifactId>
                 <version>${camel.version}</version>
                 <exclusions>
@@ -7600,6 +7605,11 @@
             <dependency>
                 <groupId>org.apache.camel.quarkus</groupId>
                 <artifactId>camel-quarkus-jta-deployment</artifactId>
+                <version>${camel-quarkus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel.quarkus</groupId>
+                <artifactId>camel-quarkus-junit5</artifactId>
                 <version>${camel-quarkus.version}</version>
             </dependency>
             <dependency>
@@ -10199,92 +10209,92 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.l2x6.cq</groupId>
-                <artifactId>cq-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>flatten-bom</id>
-                        <goals>
-                            <goal>flatten-bom</goal>
-                        </goals>
-                        <phase>process-resources</phase>
-                        <configuration>
-                            <originExcludes>
-                                <!-- Remove BOM entries from the flattened BOM which come from quarkus-bom -->
-                                <!-- This is mainly to get rid of potentially outdated quarkus-bom imports brought -->
-                                <!-- via other participant's BOMs that we are importing -->
-                                <originExclude>io.quarkus:quarkus-bom</originExclude>
-                            </originExcludes>
-                            <resolutionEntryPointIncludes>
-                                <!-- We not only flatten the BOM, we also shrink it down so that includes -->
-                                <!-- entries that our extensions need. Here we define the set of our artifacts -->
-                                <!-- whose dependencies we want to cover in the flattened BOM -->
-                                <resolutionEntryPointInclude>org.apache.camel.quarkus:*</resolutionEntryPointInclude>
-                                <resolutionEntryPointInclude>ca.uhn.hapi:*</resolutionEntryPointInclude>
-                                <resolutionEntryPointInclude>net.openhft:affinity</resolutionEntryPointInclude><!-- https://github.com/apache/camel-quarkus/issues/3788 -->
-                            </resolutionEntryPointIncludes>
-                            <addExclusions>
-                                <addExclusion>
-                                    <gavPattern>org.amqphub.quarkus:quarkus-qpid-jms</gavPattern>
-                                    <exclusions>org.apache.geronimo.specs:geronimo-jms_2.0_spec</exclusions>
-                                </addExclusion>
-                                <addExclusion>
-                                    <gavPattern>com.datastax.oss:java-driver-core</gavPattern>
-                                    <exclusions>com.google.code.findbugs:jsr305</exclusions>
-                                </addExclusion>
-                                <addExclusion>
-                                    <gavPattern>com.datastax.oss:java-driver-query-builder</gavPattern>
-                                    <exclusions>com.google.code.findbugs:jsr305</exclusions>
-                                </addExclusion>
-                                <addExclusion>
-                                    <gavPattern>io.quarkiverse.minio:quarkus-minio</gavPattern>
-                                    <exclusions>com.google.code.findbugs:jsr305</exclusions>
-                                </addExclusion>
-                                <addExclusion>
-                                    <gavPattern>software.amazon.awssdk:apache-client</gavPattern>
-                                    <exclusions>commons-logging:commons-logging</exclusions>
-                                </addExclusion>
-                                <addExclusion>
-                                    <gavPattern>io.debezium:debezium-embedded:1.6.1.Final:jar</gavPattern>
-                                    <exclusions>javax.activation:activation,javax.servlet:javax.servlet-api,log4j:log4j,org.apache.kafka:kafka-log4j-appender,org.apache.kafka:connect-runtime,org.apache.kafka:connect-file</exclusions>
-                                </addExclusion>
-                                <addExclusion>
-                                    <gavPattern>org.glassfish.jaxb:jaxb-runtime</gavPattern>
-                                    <exclusions>jakarta.xml.bind:jakarta.xml.bind-api</exclusions>
-                                </addExclusion>
+<!--            <plugin>-->
+<!--                <groupId>org.l2x6.cq</groupId>-->
+<!--                <artifactId>cq-maven-plugin</artifactId>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>flatten-bom</id>-->
+<!--                        <goals>-->
+<!--                            <goal>flatten-bom</goal>-->
+<!--                        </goals>-->
+<!--                        <phase>process-resources</phase>-->
+<!--                        <configuration>-->
+<!--                            <originExcludes>-->
+<!--                                &lt;!&ndash; Remove BOM entries from the flattened BOM which come from quarkus-bom &ndash;&gt;-->
+<!--                                &lt;!&ndash; This is mainly to get rid of potentially outdated quarkus-bom imports brought &ndash;&gt;-->
+<!--                                &lt;!&ndash; via other participant's BOMs that we are importing &ndash;&gt;-->
+<!--                                <originExclude>io.quarkus:quarkus-bom</originExclude>-->
+<!--                            </originExcludes>-->
+<!--                            <resolutionEntryPointIncludes>-->
+<!--                                &lt;!&ndash; We not only flatten the BOM, we also shrink it down so that includes &ndash;&gt;-->
+<!--                                &lt;!&ndash; entries that our extensions need. Here we define the set of our artifacts &ndash;&gt;-->
+<!--                                &lt;!&ndash; whose dependencies we want to cover in the flattened BOM &ndash;&gt;-->
+<!--                                <resolutionEntryPointInclude>org.apache.camel.quarkus:*</resolutionEntryPointInclude>-->
+<!--                                <resolutionEntryPointInclude>ca.uhn.hapi:*</resolutionEntryPointInclude>-->
+<!--                                <resolutionEntryPointInclude>net.openhft:affinity</resolutionEntryPointInclude>&lt;!&ndash; https://github.com/apache/camel-quarkus/issues/3788 &ndash;&gt;-->
+<!--                            </resolutionEntryPointIncludes>-->
+<!--                            <addExclusions>-->
+<!--                                <addExclusion>-->
+<!--                                    <gavPattern>org.amqphub.quarkus:quarkus-qpid-jms</gavPattern>-->
+<!--                                    <exclusions>org.apache.geronimo.specs:geronimo-jms_2.0_spec</exclusions>-->
+<!--                                </addExclusion>-->
+<!--                                <addExclusion>-->
+<!--                                    <gavPattern>com.datastax.oss:java-driver-core</gavPattern>-->
+<!--                                    <exclusions>com.google.code.findbugs:jsr305</exclusions>-->
+<!--                                </addExclusion>-->
+<!--                                <addExclusion>-->
+<!--                                    <gavPattern>com.datastax.oss:java-driver-query-builder</gavPattern>-->
+<!--                                    <exclusions>com.google.code.findbugs:jsr305</exclusions>-->
+<!--                                </addExclusion>-->
+<!--                                <addExclusion>-->
+<!--                                    <gavPattern>io.quarkiverse.minio:quarkus-minio</gavPattern>-->
+<!--                                    <exclusions>com.google.code.findbugs:jsr305</exclusions>-->
+<!--                                </addExclusion>-->
+<!--                                <addExclusion>-->
+<!--                                    <gavPattern>software.amazon.awssdk:apache-client</gavPattern>-->
+<!--                                    <exclusions>commons-logging:commons-logging</exclusions>-->
+<!--                                </addExclusion>-->
+<!--                                <addExclusion>-->
+<!--                                    <gavPattern>io.debezium:debezium-embedded:1.6.1.Final:jar</gavPattern>-->
+<!--                                    <exclusions>javax.activation:activation,javax.servlet:javax.servlet-api,log4j:log4j,org.apache.kafka:kafka-log4j-appender,org.apache.kafka:connect-runtime,org.apache.kafka:connect-file</exclusions>-->
+<!--                                </addExclusion>-->
+<!--                                <addExclusion>-->
+<!--                                    <gavPattern>org.glassfish.jaxb:jaxb-runtime</gavPattern>-->
+<!--                                    <exclusions>jakarta.xml.bind:jakarta.xml.bind-api</exclusions>-->
+<!--                                </addExclusion>-->
 
-                                <!-- Should go to quarkus-bom actually -->
-                                <addExclusion>
-                                    <gavPattern>com.google.http-client:google-http-client</gavPattern>
-                                    <exclusions>com.google.code.findbugs:jsr305</exclusions>
-                                </addExclusion>
-                                <addExclusion>
-                                    <gavPattern>io.debezium:debezium-embedded</gavPattern>
-                                    <exclusions>javax.ws.rs:javax.ws.rs-api</exclusions>
-                                </addExclusion>
-                                <addExclusion>
-                                    <gavPattern>io.grpc:grpc-netty</gavPattern>
-                                    <exclusions>com.google.code.findbugs:jsr305</exclusions>
-                                </addExclusion>
-                                <addExclusion>
-                                    <gavPattern>org.apache.httpcomponents:*</gavPattern>
-                                    <exclusions>commons-logging:commons-logging</exclusions>
-                                </addExclusion>
-                                <addExclusion>
-                                    <gavPattern>org.apache.kafka:connect-runtime</gavPattern>
-                                    <exclusions>javax.activation:activation,javax.servlet:javax.servlet-api,log4j:log4j</exclusions>
-                                </addExclusion>
-                                <addExclusion>
-                                    <gavPattern>com.fasterxml.jackson.module:jackson-module-jaxb-annotations</gavPattern>
-                                    <exclusions>jakarta.activation:jakarta.activation-api,jakarta.xml.bind:jakarta.xml.bind-api</exclusions>
-                                </addExclusion>
+<!--                                &lt;!&ndash; Should go to quarkus-bom actually &ndash;&gt;-->
+<!--                                <addExclusion>-->
+<!--                                    <gavPattern>com.google.http-client:google-http-client</gavPattern>-->
+<!--                                    <exclusions>com.google.code.findbugs:jsr305</exclusions>-->
+<!--                                </addExclusion>-->
+<!--                                <addExclusion>-->
+<!--                                    <gavPattern>io.debezium:debezium-embedded</gavPattern>-->
+<!--                                    <exclusions>javax.ws.rs:javax.ws.rs-api</exclusions>-->
+<!--                                </addExclusion>-->
+<!--                                <addExclusion>-->
+<!--                                    <gavPattern>io.grpc:grpc-netty</gavPattern>-->
+<!--                                    <exclusions>com.google.code.findbugs:jsr305</exclusions>-->
+<!--                                </addExclusion>-->
+<!--                                <addExclusion>-->
+<!--                                    <gavPattern>org.apache.httpcomponents:*</gavPattern>-->
+<!--                                    <exclusions>commons-logging:commons-logging</exclusions>-->
+<!--                                </addExclusion>-->
+<!--                                <addExclusion>-->
+<!--                                    <gavPattern>org.apache.kafka:connect-runtime</gavPattern>-->
+<!--                                    <exclusions>javax.activation:activation,javax.servlet:javax.servlet-api,log4j:log4j</exclusions>-->
+<!--                                </addExclusion>-->
+<!--                                <addExclusion>-->
+<!--                                    <gavPattern>com.fasterxml.jackson.module:jackson-module-jaxb-annotations</gavPattern>-->
+<!--                                    <exclusions>jakarta.activation:jakarta.activation-api,jakarta.xml.bind:jakarta.xml.bind-api</exclusions>-->
+<!--                                </addExclusion>-->
 
-                            </addExclusions>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+<!--                            </addExclusions>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
         </plugins>
     </build>
 
