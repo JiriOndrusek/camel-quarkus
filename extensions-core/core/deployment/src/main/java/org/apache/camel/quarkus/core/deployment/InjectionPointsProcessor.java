@@ -275,13 +275,15 @@ public class InjectionPointsProcessor {
 
     private boolean excludeTestSyntheticBeanDuplicities(AnnotationInstance annot, Set<String> alreadyCreated,
             ClassInfo declaringClass) {
+
         if (declaringClass.annotations().containsKey(DotName.createSimple(CamelQuarkusTest.class.getName()))) {
             if (!alreadyCreated.contains(annot.toString())) {
                 alreadyCreated.add(annot.toString());
-                return false;
+            } else {
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     void produceBeans(CamelRecorder recorder, List<CapabilityBuildItem> capabilities,

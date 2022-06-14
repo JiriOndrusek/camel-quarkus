@@ -20,13 +20,9 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.jms.ConnectionFactory;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-
-import org.apache.camel.Produce;
-import org.apache.camel.ProducerTemplate;
 
 @ApplicationScoped
 @Path("/messaging/jms/artemis")
@@ -35,8 +31,8 @@ public class JmsArtemisResource {
     @Inject
     ConnectionFactory connectionFactory;
 
-    @Produce("jms:queue:pojoProduce")
-    ProducerTemplate pojoProducer;
+    //    @Produce("jms:queue:pojoProduce")
+    //    ProducerTemplate pojoProducer;
 
     @GET
     @Path("/connection/factory")
@@ -45,9 +41,9 @@ public class JmsArtemisResource {
         return connectionFactory.getClass().getName();
     }
 
-    @POST
-    @Path("/pojo/producer")
-    public void pojoProducer(String message) {
-        pojoProducer.sendBody(message);
-    }
+    //    @POST
+    //    @Path("/pojo/producer")
+    //    public void pojoProducer(String message) {
+    //        pojoProducer.sendBody(message);
+    //    }
 }
