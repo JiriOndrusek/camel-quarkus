@@ -65,7 +65,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
-            <artifactId>camel-quarkus-integration-test-support-jvm</artifactId>
+            <artifactId>camel-quarkus-junit5</artifactId>
         </dependency>
 
         <!-- test dependencies -->

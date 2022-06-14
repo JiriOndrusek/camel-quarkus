@@ -31,32 +31,32 @@ public class CamelTestProcessor {
         testAnnotationBuildItems.produce(new TestAnnotationBuildItem(CamelQuarkusTest.class.getName()));
     }
 
-//    @BuildStep
-//    void annotationTransformerBuildItem(BuildProducer<AnnotationsTransformerBuildItem> annotationsTransformerBuildItems) {
-//        annotationsTransformerBuildItems.produce(createAnnotationTransformer(null));
-//    }
-//
-//    private AnnotationsTransformerBuildItem createAnnotationTransformer(DotName className) {
-//        return new AnnotationsTransformerBuildItem(new AnnotationsTransformer() {
-//            public boolean appliesTo(org.jboss.jandex.AnnotationTarget.Kind kind) {
-//                return kind == AnnotationTarget.Kind.CLASS;
-//            }
-//
-//            public void transform(TransformationContext context) {
-//
-//                if (context.getAnnotations().contains(
-//                        AnnotationInstance.create(
-//                                DotName.createSimple(CamelQuarkusTest.class.getName()),
-//                                context.getTarget(),
-//                                new AnnotationValue[] {}))) {
-//                    context.transform().add(AnnotationInstance.create(
-//                                    DotName.createSimple(TestProfile.class.getName()),
-//                                    context.getTarget(),
-//                                    new AnnotationValue[] { AnnotationValue.createClassValue("value",
-//                                            Type.create(context.getTarget().asClass().name(), Type.Kind.CLASS)) }))
-//                            .done();
-//                }
-//            }
-//        });
-    }
+    //    @BuildStep
+    //    void annotationTransformerBuildItem(BuildProducer<AnnotationsTransformerBuildItem> annotationsTransformerBuildItems) {
+    //        annotationsTransformerBuildItems.produce(createAnnotationTransformer(null));
+    //    }
+    //
+    //    private AnnotationsTransformerBuildItem createAnnotationTransformer(DotName className) {
+    //        return new AnnotationsTransformerBuildItem(new AnnotationsTransformer() {
+    //            public boolean appliesTo(org.jboss.jandex.AnnotationTarget.Kind kind) {
+    //                return kind == AnnotationTarget.Kind.CLASS;
+    //            }
+    //
+    //            public void transform(TransformationContext context) {
+    //
+    //                if (context.getAnnotations().contains(
+    //                        AnnotationInstance.create(
+    //                                DotName.createSimple(CamelQuarkusTest.class.getName()),
+    //                                context.getTarget(),
+    //                                new AnnotationValue[] {}))) {
+    //                    context.transform().add(AnnotationInstance.create(
+    //                                    DotName.createSimple(TestProfile.class.getName()),
+    //                                    context.getTarget(),
+    //                                    new AnnotationValue[] { AnnotationValue.createClassValue("value",
+    //                                            Type.create(context.getTarget().asClass().name(), Type.Kind.CLASS)) }))
+    //                            .done();
+    //                }
+    //            }
+    //        });
+    //    }
 }

@@ -27,30 +27,16 @@
         <relativePath>../poms/build-parent/pom.xml</relativePath>
     </parent>
 
-    <artifactId>camel-quarkus-integration-tests-support</artifactId>
+    <artifactId>camel-quarkus-test-framework</artifactId>
     <packaging>pom</packaging>
 
-    <name>Camel Quarkus :: Integration Tests :: Support :: Parent</name>
-    <description>Ancillary modules required by some integration tests. Hosted outside the integration-tests directory
+    <name>Camel Quarkus :: Test Framework :: Parent</name>
+    <description>Ancillary modules required by some tests. Hosted outside the integration-tests directory
         so that we can keep a flat hierarchy in the integration-tests directory.
     </description>
 
     <modules>
-        <module>activemq</module>
-        <module>aws2</module>
-        <module>azure</module>
-        <module>custom-dataformat</module>
-        <module>custom-log-component</module>
-        <module>custom-routes-collector</module>
-        <module>custom-type-converter</module>
-        <module>custom-main-listener</module>
-        <module>kafka</module>
-        <module>mongodb</module>
-        <module>process-executor-support</module>
-        <module>test-support</module>
-        <module>mock-backend</module>
-        <module>wiremock</module>
-        <module>xslt-support</module>
+        <module>junit5</module>
     </modules>
 
     <dependencyManagement>

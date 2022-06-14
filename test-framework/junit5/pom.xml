@@ -26,8 +26,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>camel-quarkus-integration-test-support-jvm</artifactId>
-    <name>Camel Quarkus :: Integration Tests :: Support</name>
+    <artifactId>camel-quarkus-junit5</artifactId>
+    <name>Camel Quarkus :: Test Framework :: Junit5</name>
 
     <dependencies>
         <dependency>
