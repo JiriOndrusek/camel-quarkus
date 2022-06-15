@@ -14,17 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.test;
+package org.apachencamel.quarkus.test;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.apache.camel.Produce;
 
-import io.quarkus.test.junit.QuarkusTest;
+/**
+ *
+ */
+public class MyProduceBean {
 
-@Target({ ElementType.TYPE, ElementType.METHOD })
-@Retention(RetentionPolicy.RUNTIME)
-@QuarkusTest
-public @interface CamelQuarkusTest {
+    @Produce("mock:result")
+    MySender sender;
+
+    public void doSomething(String body) {
+        sender.send(body);
+    }
 }

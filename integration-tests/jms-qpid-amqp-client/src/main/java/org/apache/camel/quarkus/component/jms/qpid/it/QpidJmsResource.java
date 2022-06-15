@@ -35,7 +35,7 @@ public class QpidJmsResource {
     @Inject
     ConnectionFactory connectionFactory;
 
-    @Produce("jms:queue:jmsPojoProduce")
+    @Produce("jms:queue:pojoProduce")
     ProducerTemplate pojoProducer;
 
     @GET

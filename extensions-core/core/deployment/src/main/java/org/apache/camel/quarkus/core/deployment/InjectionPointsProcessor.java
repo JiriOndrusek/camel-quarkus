@@ -18,6 +18,7 @@ package org.apache.camel.quarkus.core.deployment;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -227,7 +228,7 @@ public class InjectionPointsProcessor {
             BuildProducer<SyntheticBeanBuildItem> syntheticBeans,
             BuildProducer<NativeImageProxyDefinitionBuildItem> proxyDefinitions) {
 
-        Set<String> alreadyCreated = new HashSet<>();
+        Map<String, Set<ClassInfo>> alreadyCreated = new HashMap<>();
 
         for (AnnotationInstance annot : index.getIndex().getAnnotations(ENDPOINT_INJECT_ANNOTATION)) {
             final AnnotationTarget target = annot.target();
@@ -273,17 +274,36 @@ public class InjectionPointsProcessor {
         }
     }
 
-    private boolean excludeTestSyntheticBeanDuplicities(AnnotationInstance annot, Set<String> alreadyCreated,
+    private boolean excludeTestSyntheticBeanDuplicities(AnnotationInstance annot, Map<String, Set<ClassInfo>> alreadyCreated,
             ClassInfo declaringClass) {
 
         if (declaringClass.annotations().containsKey(DotName.createSimple(CamelQuarkusTest.class.getName()))) {
-            if (!alreadyCreated.contains(annot.toString())) {
-                alreadyCreated.add(annot.toString());
-            } else {
+            System.out.println(alreadyCreated);
+            if (alreadyCreated.containsKey(annot.toString())
+                    && !alreadyCreated.get(annot.toString()).contains(getTargetClass(annot))) {
+                System.out.println(
+                        "---------already exists: " + annot.toString() + ", " + getTargetClass(annot));
                 return true;
+            } else {
+                System.out.println("---------creating: " + annot.toString() + ", " + annot.target().asField().declaringClass());
+                Set<ClassInfo> s = new HashSet<>();
+                s.add(getTargetClass(annot));
+                alreadyCreated.put(annot.toString(), s);
             }
         }
+        System.out.println("---------not our annot: " + annot.toString() + ", " + getTargetClass(annot));
         return false;
+    }
+
+    private ClassInfo getTargetClass(AnnotationInstance annot) {
+        switch (annot.target().kind()) {
+        case FIELD:
+            return annot.target().asField().declaringClass();
+        case METHOD:
+            return annot.target().asMethod().declaringClass();
+        default:
+            return null;
+        }
     }
 
     void produceBeans(CamelRecorder recorder, List<CapabilityBuildItem> capabilities,
