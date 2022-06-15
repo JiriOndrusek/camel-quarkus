@@ -18,7 +18,6 @@ package org.apachencamel.quarkus.test;
 
 import java.util.concurrent.RejectedExecutionException;
 
-import io.quarkus.test.junit.TestProfile;
 import org.apache.camel.CamelExecutionException;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.AdviceWith;
@@ -34,7 +33,7 @@ import static org.apache.camel.test.junit5.TestSupport.assertIsInstanceOf;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @CamelQuarkusTest
-@TestProfile(AdviceWithNotStartedTest.class)
+//@TestProfile(AdviceWithNotStartedTest.class)
 public class AdviceWithNotStartedTest extends CamelQuarkusTestSupport {
 
     @Override
