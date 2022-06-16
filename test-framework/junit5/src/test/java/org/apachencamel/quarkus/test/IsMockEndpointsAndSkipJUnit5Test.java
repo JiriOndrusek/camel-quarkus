@@ -16,7 +16,6 @@
  */
 package org.apachencamel.quarkus.test;
 
-import io.quarkus.test.junit.TestProfile;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.seda.SedaEndpoint;
 import org.apache.camel.quarkus.test.CamelQuarkusTest;
@@ -27,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 // START SNIPPET: e1
 // tag::e1[]
-@TestProfile(IsMockEndpointsAndSkipJUnit5Test.class)
+//@TestProfile(IsMockEndpointsAndSkipJUnit5Test.class)
 @CamelQuarkusTest
 public class IsMockEndpointsAndSkipJUnit5Test extends CamelQuarkusTestSupport {
 

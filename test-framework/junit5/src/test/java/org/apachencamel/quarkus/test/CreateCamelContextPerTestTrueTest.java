@@ -30,7 +30,6 @@ import org.apache.camel.quarkus.test.CamelQuarkusTest;
 import org.apache.camel.quarkus.test.CamelQuarkusTestSupport;
 import org.apache.camel.util.StopWatch;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
@@ -40,7 +39,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @CamelQuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@Disabled //differences between camel-quarkus and camel
 public class CreateCamelContextPerTestTrueTest extends CamelQuarkusTestSupport {
 
     private static final Logger LOG = LoggerFactory.getLogger(CreateCamelContextPerTestTrueTest.class);

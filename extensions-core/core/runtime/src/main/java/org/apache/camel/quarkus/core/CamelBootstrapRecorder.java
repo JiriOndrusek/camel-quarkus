@@ -42,6 +42,7 @@ public class CamelBootstrapRecorder {
         try {
             Logger logger = Logger.getLogger(CamelBootstrapRecorder.class);
             logger.infof("Bootstrap runtime: %s", runtime.getValue().getClass().getName());
+            System.out.println(">>>>>Bootstrap args: " + arguments);
             runtime.getValue().start(arguments.get());
         } catch (Exception e) {
             throw new RuntimeException(e);

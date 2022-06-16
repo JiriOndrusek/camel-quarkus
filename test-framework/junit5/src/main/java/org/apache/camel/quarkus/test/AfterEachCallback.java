@@ -16,23 +16,16 @@
  */
 package org.apache.camel.quarkus.test;
 
-import io.quarkus.test.junit.callback.QuarkusTestAfterAllCallback;
-import io.quarkus.test.junit.callback.QuarkusTestContext;
+import io.quarkus.test.junit.callback.QuarkusTestAfterEachCallback;
+import io.quarkus.test.junit.callback.QuarkusTestMethodContext;
 
-public class AfterAllCallback implements QuarkusTestAfterAllCallback {
+public class AfterEachCallback implements QuarkusTestAfterEachCallback {
 
     @Override
-    public void afterAll(QuarkusTestContext context) {
+    public void afterEach(QuarkusTestMethodContext context) {
         CamelQuarkusTestSupport testInstance = (CamelQuarkusTestSupport) context.getTestInstance();
-
-        if (CallbakUtil.isPerClass(testInstance)) {
-            try {
-                testInstance.tearDownCreateCamelContextPerClass();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        if (!CallbakUtil.isPerClass(testInstance)) {
             CallbakUtil.resetContext(testInstance);
         }
-
     }
 }

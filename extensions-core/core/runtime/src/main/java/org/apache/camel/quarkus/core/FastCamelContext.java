@@ -253,4 +253,39 @@ public class FastCamelContext extends DefaultCamelContext implements CatalogCame
     public String getTestExcludeRoutes() {
         throw new UnsupportedOperationException();
     }
+
+    public void reset() {
+        try {
+            getRouteController().stopAllRoutes();
+            getRouteController().removeAllRoutes();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        getComponentNames().forEach(cn -> removeComponent(cn));
+        getEndpointRegistry().purge();
+        clearEndpointStrategies();
+
+        //reset
+        //        context.adapt(ExtendedCamelContext.class)
+        ////                .registerEndpointCallback(new InterceptSendToMockEndpointStrategy(pattern, true));
+        //
+        //        //endpointStrategies
+        //        from model
+        //
+        //        endpointKeyCounter
+        //                endpointStrategies
+        //        components
+        //                routes
+        //        componentsInCreation
+        //
+        //                propertiesComponent ??? initialProperties???
+        //
+        //        registry ? vytvorit novou???
+        //
+        //        routesLoader
+
+    }
+
 }

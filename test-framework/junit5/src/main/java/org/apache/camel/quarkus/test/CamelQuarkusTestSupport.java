@@ -88,16 +88,30 @@ public class CamelQuarkusTestSupport extends CamelTestSupport
         return false;
     }
 
-    @Override
-    protected void doSetUp() throws Exception {
-        if (!initialized) {
-            super.doSetUp();
-            initialized = true;
-
-        }
+    public void tearDownCreateCamelContextPerClass() throws Exception {
+        super.tearDownCreateCamelContextPerClass();
     }
+
+    //    @Override
+    //    public void setUp() throws Exception {
+    //        super.setUp();
+    //    }
+
+        @Override
+        protected void doSetUp() throws Exception {
+            if (!initialized) {
+                super.doSetUp();
+                initialized = true;
+
+            }
+        }
 
     RoutesBuilder getRouteBuilder() throws Exception {
         return createRouteBuilder();
+    }
+
+    @Override
+    protected void stopTemplates() throws Exception {
+        //do nothing
     }
 }

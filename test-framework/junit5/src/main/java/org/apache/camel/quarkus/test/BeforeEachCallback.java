@@ -35,11 +35,7 @@ public class BeforeEachCallback implements QuarkusTestBeforeEachCallback {
         testInstance.setCurrentTestName(getDisplayName(context.getTestMethod()));
         testInstance.setGlobalStore(new NamespaceAwareStore(new ExtensionValuesStore(null), ExtensionContext.Namespace.GLOBAL));
 
-        //        try {
-        //            testInstance.context.addRoutes(testInstance.getRouteBuilder());
-        //        } catch (Exception e) {
-        //            e.printStackTrace();
-        //        }
+        testInstance.setIsCreateCamelContextPerClass(CallbakUtil.isPerClass(testInstance));
     }
 
     private String getDisplayName(Method method) {

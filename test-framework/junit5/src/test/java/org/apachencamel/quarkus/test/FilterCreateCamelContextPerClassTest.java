@@ -17,9 +17,9 @@
 package org.apachencamel.quarkus.test;
 
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.quarkus.test.CamelQuarkusTest;
 import org.apache.camel.quarkus.test.CamelQuarkusTestSupport;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
@@ -29,7 +29,6 @@ import org.junit.jupiter.api.TestInstance;
 // START SNIPPET: example
 @CamelQuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@Disabled //In camel-quarkus,context is created per test profile
 public class FilterCreateCamelContextPerClassTest extends CamelQuarkusTestSupport {
 
     @Test
@@ -41,6 +40,8 @@ public class FilterCreateCamelContextPerClassTest extends CamelQuarkusTestSuppor
         template.sendBodyAndHeader("direct:start", expectedBody, "foo", "bar");
 
         assertMockEndpointsSatisfied();
+
+        MockEndpoint.resetMocks(context);
     }
 
     @Test
@@ -50,6 +51,8 @@ public class FilterCreateCamelContextPerClassTest extends CamelQuarkusTestSuppor
         template.sendBodyAndHeader("direct:start", "<notMatched/>", "foo", "notMatchedHeaderValue");
 
         assertMockEndpointsSatisfied();
+
+        MockEndpoint.resetMocks(context);
     }
 
     @Override
