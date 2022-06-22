@@ -78,6 +78,8 @@ public class InjectionPointsProcessor {
             .createSimple(EndpointInject.class.getName());
     private static final DotName PRODUCE_ANNOTATION = DotName
             .createSimple(Produce.class.getName());
+    private static final DotName TEST_SUPPORT_CLASS_NAME = DotName
+            .createSimple("org.apache.camel.quarkus.test.CamelQuarkusTestSupport");
 
     private static SyntheticBeanBuildItem syntheticBean(DotName name, Supplier<?> creator) {
         return SyntheticBeanBuildItem.configure(name)
@@ -233,7 +235,7 @@ public class InjectionPointsProcessor {
             switch (target.kind()) {
             case FIELD: {
                 final FieldInfo field = target.asField();
-                if (!excludeTestSyntheticBeanDuplicities(annot, alreadyCreated, field.declaringClass())) {
+                if (!excludeTestSyntheticBeanDuplicities(annot, alreadyCreated, field.declaringClass(), index.getIndex())) {
                     endpointInjectBeans(recorder, syntheticBeans, index.getIndex(), annot, field.type().name());
                 }
                 break;
@@ -255,7 +257,7 @@ public class InjectionPointsProcessor {
             switch (target.kind()) {
             case FIELD: {
                 final FieldInfo field = target.asField();
-                if (!excludeTestSyntheticBeanDuplicities(annot, alreadyCreated, field.declaringClass())) {
+                if (!excludeTestSyntheticBeanDuplicities(annot, alreadyCreated, field.declaringClass(), index.getIndex())) {
                     produceBeans(recorder, capabilities, syntheticBeans, proxyDefinitions, beanCapabilityAvailable,
                             index.getIndex(), annot, field.type().name(), field.name(), field.declaringClass().name());
                 }
@@ -273,10 +275,10 @@ public class InjectionPointsProcessor {
     }
 
     private boolean excludeTestSyntheticBeanDuplicities(AnnotationInstance annot, Set<String> alreadyCreated,
-            ClassInfo declaringClass) {
+            ClassInfo declaringClass, IndexView index) {
         String identifier = annot.toString(false) + ":" + getTargetClass(annot).toString();
 
-        if (declaringClass.annotations().containsKey(DotName.createSimple(CamelTestProcessor.TEST_ANNOTATION_CLASS_NAME))) {
+        if (extendsCamelQuarkusTest(declaringClass, index)) {
             if (alreadyCreated.contains(identifier)) {
                 //                System.out.println(">>>>>>>>>> already exists: " + identifier);
                 return true;
@@ -297,6 +299,20 @@ public class InjectionPointsProcessor {
         default:
             return null;
         }
+    }
+
+    private boolean extendsCamelQuarkusTest(ClassInfo declaringClass, IndexView indexView) {
+        if (declaringClass == null) {
+            return false;
+        }
+
+        if (TEST_SUPPORT_CLASS_NAME.equals(declaringClass.name())) {
+            return true;
+        }
+
+        //iterate over parent until found CamelQuarkusTest or null
+        return (declaringClass.superName() != null &&
+                extendsCamelQuarkusTest(indexView.getClassByName(declaringClass.superName()), indexView));
     }
 
     void produceBeans(CamelRecorder recorder, List<CapabilityBuildItem> capabilities,

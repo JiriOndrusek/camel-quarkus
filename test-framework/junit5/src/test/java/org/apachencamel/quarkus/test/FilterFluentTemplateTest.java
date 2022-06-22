@@ -16,12 +16,12 @@
  */
 package org.apachencamel.quarkus.test;
 
+import io.quarkus.test.junit.QuarkusTest;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.FluentProducerTemplate;
 import org.apache.camel.Produce;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.quarkus.test.CamelQuarkusTest;
 import org.apache.camel.quarkus.test.CamelQuarkusTestSupport;
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
  */
 // START SNIPPET: example
 // tag::example[]
-@CamelQuarkusTest
+@QuarkusTest
 public class FilterFluentTemplateTest extends CamelQuarkusTestSupport {
 
     @EndpointInject("mock:result")

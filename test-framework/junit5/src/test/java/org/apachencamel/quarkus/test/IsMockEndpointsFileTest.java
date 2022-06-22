@@ -16,17 +16,17 @@
  */
 package org.apachencamel.quarkus.test;
 
+import io.quarkus.test.junit.QuarkusTest;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.quarkus.test.CamelQuarkusTest;
 import org.apache.camel.quarkus.test.CamelQuarkusTestSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.camel.test.junit5.TestSupport.deleteDirectory;
 
-@CamelQuarkusTest
+@QuarkusTest
 public class IsMockEndpointsFileTest extends CamelQuarkusTestSupport {
 
     @Override

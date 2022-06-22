@@ -45,17 +45,12 @@ public class CamelQuarkusTestSupport extends CamelTestSupport
 
     @Override
     public void beforeAll(ExtensionContext context) {
-        //in camel-quarkus, junit5 uses different classloader, necessaryu code was moved into quarkus's callback
+        //replaced by quarkus callback (beforeEach)
     }
 
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
-        //in camel-quarkus, junit5 uses different classloader, necessaryu code was moved into quarkus's callback
-    }
-
-    @Override
-    public void beforeTestExecution(ExtensionContext context) throws Exception {
-        //in camel-quarkus, junit5 uses different classloader, necessaryu code was moved into quarkus's callback
+        //replaced by quarkus callback (beforeEach)
     }
 
     @Override
@@ -82,6 +77,11 @@ public class CamelQuarkusTestSupport extends CamelTestSupport
     @Override
     protected void stopCamelContext() throws Exception {
         //context is started and stopped via quarkus lifecycle
+    }
+
+    @Override
+    protected void doQuarkusCheck() {
+        //can run on Quarkus
     }
 
     public void mockBeforeAll(ExtensionContext context) {

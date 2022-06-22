@@ -16,17 +16,17 @@
  */
 package org.apachencamel.quarkus.test;
 
+import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.Model;
-import org.apache.camel.quarkus.test.CamelQuarkusTest;
 import org.apache.camel.quarkus.test.CamelQuarkusTestSupport;
 import org.junit.jupiter.api.Test;
 
-@CamelQuarkusTest
+@QuarkusTest
 @TestProfile(SimpleWeaveAddMockLastTest.class)
 public class SimpleWeaveAddMockLastTest extends CamelQuarkusTestSupport {
 

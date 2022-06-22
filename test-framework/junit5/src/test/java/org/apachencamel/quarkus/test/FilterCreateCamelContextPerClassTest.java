@@ -16,9 +16,9 @@
  */
 package org.apachencamel.quarkus.test;
 
+import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.quarkus.test.CamelQuarkusTest;
 import org.apache.camel.quarkus.test.CamelQuarkusTestSupport;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -27,7 +27,7 @@ import org.junit.jupiter.api.TestInstance;
  * Tests filtering using Camel Test
  */
 // START SNIPPET: example
-@CamelQuarkusTest
+@QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestProfile(FilterCreateCamelContextPerClassTest.class)
 public class FilterCreateCamelContextPerClassTest extends CamelQuarkusTestSupport {

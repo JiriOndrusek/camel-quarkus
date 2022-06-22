@@ -16,8 +16,8 @@
  */
 package org.apachencamel.quarkus.test;
 
+import io.quarkus.test.junit.QuarkusTest;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.quarkus.test.CamelQuarkusTest;
 import org.apache.camel.quarkus.test.CamelQuarkusTestSupport;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 // START SNIPPET: e1
 // tag::e1[]
-@CamelQuarkusTest
+@QuarkusTest
 public class IsMockEndpointsJUnit5Test extends CamelQuarkusTestSupport {
 
     @Override

@@ -18,17 +18,17 @@ package org.apachencamel.quarkus.test;
 
 import java.util.Properties;
 
+import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.ModelCamelContext;
-import org.apache.camel.quarkus.test.CamelQuarkusTest;
 import org.apache.camel.quarkus.test.CamelQuarkusTestSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-@CamelQuarkusTest
+@QuarkusTest
 @TestProfile(UseOverridePropertiesWithPropertiesComponentTest.class)
 public class UseOverridePropertiesWithPropertiesComponentTest extends CamelQuarkusTestSupport {
 

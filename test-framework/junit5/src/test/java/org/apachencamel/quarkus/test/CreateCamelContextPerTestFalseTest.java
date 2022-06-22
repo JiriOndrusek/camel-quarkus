@@ -18,13 +18,13 @@ package org.apachencamel.quarkus.test;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.quarkus.test.junit.QuarkusTest;
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.quarkus.test.CamelQuarkusTest;
 import org.apache.camel.quarkus.test.CamelQuarkusTestSupport;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@CamelQuarkusTest
+@QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 public class CreateCamelContextPerTestFalseTest extends CamelQuarkusTestSupport {
 

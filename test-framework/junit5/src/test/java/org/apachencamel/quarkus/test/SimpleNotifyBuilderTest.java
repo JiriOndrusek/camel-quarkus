@@ -18,16 +18,16 @@ package org.apachencamel.quarkus.test;
 
 import java.util.concurrent.TimeUnit;
 
+import io.quarkus.test.junit.QuarkusTest;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.quarkus.test.CamelQuarkusTest;
 import org.apache.camel.quarkus.test.CamelQuarkusTestSupport;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@CamelQuarkusTest
+@QuarkusTest
 public class SimpleNotifyBuilderTest extends CamelQuarkusTestSupport {
 
     @Test

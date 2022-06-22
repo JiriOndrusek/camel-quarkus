@@ -16,10 +16,10 @@
  */
 package org.apachencamel.quarkus.test;
 
+import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.seda.SedaEndpoint;
-import org.apache.camel.quarkus.test.CamelQuarkusTest;
 import org.apache.camel.quarkus.test.CamelQuarkusTestSupport;
 import org.junit.jupiter.api.Test;
 
@@ -27,8 +27,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 // START SNIPPET: e1
 // tag::e1[]
+@QuarkusTest
 @TestProfile(IsMockEndpointsAndSkipJUnit5Test.class)
-@CamelQuarkusTest
 public class IsMockEndpointsAndSkipJUnit5Test extends CamelQuarkusTestSupport {
 
     @Override

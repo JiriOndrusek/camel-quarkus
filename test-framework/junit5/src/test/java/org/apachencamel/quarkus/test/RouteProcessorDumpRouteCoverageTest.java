@@ -16,10 +16,10 @@
  */
 package org.apachencamel.quarkus.test;
 
+import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.quarkus.test.CamelQuarkusTest;
 import org.apache.camel.quarkus.test.CamelQuarkusTestSupport;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -30,8 +30,7 @@ import static org.apache.camel.test.junit5.TestSupport.assertFileExists;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@CamelQuarkusTest
-//@Disabled //should work
+@QuarkusTest
 @TestProfile(RouteProcessorDumpRouteCoverageTest.class)
 public class RouteProcessorDumpRouteCoverageTest extends CamelQuarkusTestSupport {
 

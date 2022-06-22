@@ -8,63 +8,65 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
-import io.quarkus.test.junit.TestProfile;
+import org.apache.camel.CamelContext;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.quarkus.test.CamelQuarkusTest;
 import org.apache.camel.quarkus.test.CamelQuarkusTestSupport;
 import org.apache.camel.util.StopWatch;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-// replaces CreateCamelContextPerTestTrueTest
-//tdoo add check of all callbacks and context creation + the same check with perClass
-@CamelQuarkusTest
-@TestProfile(CallbacksPerTestTest.class)
-public class CallbacksPerTestTest extends CamelQuarkusTestSupport {
+public abstract class AbstractCallbacksTest extends CamelQuarkusTestSupport {
 
     public enum Callback {
         postTearDown,
         doSetup,
         preSetup,
-        postSetup;
+        postSetup,
+        contextCreation;
     }
 
-    public static void assertTest(Class testClass, Map<Callback, Long> counts) {
-        for (Callback c : Callback.values()) {
-            Assertions.assertEquals(1, counts.get(c), "Should only call " + c + " once.");
-        }
-    }
+    private final String testName;
 
     @Produce("direct:start")
     protected ProducerTemplate template;
 
+    public AbstractCallbacksTest(String testName) {
+        this.testName = testName;
+    }
+
+    @Override
+    protected CamelContext createCamelContext() throws Exception {
+        createTmpFile(testName, Callback.contextCreation);
+        return super.createCamelContext();
+    }
+
     @Override
     protected void doPreSetup() throws Exception {
-        createTmpFile(Callback.preSetup);
+        createTmpFile(testName, Callback.preSetup);
         super.doPostSetup();
     }
 
     @Override
     protected void doSetUp() throws Exception {
-        createTmpFile(Callback.doSetup);
+        createTmpFile(testName, Callback.doSetup);
         super.doSetUp();
     }
 
     @Override
     protected void doPostSetup() throws Exception {
-        createTmpFile(Callback.postSetup);
+        createTmpFile(testName, Callback.postSetup);
         super.doPostSetup();
     }
 
     @Override
     protected void doPostTearDown() throws Exception {
-        createTmpFile(Callback.postTearDown);
+        createTmpFile(testName, Callback.postTearDown);
         super.doPostTearDown();
     }
 
@@ -75,46 +77,11 @@ public class CallbacksPerTestTest extends CamelQuarkusTestSupport {
         assertMockEndpointsSatisfied();
     }
 
-    @AfterAll
-    public static void shouldTearDown() {
-        // we are called before doPostTearDown so lets wait for that to be
-        // called
-        Runnable r = () -> {
-            Map<Callback, Long> counts = new HashMap<>();
-            try {
-                StopWatch watch = new StopWatch();
-                while (watch.taken() < 5000) {
-                    //LOG.debug("Checking for tear down called correctly");
-                    try {
-                        for (Callback c : Callback.values()) {
-                            long count = doesTmpFileExist(c);
-                            if (count > 0) {
-                                counts.put(c, count);
-                            }
-                        }
-                    } catch (Exception e) {
-                        //ignore
-                    }
-
-                    if (counts.size() == Callback.values().length) {
-                        break;
-                    } else {
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                            break;
-                        }
-                    }
-                }
-            } finally {
-                //  LOG.info("Should only call postTearDown 1 time per test class, called: " + POST_TEAR_DOWN.get());
-                assertTest(null, counts);
-            }
-        };
-        Thread t = new Thread(r);
-        t.setDaemon(false);
-        t.setName("shouldTearDown checker");
-        t.start();
+    @Test
+    public void testMock2() throws Exception {
+        getMockEndpoint("mock:result").expectedBodiesReceived("Hello World 2");
+        template.sendBody("direct:start", "Hello World 2");
+        assertMockEndpointsSatisfied();
     }
 
     @Override
@@ -127,9 +94,57 @@ public class CallbacksPerTestTest extends CamelQuarkusTestSupport {
         };
     }
 
-    private static void createTmpFile(Callback callback) throws Exception {
+    static void assertCount(int expectedCount, Long count, Callback c) {
+        Assertions.assertEquals(expectedCount, count, c.name() + " should be called exactly " + expectedCount + " times");
+    }
+
+    static void testAfterAll(String testName, BiConsumer<Callback, Long> consumer) {
+        // we are called before doPostTearDown so lets wait for that to be
+        // called
+        Runnable r = () -> {
+            Map<AbstractCallbacksTest.Callback, Long> counts = new HashMap<>();
+            try {
+                StopWatch watch = new StopWatch();
+                while (watch.taken() < 5000) {
+                    //LOG.debug("Checking for tear down called correctly");
+                    try {
+                        for (AbstractCallbacksTest.Callback c : AbstractCallbacksTest.Callback.values()) {
+                            long count = doesTmpFileExist(testName, c);
+                            if (count > 0) {
+                                counts.put(c, count);
+                            }
+                        }
+                    } catch (Exception e) {
+                        //ignore
+                    }
+
+                    if (counts.size() == AbstractCallbacksTest.Callback.values().length) {
+                        break;
+                    } else {
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            break;
+                        }
+                    }
+                }
+            } finally {
+                //  LOG.info("Should only call postTearDown 1 time per test class, called: " + POST_TEAR_DOWN.get());
+                for (Callback c : Callback.values()) {
+                    consumer.accept(c, counts.get(c));
+                }
+            }
+
+        };
+        Thread t = new Thread(r);
+        t.setDaemon(false);
+        t.setName("shouldTearDown checker");
+        t.start();
+    }
+
+    private static void createTmpFile(String testName, Callback callback) throws Exception {
         Set<File> testDirs = Arrays.stream(Paths.get("target").toFile().listFiles())
-                .filter(f -> f.isDirectory() && f.getName().startsWith(CallbacksPerTestTest.class.getSimpleName()))
+                .filter(f -> f.isDirectory() && f.getName().startsWith(testName))
                 .collect(Collectors.toSet()); //todo only if there is onw
 
         Path tmpDir;
@@ -138,7 +153,7 @@ public class CallbacksPerTestTest extends CamelQuarkusTestSupport {
         } else if (testDirs.size() > 1) {
             throw new RuntimeException();
         } else {
-            tmpDir = Files.createTempDirectory(Paths.get("target"), CallbacksPerTestTest.class.getSimpleName());
+            tmpDir = Files.createTempDirectory(Paths.get("target"), testName);
             tmpDir.toFile().deleteOnExit();
         }
 
@@ -146,10 +161,10 @@ public class CallbacksPerTestTest extends CamelQuarkusTestSupport {
         tmpFile.toFile().deleteOnExit();
     }
 
-    private static long doesTmpFileExist(Callback callback) throws Exception {
+    private static long doesTmpFileExist(String testName, Callback callback) throws Exception {
         //find test dir
         Set<File> testDirs = Arrays.stream(Paths.get("target").toFile().listFiles())
-                .filter(f -> f.isDirectory() && f.getName().startsWith(CallbacksPerTestTest.class.getSimpleName()))
+                .filter(f -> f.isDirectory() && f.getName().startsWith(testName))
                 .collect(Collectors.toSet()); //todo only if there is onw
 
         if (testDirs.size() > 1) {
