@@ -2115,6 +2115,10 @@
                         <groupId>jakarta.xml.bind</groupId>
                         <artifactId>jakarta.xml.bind-api</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>javax.annotation</groupId>
+                        <artifactId>javax.annotation-api</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -9912,6 +9916,11 @@
                 <groupId>io.projectreactor.netty</groupId>
                 <artifactId>reactor-netty</artifactId>
                 <version>${reactor-netty.version}</version>
+            </dependency>
+            <dependency>
+                <artifactId>reactor-core</artifactId>
+                <groupId>io.projectreactor</groupId>
+                <version>${projectreactor-reactor-core.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.quarkiverse.freemarker</groupId>
