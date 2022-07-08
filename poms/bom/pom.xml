@@ -9782,6 +9782,46 @@
                 <artifactId>google-auth-library-credentials</artifactId>
                 <version>${google-auth-library-credentials.version}</version>
             </dependency>
+            <!-- workaround until https://github.com/apache/camel/pull/8388 is merged -->
+            <dependency>
+                <groupId>com.google.api</groupId>
+                <artifactId>api-common</artifactId>
+                <version>${google-api-common.version}</version>
+            </dependency>
+            <!-- workaround until https://github.com/apache/camel/pull/8388 is merged -->
+            <dependency>
+                <groupId>com.google.api.grpc</groupId>
+                <artifactId>proto-google-iam-v1</artifactId>
+                <version>${google-iam-protos.version}</version>
+            </dependency>
+            <!-- workaround until https://github.com/apache/camel/pull/8388 is merged -->
+            <dependency>
+                <groupId>com.google.api</groupId>
+                <artifactId>gax</artifactId>
+                <version>${google-gax.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.google.code.findbugs</groupId>
+                        <artifactId>jsr305</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.annotation</groupId>
+                        <artifactId>javax.annotation-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <!-- workaround until https://github.com/apache/camel/pull/8388 is merged -->
+            <dependency>
+                <groupId>com.google.api</groupId>
+                <artifactId>gax-grpc</artifactId>
+                <version>${google-gax.version}</version>
+            </dependency>
+            <!-- workaround until https://github.com/apache/camel/pull/8388 is merged -->
+            <dependency>
+                <groupId>com.google.auto.value</groupId>
+                <artifactId>auto-value-annotations</artifactId>
+                <version>${google-auto-value-annotations.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.google.zxing</groupId>
                 <artifactId>core</artifactId>
@@ -9906,6 +9946,11 @@
                 <groupId>io.projectreactor.netty</groupId>
                 <artifactId>reactor-netty</artifactId>
                 <version>${projectreactor-netty.version}</version>
+            </dependency>
+            <dependency>
+                <artifactId>reactor-core</artifactId>
+                <groupId>io.projectreactor</groupId>
+                <version>${projectreactor-reactor-core.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.quarkiverse.freemarker</groupId>
