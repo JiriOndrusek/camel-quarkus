@@ -37,6 +37,7 @@
 
     <modules>
         <module>junit5</module>
+        <module>junit5-extensionTests</module>
     </modules>
 
     <dependencyManagement>
