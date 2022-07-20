@@ -253,6 +253,7 @@ There are several limitations:
 *  Camel Quarkus executes the production of beans during the build phase. Because all the tests are
 build together,  exclusion behavior is implemented into `CamelQuarkusTestSupport`. If a producer of the specific type and name is used in one tests, the instance will be the same for the rest of the tests.
 * JUnit Jupiter callbacks (`BeforeEachCallback`, `AfterEachCallback`, `AfterAllCallback`, `BeforeAllCallback`, `BeforeTestExecutionCallback` and `AfterTestExecutionCallback`) might not work correctly. See the https://quarkus.io/guides/getting-started-testing#enrichment-via-quarkustestcallback[documentation].
+* Use methods `mockBeforeEach` and `mockBeforeAll` instead of `beforeEach` and `beforeAll`.
 
 [source,java]
 ----

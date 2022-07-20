@@ -13,6 +13,11 @@ import static org.hamcrest.CoreMatchers.is;
 @QuarkusTest
 public class HelloET extends CamelQuarkusTestSupport {
 
+    @Override
+    protected void doAfterConstruct() throws Exception {
+        super.doAfterConstruct();
+    }
+
     @Test
     public void hello1Test() throws Exception {
         Files.createDirectories(testDirectory());

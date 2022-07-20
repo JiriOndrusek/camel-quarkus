@@ -21,6 +21,8 @@ import java.util.List;
 import javax.inject.Inject;
 
 import io.quarkus.test.junit.QuarkusTestProfile;
+import io.quarkus.test.junit.callback.QuarkusTestContext;
+import io.quarkus.test.junit.callback.QuarkusTestMethodContext;
 import org.apache.camel.CamelContext;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.Service;
@@ -42,6 +44,19 @@ public class CamelQuarkusTestSupport extends CamelTestSupport
     @Inject
     protected CamelContext context;
 
+    //------------------------ quarkus callbacks ---------------
+    protected void doAfterAll(QuarkusTestContext context) throws Exception {
+    }
+
+    protected void doAfterEach(QuarkusTestMethodContext context) throws Exception {
+    }
+
+    protected void doAfterConstruct() throws Exception {
+    }
+
+    protected void doBeforeEach(QuarkusTestMethodContext context) throws Exception {
+    }
+
     @Override
     protected CamelContext createCamelContext() throws Exception {
         return this.context;
@@ -53,17 +68,17 @@ public class CamelQuarkusTestSupport extends CamelTestSupport
     }
 
     @Override
-    public void beforeAll(ExtensionContext context) {
+    public final void beforeAll(ExtensionContext context) {
         //replaced by quarkus callback (beforeEach)
     }
 
     @Override
-    public void beforeEach(ExtensionContext context) throws Exception {
+    public final void beforeEach(ExtensionContext context) throws Exception {
         //replaced by quarkus callback (beforeEach)
     }
 
     @Override
-    public void afterAll(ExtensionContext context) {
+    public final void afterAll(ExtensionContext context) {
         //in camel-quarkus, junit5 uses different classloader, necessary code was moved into quarkus's callback
         try {
             doPostTearDown();
@@ -74,12 +89,12 @@ public class CamelQuarkusTestSupport extends CamelTestSupport
     }
 
     @Override
-    public void afterEach(ExtensionContext context) throws Exception {
+    public final void afterEach(ExtensionContext context) throws Exception {
         //in camel-quarkus, junit5 uses different classloader, necessary code was moved into quarkus's callback
     }
 
     @Override
-    public void afterTestExecution(ExtensionContext context) throws Exception {
+    public final void afterTestExecution(ExtensionContext context) throws Exception {
         //in camel-quarkus, junit5 uses different classloader, necessary code was moved into quarkus's callback
     }
 
@@ -93,11 +108,11 @@ public class CamelQuarkusTestSupport extends CamelTestSupport
         //can run on Quarkus
     }
 
-    public void mockBeforeAll(ExtensionContext context) {
+    void internalBeforeAll(ExtensionContext context) {
         super.beforeAll(context);
     }
 
-    public void mockBeforeEach(ExtensionContext context) throws Exception {
+    void internalBeforeEach(ExtensionContext context) throws Exception {
         super.beforeEach(context);
     }
 

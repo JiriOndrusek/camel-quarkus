@@ -14,21 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apachencamel.quarkus.test.common;
+package org.apache.camel.quarkus.test;
 
-import io.quarkus.test.junit.QuarkusTest;
-import org.junit.jupiter.api.extension.BeforeEachCallback;
-import org.junit.jupiter.api.extension.ExtensionContext;
+import io.quarkus.test.junit.callback.QuarkusTestAfterConstructCallback;
 
-@QuarkusTest
-public class JupiterCallbackWrongTest extends AbstractSimpleMockTest implements BeforeEachCallback {
-
-    public JupiterCallbackWrongTest() {
-        super("hello", "hello");
-    }
+public class AfterConstructCallback implements QuarkusTestAfterConstructCallback {
 
     @Override
-    public void beforeEach(ExtensionContext context) throws Exception {
-        setMsgToSend("hi");
+    public void afterConstruct(Object testInstance) {
+        if (testInstance instanceof CamelQuarkusTestSupport) {
+            CamelQuarkusTestSupport testSupport = (CamelQuarkusTestSupport) testInstance;
+
+            try {
+                testSupport.doAfterConstruct();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }

@@ -27,6 +27,8 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
+import io.quarkus.test.junit.callback.QuarkusTestContext;
+import io.quarkus.test.junit.callback.QuarkusTestMethodContext;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
@@ -49,7 +51,11 @@ public abstract class AbstractCallbacksTest extends CamelQuarkusTestSupport {
         doSetup,
         preSetup,
         postSetup,
-        contextCreation;
+        contextCreation,
+        afterAll,
+        afterConstruct,
+        afterEach,
+        beforeEach;
     }
 
     private final String testName;
@@ -113,6 +119,30 @@ public abstract class AbstractCallbacksTest extends CamelQuarkusTestSupport {
                 from("direct:start").to("mock:result");
             }
         };
+    }
+
+    @Override
+    protected void doAfterAll(QuarkusTestContext context) throws Exception {
+        createTmpFile(testName, Callback.afterAll);
+        super.doAfterAll(context);
+    }
+
+    @Override
+    protected void doAfterConstruct() throws Exception {
+        createTmpFile(testName, Callback.afterConstruct);
+        super.doAfterConstruct();
+    }
+
+    @Override
+    protected void doAfterEach(QuarkusTestMethodContext context) throws Exception {
+        createTmpFile(testName, Callback.afterEach);
+        super.doAfterEach(context);
+    }
+
+    @Override
+    protected void doBeforeEach(QuarkusTestMethodContext context) throws Exception {
+        createTmpFile(testName, Callback.beforeEach);
+        super.doAfterConstruct();
     }
 
     static void assertCount(int expectedCount, Long count, Callback c, String testName) {

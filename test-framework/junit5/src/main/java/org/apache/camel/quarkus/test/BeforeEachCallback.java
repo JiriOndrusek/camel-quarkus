@@ -34,11 +34,13 @@ public class BeforeEachCallback implements QuarkusTestBeforeEachCallback {
                     getDisplayName(context.getTestMethod()));
 
             try {
-                testInstance.mockBeforeEach(mockContext);
+                testInstance.internalBeforeEach(mockContext);
+                testInstance.internalBeforeAll(mockContext);
+                testInstance.doBeforeEach(context);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            testInstance.mockBeforeAll(mockContext);
+
         }
     }
 

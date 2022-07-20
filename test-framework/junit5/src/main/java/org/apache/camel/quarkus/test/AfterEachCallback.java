@@ -29,6 +29,13 @@ public class AfterEachCallback implements QuarkusTestAfterEachCallback {
             if (!CallbackUtil.isPerClass(testInstance)) {
                 CallbackUtil.resetContext(testInstance);
             }
+
+            try {
+                testInstance.doAfterEach(context);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+
+            }
         }
     }
 }

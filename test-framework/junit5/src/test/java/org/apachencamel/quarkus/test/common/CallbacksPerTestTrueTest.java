@@ -50,8 +50,20 @@ public class CallbacksPerTestTrueTest extends AbstractCallbacksTest {
             case preSetup:
                 assertCount(1, count, callback, CallbacksPerTestTrueTest.class.getSimpleName());
                 break;
+            case afterAll:
+                assertCount(1, count, callback, CallbacksPerTestFalseTest.class.getSimpleName());
+                break;
+            case afterConstruct:
+                assertCount(1, count, callback, CallbacksPerTestFalseTest.class.getSimpleName());
+                break;
+            case afterEach:
+                assertCount(2, count, callback, CallbacksPerTestFalseTest.class.getSimpleName());
+                break;
+            case beforeEach:
+                assertCount(2, count, callback, CallbacksPerTestFalseTest.class.getSimpleName());
+                break;
             default:
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Unknown callback type");
             }
         });
     }
