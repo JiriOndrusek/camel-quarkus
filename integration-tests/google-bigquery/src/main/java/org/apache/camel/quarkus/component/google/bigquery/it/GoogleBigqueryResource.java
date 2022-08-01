@@ -24,7 +24,6 @@ import java.util.Map;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -38,31 +37,34 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 @Path("/google-bigquery")
 public class GoogleBigqueryResource {
 
-    public static final String DATASET_ID = "cq_testing";
-    public static final String TABLE_NAME = "camel_quarkus_basic";
-
     @Inject
     ProducerTemplate producerTemplate;
 
     @Inject
-    @ConfigProperty(name = "google.project.id", defaultValue = "test")
+    @ConfigProperty(name = "google.real-project.id")
     String projectId;
 
-    String tableId = DATASET_ID + "." + TABLE_NAME;
+    @Inject
+    @ConfigProperty(name = "google-bigquery.table-name")
+    String tableName;
 
-    @Path("/table")
-    @POST
-    public Response createTable() {
-        String sql = "CREATE TABLE `" + tableId + "` (id NUMERIC, col1 STRING, col2 STRING)";
-        producerTemplate.requestBody("google-bigquery-sql:" + projectId + ":" + sql, null,
-                Long.class);
-        return Response.created(URI.create("https://camel.apache.org")).build();
-    }
+    @Inject
+    @ConfigProperty(name = "google-bigquery.dataset-name")
+    String datasetName;
+
+    //    @Path("/table")
+    //    @POST
+    //    public Response createTable() {
+    //        String sql = "CREATE TABLE `" + tableId + "` (id NUMERIC, col1 STRING, col2 STRING)";
+    //        producerTemplate.requestBody("google-bigquery-sql:" + projectId + ":" + sql, null,
+    //                Long.class);
+    //        return Response.created(URI.create("https://camel.apache.org")).build();
+    //    }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response insertRow(Map<String, String> tableData) {
-        producerTemplate.requestBody("google-bigquery:" + projectId + ":" + DATASET_ID + ":" + TABLE_NAME, tableData);
+        producerTemplate.requestBody("google-bigquery:" + projectId + ":" + datasetName + ":" + tableName, tableData);
         return Response.created(URI.create("https://camel.apache.org")).build();
     }
 
@@ -70,7 +72,7 @@ public class GoogleBigqueryResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getRow() {
-        String sql = "SELECT * FROM `" + tableId + "`";
+        String sql = "SELECT * FROM `" + datasetName + "." + tableName + "`";
         Long rowCount = producerTemplate.requestBody("google-bigquery-sql:" + projectId + ":" + sql, null, Long.class);
         return Response.ok(rowCount).build();
     }
@@ -80,7 +82,7 @@ public class GoogleBigqueryResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getRowUsingQueryResource() throws IOException {
-        String sql = "SELECT * FROM `" + tableId + "`";
+        String sql = "SELECT * FROM `" + datasetName + "." + tableName + "`";
         java.nio.file.Path path = Files.createTempDirectory("bigquery");
         java.nio.file.Path sqlFile = Files.createTempFile(path, "bigquery", ".sql");
         Files.write(sqlFile, sql.getBytes(StandardCharsets.UTF_8));
@@ -89,14 +91,5 @@ public class GoogleBigqueryResource {
                 "google-bigquery-sql:" + projectId + ":file:" + sqlFile.toAbsolutePath().toString(),
                 null, Long.class);
         return Response.ok(rowCount).build();
-    }
-
-    @Path("/table")
-    @DELETE
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response dropTable() {
-        String sql = "DROP TABLE `" + tableId + "`";
-        producerTemplate.requestBody("google-bigquery-sql:" + projectId + ":" + sql, null, Long.class);
-        return Response.ok().build();
     }
 }

@@ -34,6 +34,7 @@ import com.google.pubsub.v1.Topic;
 import com.google.pubsub.v1.TopicName;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.apache.camel.quarkus.test.support.google.GoogleCloudContext;
 import org.apache.camel.quarkus.test.support.google.GoogleCloudTestResource;
 import org.apache.camel.quarkus.test.support.google.GoogleTestEnvCustomizer;
@@ -47,6 +48,11 @@ public class GooglePubSubCustomizer implements GoogleTestEnvCustomizer {
     private static final String TEST_PROJECT_ID = "test-project";
 
     private PubSubEmulatorContainer container;
+
+    @Override
+    public void inject(QuarkusTestResourceLifecycleManager.TestInjector testInjector) {
+        GoogleTestEnvCustomizer.super.inject(testInjector);
+    }
 
     @Override
     public GenericContainer createContainer() {

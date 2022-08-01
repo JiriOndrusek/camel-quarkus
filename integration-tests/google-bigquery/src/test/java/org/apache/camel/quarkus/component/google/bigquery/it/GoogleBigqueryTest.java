@@ -19,57 +19,78 @@ package org.apache.camel.quarkus.component.google.bigquery.it;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.Job;
+import com.google.cloud.bigquery.JobInfo;
+import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.TableResult;
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import org.apache.camel.quarkus.test.support.google.GoogleCloudTestResource;
+import org.apache.camel.quarkus.test.support.google.GoogleProperty;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
-
-import static org.hamcrest.Matchers.is;
 
 @QuarkusTest
-@EnabledIfEnvironmentVariable(named = "GOOGLE_APPLICATION_CREDENTIALS", matches = ".+")
+@QuarkusTestResource(GoogleCloudTestResource.class)
 class GoogleBigqueryTest {
 
+    @GoogleProperty(name = "google.real-project.id")
+    String projectId;
+
+    @GoogleProperty(name = "google.credentialsPath")
+    String credentialsPath;
+
+    @GoogleProperty(name = "google-bigquery.dataset-name")
+    String dataset;
+
+    @GoogleProperty(name = "google-bigquery.table-name")
+    String tableName;
+
     @Test
-    public void googleBigQueryCrudOperations() {
-        try {
-            // Create table
-            RestAssured.post("/google-bigquery/table")
+    public void producerTest() throws Exception {
+        // Insert rows
+        for (int i = 1; i <= 3; i++) {
+            Map<String, String> object = new HashMap<>();
+            object.put("id", String.valueOf(i));
+            object.put("col1", String.valueOf(i + 1));
+            object.put("col2", String.valueOf(i + 2));
+
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .body(object)
+                    .post("/google-bigquery")
                     .then()
                     .statusCode(201);
-
-            // Insert rows
-            for (int i = 1; i <= 3; i++) {
-                Map<String, String> object = new HashMap<>();
-                object.put("id", String.valueOf(i));
-                object.put("col1", String.valueOf(i + 1));
-                object.put("col2", String.valueOf(i + 2));
-
-                RestAssured.given()
-                        .contentType(ContentType.JSON)
-                        .body(object)
-                        .post("/google-bigquery")
-                        .then()
-                        .statusCode(201);
-            }
-
-            // Verify rows exits
-            RestAssured.get("/google-bigquery")
-                    .then()
-                    .statusCode(200)
-                    .body(is("3"));
-
-            // Verify rows exits using a query resource from the filesystem
-            RestAssured.get("/google-bigquery/file")
-                    .then()
-                    .statusCode(200)
-                    .body(is("3"));
-        } finally {
-            // Delete table
-            RestAssured.delete("/google-bigquery/table")
-                    .then()
-                    .statusCode(200);
         }
+
+        TableResult tr = getTableData();
+        Assertions.assertEquals(3, tr.getTotalRows());
+    }
+
+    private TableResult getTableData() throws Exception {
+        QueryJobConfiguration queryConfig = QueryJobConfiguration
+                .newBuilder("SELECT * FROM `" + dataset + "." + tableName + "`")
+                .setUseLegacySql(false)
+                .build();
+
+        BigQuery client = GoogleBigqueryCustomizer.getClient(projectId, credentialsPath);
+        Job queryJob = client.create(JobInfo.newBuilder(queryConfig).build());
+
+        // Wait for the query to complete.
+        queryJob = queryJob.waitFor();
+
+        // Check for errors
+        if (queryJob == null) {
+            throw new RuntimeException("Job no longer exists");
+        } else if (queryJob.getStatus().getError() != null) {
+            // You can also look at queryJob.getStatus().getExecutionErrors() for all
+            // errors, not just the latest one.
+            throw new RuntimeException(queryJob.getStatus().getError().toString());
+        }
+
+        return queryJob.getQueryResults();
     }
 }
