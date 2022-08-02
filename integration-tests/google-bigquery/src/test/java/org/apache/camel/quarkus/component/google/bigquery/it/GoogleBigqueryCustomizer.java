@@ -69,6 +69,9 @@ public class GoogleBigqueryCustomizer implements GoogleTestEnvCustomizer {
             final String tableNameForPartitioning = "camel-quarkus-table-for-partitioning-"
                     + RandomStringUtils.randomAlphanumeric(49).toLowerCase(Locale.ROOT);
             envContext.property("google-bigquery.table-name-for-partitioning", tableNameForPartitioning);
+            final String tableNameForInsertId = "camel-quarkus-table-for-insert-id-"
+                    + RandomStringUtils.randomAlphanumeric(49).toLowerCase(Locale.ROOT);
+            envContext.property("google-bigquery.table-name-for-insert-id", tableNameForInsertId);
 
             //todo remove
             if (envContext.isUsingMockBackend()) {
@@ -91,6 +94,7 @@ public class GoogleBigqueryCustomizer implements GoogleTestEnvCustomizer {
             createTable(bigQuery, datasetName, tableNameForMap, schema, null);
             createTable(bigQuery, datasetName, tableNameForList, schema, null);
             createTable(bigQuery, datasetName, tableNameForTemplate, schema, null);
+            createTable(bigQuery, datasetName, tableNameForInsertId, schema, null);
 
             Schema partitioningSchema = Schema.of(
                     Field.of("id", StandardSQLTypeName.NUMERIC),
@@ -114,6 +118,7 @@ public class GoogleBigqueryCustomizer implements GoogleTestEnvCustomizer {
                 bigQuery.delete(TableId.of(datasetName, tableNameForTemplate));
                 bigQuery.delete(TableId.of(datasetName, tableNameForTemplate + "_suffix"));
                 bigQuery.delete(TableId.of(datasetName, tableNameForPartitioning));
+                bigQuery.delete(TableId.of(datasetName, tableNameForInsertId));
 
                 bigQuery.delete(DatasetId.of(projectId, datasetName));
             });

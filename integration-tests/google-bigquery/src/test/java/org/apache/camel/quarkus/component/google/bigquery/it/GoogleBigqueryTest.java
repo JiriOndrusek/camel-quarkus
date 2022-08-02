@@ -61,6 +61,9 @@ class GoogleBigqueryTest {
     @GoogleProperty(name = "google-bigquery.table-name-for-partitioning")
     String tableNameForPartitioning;
 
+    @GoogleProperty(name = "google-bigquery.table-name-for-insert-id")
+    String tableNameForInsertId;
+
     @Test
     public void insertMapTest() throws Exception {
         // Insert rows
@@ -166,6 +169,30 @@ class GoogleBigqueryTest {
 
         TableResult tr = getTableData(dataset + "." + tableNameForPartitioning);
         Assertions.assertEquals(11, tr.getTotalRows());
+    }
+
+    @Test
+    public void insertIdTest() throws Exception {
+        // Insert rows
+        for (int i = 1; i <= 2; i++) {
+            Map<String, String> object = new HashMap<>();
+            object.put("id", "1");
+            object.put("col1", String.valueOf(i + 1));
+            object.put("col2", String.valueOf(i + 2));
+
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .body(object)
+                    .queryParam("tableName", tableNameForInsertId)
+                    .queryParam("headerKey", GoogleBigQueryConstants.INSERT_ID)
+                    .queryParam("headerValue", "id")
+                    .post("/google-bigquery/insertMap")
+                    .then()
+                    .statusCode(201);
+        }
+
+        TableResult tr = getTableData(dataset + "." + tableNameForInsertId);
+        Assertions.assertEquals(1, tr.getTotalRows());
     }
 
     private TableResult getTableData(String tableId) throws Exception {
