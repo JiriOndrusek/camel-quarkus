@@ -49,7 +49,6 @@ public class GoogleCloudTestResource implements QuarkusTestResourceLifecycleMana
 
         ServiceLoader<GoogleTestEnvCustomizer> loader = ServiceLoader.load(GoogleTestEnvCustomizer.class);
 
-
         for (GoogleTestEnvCustomizer customizer : loader) {
             LOGGER.info("Loaded GoogleTestEnvCustomizer " + customizer.getClass().getName());
             customizers.add(customizer);
@@ -77,8 +76,10 @@ public class GoogleCloudTestResource implements QuarkusTestResourceLifecycleMana
 
             for (GoogleTestEnvCustomizer customizer : customizers) {
                 GenericContainer container = customizer.createContainer();
-                container.start();
-                envContext.closeable(container);
+                if (container != null) {
+                    container.start();
+                    envContext.closeable(container);
+                }
             }
 
         }
@@ -92,7 +93,7 @@ public class GoogleCloudTestResource implements QuarkusTestResourceLifecycleMana
 
     @Override
     public void inject(TestInjector testInjector) {
-        for(Map.Entry<String, String> entry : envContext.getProperties().entrySet()) {
+        for (Map.Entry<String, String> entry : envContext.getProperties().entrySet()) {
             testInjector.injectIntoFields(entry.getValue(), f -> {
                 GoogleProperty gp = f.getAnnotation(GoogleProperty.class);
                 return gp != null && entry.getKey().equals(gp.name());

@@ -16,18 +16,16 @@
  */
 package org.apache.camel.quarkus.component.google.bigquery.it;
 
-import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -45,10 +43,6 @@ public class GoogleBigqueryResource {
     String projectId;
 
     @Inject
-    @ConfigProperty(name = "google-bigquery.table-name")
-    String tableName;
-
-    @Inject
     @ConfigProperty(name = "google-bigquery.dataset-name")
     String datasetName;
 
@@ -61,35 +55,59 @@ public class GoogleBigqueryResource {
     //        return Response.created(URI.create("https://camel.apache.org")).build();
     //    }
 
+    @Path("/insertMap")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response insertRow(Map<String, String> tableData) {
-        producerTemplate.requestBody("google-bigquery:" + projectId + ":" + datasetName + ":" + tableName, tableData);
+    public Response insertMap(@QueryParam("headerKey") String headerKey,
+            @QueryParam("headerValue") String headerValue,
+            @QueryParam("tableName") String tableName,
+            Map<String, String> tableData) {
+        return insert(tableName, tableData, headerKey, headerValue);
+    }
+
+    @Path("/insertList")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response insertList(@QueryParam("headerKey") String headerKey,
+            @QueryParam("headerValue") String headerValue,
+            @QueryParam("tableName") String tableName,
+            List tableData) {
+
+        return insert(tableName, tableData, headerKey, headerValue);
+    }
+
+    private Response insert(String tableName, Object tableData, String headerKey, String headerValue) {
+        if (headerKey == null) {
+            producerTemplate.requestBody("google-bigquery:" + projectId + ":" + datasetName + ":" + tableName, tableData);
+        } else {
+            producerTemplate.requestBodyAndHeaders("google-bigquery:" + projectId + ":" + datasetName + ":" + tableName,
+                    tableData, Collections.singletonMap(headerKey, headerValue));
+        }
         return Response.created(URI.create("https://camel.apache.org")).build();
     }
 
-    @GET
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getRow() {
-        String sql = "SELECT * FROM `" + datasetName + "." + tableName + "`";
-        Long rowCount = producerTemplate.requestBody("google-bigquery-sql:" + projectId + ":" + sql, null, Long.class);
-        return Response.ok(rowCount).build();
-    }
+    //    @GET
+    //    @Consumes(MediaType.APPLICATION_JSON)
+    //    @Produces(MediaType.APPLICATION_JSON)
+    //    public Response getRow() {
+    //        String sql = "SELECT * FROM `" + datasetName + "." + tableName + "`";
+    //        Long rowCount = producerTemplate.requestBody("google-bigquery-sql:" + projectId + ":" + sql, null, Long.class);
+    //        return Response.ok(rowCount).build();
+    //    }
 
-    @Path("/file")
-    @GET
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getRowUsingQueryResource() throws IOException {
-        String sql = "SELECT * FROM `" + datasetName + "." + tableName + "`";
-        java.nio.file.Path path = Files.createTempDirectory("bigquery");
-        java.nio.file.Path sqlFile = Files.createTempFile(path, "bigquery", ".sql");
-        Files.write(sqlFile, sql.getBytes(StandardCharsets.UTF_8));
-
-        Long rowCount = producerTemplate.requestBody(
-                "google-bigquery-sql:" + projectId + ":file:" + sqlFile.toAbsolutePath().toString(),
-                null, Long.class);
-        return Response.ok(rowCount).build();
-    }
+    //    @Path("/file")
+    //    @GET
+    //    @Consumes(MediaType.APPLICATION_JSON)
+    //    @Produces(MediaType.APPLICATION_JSON)
+    //    public Response getRowUsingQueryResource() throws IOException {
+    //        String sql = "SELECT * FROM `" + datasetName + "." + tableName + "`";
+    //        java.nio.file.Path path = Files.createTempDirectory("bigquery");
+    //        java.nio.file.Path sqlFile = Files.createTempFile(path, "bigquery", ".sql");
+    //        Files.write(sqlFile, sql.getBytes(StandardCharsets.UTF_8));
+    //
+    //        Long rowCount = producerTemplate.requestBody(
+    //                "google-bigquery-sql:" + projectId + ":file:" + sqlFile.toAbsolutePath().toString(),
+    //                null, Long.class);
+    //        return Response.ok(rowCount).build();
+    //    }
 }

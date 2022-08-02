@@ -17,6 +17,8 @@
 package org.apache.camel.quarkus.component.google.bigquery.it;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import com.google.cloud.bigquery.BigQuery;
@@ -28,6 +30,7 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import org.apache.camel.component.google.bigquery.GoogleBigQueryConstants;
 import org.apache.camel.quarkus.test.support.google.GoogleCloudTestResource;
 import org.apache.camel.quarkus.test.support.google.GoogleProperty;
 import org.junit.jupiter.api.Assertions;
@@ -46,11 +49,20 @@ class GoogleBigqueryTest {
     @GoogleProperty(name = "google-bigquery.dataset-name")
     String dataset;
 
-    @GoogleProperty(name = "google-bigquery.table-name")
-    String tableName;
+    @GoogleProperty(name = "google-bigquery.table-name-for-map")
+    String tableNameForMap;
+
+    @GoogleProperty(name = "google-bigquery.table-name-for-list")
+    String tableNameForList;
+
+    @GoogleProperty(name = "google-bigquery.table-name-for-template")
+    String tableNameForTemplate;
+
+    @GoogleProperty(name = "google-bigquery.table-name-for-partitioning")
+    String tableNameForPartitioning;
 
     @Test
-    public void producerTest() throws Exception {
+    public void insertMapTest() throws Exception {
         // Insert rows
         for (int i = 1; i <= 3; i++) {
             Map<String, String> object = new HashMap<>();
@@ -61,18 +73,104 @@ class GoogleBigqueryTest {
             RestAssured.given()
                     .contentType(ContentType.JSON)
                     .body(object)
-                    .post("/google-bigquery")
+                    .queryParam("tableName", tableNameForMap)
+                    .post("/google-bigquery/insertMap")
                     .then()
                     .statusCode(201);
         }
 
-        TableResult tr = getTableData();
+        TableResult tr = getTableData(dataset + "." + tableNameForMap);
         Assertions.assertEquals(3, tr.getTotalRows());
     }
 
-    private TableResult getTableData() throws Exception {
+    @Test
+    public void insertListTest() throws Exception {
+        // Insert rows
+        List data = new LinkedList();
+        for (int i = 1; i <= 3; i++) {
+            Map<String, String> object = new HashMap<>();
+            object.put("id", String.valueOf(i));
+            object.put("col1", String.valueOf(i + 1));
+            object.put("col2", String.valueOf(i + 2));
+
+            data.add(object);
+        }
+
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(data)
+                .queryParam("tableName", tableNameForList)
+                .post("/google-bigquery/insertList")
+                .then()
+                .statusCode(201);
+
+        TableResult tr = getTableData(dataset + "." + tableNameForList);
+        Assertions.assertEquals(3, tr.getTotalRows());
+    }
+
+    @Test
+    public void templateTableTest() throws Exception {
+        // Insert rows
+        for (int i = 1; i <= 5; i++) {
+            Map<String, String> object = new HashMap<>();
+            object.put("id", String.valueOf(i));
+            object.put("col1", String.valueOf(i + 1));
+            object.put("col2", String.valueOf(i + 2));
+
+            if (i <= 3) {
+                RestAssured.given()
+                        .contentType(ContentType.JSON)
+                        .body(object)
+                        .queryParam("tableName", tableNameForTemplate)
+                        .post("/google-bigquery/insertMap")
+                        .then()
+                        .statusCode(201);
+            } else {
+                RestAssured.given()
+                        .contentType(ContentType.JSON)
+                        .body(object)
+                        .queryParam("tableName", tableNameForTemplate)
+                        .queryParam("headerKey", GoogleBigQueryConstants.TABLE_SUFFIX)
+                        .queryParam("headerValue", "_suffix")
+                        .post("/google-bigquery/insertMap")
+                        .then()
+                        .statusCode(201);
+            }
+        }
+
+        TableResult tr = getTableData(dataset + "." + tableNameForTemplate);
+        Assertions.assertEquals(3, tr.getTotalRows());
+        tr = getTableData(dataset + "." + tableNameForTemplate + "_suffix");
+        Assertions.assertEquals(2, tr.getTotalRows());
+    }
+
+    @Test
+    public void partitioningTest() throws Exception {
+        // Insert rows
+        for (int i = 1; i <= 11; i++) {
+            Map<String, String> object = new HashMap<>();
+            object.put("id", String.valueOf(i));
+            object.put("col1", String.valueOf(i + 1));
+            object.put("col2", String.valueOf(i + 2));
+            object.put("part", String.valueOf(i));
+
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .body(object)
+                    .queryParam("tableName", tableNameForPartitioning)
+                    .post("/google-bigquery/insertMap")
+                    .then()
+                    .statusCode(201);
+
+        }
+
+        TableResult tr = getTableData(dataset + "." + tableNameForPartitioning);
+        Assertions.assertEquals(11, tr.getTotalRows());
+    }
+
+    private TableResult getTableData(String tableId) throws Exception {
         QueryJobConfiguration queryConfig = QueryJobConfiguration
-                .newBuilder("SELECT * FROM `" + dataset + "." + tableName + "`")
+                .newBuilder(String.format("SELECT * FROM `%s`", tableId))
                 .setUseLegacySql(false)
                 .build();
 

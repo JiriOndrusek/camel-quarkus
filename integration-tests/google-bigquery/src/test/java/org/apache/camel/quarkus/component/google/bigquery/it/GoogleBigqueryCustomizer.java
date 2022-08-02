@@ -27,13 +27,13 @@ import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.DatasetId;
 import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.RangePartitioning;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
-import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.apache.camel.quarkus.test.support.google.GoogleCloudContext;
 import org.apache.camel.quarkus.test.support.google.GoogleTestEnvCustomizer;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -43,24 +43,43 @@ public class GoogleBigqueryCustomizer implements GoogleTestEnvCustomizer {
 
     @Override
     public GenericContainer createContainer() {
-        throw new IllegalStateException();
+        //throw new IllegalStateException();
+        return null;
     }
 
     @Override
     public void customize(GoogleCloudContext envContext) {
-        try {
-            //todo different for mock
-            String projectId = envContext.getProperties().get("google.real-project.id");
 
-            BigQuery bigQuery = getClient(projectId, envContext.getProperties().get("google.credentialsPath"));
+        try {
 
             // ------------------ generate names ----------------
             final String datasetName = "camel_quarkus_dataset_"
                     + RandomStringUtils.randomAlphanumeric(49).toLowerCase(Locale.ROOT);
+            //            final String datasetName = "camel_quarkus_dataset_z3qs6cldm69vgg9jpmvzhuuyimjeltbwm8zwhnqxq14ktcf5b";
             envContext.property("google-bigquery.dataset-name", datasetName);
-            final String tableName = "camel-quarkus-table-"
+            final String tableNameForMap = "camel-quarkus-table-for-map-"
                     + RandomStringUtils.randomAlphanumeric(49).toLowerCase(Locale.ROOT);
-            envContext.property("google-bigquery.table-name", tableName);
+            envContext.property("google-bigquery.table-name-for-map", tableNameForMap);
+            final String tableNameForList = "camel-quarkus-table-for-list-"
+                    + RandomStringUtils.randomAlphanumeric(49).toLowerCase(Locale.ROOT);
+            envContext.property("google-bigquery.table-name-for-list", tableNameForList);
+            final String tableNameForTemplate = "camel-quarkus-table-for-template-"
+                    + RandomStringUtils.randomAlphanumeric(49).toLowerCase(Locale.ROOT);
+            envContext.property("google-bigquery.table-name-for-template", tableNameForTemplate);
+            final String tableNameForPartitioning = "camel-quarkus-table-for-partitioning-"
+                    + RandomStringUtils.randomAlphanumeric(49).toLowerCase(Locale.ROOT);
+            envContext.property("google-bigquery.table-name-for-partitioning", tableNameForPartitioning);
+
+            //todo remove
+            if (envContext.isUsingMockBackend()) {
+                envContext.property("google.real-project.id", "test-project");
+                return;
+            }
+
+            //todo different for mock
+            String projectId = envContext.getProperties().get("google.real-project.id");
+
+            BigQuery bigQuery = getClient(projectId, envContext.getProperties().get("google.credentialsPath"));
 
             // --------------- create ------------------------
             bigQuery.create(DatasetInfo.newBuilder(datasetName).build());
@@ -69,11 +88,32 @@ public class GoogleBigqueryCustomizer implements GoogleTestEnvCustomizer {
                     Field.of("id", StandardSQLTypeName.NUMERIC),
                     Field.of("col1", StandardSQLTypeName.STRING),
                     Field.of("col2", StandardSQLTypeName.STRING));
-            createTable(bigQuery, datasetName, tableName, schema);
+            createTable(bigQuery, datasetName, tableNameForMap, schema, null);
+            createTable(bigQuery, datasetName, tableNameForList, schema, null);
+            createTable(bigQuery, datasetName, tableNameForTemplate, schema, null);
+
+            Schema partitioningSchema = Schema.of(
+                    Field.of("id", StandardSQLTypeName.NUMERIC),
+                    Field.of("col1", StandardSQLTypeName.STRING),
+                    Field.of("col2", StandardSQLTypeName.STRING),
+                    Field.of("part", StandardSQLTypeName.INT64));
+            createTable(bigQuery, datasetName, tableNameForPartitioning, partitioningSchema, RangePartitioning.newBuilder()
+                    .setField("part")
+                    .setRange(
+                            RangePartitioning.Range.newBuilder()
+                                    .setStart(1L)
+                                    .setInterval(2L)
+                                    .setEnd(10L)
+                                    .build())
+                    .build());
 
             // --------------- delete ------------------------
             envContext.closeable(() -> {
-                bigQuery.delete(TableId.of(datasetName, tableName));
+                bigQuery.delete(TableId.of(datasetName, tableNameForMap));
+                bigQuery.delete(TableId.of(datasetName, tableNameForList));
+                bigQuery.delete(TableId.of(datasetName, tableNameForTemplate));
+                bigQuery.delete(TableId.of(datasetName, tableNameForTemplate + "_suffix"));
+                bigQuery.delete(TableId.of(datasetName, tableNameForPartitioning));
 
                 bigQuery.delete(DatasetId.of(projectId, datasetName));
             });
@@ -83,17 +123,26 @@ public class GoogleBigqueryCustomizer implements GoogleTestEnvCustomizer {
         }
     }
 
-    @Override
-    public boolean supportMockBackend() {
-        return false;
-    }
+    //    @Override
+    //    public boolean supportMockBackend() {
+    //        return false;
+    //    }
 
-    public static void createTable(BigQuery bigQuery, String datasetName, String tableName, Schema schema) {
+    public static void createTable(BigQuery bigQuery, String datasetName, String tableName, Schema schema,
+            RangePartitioning rangePartitioning) {
         try {
             // Initialize client that will be used to send requests. This client only needs to be created
             // once, and can be reused for multiple requests.
             TableId tableId = TableId.of(datasetName, tableName);
-            TableDefinition tableDefinition = StandardTableDefinition.of(schema);
+            TableDefinition tableDefinition;
+            if (rangePartitioning == null) {
+                tableDefinition = StandardTableDefinition.of(schema);
+            } else {
+                tableDefinition = StandardTableDefinition.newBuilder()
+                        .setSchema(schema)
+                        .setRangePartitioning(rangePartitioning)
+                        .build();
+            }
             TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
 
             bigQuery.create(tableInfo);
@@ -120,7 +169,4 @@ public class GoogleBigqueryCustomizer implements GoogleTestEnvCustomizer {
                 .getService();
     }
 
-    @Override
-    public void inject(QuarkusTestResourceLifecycleManager.TestInjector testInjector) {
-    }
 }

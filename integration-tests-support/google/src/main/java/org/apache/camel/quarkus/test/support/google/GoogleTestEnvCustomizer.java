@@ -16,7 +16,6 @@
  */
 package org.apache.camel.quarkus.test.support.google;
 
-import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.testcontainers.containers.GenericContainer;
 
 public interface GoogleTestEnvCustomizer<C extends GenericContainer> {
@@ -46,5 +45,4 @@ public interface GoogleTestEnvCustomizer<C extends GenericContainer> {
         return true;
     }
 
-    default void inject(QuarkusTestResourceLifecycleManager.TestInjector testInjector) {};
 }
