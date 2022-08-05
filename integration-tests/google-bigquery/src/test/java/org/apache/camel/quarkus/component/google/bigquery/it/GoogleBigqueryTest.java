@@ -21,6 +21,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
+
 import com.google.api.gax.paging.Page;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.FieldValueList;
@@ -43,10 +45,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.inject.Inject;
-
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -84,19 +83,35 @@ class GoogleBigqueryTest {
 
     @GoogleProperty(name = "google-bigquery.table-name-for-insert-id")
     String tableNameForInsertId;
+    @GoogleProperty(name = "google.bigquery.host")
+    String host;
 
     private Map<String, Integer> rowCounts = new HashMap<>();
 
     @BeforeEach
     public void setup() {
-        if(usingMockBackend) {
-
+        if (usingMockBackend) {
             when(mockBigQuery.insertAll(any())).thenAnswer(invocation -> {
-                InsertAllRequest request = invocation.getArgument(0, InsertAllRequest.class);
-                Integer count = rowCounts.getOrDefault(request.getTable().getTable(), 0);
-                count += request.getRows().size();
-                rowCounts.put(request.getTable().getTable(), count);
                 InsertAllResponse response = mock(InsertAllResponse.class);
+
+                InsertAllRequest request = invocation.getArgument(0, InsertAllRequest.class);
+                String tableId = request.getTable().getDataset() + "." + request.getTable().getTable();
+
+                //if suffix is used, apply it
+                if (request.getTemplateSuffix() != null) {
+                    tableId = tableId + request.getTemplateSuffix();
+                }
+
+                Integer count = rowCounts.getOrDefault(tableId, 0);
+
+                //test for tableId uses the same id, therefore the row count does not change
+                if (count > 0 && tableId.contains(tableNameForInsertId)) {
+                    return response;
+                }
+
+                count += request.getRows().size();
+                rowCounts.put(tableId, count);
+
                 return response;
             });
         }
@@ -234,8 +249,8 @@ class GoogleBigqueryTest {
     }
 
     private TableResult getTableData(String tableId) throws Exception {
-        if(usingMockBackend) {
-            return new TableResult(null, 3, new Page<FieldValueList>() {
+        if (usingMockBackend) {
+            return new TableResult(null, rowCounts.getOrDefault(tableId, 0), new Page<>() {
                 @Override
                 public boolean hasNextPage() {
                     return false;
@@ -263,13 +278,12 @@ class GoogleBigqueryTest {
             });
         }
 
-
         QueryJobConfiguration queryConfig = QueryJobConfiguration
                 .newBuilder(String.format("SELECT * FROM `%s`", tableId))
                 .setUseLegacySql(false)
                 .build();
 
-        BigQuery client = GoogleBigqueryCustomizer.getClient(projectId, credentialsPath);
+        BigQuery client = GoogleBigqueryCustomizer.getClient(projectId, credentialsPath, host);
         Job queryJob = client.create(JobInfo.newBuilder(queryConfig).build());
 
         // Wait for the query to complete.

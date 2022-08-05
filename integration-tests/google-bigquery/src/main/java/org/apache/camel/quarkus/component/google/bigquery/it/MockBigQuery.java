@@ -1,5 +1,10 @@
 package org.apache.camel.quarkus.component.google.bigquery.it;
 
+import java.util.List;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Named;
+
 import com.google.api.gax.paging.Page;
 import com.google.cloud.Policy;
 import com.google.cloud.bigquery.BigQuery;
@@ -30,10 +35,6 @@ import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
 import com.google.cloud.bigquery.TableResult;
 import com.google.cloud.bigquery.WriteChannelConfiguration;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Named;
-import java.util.List;
 
 @ApplicationScoped
 @Named("namedBean")
@@ -259,12 +260,14 @@ public class MockBigQuery implements BigQuery {
     }
 
     @Override
-    public TableResult query(QueryJobConfiguration configuration, JobOption... options) throws InterruptedException, JobException {
+    public TableResult query(QueryJobConfiguration configuration, JobOption... options)
+            throws InterruptedException, JobException {
         return null;
     }
 
     @Override
-    public TableResult query(QueryJobConfiguration configuration, JobId jobId, JobOption... options) throws InterruptedException, JobException {
+    public TableResult query(QueryJobConfiguration configuration, JobId jobId, JobOption... options)
+            throws InterruptedException, JobException {
         return null;
     }
 

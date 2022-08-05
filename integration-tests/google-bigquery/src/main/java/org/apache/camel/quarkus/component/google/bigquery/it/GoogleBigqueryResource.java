@@ -16,10 +16,12 @@
  */
 package org.apache.camel.quarkus.component.google.bigquery.it;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -32,8 +34,18 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.google.api.client.http.HttpExecuteInterceptor;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpRequestInitializer;
+import com.google.cloud.NoCredentials;
+import com.google.cloud.ServiceOptions;
+import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryOptions;
+import com.google.cloud.http.HttpTransportOptions;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.google.bigquery.GoogleBigQueryConnectionFactory;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @Path("/google-bigquery")
@@ -61,11 +73,57 @@ public class GoogleBigqueryResource {
     @Singleton
     @Named("connectionFactory")
     GoogleBigQueryConnectionFactory createConnectionFactory() {
-        if(usingMockBackend) {
+        if (usingMockBackend) {
             return new GoogleBigQueryConnectionFactory(mockBigQuery);
         }
-        return  new GoogleBigQueryConnectionFactory();
+        return new GoogleBigQueryConnectionFactory();
     }
+
+    @Named("bigQueryConnectionFactory")
+    public GoogleBigQueryConnectionFactory bigQueryConnectionFactory() {
+        Config config = ConfigProvider.getConfig();
+        Optional<String> host = config.getOptionalValue("google.bigquery.host", String.class);
+
+        if (host.isPresent()) {
+            return new GoogleBigQueryConnectionFactory() {
+                @Override
+                public synchronized BigQuery getDefaultClient() throws Exception {
+                    HttpTransportOptions.Builder builder = HttpTransportOptions.newBuilder();
+                    HttpTransportOptions options = new HttpTransportOptions(builder) {
+
+                        @Override
+                        public HttpRequestInitializer getHttpRequestInitializer(ServiceOptions<?, ?> serviceOptions) {
+                            return new HttpRequestInitializer() {
+                                public void initialize(HttpRequest httpRequest) throws IOException {
+                                    httpRequest.setInterceptor(new HttpExecuteInterceptor() {
+                                        @Override
+                                        public void intercept(HttpRequest request) throws IOException {
+                                            String encoding = request.getHeaders().getAcceptEncoding();
+                                            if (encoding != null && encoding.equals("gzip")) {
+                                                request.setEncoding(null);
+                                            }
+                                        }
+                                    });
+                                }
+                            };
+                        }
+                    };
+
+                    return BigQueryOptions.newBuilder()
+                            .setCredentials(NoCredentials.getInstance())
+                            .setHost(host.get())
+                            .setLocation(host.get())
+                            .setProjectId(projectId)
+                            .setTransportOptions(options)
+                            .build()
+                            .getService();
+                }
+            };
+        }
+
+        return null;
+    }
+
 
     @Path("/insertMap")
     @POST
@@ -90,7 +148,8 @@ public class GoogleBigqueryResource {
 
     private Response insert(String tableName, Object tableData, String headerKey, String headerValue) {
         if (headerKey == null) {
-            producerTemplate.requestBody("google-bigquery:" + projectId + ":" + datasetName + ":" + tableName +"?connectionFactory=#connectionFactory", tableData);
+            producerTemplate.requestBody("google-bigquery:" + projectId + ":" + datasetName + ":" + tableName
+                    + "?connectionFactory=#connectionFactory", tableData);
         } else {
             producerTemplate.requestBodyAndHeaders("google-bigquery:" + projectId + ":" + datasetName + ":" + tableName,
                     tableData, Collections.singletonMap(headerKey, headerValue));
