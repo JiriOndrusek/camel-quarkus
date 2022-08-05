@@ -36,4 +36,13 @@ public interface GoogleTestEnvCustomizer<C extends GenericContainer> {
      */
     void customize(GoogleCloudContext envContext);
 
+    /**
+     * If 'true'Option to NOT allow local (mocked) way of testing
+     * 
+     * @return
+     */
+    default boolean supportMockBackend() {
+        return true;
+    }
+
 }

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.stream.Collectors;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.apache.camel.quarkus.test.mock.backend.MockBackendUtils;
@@ -35,6 +36,8 @@ public class GoogleCloudTestResource implements QuarkusTestResourceLifecycleMana
 
     private final GoogleCloudContext envContext = new GoogleCloudContext();
 
+    private final List<GoogleTestEnvCustomizer> customizers = new ArrayList<>();
+
     @Override
     public Map<String, String> start() {
         final String realCredentials = System.getenv("GOOGLE_APPLICATION_CREDENTIALS");
@@ -43,9 +46,10 @@ public class GoogleCloudTestResource implements QuarkusTestResourceLifecycleMana
         final boolean startMockBackend = MockBackendUtils.startMockBackend(false);
         final boolean usingMockBackend = startMockBackend && !realCredentialsProvided;
         envContext.setUsingMockBackend(usingMockBackend);
+        envContext.property("google.usingMockBackend", String.valueOf(usingMockBackend));
 
         ServiceLoader<GoogleTestEnvCustomizer> loader = ServiceLoader.load(GoogleTestEnvCustomizer.class);
-        List<GoogleTestEnvCustomizer> customizers = new ArrayList<>();
+
         for (GoogleTestEnvCustomizer customizer : loader) {
             LOGGER.info("Loaded GoogleTestEnvCustomizer " + customizer.getClass().getName());
             customizers.add(customizer);
@@ -58,12 +62,25 @@ public class GoogleCloudTestResource implements QuarkusTestResourceLifecycleMana
             }
 
             envContext.property("google.real-project.id", realProjectId);
+            envContext.property("google.credentialsPath", realCredentials);
 
         } else {
+
+            //if mock backend is not supported
+            List<GoogleTestEnvCustomizer> withoutMock = customizers.stream().filter(c -> !c.supportMockBackend())
+                    .collect(Collectors.toList());
+            if (!withoutMock.isEmpty()) {
+                throw new IllegalStateException(String.format(
+                        "Following services do not support mock backend: %s",
+                        withoutMock.stream().map(c -> c.getClass().getName()).collect(Collectors.joining(", "))));
+            }
+
             for (GoogleTestEnvCustomizer customizer : customizers) {
                 GenericContainer container = customizer.createContainer();
-                container.start();
-                envContext.closeable(container);
+                if (container != null) {
+                    container.start();
+                    envContext.closeable(container);
+                }
             }
 
         }
@@ -73,6 +90,16 @@ public class GoogleCloudTestResource implements QuarkusTestResourceLifecycleMana
         }
 
         return envContext.getProperties();
+    }
+
+    @Override
+    public void inject(TestInjector testInjector) {
+        for (Map.Entry<String, String> entry : envContext.getProperties().entrySet()) {
+            testInjector.injectIntoFields(entry.getValue(), f -> {
+                GoogleProperty gp = f.getAnnotation(GoogleProperty.class);
+                return gp != null && entry.getKey().equals(gp.name());
+            });
+        }
     }
 
     public void stop() {

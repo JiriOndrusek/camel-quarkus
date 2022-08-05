@@ -34,6 +34,7 @@ public class BeanInjectMockTest {
 
     @BeforeEach
     public void setup() {
+        mock(InsertAllRequest.cl)
         when(mockNamedBean.hello(anyString())).thenReturn("Hello * from NamedBean mock (class level)");
     }
 
