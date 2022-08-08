@@ -192,14 +192,6 @@ public class CamelQuarkusTestSupport extends CamelTestSupport
     @Override
     public final void afterAll(ExtensionContext context) {
         //in camel-quarkus, junit5 uses different classloader, necessary code was moved into quarkus's callback
-
-        //todo move to internal method
-        try {
-            doPostTearDown();
-            cleanupResources();
-        } catch (Exception e) {
-            // ignore
-        }
     }
 
     /**
@@ -242,15 +234,14 @@ public class CamelQuarkusTestSupport extends CamelTestSupport
         //can run on Quarkus
     }
 
-    //todo
-    //    void internalAfterAll(QuarkusTestContext context) {
-    //        try {
-    //            doPostTearDown();
-    //            cleanupResources();
-    //        } catch (Exception e) {
-    //            // ignore
-    //        }
-    //    }
+    void internalAfterAll(QuarkusTestContext context) {
+        try {
+            doPostTearDown();
+            cleanupResources();
+        } catch (Exception e) {
+            // ignore
+        }
+    }
 
     void internalBeforeAll(ExtensionContext context) {
         super.beforeAll(context);

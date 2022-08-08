@@ -35,7 +35,6 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.quarkus.test.CamelQuarkusTestSupport;
-import org.apache.camel.util.StopWatch;
 import org.apachencamel.quarkus.test.junit5.patterns.DebugJUnit5Test;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Assertions;
@@ -58,41 +57,51 @@ public abstract class AbstractCallbacksTest extends CamelQuarkusTestSupport {
     }
 
     private final String testName;
+    private final String afterClassTestName;
 
     @Produce("direct:start")
     protected ProducerTemplate template;
 
-    public AbstractCallbacksTest(String testName) {
+    public AbstractCallbacksTest(String testName, String afterClassTestName) {
         this.testName = testName;
+        this.afterClassTestName = afterClassTestName;
     }
 
     @Override
     protected CamelContext createCamelContext() throws Exception {
         createTmpFile(testName, Callback.contextCreation);
+        createTmpFile(afterClassTestName, Callback.contextCreation);
         return super.createCamelContext();
     }
 
     @Override
     protected void doPreSetup() throws Exception {
         createTmpFile(testName, Callback.preSetup);
+        createTmpFile(afterClassTestName, Callback.preSetup);
         super.doPostSetup();
     }
 
     @Override
     protected void doSetUp() throws Exception {
         createTmpFile(testName, Callback.doSetup);
+        createTmpFile(afterClassTestName, Callback.doSetup);
         super.doSetUp();
     }
 
     @Override
     protected void doPostSetup() throws Exception {
         createTmpFile(testName, Callback.postSetup);
+        createTmpFile(afterClassTestName, Callback.postSetup);
         super.doPostSetup();
     }
 
     @Override
     protected void doPostTearDown() throws Exception {
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>..");
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>..");
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>..");
         createTmpFile(testName, Callback.postTearDown);
+        createTmpFile(afterClassTestName, Callback.postTearDown);
         super.doPostTearDown();
     }
 
@@ -105,6 +114,13 @@ public abstract class AbstractCallbacksTest extends CamelQuarkusTestSupport {
 
     @Test
     public void testMock2() throws Exception {
+        getMockEndpoint("mock:result").expectedBodiesReceived("Hello World 2");
+        template.sendBody("direct:start", "Hello World 2");
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testMock3() throws Exception {
         getMockEndpoint("mock:result").expectedBodiesReceived("Hello World 2");
         template.sendBody("direct:start", "Hello World 2");
         assertMockEndpointsSatisfied();
@@ -123,24 +139,28 @@ public abstract class AbstractCallbacksTest extends CamelQuarkusTestSupport {
     @Override
     protected void doAfterAll(QuarkusTestContext context) throws Exception {
         createTmpFile(testName, Callback.afterAll);
+        createTmpFile(afterClassTestName, Callback.afterAll);
         super.doAfterAll(context);
     }
 
     @Override
     protected void doAfterConstruct() throws Exception {
         createTmpFile(testName, Callback.afterConstruct);
+        createTmpFile(afterClassTestName, Callback.afterConstruct);
         super.doAfterConstruct();
     }
 
     @Override
     protected void doAfterEach(QuarkusTestMethodContext context) throws Exception {
         createTmpFile(testName, Callback.afterEach);
+        createTmpFile(afterClassTestName, Callback.afterEach);
         super.doAfterEach(context);
     }
 
     @Override
     protected void doBeforeEach(QuarkusTestMethodContext context) throws Exception {
         createTmpFile(testName, Callback.beforeEach);
+        createTmpFile(afterClassTestName, Callback.beforeEach);
         super.doAfterConstruct();
     }
 
@@ -149,48 +169,76 @@ public abstract class AbstractCallbacksTest extends CamelQuarkusTestSupport {
                 c.name() + " should be called exactly " + expectedCount + " times in " + testName);
     }
 
-    static void testAfterAll(String testName, BiConsumer<Callback, Long> consumer) {
-        // we are called before doPostTearDown so lets wait for that to be
-        // called
-        Runnable r = () -> {
-            Map<AbstractCallbacksTest.Callback, Long> counts = new HashMap<>();
-            try {
-                StopWatch watch = new StopWatch();
-                while (watch.taken() < 5000) {
-                    //LOG.debug("Checking for tear down called correctly");
-                    try {
-                        for (AbstractCallbacksTest.Callback c : AbstractCallbacksTest.Callback.values()) {
-                            long count = doesTmpFileExist(testName, c);
-                            if (count > 0) {
-                                counts.put(c, count);
-                            }
-                        }
-                    } catch (Exception e) {
-                        //ignore
-                    }
+    //    static void testAfterAll(String testName, BiConsumer<Callback, Long> consumer) {
+    //        // we are called before doPostTearDown so lets wait for that to be
+    //        // called
+    //        Runnable r = () -> {
+    //            Map<AbstractCallbacksTest.Callback, Long> counts = new HashMap<>();
+    //            try {
+    //                StopWatch watch = new StopWatch();
+    //                while (watch.taken() < 5000) {
+    //                    LOG.debug("Checking for tear down called correctly");
+    //                    try {
+    //                        for (AbstractCallbacksTest.Callback c : AbstractCallbacksTest.Callback.values()) {
+    //                            long count = doesTmpFileExist(testName, c);
+    //                            if (count > 0) {
+    //                                counts.put(c, count);
+    //                            }
+    //                        }
+    //                    } catch (Exception e) {
+    //                        //ignore
+    //                    }
+    //
+    //                    if (counts.size() == AbstractCallbacksTest.Callback.values().length) {
+    //                        break;
+    //                    } else {
+    //                        try {
+    //                            Thread.sleep(100);
+    //                        } catch (InterruptedException e) {
+    //                            break;
+    //                        }
+    //                    }
+    //                }
+    //            } finally {
+    //                LOG.info("Should only call postTearDown 1 time per test class, called: ");
+    //                for (Callback c : Callback.values()) {
+    //                    consumer.accept(c, counts.get(c));
+    //                }
+    //            }
+    //
+    //        };
+    //        Thread t = new Thread(r);
+    //        t.setDaemon(false);
+    //        t.setName("shouldTearDown checker");
+    //        t.start();
+    //    }
 
-                    if (counts.size() == AbstractCallbacksTest.Callback.values().length) {
-                        break;
-                    } else {
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                            break;
-                        }
-                    }
+    /**
+     * Return -1 if there is no file. Numer of passed test otherwise.
+     */
+    public static int testFromAnotherClass(String testName, BiConsumer<Callback, Long> consumer) {
+        int i = 0;
+        int globalCount = 0;
+        Map<AbstractCallbacksTest.Callback, Long> counts = new HashMap<>();
+        try {
+            for (AbstractCallbacksTest.Callback c : AbstractCallbacksTest.Callback.values()) {
+                long count = doesTmpFileExist(testName, c);
+                if (count > 0) {
+                    counts.put(c, count);
                 }
-            } finally {
-                //  LOG.info("Should only call postTearDown 1 time per test class, called: " + POST_TEAR_DOWN.get());
-                for (Callback c : Callback.values()) {
-                    consumer.accept(c, counts.get(c));
-                }
+                globalCount++;
             }
-
-        };
-        Thread t = new Thread(r);
-        t.setDaemon(false);
-        t.setName("shouldTearDown checker");
-        t.start();
+        } catch (Exception e) {
+            //ignore
+        }
+        if (globalCount == 0) {
+            return -1;
+        }
+        for (Callback c : Callback.values()) {
+            consumer.accept(c, counts.get(c));
+            i++;
+        }
+        return i;
     }
 
     private static void createTmpFile(String testName, Callback callback) throws Exception {

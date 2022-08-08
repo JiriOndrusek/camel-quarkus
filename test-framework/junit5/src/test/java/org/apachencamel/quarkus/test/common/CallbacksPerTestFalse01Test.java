@@ -16,56 +16,61 @@
  */
 package org.apachencamel.quarkus.test.common;
 
+import java.util.function.BiConsumer;
+
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.TestInstance;
 
 // replaces CreateCamelContextPerTestTrueTest
 //tdoo add check of all callbacks and context creation + the same check with perClass
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
-@TestProfile(CallbacksPerTestFalseTest.class)
-public class CallbacksPerTestFalseTest extends AbstractCallbacksTest {
+@TestProfile(CallbacksPerTestFalse01Test.class)
+public class CallbacksPerTestFalse01Test extends AbstractCallbacksTest {
 
-    public CallbacksPerTestFalseTest() {
-        super(CallbacksPerTestFalseTest.class.getSimpleName());
+    public CallbacksPerTestFalse01Test() {
+        super(CallbacksPerTestFalse01Test.class.getSimpleName(), CallbacksPerTestFalse02Test.class.getSimpleName());
     }
 
-    @AfterAll
-    public static void shouldTearDown() {
-        testAfterAll(CallbacksPerTestFalseTest.class.getSimpleName(), (callback, count) -> {
+    //    @AfterAll
+    //    public static void shouldTearDown() {
+    //        testAfterAll(CallbacksPerTestFalse01Test.class.getSimpleName(), createAssertionConsumer());
+    //    }
+
+    protected static BiConsumer<Callback, Long> createAssertionConsumer() {
+        return (callback, count) -> {
             switch (callback) {
             case doSetup:
-                assertCount(2, count, callback, CallbacksPerTestFalseTest.class.getSimpleName());
+                assertCount(3, count, callback, CallbacksPerTestFalse01Test.class.getSimpleName());
                 break;
             case contextCreation:
-                assertCount(2, count, callback, CallbacksPerTestFalseTest.class.getSimpleName());
+                assertCount(3, count, callback, CallbacksPerTestFalse01Test.class.getSimpleName());
                 break;
             case postSetup:
-                assertCount(2, count, callback, CallbacksPerTestFalseTest.class.getSimpleName());
+                assertCount(3, count, callback, CallbacksPerTestFalse01Test.class.getSimpleName());
                 break;
             case postTearDown:
-                assertCount(2, count, callback, CallbacksPerTestFalseTest.class.getSimpleName());
+                assertCount(3, count, callback, CallbacksPerTestFalse01Test.class.getSimpleName());
                 break;
             case preSetup:
-                assertCount(2, count, callback, CallbacksPerTestFalseTest.class.getSimpleName());
+                assertCount(3, count, callback, CallbacksPerTestFalse01Test.class.getSimpleName());
                 break;
             case afterAll:
-                assertCount(1, count, callback, CallbacksPerTestFalseTest.class.getSimpleName());
+                assertCount(1, count, callback, CallbacksPerTestFalse01Test.class.getSimpleName());
                 break;
             case afterConstruct:
-                assertCount(2, count, callback, CallbacksPerTestFalseTest.class.getSimpleName());
+                assertCount(3, count, callback, CallbacksPerTestFalse01Test.class.getSimpleName());
                 break;
             case afterEach:
-                assertCount(2, count, callback, CallbacksPerTestFalseTest.class.getSimpleName());
+                assertCount(3, count, callback, CallbacksPerTestFalse01Test.class.getSimpleName());
                 break;
             case beforeEach:
-                assertCount(2, count, callback, CallbacksPerTestFalseTest.class.getSimpleName());
+                assertCount(3, count, callback, CallbacksPerTestFalse01Test.class.getSimpleName());
                 break;
             default:
                 throw new IllegalArgumentException("Unknown callback type");
             }
-        });
+        };
     }
 }

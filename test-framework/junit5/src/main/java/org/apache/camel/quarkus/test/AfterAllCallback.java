@@ -28,11 +28,10 @@ public class AfterAllCallback implements QuarkusTestAfterAllCallback {
 
             if (CallbackUtil.isPerClass(testInstance)) {
                 CallbackUtil.resetContext(testInstance);
+                testInstance.internalAfterAll(context);
             }
 
             try {
-                //todo
-                //                testInstance.internalAfterAll(context);
                 testInstance.doAfterAll(context);
             } catch (Exception e) {
                 throw new RuntimeException(e);
