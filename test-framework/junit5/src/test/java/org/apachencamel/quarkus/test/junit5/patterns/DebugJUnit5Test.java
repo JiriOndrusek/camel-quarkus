@@ -23,17 +23,16 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.quarkus.test.CamelQuarkusTestSupport;
+import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestProfile(DebugJUnit5Test.class)
 public class DebugJUnit5Test extends CamelQuarkusTestSupport {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DebugJUnit5Test.class);
+    private static final Logger LOG = Logger.getLogger(DebugJUnit5Test.class);
 
     // START SNIPPET: e1
     @Override

@@ -31,6 +31,8 @@ public class AfterAllCallback implements QuarkusTestAfterAllCallback {
             }
 
             try {
+                //todo
+                //                testInstance.internalAfterAll(context);
                 testInstance.doAfterAll(context);
             } catch (Exception e) {
                 throw new RuntimeException(e);

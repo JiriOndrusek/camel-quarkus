@@ -37,14 +37,13 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.quarkus.test.CamelQuarkusTestSupport;
 import org.apache.camel.util.StopWatch;
 import org.apachencamel.quarkus.test.junit5.patterns.DebugJUnit5Test;
+import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class AbstractCallbacksTest extends CamelQuarkusTestSupport {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DebugJUnit5Test.class);
+    private static final Logger LOG = Logger.getLogger(DebugJUnit5Test.class);
 
     public enum Callback {
         postTearDown,

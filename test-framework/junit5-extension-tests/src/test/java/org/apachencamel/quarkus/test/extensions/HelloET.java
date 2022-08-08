@@ -16,6 +16,7 @@
  */
 package org.apachencamel.quarkus.test.extensions;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -33,7 +34,7 @@ public class HelloET extends CamelQuarkusTestSupport {
     public void hello1Test() throws Exception {
         Files.createDirectories(testDirectory());
         Path testFile = testFile("hello.txt");
-        Files.write(testFile, "Hello ".getBytes());
+        Files.write(testFile, "Hello ".getBytes(StandardCharsets.UTF_8));
 
         RestAssured.given()
                 .body(fileUri() + "?fileName=hello.txt")
@@ -49,7 +50,7 @@ public class HelloET extends CamelQuarkusTestSupport {
     public void hello2Test() throws Exception {
         Files.createDirectories(testDirectory());
         Path testFile = testFile("hello.txt");
-        Files.write(testFile, "Hello ".getBytes());
+        Files.write(testFile, "Hello ".getBytes(StandardCharsets.UTF_8));
 
         RestAssured.given()
                 .body(fileUri() + "?fileName=hello.txt")
@@ -64,7 +65,7 @@ public class HelloET extends CamelQuarkusTestSupport {
     public void hello3Test() throws Exception {
         Files.createDirectories(testDirectory());
         Path testFile = testFile("hello.txt");
-        Files.write(testFile, "Hello ".getBytes());
+        Files.write(testFile, "Hello ".getBytes(StandardCharsets.UTF_8));
 
         RestAssured.given()
                 .body(fileUri() + "?fileName=hello.txt")
