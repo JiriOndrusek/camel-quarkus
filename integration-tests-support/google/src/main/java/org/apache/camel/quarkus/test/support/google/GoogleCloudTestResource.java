@@ -30,6 +30,8 @@ import org.testcontainers.containers.GenericContainer;
 
 public class GoogleCloudTestResource implements QuarkusTestResourceLifecycleManager {
     public static final String GOOGLE_EMULATOR_IMAGE = "gcr.io/google.com/cloudsdktool/cloud-sdk:390.0.0-emulators";
+    public static final String PARAM_PROJECT_ID = "google.project.id";
+    public static final String PARAM_CREDENTIALS_PATH = "google.credentialsPath";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GoogleCloudTestResource.class);
 
@@ -57,15 +59,16 @@ public class GoogleCloudTestResource implements QuarkusTestResourceLifecycleMana
                         "Set GOOGLE_APPLICATION_CREDENTIALS and GOOGLE_PROJECT_ID env vars if you set CAMEL_QUARKUS_START_MOCK_BACKEND=false");
             }
 
-            envContext.property("google.real-project.id", realProjectId);
+            envContext.property(PARAM_PROJECT_ID, realProjectId);
+            envContext.property(PARAM_CREDENTIALS_PATH, realCredentials);
 
         } else {
+
             for (GoogleTestEnvCustomizer customizer : customizers) {
                 GenericContainer container = customizer.createContainer();
                 container.start();
                 envContext.closeable(container);
             }
-
         }
 
         for (GoogleTestEnvCustomizer customizer : customizers) {
@@ -73,6 +76,16 @@ public class GoogleCloudTestResource implements QuarkusTestResourceLifecycleMana
         }
 
         return envContext.getProperties();
+    }
+
+    @Override
+    public void inject(TestInjector testInjector) {
+        for (Map.Entry<String, String> entry : envContext.getProperties().entrySet()) {
+            testInjector.injectIntoFields(entry.getValue(), f -> {
+                GoogleProperty gp = f.getAnnotation(GoogleProperty.class);
+                return gp != null && entry.getKey().equals(gp.name());
+            });
+        }
     }
 
     public void stop() {
