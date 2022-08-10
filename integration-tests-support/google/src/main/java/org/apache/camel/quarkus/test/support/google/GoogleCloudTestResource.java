@@ -57,15 +57,18 @@ public class GoogleCloudTestResource implements QuarkusTestResourceLifecycleMana
                         "Set GOOGLE_APPLICATION_CREDENTIALS and GOOGLE_PROJECT_ID env vars if you set CAMEL_QUARKUS_START_MOCK_BACKEND=false");
             }
 
-            envContext.property("google.real-project.id", realProjectId);
+            envContext.property("google.project.id", realProjectId);
+            envContext.property("google.credentialsPath", realCredentials);
 
         } else {
+
             for (GoogleTestEnvCustomizer customizer : customizers) {
                 GenericContainer container = customizer.createContainer();
-                container.start();
-                envContext.closeable(container);
+                if (container != null) {
+                    container.start();
+                    envContext.closeable(container);
+                }
             }
-
         }
 
         for (GoogleTestEnvCustomizer customizer : customizers) {
@@ -73,6 +76,16 @@ public class GoogleCloudTestResource implements QuarkusTestResourceLifecycleMana
         }
 
         return envContext.getProperties();
+    }
+
+    @Override
+    public void inject(TestInjector testInjector) {
+        for (Map.Entry<String, String> entry : envContext.getProperties().entrySet()) {
+            testInjector.injectIntoFields(entry.getValue(), f -> {
+                GoogleProperty gp = f.getAnnotation(GoogleProperty.class);
+                return gp != null && entry.getKey().equals(gp.name());
+            });
+        }
     }
 
     public void stop() {
