@@ -1,6 +1,8 @@
 == Camel Quarkus Google BigQuery Integration Tests
 
-To run Camel Google BigQuery integration tests, you need a valid https://cloud.google.com/[Google Cloud Platform] (GCP) account. Note that the GCP free tier & sandbox
+=== Real service
+
+Note that the GCP free tier & sandbox
 mode does not provide the required capabilities (streaming inserts & queries) that enable the tests to run successfully.
 
 The simplest means of setting up authentication is via a https://cloud.google.com/docs/authentication/getting-started[service account]. Use the GCP UI to export
@@ -13,3 +15,32 @@ You should now set the following environment variables:
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json
 export GOOGLE_PROJECT_ID=your-gcloud-project-id
 ----
+
+=== Wiremock
+
+Wiremocked backend is used for the tests if nor `GOOGLE_APPLICATION_CREDENTIALS` neither `GOOGLE_PROJECT_ID` is provided.
+
+Interaction with Google CloudAPI was https://wiremock.org/docs/record-playback/[recorded] and saved into `src/test/resources/mappings`.
+
+In case that a new test is created (or existing one upated) you can use special settings to help you capture a communication between the tests and Google Cloud API. Recoding is described in the https://wiremock.org/docs/record-playback/[Wiremock guide].
+
+[source,shell]
+----
+export OVERRIDE_URL="http://localhost:9090"
+export GENERATE_SUFFIXES="false"
+----
+
+Steps for recording:
+
+* Export both authentication properties required for the real account.
+* Export both helper properties.
+* Start wiremock server on http port `9090`
+[source,shell]
+----
+sudo java -jar wiremock-jre8-standalone-2.33.2.jar --port 9090
+----
+* Open browser on http://localhost:9090/__admin/recorder/ and start recording.
+* Execute required tests.
+* Stop the recording and you can see captured communication in the folder `mappings`.
+* If the real project's name differs from the `test-project`, please replace all text occurrences in the mapping files for the test one (`test-project`).
+* If you are recording the `sql` component, you have to manually replace all `jobId` references to the jobId forced by the test.
