@@ -1,0 +1,32 @@
+{
+  "id" : "68d0f424-6739-4901-8caa-c7516860155a",
+  "name" : "bigquery_v2_projects_test-project_jobs",
+  "request" : {
+    "url" : "/bigquery/v2/projects/test-project/jobs?prettyPrint=false",
+    "method" : "POST",
+    "bodyPatterns" : [ {
+      "equalToJson" : "{\"configuration\":{\"query\":{\"query\":\"INSERT INTO `test-project.google_bigquery_test_dataset.google-bigquery-table-for-sql-crud` VALUES(@id, @col1, @col2)\",\"queryParameters\":[{\"name\":\"id\",\"parameterType\":{\"type\":\"STRING\"},\"parameterValue\":{\"value\":\"1\"}},{\"name\":\"col2\",\"parameterType\":{\"type\":\"STRING\"},\"parameterValue\":{\"value\":\"3\"}},{\"name\":\"col1\",\"parameterType\":{\"type\":\"STRING\"},\"parameterValue\":{\"value\":\"2\"}}],\"useLegacySql\":false}},\"jobReference\":{\"jobId\":\"test-job-id\",\"projectId\":\"test-project\"}}",
+      "ignoreArrayOrder" : true,
+      "ignoreExtraElements" : true
+    } ]
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"kind\":\"bigquery#job\",\"etag\":\"u0tJ3PZ6wh/y/oQE6DDDUA==\",\"id\":\"test-project:US.test-job-id\",\"selfLink\":\"https://bigquery.googleapis.com/bigquery/v2/projects/test-project/jobs/test-job-id?location=US\",\"user_email\":\"fuse-qe-ceq-pubsub-service-acc@test-project.iam.gserviceaccount.com\",\"configuration\":{\"query\":{\"query\":\"INSERT INTO `test-project.google_bigquery_test_dataset.google-bigquery-table-for-sql-crud` VALUES(@id, @col1, @col2)\",\"destinationTable\":{\"projectId\":\"test-project\",\"datasetId\":\"google_bigquery_test_dataset_hz2nr7wovyayhck8x1lywvno2rw1pydserhx7trwdwxf2pnpg\",\"tableId\":\"google-bigquery-table-for-sql-crud\"},\"priority\":\"INTERACTIVE\",\"useLegacySql\":false,\"queryParameters\":[{\"name\":\"id\",\"parameterType\":{\"type\":\"STRING\"},\"parameterValue\":{\"value\":\"1\"}},{\"name\":\"col2\",\"parameterType\":{\"type\":\"STRING\"},\"parameterValue\":{\"value\":\"3\"}},{\"name\":\"col1\",\"parameterType\":{\"type\":\"STRING\"},\"parameterValue\":{\"value\":\"2\"}}]},\"jobType\":\"QUERY\"},\"jobReference\":{\"projectId\":\"test-project\",\"jobId\":\"test-job-id\",\"location\":\"US\"},\"statistics\":{\"creationTime\":\"1660658605634\",\"startTime\":\"1660658605868\",\"query\":{\"statementType\":\"INSERT\"}},\"status\":{\"state\":\"RUNNING\"}}",
+    "headers" : {
+      "ETag" : "u0tJ3PZ6wh/y/oQE6DDDUA==",
+      "Content-Type" : "application/json; charset=UTF-8",
+      "Vary" : [ "Origin", "X-Origin", "Referer" ],
+      "Date" : "Tue, 16 Aug 2022 14:03:25 GMT",
+      "Server" : "ESF",
+      "Cache-Control" : "private",
+      "X-XSS-Protection" : "0",
+      "X-Frame-Options" : "SAMEORIGIN",
+      "X-Content-Type-Options" : "nosniff",
+      "Alt-Svc" : "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-Q050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\""
+    }
+  },
+  "uuid" : "68d0f424-6739-4901-8caa-c7516860155a",
+  "persistent" : true,
+  "insertionIndex" : 34
+}

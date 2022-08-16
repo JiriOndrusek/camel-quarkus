@@ -36,14 +36,23 @@ import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
 import org.apache.camel.quarkus.test.support.google.GoogleCloudContext;
 import org.apache.camel.quarkus.test.support.google.GoogleTestEnvCustomizer;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
+
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 
 public class GoogleBigqueryCustomizer implements GoogleTestEnvCustomizer {
 
+    private static final String TEST_PROJECT_ID = "test-project";
+
+    private GenericContainer container;
+
     @Override
     public GenericContainer createContainer() {
-        throw new IllegalStateException("Mock backend is not supported");
+        container = new GenericContainer("wiremock/wiremock:2.33.2")
+                .withExposedPorts(8080)
+                .withClasspathResourceMapping("mappings", "/home/wiremock/mappings", BindMode.READ_ONLY);
+        return container;
     }
 
     @Override
@@ -51,15 +60,25 @@ public class GoogleBigqueryCustomizer implements GoogleTestEnvCustomizer {
 
         try {
             // ------------------ generate names ----------------
-            final String datasetName = "google_bigquery_test_dataset_" +
-                    RandomStringUtils.randomAlphanumeric(49).toLowerCase(Locale.ROOT);
+            final String datasetName = "google_bigquery_test_dataset" +
+                    (envContext.isUsingMockBackend() ? "" : "_" + randomAlphanumeric(49).toLowerCase(Locale.ROOT));
             envContext.property("google-bigquery.dataset-name", datasetName);
+
             final String tableNameForMap = generateName("table-for-map", envContext);
             final String tableNameForList = generateName("table-for-list", envContext);
             final String tableNameForTemplate = generateName("table-for-template", envContext);
             final String tableNameForPartitioning = generateName("table-for-partitioning", envContext);
             final String tableNameForInsertId = generateName("table-for-insert-id", envContext);
             final String tableNameForSqlCrud = generateName("table-for-sql-crud", envContext);
+
+            if (envContext.isUsingMockBackend()) {
+                if (!envContext.getProperties().containsKey("google.project.id")) {
+                    envContext.property("google.project.id", TEST_PROJECT_ID);
+                }
+                envContext.property("google.bigquery.mock-url",
+                        "http://" + container.getHost() + ":" + container.getMappedPort(8080));
+                return;
+            }
 
             final String projectId = envContext.getProperties().get("google.project.id");
 
@@ -119,7 +138,8 @@ public class GoogleBigqueryCustomizer implements GoogleTestEnvCustomizer {
     }
 
     private String generateName(String name, GoogleCloudContext envContext) {
-        String retVal = "google-bigquery-" + name + "-" + RandomStringUtils.randomAlphanumeric(49).toLowerCase(Locale.ROOT);
+        String retVal = "google-bigquery-" + name +
+                (envContext.isUsingMockBackend() ? "" : "-" + randomAlphanumeric(49).toLowerCase(Locale.ROOT));
         envContext.property("google-bigquery." + name, retVal);
         return retVal;
     }

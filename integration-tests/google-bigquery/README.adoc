@@ -13,3 +13,8 @@ You should now set the following environment variables:
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json
 export GOOGLE_PROJECT_ID=your-gcloud-project-id
 ----
+
+todo how to wire mock:
+
+export OVERRIDE_URL="localhost:9090"
++ manual changes in jsons

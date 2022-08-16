@@ -1,0 +1,32 @@
+{
+  "id" : "311a2b49-a7cf-4ecb-8808-0143750f7380",
+  "name" : "bigquery_v2_projects_test-project_jobs",
+  "request" : {
+    "url" : "/bigquery/v2/projects/test-project/jobs?prettyPrint=false",
+    "method" : "POST",
+    "bodyPatterns" : [ {
+      "equalToJson" : "{\"configuration\":{\"query\":{\"query\":\"UPDATE `test-project.google_bigquery_test_dataset.google-bigquery-table-for-sql-crud` SET col1=@col1 WHERE id=@id\",\"queryParameters\":[{\"name\":\"id\",\"parameterType\":{\"type\":\"STRING\"},\"parameterValue\":{\"value\":\"1\"}},{\"name\":\"col1\",\"parameterType\":{\"type\":\"STRING\"},\"parameterValue\":{\"value\":\"22\"}}],\"useLegacySql\":false}},\"jobReference\":{\"jobId\":\"d16b336e-cda8-4b46-889b-88a8f972d882\",\"projectId\":\"test-project\"}}",
+      "ignoreArrayOrder" : true,
+      "ignoreExtraElements" : true
+    } ]
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"kind\":\"bigquery#job\",\"etag\":\"NGb1xXjohnWoDR19PTy8Kw==\",\"id\":\"test-project:US.d16b336e-cda8-4b46-889b-88a8f972d882\",\"selfLink\":\"https://bigquery.googleapis.com/bigquery/v2/projects/test-project/jobs/d16b336e-cda8-4b46-889b-88a8f972d882?location=US\",\"user_email\":\"fuse-qe-ceq-pubsub-service-acc@test-project.iam.gserviceaccount.com\",\"configuration\":{\"query\":{\"query\":\"UPDATE `test-project.google_bigquery_test_dataset.google-bigquery-table-for-sql-crud` SET col1=@col1 WHERE id=@id\",\"destinationTable\":{\"projectId\":\"test-project\",\"datasetId\":\"google_bigquery_test_dataset_hz2nr7wovyayhck8x1lywvno2rw1pydserhx7trwdwxf2pnpg\",\"tableId\":\"google-bigquery-table-for-sql-crud\"},\"priority\":\"INTERACTIVE\",\"useLegacySql\":false,\"queryParameters\":[{\"name\":\"id\",\"parameterType\":{\"type\":\"STRING\"},\"parameterValue\":{\"value\":\"1\"}},{\"name\":\"col1\",\"parameterType\":{\"type\":\"STRING\"},\"parameterValue\":{\"value\":\"22\"}}]},\"jobType\":\"QUERY\"},\"jobReference\":{\"projectId\":\"test-project\",\"jobId\":\"d16b336e-cda8-4b46-889b-88a8f972d882\",\"location\":\"US\"},\"statistics\":{\"creationTime\":\"1660658614579\",\"startTime\":\"1660658614796\",\"query\":{\"statementType\":\"UPDATE\"}},\"status\":{\"state\":\"RUNNING\"}}",
+    "headers" : {
+      "ETag" : "NGb1xXjohnWoDR19PTy8Kw==",
+      "Content-Type" : "application/json; charset=UTF-8",
+      "Vary" : [ "Origin", "X-Origin", "Referer" ],
+      "Date" : "Tue, 16 Aug 2022 14:03:34 GMT",
+      "Server" : "ESF",
+      "Cache-Control" : "private",
+      "X-XSS-Protection" : "0",
+      "X-Frame-Options" : "SAMEORIGIN",
+      "X-Content-Type-Options" : "nosniff",
+      "Alt-Svc" : "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-Q050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\""
+    }
+  },
+  "uuid" : "311a2b49-a7cf-4ecb-8808-0143750f7380",
+  "persistent" : true,
+  "insertionIndex" : 47
+}

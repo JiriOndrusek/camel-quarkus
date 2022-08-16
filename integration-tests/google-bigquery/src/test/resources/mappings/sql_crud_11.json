@@ -1,0 +1,32 @@
+{
+  "id" : "f552d1ae-2ae9-44eb-91ea-d48ac1dd6d38",
+  "name" : "bigquery_v2_projects_test-project_jobs",
+  "request" : {
+    "url" : "/bigquery/v2/projects/test-project/jobs?prettyPrint=false",
+    "method" : "POST",
+    "bodyPatterns" : [ {
+      "equalToJson" : "{\"configuration\":{\"query\":{\"query\":\"DELETE FROM `test-project.google_bigquery_test_dataset.google-bigquery-table-for-sql-crud` WHERE id='1'\",\"useLegacySql\":false}},\"jobReference\":{\"jobId\":\"41f84c6d-c526-4cd0-aced-582b794eaeb9\",\"projectId\":\"test-project\"}}",
+      "ignoreArrayOrder" : true,
+      "ignoreExtraElements" : true
+    } ]
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"kind\":\"bigquery#job\",\"etag\":\"eCdNYQ81BmMNUkZAWd9rEg==\",\"id\":\"test-project:US.41f84c6d-c526-4cd0-aced-582b794eaeb9\",\"selfLink\":\"https://bigquery.googleapis.com/bigquery/v2/projects/test-project/jobs/41f84c6d-c526-4cd0-aced-582b794eaeb9?location=US\",\"user_email\":\"fuse-qe-ceq-pubsub-service-acc@test-project.iam.gserviceaccount.com\",\"configuration\":{\"query\":{\"query\":\"DELETE FROM `test-project.google_bigquery_test_dataset.google-bigquery-table-for-sql-crud` WHERE id='1'\",\"destinationTable\":{\"projectId\":\"test-project\",\"datasetId\":\"google_bigquery_test_dataset_hz2nr7wovyayhck8x1lywvno2rw1pydserhx7trwdwxf2pnpg\",\"tableId\":\"google-bigquery-table-for-sql-crud\"},\"priority\":\"INTERACTIVE\",\"useLegacySql\":false},\"jobType\":\"QUERY\"},\"jobReference\":{\"projectId\":\"test-project\",\"jobId\":\"41f84c6d-c526-4cd0-aced-582b794eaeb9\",\"location\":\"US\"},\"statistics\":{\"creationTime\":\"1660658620645\",\"startTime\":\"1660658620879\",\"query\":{\"statementType\":\"DELETE\"}},\"status\":{\"state\":\"RUNNING\"}}",
+    "headers" : {
+      "ETag" : "eCdNYQ81BmMNUkZAWd9rEg==",
+      "Content-Type" : "application/json; charset=UTF-8",
+      "Vary" : [ "Origin", "X-Origin", "Referer" ],
+      "Date" : "Tue, 16 Aug 2022 14:03:40 GMT",
+      "Server" : "ESF",
+      "Cache-Control" : "private",
+      "X-XSS-Protection" : "0",
+      "X-Frame-Options" : "SAMEORIGIN",
+      "X-Content-Type-Options" : "nosniff",
+      "Alt-Svc" : "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-Q050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\""
+    }
+  },
+  "uuid" : "f552d1ae-2ae9-44eb-91ea-d48ac1dd6d38",
+  "persistent" : true,
+  "insertionIndex" : 51
+}

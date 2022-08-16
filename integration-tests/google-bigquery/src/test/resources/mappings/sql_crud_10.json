@@ -1,0 +1,32 @@
+{
+  "id" : "7ce86ced-9809-472b-b177-0a3dc38506c1",
+  "name" : "bigquery_v2_projects_test-project_jobs",
+  "request" : {
+    "url" : "/bigquery/v2/projects/test-project/jobs?prettyPrint=false",
+    "method" : "POST",
+    "bodyPatterns" : [ {
+      "equalToJson" : "{\"configuration\":{\"query\":{\"query\":\"SELECT * FROM `test-project.google_bigquery_test_dataset.google-bigquery-table-for-sql-crud`\",\"useLegacySql\":false}},\"jobReference\":{\"jobId\":\"e988fe21-4576-448f-bbec-8162b8a507dc\",\"projectId\":\"test-project\"}}",
+      "ignoreArrayOrder" : true,
+      "ignoreExtraElements" : true
+    } ]
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"kind\":\"bigquery#job\",\"etag\":\"jO1BeOPmUiaSfptyOSzNgQ==\",\"id\":\"test-project:US.e988fe21-4576-448f-bbec-8162b8a507dc\",\"selfLink\":\"https://bigquery.googleapis.com/bigquery/v2/projects/test-project/jobs/e988fe21-4576-448f-bbec-8162b8a507dc?location=US\",\"user_email\":\"fuse-qe-ceq-pubsub-service-acc@test-project.iam.gserviceaccount.com\",\"configuration\":{\"query\":{\"query\":\"SELECT * FROM `test-project.google_bigquery_test_dataset.google-bigquery-table-for-sql-crud`\",\"destinationTable\":{\"projectId\":\"test-project\",\"datasetId\":\"_cd8b40856acd1b6890f170712a53c7133d5b133e\",\"tableId\":\"anon4eef1d0f1ee7681b0adc2ec1b67b57317dcdb96b\"},\"writeDisposition\":\"WRITE_TRUNCATE\",\"priority\":\"INTERACTIVE\",\"useLegacySql\":false},\"jobType\":\"QUERY\"},\"jobReference\":{\"projectId\":\"test-project\",\"jobId\":\"e988fe21-4576-448f-bbec-8162b8a507dc\",\"location\":\"US\"},\"statistics\":{\"creationTime\":\"1660658611930\",\"startTime\":\"1660658611978\",\"endTime\":\"1660658612154\",\"totalBytesProcessed\":\"18\",\"query\":{\"queryPlan\":[{\"name\":\"S00: Output\",\"id\":\"0\",\"startMs\":\"1660658612083\",\"endMs\":\"1660658612098\",\"waitRatioAvg\":0.90909090909090906,\"waitMsAvg\":\"20\",\"waitRatioMax\":1,\"waitMsMax\":\"22\",\"readRatioAvg\":0.22727272727272727,\"readMsAvg\":\"5\",\"readRatioMax\":0.22727272727272727,\"readMsMax\":\"5\",\"computeRatioAvg\":0.18181818181818182,\"computeMsAvg\":\"4\",\"computeRatioMax\":0.22727272727272727,\"computeMsMax\":\"5\",\"writeRatioAvg\":0.18181818181818182,\"writeMsAvg\":\"4\",\"writeRatioMax\":0.18181818181818182,\"writeMsMax\":\"4\",\"shuffleOutputBytes\":\"32\",\"shuffleOutputBytesSpilled\":\"0\",\"recordsRead\":\"2\",\"recordsWritten\":\"2\",\"parallelInputs\":\"2\",\"completedParallelInputs\":\"2\",\"status\":\"COMPLETE\",\"steps\":[{\"kind\":\"READ\",\"substeps\":[\"$1:id, $2:col1, $3:col2\",\"FROM test-project.google_bigquery_test_dataset.google-bigquery-table-for-sql-crud\"]},{\"kind\":\"WRITE\",\"substeps\":[\"$1, $2, $3\",\"TO __stage00_output\"]}],\"slotMs\":\"29\"}],\"estimatedBytesProcessed\":\"18\",\"timeline\":[{\"elapsedMs\":\"138\",\"totalSlotMs\":\"29\",\"pendingUnits\":\"0\",\"completedUnits\":\"2\",\"estimatedRunnableUnits\":\"0\"}],\"totalPartitionsProcessed\":\"0\",\"totalBytesProcessed\":\"18\",\"totalBytesBilled\":\"10485760\",\"billingTier\":1,\"totalSlotMs\":\"29\",\"cacheHit\":false,\"referencedTables\":[{\"projectId\":\"test-project\",\"datasetId\":\"google_bigquery_test_dataset_hz2nr7wovyayhck8x1lywvno2rw1pydserhx7trwdwxf2pnpg\",\"tableId\":\"google-bigquery-table-for-sql-crud\"}],\"statementType\":\"SELECT\"},\"totalSlotMs\":\"29\"},\"status\":{\"state\":\"DONE\"}}",
+    "headers" : {
+      "ETag" : "jO1BeOPmUiaSfptyOSzNgQ==",
+      "Content-Type" : "application/json; charset=UTF-8",
+      "Vary" : [ "Origin", "X-Origin", "Referer" ],
+      "Date" : "Tue, 16 Aug 2022 14:03:32 GMT",
+      "Server" : "ESF",
+      "Cache-Control" : "private",
+      "X-XSS-Protection" : "0",
+      "X-Frame-Options" : "SAMEORIGIN",
+      "X-Content-Type-Options" : "nosniff",
+      "Alt-Svc" : "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-Q050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\""
+    }
+  },
+  "uuid" : "7ce86ced-9809-472b-b177-0a3dc38506c1",
+  "persistent" : true,
+  "insertionIndex" : 42
+}

@@ -1,0 +1,30 @@
+{
+  "id" : "4af95589-02fe-44fc-b7dc-a31d9ac86acd",
+  "name" : "bigquery_v2_projects_test-project_datasets_google_bigquery_test_dataset_tables_google-bigquery-table-for-partitioning",
+  "request" : {
+    "url" : "/bigquery/v2/projects/test-project/datasets/google_bigquery_test_dataset/tables/google-bigquery-table-for-partitioning/insertAll?prettyPrint=false",
+    "method" : "POST",
+    "bodyPatterns" : [ {
+      "equalToJson" : "{\"rows\":[{\"json\":{\"id\":\"8\",\"col2\":\"10\",\"part\":\"8\",\"col1\":\"9\"}}]}",
+      "ignoreArrayOrder" : true,
+      "ignoreExtraElements" : true
+    } ]
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"kind\":\"bigquery#tableDataInsertAllResponse\"}",
+    "headers" : {
+      "Content-Type" : "application/json; charset=UTF-8",
+      "Vary" : [ "Origin", "X-Origin", "Referer" ],
+      "Date" : "Tue, 16 Aug 2022 13:54:10 GMT",
+      "Server" : "ESF",
+      "Cache-Control" : "private",
+      "X-XSS-Protection" : "0",
+      "X-Frame-Options" : "SAMEORIGIN",
+      "Alt-Svc" : "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-Q050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\""
+    }
+  },
+  "uuid" : "4af95589-02fe-44fc-b7dc-a31d9ac86acd",
+  "persistent" : true,
+  "insertionIndex" : 26
+}

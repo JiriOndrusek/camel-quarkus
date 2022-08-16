@@ -1,0 +1,29 @@
+{
+  "id" : "3306a182-556b-49b2-af03-f96370e8728a",
+  "name" : "bigquery_v2_projects_test-project_queries_d16b336e-cda8-4b46-889b-88a8f972d882",
+  "request" : {
+    "url" : "/bigquery/v2/projects/test-project/queries/d16b336e-cda8-4b46-889b-88a8f972d882?location=US&maxResults=0&prettyPrint=false",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"kind\":\"bigquery#getQueryResultsResponse\",\"etag\":\"KDTEoAbYFI5E2M+3JqueMQ==\",\"schema\":{\"fields\":[{\"name\":\"id\",\"type\":\"STRING\"},{\"name\":\"col1\",\"type\":\"STRING\"},{\"name\":\"col2\",\"type\":\"STRING\"}]},\"jobReference\":{\"projectId\":\"test-project\",\"jobId\":\"d16b336e-cda8-4b46-889b-88a8f972d882\",\"location\":\"US\"},\"totalBytesProcessed\":\"18\",\"jobComplete\":true,\"cacheHit\":false,\"numDmlAffectedRows\":\"1\"}",
+    "headers" : {
+      "ETag" : "KDTEoAbYFI5E2M+3JqueMQ==",
+      "Content-Type" : "application/json; charset=UTF-8",
+      "Vary" : [ "Origin", "X-Origin", "Referer" ],
+      "Date" : "Tue, 16 Aug 2022 14:03:37 GMT",
+      "Server" : "ESF",
+      "Cache-Control" : "private",
+      "X-XSS-Protection" : "0",
+      "X-Frame-Options" : "SAMEORIGIN",
+      "X-Content-Type-Options" : "nosniff",
+      "Alt-Svc" : "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-Q050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\""
+    }
+  },
+  "uuid" : "3306a182-556b-49b2-af03-f96370e8728a",
+  "persistent" : true,
+  "scenarioName" : "scenario-4-bigquery-v2-projects-test-project-queries-d16b336e-cda8-4b46-889b-88a8f972d882",
+  "requiredScenarioState" : "scenario-4-bigquery-v2-projects-test-project-queries-d16b336e-cda8-4b46-889b-88a8f972d882-2",
+  "insertionIndex" : 50
+}

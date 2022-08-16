@@ -39,13 +39,17 @@ import org.apache.camel.quarkus.test.support.google.GoogleCloudTestResource;
 import org.apache.camel.quarkus.test.support.google.GoogleProperty;
 import org.apache.camel.util.CollectionHelper;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.is;
+import static org.apache.camel.util.CollectionHelper.mapOf;
+import static org.apache.camel.util.CollectionHelper.mergeMaps;
 
 @QuarkusTest
 @QuarkusTestResource(GoogleCloudTestResource.class)
 class GoogleBigqueryTest {
+
 
     @GoogleProperty(name = "google.project.id")
     String projectId;
@@ -74,6 +78,10 @@ class GoogleBigqueryTest {
     @GoogleProperty(name = "google-bigquery.table-for-sql-crud")
     String tableNameForSqlCrud;
 
+    @GoogleProperty(name = "google.bigquery.mock-url")
+    String mockUrl;
+
+
     @Test
     public void insertMapTest() throws Exception {
         // Insert rows
@@ -90,6 +98,11 @@ class GoogleBigqueryTest {
                     .post("/google-bigquery/insertMap")
                     .then()
                     .statusCode(201);
+        }
+
+        if (isMockBackend()) {
+            //no assertion is required, if there is a problem with request, wiremock would fail
+            return;
         }
 
         TableResult tr = getTableData(dataset + "." + tableNameForMap);
@@ -116,6 +129,11 @@ class GoogleBigqueryTest {
                 .post("/google-bigquery/insertList")
                 .then()
                 .statusCode(201);
+
+        if (isMockBackend()) {
+            //no assertion is required, if there is a problem with request, wiremock would fail
+            return;
+        }
 
         TableResult tr = getTableData(dataset + "." + tableNameForList);
         Assertions.assertEquals(3, tr.getTotalRows());
@@ -151,6 +169,11 @@ class GoogleBigqueryTest {
             }
         }
 
+        if (isMockBackend()) {
+            //no assertion is required, if there is a problem with request, wiremock would fail
+            return;
+        }
+
         TableResult tr = getTableData(dataset + "." + tableNameForTemplate);
         Assertions.assertEquals(3, tr.getTotalRows());
         tr = getTableData(dataset + "." + tableNameForTemplate + "_suffix");
@@ -159,6 +182,7 @@ class GoogleBigqueryTest {
 
     //todo use header partitioning_decorator
     @Test
+    //    @Disabled
     public void partitioningTest() throws Exception {
         // Insert rows
         for (int i = 1; i <= 11; i++) {
@@ -176,6 +200,11 @@ class GoogleBigqueryTest {
                     .then()
                     .statusCode(201);
 
+        }
+
+        if (isMockBackend()) {
+            //no assertion is required, if there is a problem with request, wiremock would fail
+            return;
         }
 
         TableResult tr = getTableData(dataset + "." + tableNameForPartitioning);
@@ -200,6 +229,11 @@ class GoogleBigqueryTest {
                     .post("/google-bigquery/insertMap")
                     .then()
                     .statusCode(201);
+        }
+
+        if (isMockBackend()) {
+            //no assertion is required, if there is a problem with request, wiremock would fail
+            return;
         }
 
         TableResult tr = getTableData(dataset + "." + tableNameForInsertId);
@@ -239,11 +273,11 @@ class GoogleBigqueryTest {
     }
 
     @Test
-    public void googleBigQueryCrudOperations() throws Exception {
+    public void sqlCrudOperations() throws Exception {
         // create
         RestAssured.given()
                 .contentType(ContentType.JSON)
-                .body(CollectionHelper.mapOf("id", 1, "col1", 2, "col2", 3))
+                .body(mapWithJobId(mapOf("id", 1, "col1", 2, "col2", 3)))
                 .queryParam("sql", String.format("INSERT INTO `%s.%s.%s` VALUES(@id, @col1, @col2)",
                         projectId, dataset, tableNameForSqlCrud))
                 .queryParam("file", true)
@@ -253,7 +287,7 @@ class GoogleBigqueryTest {
                 .body(is("1"));
         RestAssured.given()
                 .contentType(ContentType.JSON)
-                .body(CollectionHelper.mapOf("id", 2, "col1", 3, "col2", 4))
+                .body(mapWithJobId(mapOf("id", 2, "col1", 3, "col2", 4)))
                 .queryParam("sql", String.format("INSERT INTO `%s.%s.%s` VALUES(@id, @col1, @col2)",
                         projectId, dataset, tableNameForSqlCrud))
                 .post("/google-bigquery/executeSql")
@@ -263,7 +297,7 @@ class GoogleBigqueryTest {
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
-                .body(Collections.emptyMap())
+                .body(mapWithJobId(Collections.emptyMap()))
                 .queryParam("file", true)
                 .queryParam("sql", String.format("SELECT * FROM `%s.%s.%s`",
                         projectId, dataset, tableNameForSqlCrud))
@@ -304,5 +338,17 @@ class GoogleBigqueryTest {
         results = parseResult(tr);
         Assertions.assertEquals("3", results.get(0).get(1));
 
+    }
+
+    private boolean isMockBackend() {
+        return mockUrl != null && !"".equals(mockUrl.trim());
+    }
+
+    private Map<String, Object> mapWithJobId(Map<String, Object> map) {
+        if(isMockBackend()) {
+            return mergeMaps(Collections.singletonMap(GoogleBigQueryConstants.JOB_ID, "test-job-id"), map);
+        }
+
+        return map;
     }
 }

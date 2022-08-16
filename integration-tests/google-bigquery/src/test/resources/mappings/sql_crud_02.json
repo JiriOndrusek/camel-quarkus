@@ -1,0 +1,26 @@
+{
+  "id" : "cef74b8f-3d58-45db-b2fa-ce4c3a8fb933",
+  "name" : "bigquery_v2_projects_test-project_datasets__cd8b40856acd1b6890f170712a53c7133d5b133e_tables_anon4eef1d0f1ee7681b0adc2ec1b67b57317dcdb96b_data",
+  "request" : {
+    "url" : "/bigquery/v2/projects/test-project/datasets/_cd8b40856acd1b6890f170712a53c7133d5b133e/tables/anon4eef1d0f1ee7681b0adc2ec1b67b57317dcdb96b/data?prettyPrint=false",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"kind\":\"bigquery#tableDataList\",\"etag\":\"xVG7nvsVaC8yyLr4B59L5g==\",\"totalRows\":\"2\",\"rows\":[{\"f\":[{\"v\":\"2\"},{\"v\":\"3\"},{\"v\":\"4\"}]},{\"f\":[{\"v\":\"1\"},{\"v\":\"2\"},{\"v\":\"3\"}]}]}",
+    "headers" : {
+      "ETag" : "xVG7nvsVaC8yyLr4B59L5g==",
+      "Content-Type" : "application/json; charset=UTF-8",
+      "Vary" : [ "Origin", "X-Origin", "Referer" ],
+      "Date" : "Tue, 16 Aug 2022 14:03:34 GMT",
+      "Server" : "ESF",
+      "Cache-Control" : "private",
+      "X-XSS-Protection" : "0",
+      "X-Frame-Options" : "SAMEORIGIN",
+      "Alt-Svc" : "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-Q050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\""
+    }
+  },
+  "uuid" : "cef74b8f-3d58-45db-b2fa-ce4c3a8fb933",
+  "persistent" : true,
+  "insertionIndex" : 46
+}
