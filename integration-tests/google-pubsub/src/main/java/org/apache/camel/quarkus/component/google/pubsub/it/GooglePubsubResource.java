@@ -110,7 +110,7 @@ public class GooglePubsubResource {
     public String receiveFromSubscriptionOrdered(@PathParam("subscriptionName") String subscriptionName) throws Exception {
 
         return consumeEndpoint(subscriptionName,
-                "?messageOrderingEnabled=true&pubsubEndpoint=pubsub.googleapis.com:443");
+                "?synchronousPull=true&messageOrderingEnabled=true&pubsubEndpoint=pubsub.googleapis.com:443");
     }
 
     private String consumeEndpoint(String subscriptionName, String parameters) {
