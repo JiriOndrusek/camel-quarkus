@@ -60,7 +60,7 @@ public class GooglePubsubResource {
     @GET
     public Response consumeStringFromTopic() {
         Object response = consumerTemplate
-                .receiveBody("google-pubsub:{{project.id}}:{{google-pubsub.subscription-name}}?synchronousPull=false", 5000L);
+                .receiveBody("google-pubsub:{{project.id}}:{{google-pubsub.subscription-name}}?synchronousPull=true", 5000L);
         return Response.ok(response).build();
     }
 
@@ -77,7 +77,7 @@ public class GooglePubsubResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response consumePojoFromTopic() {
         Object response = consumerTemplate
-                .receiveBody("google-pubsub:{{project.id}}:{{google-pubsub.subscription-name}}?synchronousPull=false", 5000L);
+                .receiveBody("google-pubsub:{{project.id}}:{{google-pubsub.subscription-name}}?synchronousPull=true", 5000L);
         return Response.ok(response).build();
     }
 
@@ -110,11 +110,11 @@ public class GooglePubsubResource {
     public String receiveFromSubscriptionOrdered(@PathParam("subscriptionName") String subscriptionName) throws Exception {
 
         return consumeEndpoint(subscriptionName,
-                "?messageOrderingEnabled=true&pubsubEndpoint=pubsub.googleapis.com:443");
+                "&messageOrderingEnabled=true&pubsubEndpoint=pubsub.googleapis.com:443");
     }
 
     private String consumeEndpoint(String subscriptionName, String parameters) {
-        String url = "google-pubsub:{{project.id}}:{{" + subscriptionName + "}}";
+        String url = "google-pubsub:{{project.id}}:{{" + subscriptionName + "}}?synchronousPull=true";
         if (parameters != null && !"".equals(parameters)) {
             url = url + parameters;
         }

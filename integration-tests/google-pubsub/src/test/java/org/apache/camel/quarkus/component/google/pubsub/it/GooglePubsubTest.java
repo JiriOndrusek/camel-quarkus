@@ -23,28 +23,21 @@ import java.util.concurrent.TimeUnit;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
-import io.restassured.config.HttpClientConfig;
-import io.restassured.config.RestAssuredConfig;
 import org.apache.camel.quarkus.test.support.google.GoogleCloudTestResource;
 import org.hamcrest.Matchers;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 
 import static org.awaitility.Awaitility.await;
 
 @QuarkusTest
 @QuarkusTestResource(GoogleCloudTestResource.class)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class) //required because https://github.com/apache/camel-quarkus/issues/3957
 class GooglePubsubTest {
     private static final Logger LOG = Logger.getLogger(GooglePubsubTest.class);
 
     @Test
-    @Order(1)
     public void pubsubTopicProduceConsume() {
         String message = "Hello Camel Quarkus Google PubSub";
 
@@ -61,7 +54,6 @@ class GooglePubsubTest {
     }
 
     @Test
-    @Order(2)
     public void jacksonSerializer() {
         String fruitName = "Apple";
 
@@ -79,7 +71,6 @@ class GooglePubsubTest {
     }
 
     @Test
-    @Order(3)
     public void testGrouped() throws Exception {
         RestAssured.given()
                 .queryParam("toEndpoint", GooglePubSubRoutes.GROUP_DIRECT_AGGREGATOR)
@@ -121,7 +112,6 @@ class GooglePubsubTest {
     // https://github.com/apache/camel-quarkus/issues/3944
     @DisabledIfEnvironmentVariable(named = "CI", matches = "true")
     @Test
-    @Order(4)
     public void testOrdering() throws Exception {
         LOG.info("Start of the ordering test");
         RestAssured.given()
@@ -208,7 +198,6 @@ class GooglePubsubTest {
     }
 
     @Test
-    @Order(5)
     public void testAck() throws Exception {
         LOG.info("Start of the acking test");
         //enable ack
@@ -280,16 +269,4 @@ class GooglePubsubTest {
         LOG.info("Message \"2\" was delivered after acking was enabled.");
     }
 
-    // This test method may be unnecessary, but there is a problem which is probably linked to the closure of the client.
-    // Once https://github.com/apache/camel-quarkus/issues/3957 is solved, this method should be probably removed.
-    @Test
-    @Order(6)
-    public void stopConsumerTest() throws Exception {
-        RestAssured.given()
-                .config(RestAssuredConfig.config()
-                        .httpClient(HttpClientConfig.httpClientConfig().setParam("http.connection.timeout", 60000)))
-                .get("/google-pubsub/stopConsumer")
-                .then()
-                .statusCode(204);
-    }
 }
