@@ -52,7 +52,7 @@ import static org.hamcrest.Matchers.is;
 
 @QuarkusTest
 @TestHTTPEndpoint(GoogleBigqueryResource.class)
-@QuarkusTestResource(GoogleBigqueryWiremockTestResource.class)
+//@QuarkusTestResource(GoogleBigqueryWiremockTestResource.class)
 @QuarkusTestResource(GoogleCloudTestResource.class)
 class GoogleBigqueryTest {
 
