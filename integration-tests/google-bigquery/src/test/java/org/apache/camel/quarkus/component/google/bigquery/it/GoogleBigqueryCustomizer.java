@@ -38,7 +38,6 @@ import org.apache.camel.quarkus.test.support.google.GoogleCloudContext;
 import org.apache.camel.quarkus.test.support.google.GoogleCloudTestResource;
 import org.apache.camel.quarkus.test.support.google.GoogleTestEnvCustomizer;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 
 public class GoogleBigqueryCustomizer implements GoogleTestEnvCustomizer {
@@ -50,25 +49,21 @@ public class GoogleBigqueryCustomizer implements GoogleTestEnvCustomizer {
 
     @Override
     public GenericContainer createContainer() {
-        container = new GenericContainer(DOCKER_IMAGE_WIREMOCK)
-                .withExposedPorts(8080)
-                .withClasspathResourceMapping("mappings", "/home/wiremock/mappings", BindMode.READ_ONLY);
-        return container;
+        return null;
     }
 
     @Override
     public void customize(GoogleCloudContext envContext) {
 
         try {
+            GoogleBigqueryTestMode mode = GoogleBigqueryTestMode.detectMode(envContext);
+            envContext.property("google-bigquery.testMode", mode.name());
+
             String projectId = envContext.getProperties().getOrDefault(GoogleCloudTestResource.PARAM_PROJECT_ID,
                     TEST_PROJECT_ID);
-
             envContext.property("project.id", projectId);
 
-            String gs = System.getenv("GENERATE_SUFFIXES");
-
-            final boolean generateSuffixes = envContext.isUsingMockBackend() ? false
-                    : (gs != null ? Boolean.parseBoolean(gs) : true);
+            final boolean generateSuffixes = mode == GoogleBigqueryTestMode.realService;
 
             // ------------------ generate names ----------------
             final String datasetName = generateName("test_dataset", envContext, generateSuffixes);
@@ -79,9 +74,7 @@ public class GoogleBigqueryCustomizer implements GoogleTestEnvCustomizer {
             final String tableNameForInsertId = generateName("table-for-insert-id", envContext, generateSuffixes);
             final String tableNameForSqlCrud = generateName("table-for-sql-crud", envContext, generateSuffixes);
 
-            if (envContext.isUsingMockBackend()) {
-                envContext.property("google.bigquery.mock-url",
-                        "http://" + container.getHost() + ":" + container.getMappedPort(8080));
+            if (mode == GoogleBigqueryTestMode.mockedBacked) {
                 //do not create resources in mocked backend
                 return;
             }

@@ -142,46 +142,28 @@ public class GoogleBigqueryResource {
         return new GoogleBigQueryConnectionFactory() {
             @Override
             public synchronized BigQuery getDefaultClient() throws Exception {
-                final String overrideUrl = System.getenv("OVERRIDE_URL");
-                final String mockUrl = ConfigProvider.getConfig().getOptionalValue("google.bigquery.mock-url", String.class)
+
+                final String host = ConfigProvider.getConfig().getOptionalValue("wiremock.url", String.class)
                         .orElse(null);
-                if (overrideUrl != null && mockUrl != null) {
-                    throw new IllegalArgumentException("Mock backend can not be overriden.");
+                final String credentialsPath = ConfigProvider.getConfig()
+                        .getOptionalValue("google.credentialsPath", String.class)
+                        .orElse(null);
+
+                BigQueryOptions.Builder builder = BigQueryOptions.newBuilder().setProjectId(projectId);
+
+                if (host != null) {
+                    builder.setHost(host)
+                            .setLocation(host);
                 }
 
-                String url = overrideUrl != null ? overrideUrl : ("".equals(mockUrl) ? null : mockUrl);
-
-                if (mockUrl != null) {
-                    // Instantiate a client.
-                    return BigQueryOptions.newBuilder()
-                            .setCredentials(NoCredentials.getInstance())
-                            .setProjectId(projectId)
-                            .setHost(mockUrl)
-                            .setLocation(mockUrl)
-                            .build()
-                            .getService();
-                }
-
-                // Instantiate a client.
-                BigQueryOptions.Builder builder = BigQueryOptions.newBuilder()
-                        .setProjectId(projectId);
-
-                if (url != null) {
-                    builder.setHost(url)
-                            .setLocation(url);
-                }
-                if (mockUrl != null) {
+                if (credentialsPath == null) {
                     builder.setCredentials(NoCredentials.getInstance());
                 } else {
-                    String credentialsPath = ConfigProvider.getConfig().getOptionalValue("google.credentialsPath", String.class)
-                            .orElse(null);
-                    if (credentialsPath != null) {
-                        GoogleCredentials credentials;
-                        try (FileInputStream serviceAccountStream = new FileInputStream(credentialsPath)) {
-                            credentials = ServiceAccountCredentials.fromStream(serviceAccountStream);
-                        }
-                        builder.setCredentials(credentials);
+                    GoogleCredentials credentials;
+                    try (FileInputStream serviceAccountStream = new FileInputStream(credentialsPath)) {
+                        credentials = ServiceAccountCredentials.fromStream(serviceAccountStream);
                     }
+                    builder.setCredentials(credentials);
                 }
 
                 return builder.build()
@@ -189,5 +171,4 @@ public class GoogleBigqueryResource {
             }
         };
     }
-
 }

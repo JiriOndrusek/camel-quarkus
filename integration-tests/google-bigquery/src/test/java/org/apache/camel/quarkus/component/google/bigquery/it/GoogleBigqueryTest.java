@@ -34,6 +34,7 @@ import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableResult;
 import io.quarkus.test.common.QuarkusTestResource;
+import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -50,6 +51,8 @@ import static org.apache.camel.util.CollectionHelper.mergeMaps;
 import static org.hamcrest.Matchers.is;
 
 @QuarkusTest
+@TestHTTPEndpoint(GoogleBigqueryResource.class)
+@QuarkusTestResource(GoogleBigqueryWiremockTestResource.class)
 @QuarkusTestResource(GoogleCloudTestResource.class)
 class GoogleBigqueryTest {
 
@@ -80,8 +83,8 @@ class GoogleBigqueryTest {
     @GoogleProperty(name = "google-bigquery.table-for-sql-crud")
     String tableNameForSqlCrud;
 
-    @GoogleProperty(name = "google.bigquery.mock-url")
-    String mockUrl;
+    @GoogleProperty(name = "google-bigquery.testMode")
+    String testMode;
 
     @Test
     public void insertMapTest() throws Exception {
@@ -96,7 +99,7 @@ class GoogleBigqueryTest {
                     .contentType(ContentType.JSON)
                     .body(object)
                     .queryParam("tableName", tableNameForMap)
-                    .post("/google-bigquery/insertMap")
+                    .post("insertMap")
                     .then()
                     .statusCode(201);
         }
@@ -127,7 +130,7 @@ class GoogleBigqueryTest {
                 .contentType(ContentType.JSON)
                 .body(data)
                 .queryParam("tableName", tableNameForList)
-                .post("/google-bigquery/insertList")
+                .post("insertList")
                 .then()
                 .statusCode(201);
 
@@ -154,7 +157,7 @@ class GoogleBigqueryTest {
                         .contentType(ContentType.JSON)
                         .body(object)
                         .queryParam("tableName", tableNameForTemplate)
-                        .post("/google-bigquery/insertMap")
+                        .post("insertMap")
                         .then()
                         .statusCode(201);
             } else {
@@ -164,7 +167,7 @@ class GoogleBigqueryTest {
                         .queryParam("tableName", tableNameForTemplate)
                         .queryParam("headerKey", GoogleBigQueryConstants.TABLE_SUFFIX)
                         .queryParam("headerValue", "_suffix")
-                        .post("/google-bigquery/insertMap")
+                        .post("insertMap")
                         .then()
                         .statusCode(201);
             }
@@ -203,7 +206,7 @@ class GoogleBigqueryTest {
                     .contentType(ContentType.JSON)
                     .body(object)
                     .queryParam("tableName", tableNameForPartitioning)
-                    .post("/google-bigquery/insertMap")
+                    .post("insertMap")
                     .then()
                     .statusCode(201);
         }
@@ -232,7 +235,7 @@ class GoogleBigqueryTest {
                     .queryParam("tableName", tableNameForInsertId)
                     .queryParam("headerKey", GoogleBigQueryConstants.INSERT_ID)
                     .queryParam("headerValue", "id")
-                    .post("/google-bigquery/insertMap")
+                    .post("insertMap")
                     .then()
                     .statusCode(201);
         }
@@ -288,7 +291,7 @@ class GoogleBigqueryTest {
                 .queryParam("sql", String.format("INSERT INTO `%s.%s.%s` VALUES(@id, @col1, @col2)",
                         projectId, dataset, tableNameForSqlCrud))
                 .queryParam("file", true)
-                .post("/google-bigquery/executeSql")
+                .post("executeSql")
                 .then()
                 .statusCode(200)
                 .body(is("1"));
@@ -297,7 +300,7 @@ class GoogleBigqueryTest {
                 .body(mapWithJobId("job02", mapOf("id", 2, "col1", 3, "col2", 4)))
                 .queryParam("sql", String.format("INSERT INTO `%s.%s.%s` VALUES(@id, @col1, @col2)",
                         projectId, dataset, tableNameForSqlCrud))
-                .post("/google-bigquery/executeSql")
+                .post("ry/executeSql")
                 .then()
                 .statusCode(200)
                 .body(is("1"));
@@ -308,7 +311,7 @@ class GoogleBigqueryTest {
                 .queryParam("file", true)
                 .queryParam("sql", String.format("SELECT * FROM `%s.%s.%s`",
                         projectId, dataset, tableNameForSqlCrud))
-                .post("/google-bigquery/executeSql")
+                .post("executeSql")
                 .then()
                 .statusCode(200)
                 .body(is("2"));
@@ -319,7 +322,7 @@ class GoogleBigqueryTest {
                 .body(mapWithJobId("job04", CollectionHelper.mapOf("col1", 22, "id", 1)))
                 .queryParam("sql", String.format("UPDATE `%s.%s.%s` SET col1=@col1 WHERE id=@id",
                         projectId, dataset, tableNameForSqlCrud))
-                .post("/google-bigquery/executeSql")
+                .post("executeSql")
                 .then()
                 .statusCode(200)
                 .body(is("1"));
@@ -338,7 +341,7 @@ class GoogleBigqueryTest {
                 .body(mapWithJobId("job05", Collections.emptyMap()))
                 .queryParam("sql", String.format("DELETE FROM `%s.%s.%s` WHERE id='1'",
                         projectId, dataset, tableNameForSqlCrud))
-                .post("/google-bigquery/executeSql")
+                .post("executeSql")
                 .then()
                 .statusCode(200)
                 .body(is("1"));
@@ -356,7 +359,7 @@ class GoogleBigqueryTest {
     }
 
     private boolean isMockBackend() {
-        return mockUrl != null && !"".equals(mockUrl.trim());
+        return GoogleBigqueryTestMode.valueOf(testMode) == GoogleBigqueryTestMode.mockedBacked;
     }
 
     private Map<String, Object> mapWithJobId(String jobId, Map<String, Object> map) {
