@@ -63,8 +63,6 @@ public class GoogleBigqueryCustomizer implements GoogleTestEnvCustomizer {
                     TEST_PROJECT_ID);
             envContext.property("project.id", projectId);
 
-            envContext.property("wiremock.url", "http://localhost:9090");
-
             final boolean generateSuffixes = mode == GoogleBigqueryTestMode.realService;
 
             // ------------------ generate names ----------------
