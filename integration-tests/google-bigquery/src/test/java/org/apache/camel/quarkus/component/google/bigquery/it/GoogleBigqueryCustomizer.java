@@ -86,7 +86,7 @@ public class GoogleBigqueryCustomizer implements GoogleTestEnvCustomizer {
             bigQuery.create(DatasetInfo.newBuilder(datasetName).build());
 
             final Schema schema = Schema.of(
-                    Field.of("id", StandardSQLTypeName.NUMERIC),
+                    Field.of("id", StandardSQLTypeName.INT64),
                     Field.of("col1", StandardSQLTypeName.STRING),
                     Field.of("col2", StandardSQLTypeName.STRING));
             createTable(bigQuery, datasetName, tableNameForMap, schema, null);
@@ -94,13 +94,7 @@ public class GoogleBigqueryCustomizer implements GoogleTestEnvCustomizer {
             createTable(bigQuery, datasetName, tableNameForTemplate, schema, null);
             createTable(bigQuery, datasetName, tableNameForInsertId, schema, null);
 
-            //Numeric types can not be used as a headers parameters - see https://issues.apache.org/jira/browse/CAMEL-18382
-            //new schema uses all columns of string type
-            final Schema sqlSchema = Schema.of(
-                    Field.of("id", StandardSQLTypeName.STRING),
-                    Field.of("col1", StandardSQLTypeName.STRING),
-                    Field.of("col2", StandardSQLTypeName.STRING));
-            createTable(bigQuery, datasetName, tableNameForSqlCrud, sqlSchema, null);
+            createTable(bigQuery, datasetName, tableNameForSqlCrud, schema, null);
 
             final Schema partitioningSchema = Schema.of(
                     Field.of("id", StandardSQLTypeName.NUMERIC),

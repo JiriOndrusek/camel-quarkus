@@ -43,7 +43,6 @@ import org.apache.camel.quarkus.test.support.google.GoogleCloudTestResource;
 import org.apache.camel.quarkus.test.support.google.GoogleProperty;
 import org.apache.camel.util.CollectionHelper;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.camel.util.CollectionHelper.mapOf;
@@ -281,26 +280,26 @@ class GoogleBigqueryTest {
         return retVal;
     }
 
-    @Disabled // because of https://github.com/apache/camel-quarkus/issues/4029
+    //    @Disabled // because of https://github.com/apache/camel-quarkus/issues/4029
     @Test
     public void sqlCrudOperations() throws Exception {
         // create
         RestAssured.given()
                 .contentType(ContentType.JSON)
-                .body(mapWithJobId("job01", mapOf("id", 1, "col1", 2, "col2", 3)))
+                .body(mapWithJobId("job01", mapOf("id", 1, "col1", "s2", "col2", "s3")))
                 .queryParam("sql", String.format("INSERT INTO `%s.%s.%s` VALUES(@id, @col1, @col2)",
                         projectId, dataset, tableNameForSqlCrud))
                 .queryParam("file", true)
-                .post("/google-bigquery/executeSql")
+                .post("executeSql")
                 .then()
                 .statusCode(200)
                 .body(is("1"));
         RestAssured.given()
                 .contentType(ContentType.JSON)
-                .body(mapWithJobId("job02", mapOf("id", 2, "col1", 3, "col2", 4)))
+                .body(mapWithJobId("job02", mapOf("id", 2, "col1", "s3", "col2", "s4")))
                 .queryParam("sql", String.format("INSERT INTO `%s.%s.%s` VALUES(@id, @col1, @col2)",
                         projectId, dataset, tableNameForSqlCrud))
-                .post("ry/executeSql")
+                .post("executeSql")
                 .then()
                 .statusCode(200)
                 .body(is("1"));
@@ -319,7 +318,7 @@ class GoogleBigqueryTest {
         //update
         RestAssured.given()
                 .contentType(ContentType.JSON)
-                .body(mapWithJobId("job04", CollectionHelper.mapOf("col1", 22, "id", 1)))
+                .body(mapWithJobId("job04", CollectionHelper.mapOf("col1", "s22", "id", 1)))
                 .queryParam("sql", String.format("UPDATE `%s.%s.%s` SET col1=@col1 WHERE id=@id",
                         projectId, dataset, tableNameForSqlCrud))
                 .post("executeSql")
@@ -332,14 +331,14 @@ class GoogleBigqueryTest {
             TableResult tr = getTableData(dataset + "." + tableNameForSqlCrud);
             Assertions.assertEquals(2, tr.getTotalRows());
             List<List<Object>> results = parseResult(tr);
-            Assertions.assertEquals("22", results.get(0).get(1));
+            Assertions.assertEquals("s22", results.get(0).get(1));
         }
 
         //delete
         RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(mapWithJobId("job05", Collections.emptyMap()))
-                .queryParam("sql", String.format("DELETE FROM `%s.%s.%s` WHERE id='1'",
+                .queryParam("sql", String.format("DELETE FROM `%s.%s.%s` WHERE id=1",
                         projectId, dataset, tableNameForSqlCrud))
                 .post("executeSql")
                 .then()
@@ -354,7 +353,7 @@ class GoogleBigqueryTest {
         TableResult tr = getTableData(dataset + "." + tableNameForSqlCrud);
         Assertions.assertEquals(1, tr.getTotalRows());
         List<List<Object>> results = parseResult(tr);
-        Assertions.assertEquals("3", results.get(0).get(1));
+        Assertions.assertEquals("s3", results.get(0).get(1));
 
     }
 
