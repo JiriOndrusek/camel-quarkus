@@ -38,7 +38,6 @@ import org.apache.camel.quarkus.test.support.google.GoogleCloudContext;
 import org.apache.camel.quarkus.test.support.google.GoogleCloudTestResource;
 import org.apache.camel.quarkus.test.support.google.GoogleTestEnvCustomizer;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 
 public class GoogleBigqueryCustomizer implements GoogleTestEnvCustomizer {
@@ -50,38 +49,32 @@ public class GoogleBigqueryCustomizer implements GoogleTestEnvCustomizer {
 
     @Override
     public GenericContainer createContainer() {
-        container = new GenericContainer(DOCKER_IMAGE_WIREMOCK)
-                .withExposedPorts(8080)
-                .withClasspathResourceMapping("mappings", "/home/wiremock/mappings", BindMode.READ_ONLY);
-        return container;
+        return null;
     }
 
     @Override
     public void customize(GoogleCloudContext envContext) {
 
         try {
+            TestMode mode = detectMode(envContext);
+            envContext.property("google-bigquery.testMode", mode.name());
+
             String projectId = envContext.getProperties().getOrDefault(GoogleCloudTestResource.PARAM_PROJECT_ID,
                     TEST_PROJECT_ID);
-
             envContext.property("project.id", projectId);
 
-            String gs = System.getenv("GENERATE_SUFFIXES");
-
-            final boolean generateSuffixes = envContext.isUsingMockBackend() ? false
-                    : (gs != null ? Boolean.parseBoolean(gs) : true);
+            final boolean generateSuffixes = mode == TestMode.realService;
 
             // ------------------ generate names ----------------
             final String datasetName = generateName("test_dataset", envContext, generateSuffixes);
-            final String tableNameForMap = generateName("table-for-map", envContext, generateSuffixes);
-            final String tableNameForList = generateName("table-for-list", envContext, generateSuffixes);
-            final String tableNameForTemplate = generateName("table-for-template", envContext, generateSuffixes);
-            final String tableNameForPartitioning = generateName("table-for-partitioning", envContext, generateSuffixes);
-            final String tableNameForInsertId = generateName("table-for-insert-id", envContext, generateSuffixes);
-            final String tableNameForSqlCrud = generateName("table-for-sql-crud", envContext, generateSuffixes);
+            final String tableNameForMap = generateName("table_for_map", envContext, generateSuffixes);
+            final String tableNameForList = generateName("table_for_list", envContext, generateSuffixes);
+            final String tableNameForTemplate = generateName("table_for_template", envContext, generateSuffixes);
+            final String tableNameForPartitioning = generateName("table_for_partitioning", envContext, generateSuffixes);
+            final String tableNameForInsertId = generateName("table_for_insert-id", envContext, generateSuffixes);
+            final String tableNameForSqlCrud = generateName("table_for_sql_crud", envContext, generateSuffixes);
 
-            if (envContext.isUsingMockBackend()) {
-                envContext.property("google.bigquery.mock-url",
-                        "http://" + container.getHost() + ":" + container.getMappedPort(8080));
+            if (mode == TestMode.mockedBacked) {
                 //do not create resources in mocked backend
                 return;
             }
@@ -189,6 +182,31 @@ public class GoogleBigqueryCustomizer implements GoogleTestEnvCustomizer {
                 .setProjectId(projectId)
                 .build()
                 .getService();
+    }
+
+    enum TestMode {
+        realService, mockedBacked, wiremockRecording;
+    }
+
+    private TestMode detectMode(GoogleCloudContext envContext) {
+        boolean isUsingMockBackend = envContext.isUsingMockBackend();
+
+        String recordEnabled = System.getProperty("wiremock.record", System.getenv("WIREMOCK_RECORD"));
+        boolean isRecordingEnabled = recordEnabled != null && recordEnabled.equals("true");
+
+        if (isRecordingEnabled) {
+            if (isUsingMockBackend) {
+                throw new IllegalStateException(
+                        "For Wiremock recording real account has to be provided! Set GOOGLE_APPLICATION_CREDENTIALS and GOOGLE_PROJECT_ID env vars.");
+            }
+            return TestMode.wiremockRecording;
+        }
+
+        if (isUsingMockBackend) {
+            return TestMode.mockedBacked;
+        }
+
+        return TestMode.realService;
     }
 
 }

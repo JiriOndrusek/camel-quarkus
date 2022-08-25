@@ -1,8 +1,8 @@
 {
   "id" : "2de7f235-4810-41b2-9372-5c5964375194",
-  "name" : "bigquery_v2_projects_test-project_datasets_google_bigquery_test_dataset_tables_google_bigquery_table-for-partitioning",
+  "name" : "bigquery_v2_projects_test-project_datasets_google_bigquery_test_dataset_tables_google_bigquery_table_for_partitioning",
   "request" : {
-    "url" : "/bigquery/v2/projects/test-project/datasets/google_bigquery_test_dataset/tables/google_bigquery_table-for-partitioning/insertAll?prettyPrint=false",
+    "url" : "/bigquery/v2/projects/test-project/datasets/google_bigquery_test_dataset/tables/google_bigquery_table_for_partitioning/insertAll?prettyPrint=false",
     "method" : "POST",
     "bodyPatterns" : [ {
       "equalToJson" : "{\"rows\":[{\"json\":{\"date\":\"2022-08-23\",\"id\":\"1\",\"col2\":\"3\",\"col1\":\"2\"}}]}",

@@ -1,8 +1,8 @@
 {
   "id" : "40f99ec8-5f9f-4593-bbbc-806c4681c943",
-  "name" : "bigquery_v2_projects_test-project_datasets_google_bigquery_test_dataset_tables_google_bigquery_table-for-template",
+  "name" : "bigquery_v2_projects_test-project_datasets_google_bigquery_test_dataset_tables_google_bigquery_table_for_template",
   "request" : {
-    "url" : "/bigquery/v2/projects/test-project/datasets/google_bigquery_test_dataset/tables/google_bigquery_table-for-template/insertAll?prettyPrint=false",
+    "url" : "/bigquery/v2/projects/test-project/datasets/google_bigquery_test_dataset/tables/google_bigquery_table_for_template/insertAll?prettyPrint=false",
     "method" : "POST",
     "bodyPatterns" : [ {
       "equalToJson" : "{\"rows\":[{\"json\":{\"id\":\"5\",\"col2\":\"7\",\"col1\":\"6\"}}],\"templateSuffix\":\"_suffix\"}",

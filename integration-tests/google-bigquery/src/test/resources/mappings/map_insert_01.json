@@ -1,8 +1,8 @@
 {
   "id" : "01299c6f-f01f-4468-946a-bbeb05a2eca3",
-  "name" : "bigquery_v2_projects_test-project_datasets_google_bigquery_test_dataset_tables_google_bigquery_table-for-map",
+  "name" : "bigquery_v2_projects_test-project_datasets_google_bigquery_test_dataset_tables_google_bigquery_table_for_map",
   "request" : {
-    "url" : "/bigquery/v2/projects/test-project/datasets/google_bigquery_test_dataset/tables/google_bigquery_table-for-map/insertAll?prettyPrint=false",
+    "url" : "/bigquery/v2/projects/test-project/datasets/google_bigquery_test_dataset/tables/google_bigquery_table_for_map/insertAll?prettyPrint=false",
     "method" : "POST",
     "bodyPatterns" : [ {
       "equalToJson" : "{\"rows\":[{\"json\":{\"id\":\"1\",\"col2\":\"3\",\"col1\":\"2\"}}]}",

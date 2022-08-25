@@ -26,7 +26,9 @@ In case that a new test is created (or existing one upated) you can use special 
 
 ==== Recording
 
-More details can be found in the https://wiremock.org/docs/record-playback/[documentation].
+More details can be found in the `wiremock-support` extension.
+
+Quick guide:
 
 * Export both authentication properties required for the real account.
 
@@ -35,21 +37,15 @@ More details can be found in the https://wiremock.org/docs/record-playback/[docu
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json
 export GOOGLE_PROJECT_ID=your-gcloud-project-id
 ----
-* Export both helper properties.
+* Turn recording on by
 
-[source,shell]
-----
-export OVERRIDE_URL="http://localhost:9090"
-export GENERATE_SUFFIXES="false"
-----
+System property `-Dwiremock.record=true`
 
-* Start wiremock server on http port `9090` (see the https://wiremock.org/docs/running-standalone/[documentation]).
-[source,shell]
-----
-sudo java -jar wiremock-jre8-standalone-2.33.2.jar --port 9090
-----
-* Open browser on http://localhost:9090/__admin/recorder/ and start recording.
-* Execute required tests.
-* Stop the recording and you can see captured communication in fokder `mappings`.
+Or
+
+Environment variable `WIREMOCK_RECORD=true`
+
+
+* Run the tests.
 * If the real project differs from `test-project`, please replace all text occurrences in the mapping files to the test one.
 * If you are recording the sql component, you have to manually replace all occurrences of the `jobId` to the jobId forced by the test.

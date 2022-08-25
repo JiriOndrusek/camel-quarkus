@@ -37,13 +37,34 @@ public class GoogleCloudTestResource implements QuarkusTestResourceLifecycleMana
 
     private final GoogleCloudContext envContext = new GoogleCloudContext();
 
+    /**
+     * Method usable by dependant modules.
+     *
+     * @return True if mock backend should be started.
+     */
+    public static boolean isUsingMockBackend() {
+       return isUsingMockBackend(getGoogleProjectId(), getGoogleApplicationCredentials());
+    }
+
+    private static boolean isUsingMockBackend(String realProjectId, String realCredentials) {
+        final boolean realCredentialsProvided = realCredentials != null && realProjectId != null;
+        return MockBackendUtils.startMockBackend(false) && !realCredentialsProvided;
+    }
+
+    private static String getGoogleProjectId() {
+        return System.getenv("GOOGLE_PROJECT_ID");
+    }
+
+    private static String getGoogleApplicationCredentials() {
+        return System.getenv("GOOGLE_APPLICATION_CREDENTIALS");
+    }
+
     @Override
     public Map<String, String> start() {
-        final String realCredentials = System.getenv("GOOGLE_APPLICATION_CREDENTIALS");
-        final String realProjectId = System.getenv("GOOGLE_PROJECT_ID");
+        final String realCredentials = getGoogleApplicationCredentials();
+        final String realProjectId = getGoogleProjectId();
         final boolean realCredentialsProvided = realCredentials != null && realProjectId != null;
-        final boolean startMockBackend = MockBackendUtils.startMockBackend(false);
-        final boolean usingMockBackend = startMockBackend && !realCredentialsProvided;
+        final boolean usingMockBackend = isUsingMockBackend(realProjectId, realCredentials);
         envContext.setUsingMockBackend(usingMockBackend);
 
         ServiceLoader<GoogleTestEnvCustomizer> loader = ServiceLoader.load(GoogleTestEnvCustomizer.class);
@@ -54,7 +75,7 @@ public class GoogleCloudTestResource implements QuarkusTestResourceLifecycleMana
         }
 
         if (!usingMockBackend) {
-            if (!startMockBackend && !realCredentialsProvided) {
+            if (!MockBackendUtils.startMockBackend(false) &&  !realCredentialsProvided) {
                 throw new IllegalStateException(
                         "Set GOOGLE_APPLICATION_CREDENTIALS and GOOGLE_PROJECT_ID env vars if you set CAMEL_QUARKUS_START_MOCK_BACKEND=false");
             }
@@ -66,8 +87,10 @@ public class GoogleCloudTestResource implements QuarkusTestResourceLifecycleMana
 
             for (GoogleTestEnvCustomizer customizer : customizers) {
                 GenericContainer container = customizer.createContainer();
-                container.start();
-                envContext.closeable(container);
+                if(container != null) {
+                    container.start();
+                    envContext.closeable(container);
+                }
             }
         }
 
