@@ -43,10 +43,10 @@ class QuartzTest {
         RestAssured.given()
                 .queryParam("fromEndpoint", "quartz-properties")
                 .queryParam("componentName", "quartzFromProperties")
-                .get("/quartz/getNameAndResult")
+                .get("/quartz/getCustomAndResult")
                 .then()
                 .statusCode(200)
-                .body("name", is("MyScheduler-"),
+                .body("customJobUsed", is(Boolean.TRUE.toString()),
                         "result", is("Hello Camel Quarkus Quartz Properties"));
     }
 

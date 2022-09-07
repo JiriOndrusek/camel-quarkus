@@ -51,15 +51,15 @@ public class QuartzResource {
         return new QuartzComponent();
     }
 
-    @Path("/getNameAndResult")
+    @Path("/getCustomAndResult")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Map<String, String> getSchedulerNameAndResult(@QueryParam("componentName") String componentName,
+    public Map<String, String> getCustomAndResult(@QueryParam("componentName") String componentName,
             @QueryParam("fromEndpoint") String fromEndpoint) throws Exception {
 
         QuartzComponent comp = camelContext.getComponent(componentName, QuartzComponent.class);
 
-        return CollectionHelper.mapOf("name", comp.getScheduler().getSchedulerName().replaceFirst(camelContext.getName(), ""),
+        return CollectionHelper.mapOf("customJobUsed", (CustomJobStore.JOB_COUNTER.get() > 0) + "",
                 "result", consumerTemplate.receiveBody("seda:" + fromEndpoint + "-result", 5000, String.class));
     }
 

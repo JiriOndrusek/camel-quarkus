@@ -115,3 +115,8 @@ public QuartzComponent quartzComponent(Scheduler scheduler) {
 
 Further customization of the Quartz scheduler can be done via various configuration properties. Refer to to the https://quarkus.io/guides/quartz#quartz-configuration-reference[Quarkus Quartz Configuration] guide for more information.
 
+
+== Camel Quarkus limitations
+
+Configuration of scheduler is provided by the Quarkus Quarts extension (see the https://quarkus.io/guides/quartz#quartz-configuration-reference[documentation] for more details).
+

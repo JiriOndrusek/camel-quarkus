@@ -1,0 +1,1 @@
+Configuration of scheduler is provided by the Quarkus Quarts extension (see the https://quarkus.io/guides/quartz#quartz-configuration-reference[documentation] for more details).
