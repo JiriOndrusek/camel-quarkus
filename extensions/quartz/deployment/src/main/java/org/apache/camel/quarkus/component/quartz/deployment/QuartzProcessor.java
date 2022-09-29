@@ -16,9 +16,12 @@
  */
 package org.apache.camel.quarkus.component.quartz.deployment;
 
+import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.bootstrap.model.ApplicationModel;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.annotations.ExecutionTime;
+import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
@@ -26,6 +29,9 @@ import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageSystemPropertyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
+import org.apache.camel.component.quartz.QuartzComponent;
+import org.apache.camel.quarkus.component.quartz.CamelQuartzRecorder;
+import org.apache.camel.quarkus.core.deployment.spi.CamelRuntimeBeanBuildItem;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.quartz.impl.jdbcjobstore.StdJDBCDelegate;
@@ -37,7 +43,8 @@ class QuartzProcessor {
             "org.apache.camel.component.quartz.CamelJob",
             "org.apache.camel.component.quartz.StatefulCamelJob",
             "org.apache.camel.pollconsumer.quartz.QuartzScheduledPollConsumerJob",
-            "org.quartz.utils.C3p0PoolingConnectionProvider"
+            "org.quartz.utils.C3p0PoolingConnectionProvider",
+            "io.quarkus.quartz.runtime.QuartzSchedulerImpl"
     };
     private static final String[] QUARTZ_JOB_CLASSES_WITH_METHODS = new String[] {
             "org.quartz.impl.jdbcjobstore.JobStoreTX",
@@ -97,4 +104,13 @@ class QuartzProcessor {
                 "com.mchange.v2.c3p0.management.NullManagementCoordinator");
     }
 
+    @Record(ExecutionTime.STATIC_INIT)
+    @BuildStep
+    CamelRuntimeBeanBuildItem quartzComponent(CamelQuartzRecorder recorder, BeanContainerBuildItem beanContainer) {
+        // set the "real" Qute engine to the Camel Qute component
+        return new CamelRuntimeBeanBuildItem(
+                "quartz",
+                QuartzComponent.class.getName(),
+                recorder.createQuartzComponent(beanContainer.getValue()));
+    }
 }
