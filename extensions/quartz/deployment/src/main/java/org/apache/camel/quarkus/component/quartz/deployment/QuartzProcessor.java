@@ -104,7 +104,7 @@ class QuartzProcessor {
                 "com.mchange.v2.c3p0.management.NullManagementCoordinator");
     }
 
-    @Record(ExecutionTime.STATIC_INIT)
+    @Record(ExecutionTime.RUNTIME_INIT)
     @BuildStep
     CamelRuntimeBeanBuildItem quartzComponent(CamelQuartzRecorder recorder, BeanContainerBuildItem beanContainer) {
         // set the "real" Qute engine to the Camel Qute component
@@ -113,4 +113,5 @@ class QuartzProcessor {
                 QuartzComponent.class.getName(),
                 recorder.createQuartzComponent(beanContainer.getValue()));
     }
+
 }
