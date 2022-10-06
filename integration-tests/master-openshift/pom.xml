@@ -174,7 +174,7 @@
                                 <quarkus.runner>${quarkus.runner}</quarkus.runner>
                             </systemProperties>
                             <environmentVariables>
-                                Fake KubernetesClusterService so it assumes being run from a pod named leader  >
+                                Fake KubernetesClusterService so it assumes being run from a pod named leader  &gt;
                                 <HOSTNAME>leader</HOSTNAME>
                             </environmentVariables>
                         </configuration>
