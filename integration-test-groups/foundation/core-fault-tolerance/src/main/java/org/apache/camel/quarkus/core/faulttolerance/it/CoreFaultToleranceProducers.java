@@ -18,55 +18,55 @@ package org.apache.camel.quarkus.core.faulttolerance.it;
 
 public class CoreFaultToleranceProducers {
 
-//    https://github.com/apache/camel-quarkus/issues/4298
-//    @ApplicationScoped
-//    @Named("customCircuitBreaker")
-//    CircuitBreaker<Integer> produceCustomCircuitBreaker(ThreadTimer threadTimer) {
-//        FaultToleranceStrategy<Integer> delegate = new FaultToleranceStrategy<Integer>() {
-//            @Override
-//            public Integer apply(InvocationContext<Integer> ctx) {
-//                return null;
-//            }
-//        };
-//        return new CircuitBreaker<>(delegate, "description", ExceptionDecision.ALWAYS_FAILURE, 10, 40, 0.1,
-//                2, SystemStopwatch.INSTANCE, threadTimer) {
-//            @Override
-//            public String toString() {
-//                return "customCircuitBreaker";
-//            }
-//        };
-//    }
-//
-//    @ApplicationScoped
-//    @Named("customBulkheadExecutorService")
-//    ExecutorService produceCustomBulkheadExecutorService() {
-//        return Executors.newFixedThreadPool(2);
-//    }
-//
-//    @ApplicationScoped
-//    @Named("threadTimer")
-//    ThreadTimer threadTimer(@Named("threadTimerExecutor") ExecutorService executorService) {
-//        return new ThreadTimer(executorService);
-//    }
-//
-//    @ApplicationScoped
-//    @Named("threadTimerExecutor")
-//    ExecutorService threadTimerExecutor() {
-//        return Executors.newSingleThreadExecutor();
-//    }
-//
-//    void disposeThreadTimerExecutor(@Disposes @Named("threadTimerExecutor") ExecutorService threadTimerExecutor,
-//            ThreadTimer timer) {
-//        try {
-//            timer.shutdown();
-//        } catch (InterruptedException e) {
-//            Thread.currentThread().interrupt();
-//        }
-//
-//        try {
-//            threadTimerExecutor.awaitTermination(10, TimeUnit.SECONDS);
-//        } catch (InterruptedException e) {
-//            Thread.currentThread().interrupt();
-//        }
-//    }
+    //    https://github.com/apache/camel-quarkus/issues/4298
+    //    @ApplicationScoped
+    //    @Named("customCircuitBreaker")
+    //    CircuitBreaker<Integer> produceCustomCircuitBreaker(ThreadTimer threadTimer) {
+    //        FaultToleranceStrategy<Integer> delegate = new FaultToleranceStrategy<Integer>() {
+    //            @Override
+    //            public Integer apply(InvocationContext<Integer> ctx) {
+    //                return null;
+    //            }
+    //        };
+    //        return new CircuitBreaker<>(delegate, "description", ExceptionDecision.ALWAYS_FAILURE, 10, 40, 0.1,
+    //                2, SystemStopwatch.INSTANCE, threadTimer) {
+    //            @Override
+    //            public String toString() {
+    //                return "customCircuitBreaker";
+    //            }
+    //        };
+    //    }
+    //
+    //    @ApplicationScoped
+    //    @Named("customBulkheadExecutorService")
+    //    ExecutorService produceCustomBulkheadExecutorService() {
+    //        return Executors.newFixedThreadPool(2);
+    //    }
+    //
+    //    @ApplicationScoped
+    //    @Named("threadTimer")
+    //    ThreadTimer threadTimer(@Named("threadTimerExecutor") ExecutorService executorService) {
+    //        return new ThreadTimer(executorService);
+    //    }
+    //
+    //    @ApplicationScoped
+    //    @Named("threadTimerExecutor")
+    //    ExecutorService threadTimerExecutor() {
+    //        return Executors.newSingleThreadExecutor();
+    //    }
+    //
+    //    void disposeThreadTimerExecutor(@Disposes @Named("threadTimerExecutor") ExecutorService threadTimerExecutor,
+    //            ThreadTimer timer) {
+    //        try {
+    //            timer.shutdown();
+    //        } catch (InterruptedException e) {
+    //            Thread.currentThread().interrupt();
+    //        }
+    //
+    //        try {
+    //            threadTimerExecutor.awaitTermination(10, TimeUnit.SECONDS);
+    //        } catch (InterruptedException e) {
+    //            Thread.currentThread().interrupt();
+    //        }
+    //    }
 }
