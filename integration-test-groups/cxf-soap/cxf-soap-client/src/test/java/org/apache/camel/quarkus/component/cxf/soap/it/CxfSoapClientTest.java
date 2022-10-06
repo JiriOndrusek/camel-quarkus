@@ -37,7 +37,6 @@ import static org.hamcrest.Matchers.is;
 class CxfSoapClientTest {
 
     @Test
-    @Disabled
     public void simpleSoapClient() {
         RestAssured.given()
                 .body("CamelQuarkusCXF")
@@ -59,7 +58,7 @@ class CxfSoapClientTest {
     }
 
     @Test
-    @Disabled
+    //    @Disabled
     public void complexSoapClient() {
         RestAssured.given()
                 .queryParam("firstName", "Camel Quarkus")
@@ -77,19 +76,18 @@ class CxfSoapClientTest {
      */
     @Test
     void wsdlUpToDate() throws IOException {
-//        final String wsdlUrl = "http://localhost:8080/helloworld-ws/HelloWorldService?wsdl";
         final String wsdlUrl = ConfigProvider.getConfig()
                 .getValue("camel-quarkus.it.helloWorld.baseUri", String.class);
 
-        final String staticCopyPath = "src/main/cxf-codegen-resources/wsdl/HelloWorldService.wsdl";
+        final String staticCopyPath = "src/main/resources/wsdl/HelloService.wsdl";
         /* The changing Docker IP address in the WSDL should not matter */
-        final String sanitizerRegex = "<soap:address location=\"http://[^/]*/helloworld-ws/HelloWorldService\"></soap:address>";
+        final String sanitizerRegex = "<soap:address location=\"http://[^/]*/helloworld-ws/HelloService\"></soap:address>";
         final String staticCopyContent = Files
                 .readString(Paths.get(staticCopyPath), StandardCharsets.UTF_8)
                 .replaceAll(sanitizerRegex, "");
 
         final String expected = RestAssured.given()
-                .get(wsdlUrl)
+                .get(wsdlUrl + "/helloworld-ws/HelloService?wsdl")
                 .then()
                 .statusCode(200)
                 .extract().body().asString();

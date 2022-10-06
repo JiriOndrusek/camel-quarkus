@@ -26,32 +26,33 @@ import org.testcontainers.containers.wait.strategy.Wait;
 public class CxfClientTestResource implements QuarkusTestResourceLifecycleManager {
 
     private static final int WILDFLY_PORT = 8080;
-    private GenericContainer<?> calculatorContainer;
-    private GenericContainer<?> skewedCalculatorContainer;
+    private GenericContainer<?> helloWorldContainer;
+    private GenericContainer<?> skewedHelloWorldContainer;
 
     @Override
     public Map<String, String> start() {
 
         try {
-            calculatorContainer = new GenericContainer<>("cxf-soap/hello:latest")
+            helloWorldContainer = new GenericContainer<>("cxf-soap/hello8:latest")
                     .withExposedPorts(WILDFLY_PORT)
-                    .waitingFor(Wait.forHttp("/helloworld-ws/HelloWorldService?wsdl"));
+                    .waitingFor(Wait.forHttp("/helloworld-ws/HelloService?wsdl"));
 
-            calculatorContainer.start();
+            helloWorldContainer.start();
 
-//            skewedCalculatorContainer = new GenericContainer<>("6488a3e3dc56")
-//                    .withEnv("ADD_TO_RESULT", "100")
-//                    .withExposedPorts(WILDFLY_PORT)
-//                    .waitingFor(Wait.forHttp("/helloworld-ws/HelloWorldService?wsdl"));
-//
-//            skewedCalculatorContainer.start();
+            //            skewedHelloWorldContainer = new GenericContainer<>("cxf-soap/hello:latest")
+            //                    .withEnv("ADD_TO_RESULT", "100")
+            //                    .withExposedPorts(WILDFLY_PORT)
+            //                    .waitingFor(Wait.forHttp("/helloworld-ws/HelloWorldService?wsdl"));
+            //
+            //            skewedHelloWorldContainer.start();
 
             return Map.of(
                     "camel-quarkus.it.helloWorld.baseUri",
-                    "http://" + calculatorContainer.getHost() + ":" + calculatorContainer.getMappedPort(WILDFLY_PORT)/*,
-                    "cxf.it.skewed-calculator.baseUri",
-                    "http://" + skewedCalculatorContainer.getHost() + ":"
-                            + skewedCalculatorContainer.getMappedPort(WILDFLY_PORT)*/);
+                    "http://" + helloWorldContainer.getHost() + ":" + helloWorldContainer
+                            .getMappedPort(WILDFLY_PORT)/*,
+                                                        "camel-quarkus.it.skewed-helloWorld.baseUri",
+                                                        "http://" + skewedHelloWorldContainer.getHost() + ":"
+                                                        + skewedHelloWorldContainer.getMappedPort(WILDFLY_PORT)*/);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -60,15 +61,15 @@ public class CxfClientTestResource implements QuarkusTestResourceLifecycleManage
     @Override
     public void stop() {
         try {
-            if (calculatorContainer != null) {
-                calculatorContainer.stop();
+            if (helloWorldContainer != null) {
+                helloWorldContainer.stop();
             }
         } catch (Exception e) {
             // ignored
         }
         try {
-            if (skewedCalculatorContainer != null) {
-                skewedCalculatorContainer.stop();
+            if (skewedHelloWorldContainer != null) {
+                skewedHelloWorldContainer.stop();
             }
         } catch (Exception e) {
             // ignored
