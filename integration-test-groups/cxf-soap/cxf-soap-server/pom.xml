@@ -26,9 +26,9 @@
         <relativePath>../../../poms/build-parent-it/pom.xml</relativePath>
     </parent>
 
-    <artifactId>camel-quarkus-integration-test-cxf-soap-client</artifactId>
-    <name>Camel Quarkus :: Integration Tests :: Cxf Soap Client</name>
-    <description>Integration tests for Camel Quarkus CXF extension client part</description>
+    <artifactId>camel-quarkus-integration-test-cxf-soap-server</artifactId>
+    <name>Camel Quarkus :: Integration Tests :: Cxf Soap Server</name>
+    <description>Integration tests for Camel Quarkus CXF extension server part</description>
 
     <build>
         <plugins>
@@ -79,11 +79,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.camel.quarkus</groupId>
-            <artifactId>camel-quarkus-direct</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.apache.cxf.xjc-utils</groupId>
             <artifactId>cxf-xjc-runtime</artifactId>
         </dependency>
@@ -101,22 +96,6 @@
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>testcontainers</artifactId>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-junit4-mock</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
