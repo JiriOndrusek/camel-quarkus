@@ -37,7 +37,7 @@ public class CxfClientTestResource implements QuarkusTestResourceLifecycleManage
                     .withExposedPorts(WILDFLY_PORT)
                     .waitingFor(Wait.forHttp("/helloworld-ws/HelloService?wsdl"));
 
-            helloWorldContainer.start();
+//            helloWorldContainer.start();
 
             //            skewedHelloWorldContainer = new GenericContainer<>("cxf-soap/hello:latest")
             //                    .withEnv("ADD_TO_RESULT", "100")
@@ -48,9 +48,8 @@ public class CxfClientTestResource implements QuarkusTestResourceLifecycleManage
 
             return Map.of(
                     "camel-quarkus.it.helloWorld.baseUri",
-                    "http://" + helloWorldContainer.getHost() + ":8080" /*
-                            helloWorldContainer.getMappedPort(WILDFLY_PORT)/*,
-//                           /*,
+                    "http://" + helloWorldContainer.getHost() + ":8080"/* + helloWorldContainer
+                            .getMappedPort(WILDFLY_PORT)/*,
                                                         "camel-quarkus.it.skewed-helloWorld.baseUri",
                                                         "http://" + skewedHelloWorldContainer.getHost() + ":"
                                                         + skewedHelloWorldContainer.getMappedPort(WILDFLY_PORT)*/);
