@@ -52,14 +52,14 @@ public class CxfSoapRoutes extends RouteBuilder {
         /* Client */
         from("direct:simpleSoapClient")
                 .to("cxf:bean:soapClientEndpoint?dataFormat=POJO");
-        //
+        // todo into different module
         //        from("direct:wsSecurityClient")
         //                .to("cxf:bean:secureEndpoint?dataFormat=POJO");
         //
         from("direct:complexSoapClient")
                 .setHeader(CxfConstants.OPERATION_NAME).constant("Person")
                 .to("cxf:bean:soapClientEndpoint?dataFormat=POJO");
-        //
+        //        // todo into different module
         //        /* Service */
         //        from("cxf:bean:soapServiceEndpoint")
         //                .setBody().simple("Hello ${body} from CXF service");
@@ -68,6 +68,7 @@ public class CxfSoapRoutes extends RouteBuilder {
         //                .setBody().constant("Hello CamelQuarkusCXF");
     }
 
+    // todo into different module
     //    @Produces
     //    @ApplicationScoped
     //    @Named
@@ -91,6 +92,7 @@ public class CxfSoapRoutes extends RouteBuilder {
         return result;
     }
 
+    // todo into different module
     //    @Produces
     //    @ApplicationScoped
     //    @Named
@@ -115,6 +117,7 @@ public class CxfSoapRoutes extends RouteBuilder {
         result.getFeatures().add(loggingFeature);
         return result;
     }
+    // todo into different module
     //
     //    @Produces
     //    @ApplicationScoped

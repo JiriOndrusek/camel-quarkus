@@ -26,7 +26,6 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.containsString;
@@ -46,19 +45,19 @@ class CxfSoapClientTest {
                 .body(is("Hello CamelQuarkusCXF"));
     }
 
-    @Test
-    @Disabled
-    public void wsSecurityClient() {
-        RestAssured.given()
-                .body("CamelQuarkusCXF")
-                .post("/cxf-soap/simple/wsSecurityClient")
-                .then()
-                .statusCode(201)
-                .body(is("Hello WSSecurity CamelQuarkusCXF"));
-    }
+    // todo to different module
+    //    @Test
+    //    @Disabled
+    //    public void wsSecurityClient() {
+    //        RestAssured.given()
+    //                .body("CamelQuarkusCXF")
+    //                .post("/cxf-soap/simple/wsSecurityClient")
+    //                .then()
+    //                .statusCode(201)
+    //                .body(is("Hello WSSecurity CamelQuarkusCXF"));
+    //    }
 
     @Test
-    //    @Disabled
     public void complexSoapClient() {
         RestAssured.given()
                 .queryParam("firstName", "Camel Quarkus")
