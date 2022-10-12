@@ -24,15 +24,13 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import com.helloworld.service.HelloPortType;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.cxf.jaxws.CxfEndpoint;
-import org.apache.cxf.configuration.security.AuthorizationPolicy;
 import org.apache.cxf.ext.logging.LoggingFeature;
-import org.apache.cxf.transport.http.auth.HttpAuthHeader;
 import org.apache.cxf.ws.security.wss4j.WSS4JOutInterceptor;
 import org.apache.wss4j.common.ConfigurationConstants;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.jbossws.ws_extensions.wssecuritypolicy.ServiceIface;
 
 @ApplicationScoped
 public class CxfSoapRoutes extends RouteBuilder {
@@ -56,7 +54,7 @@ public class CxfSoapRoutes extends RouteBuilder {
     public void configure() {
 
         from("direct:wsSecurityClient")
-                .to("cxf:bean:secureEndpoint?username=user1&password=password1&dataFormat=POJO");
+                .to("cxf:bean:secureEndpoint");
 
     }
 
@@ -67,7 +65,7 @@ public class CxfSoapRoutes extends RouteBuilder {
         final Map<String, Object> props = new HashMap<>();
         props.put(ConfigurationConstants.ACTION, "UsernameToken");
         props.put(ConfigurationConstants.PASSWORD_TYPE, "PasswordText");
-        props.put(ConfigurationConstants.USER, "camel");
+        props.put(ConfigurationConstants.USER, "user1");
         props.put("passwordCallbackRef", passwordCallback);
         props.put(ConfigurationConstants.ADD_USERNAMETOKEN_NONCE, "true");
         props.put(ConfigurationConstants.ADD_USERNAMETOKEN_CREATED, "true");
@@ -88,9 +86,10 @@ public class CxfSoapRoutes extends RouteBuilder {
     @Named
     CxfEndpoint secureEndpoint() {
         final CxfEndpoint result = new CxfEndpoint();
-        result.setServiceClass(HelloPortType.class);
-        result.setAddress(serviceBaseUri + "/hello-ws/HelloService");
-        result.setWsdlURL("wsdl/HelloService.wsdl");
+        result.setServiceClass(ServiceIface.class);
+        //http://127.0.0.1:8080/UsernameTokenElytronTestCase/UsernameToken/ElytronUsernameTokenImpl?wsdl
+        result.setAddress(serviceBaseUri + "/UsernameTokenElytronTestCase/UsernameToken/ElytronUsernameTokenImpl");
+        result.setWsdlURL("wsdl/UsernameToken.wsdl");
         result.getFeatures().add(loggingFeature);
         result.getOutInterceptors().add(wssInterceptor);
 
