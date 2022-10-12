@@ -20,10 +20,8 @@ package org.apache.camel.quarkus.component.cxf.soap.it;
 import java.util.Map;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
-import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.utility.MountableFile;
 
 public class CxfClientTestResource implements QuarkusTestResourceLifecycleManager {
 
@@ -34,19 +32,11 @@ public class CxfClientTestResource implements QuarkusTestResourceLifecycleManage
     public Map<String, String> start() {
 
         try {
-            helloContainer = new GenericContainer<>("cxf-soap/hello:1.0")
-            .withExposedPorts(WILDFLY_PORT)
-            .withCopyFileToContainer(MountableFile.forClasspathResource("config.cli"), "/opt/server/bin/config.cli")
-            .withCopyFileToContainer(MountableFile.forClasspathResource("example-users.properties"), "/opt/server/standalone/configuration/example-users.properties")
-            .withCopyFileToContainer(MountableFile.forClasspathResource("example-roles.properties"), "/opt/server/standalone/configuration/example-roles.properties")
-            .waitingFor(Wait.forHttp("/hello-ws/HelloService?wsdl"));
+            helloContainer = new GenericContainer<>("cxf-soap/hello-secured:1.0")
+                    .withExposedPorts(WILDFLY_PORT)
+                    .waitingFor(Wait.forHttp("/hello-ws-secured/UsernameToken/ElytronUsernameTokenImpl?wsdl"));
 
             helloContainer.start();
-
-            Container.ExecResult res = helloContainer.execInContainer("sh", "/opt/server/bin/jboss-cli.sh", "-c", "--file=/opt/server/bin/config.cli");
-            if(res.getExitCode() != 0) {
-                throw new IllegalArgumentException("Configuration of wildfly server failed. " + res.getStdout());
-            }
 
             return Map.of(
                     "camel-quarkus.it.helloWorld.baseUri",

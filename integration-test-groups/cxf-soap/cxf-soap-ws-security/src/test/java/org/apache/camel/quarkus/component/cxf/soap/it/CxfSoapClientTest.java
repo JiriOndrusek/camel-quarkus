@@ -42,7 +42,7 @@ class CxfSoapClientTest {
                 .post("/cxf-soap/simple/wsSecurityClient")
                 .then()
                 .statusCode(201)
-                .body(is("Hello WSSecurity CamelQuarkusCXF"));
+                .body(is("Hello user1 with roles(Users) and with attributes!"));
     }
 
     /**
@@ -51,20 +51,20 @@ class CxfSoapClientTest {
      * @throws IOException
      */
     @Test
-    @Disabled
+    @Disabled //todo fix
     void wsdlUpToDate() throws IOException {
         final String wsdlUrl = ConfigProvider.getConfig()
                 .getValue("camel-quarkus.it.helloWorld.baseUri", String.class);
 
-        final String staticCopyPath = "src/main/resources/wsdl/HelloService.wsdl";
+        final String staticCopyPath = "src/main/resources/wsdl/UsernameToken.wsdl";
         /* The changing Docker IP address in the WSDL should not matter */
-        final String sanitizerRegex = "<soap:address location=\"http://[^/]*/helloworld-ws/HelloService\"></soap:address>";
+        final String sanitizerRegex = "<soap:address location=\"http://[^/]*/hello-ws-secured/UsernameToken/ElytronUsernameTokenImpl\"></soap:address>";
         final String staticCopyContent = Files
                 .readString(Paths.get(staticCopyPath), StandardCharsets.UTF_8)
                 .replaceAll(sanitizerRegex, "");
 
         final String expected = RestAssured.given()
-                .get(wsdlUrl + "/helloworld-ws/HelloService?wsdl")
+                .get(wsdlUrl + "/hello-ws-secured/UsernameToken/ElytronUsernameTokenImpl?wsdl")
                 .then()
                 .statusCode(200)
                 .extract().body().asString();

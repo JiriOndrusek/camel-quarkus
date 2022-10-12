@@ -51,7 +51,7 @@ public class CxfSoapResource {
     @Produces(MediaType.TEXT_PLAIN)
     public Response sendSimpleRequest(@PathParam("endpoint") String endpoint, String body) throws Exception {
         //LOG.infof("Sending to cxf: %s", "CamelQuarkusCXF");
-        final String response = producerTemplate.requestBody("direct:" + endpoint, body, String.class);
+        final String response = producerTemplate.requestBody("direct:" + endpoint, null, String.class);
         //LOG.infof("Got response from cxf: %s", response);
         return Response
                 .created(new URI("https://camel.apache.org/"))
