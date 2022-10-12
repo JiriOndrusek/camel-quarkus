@@ -42,7 +42,7 @@ class CxfSoapClientTest {
                 .post("/cxf-soap/simple/wsSecurityClient")
                 .then()
                 .statusCode(201)
-                .body(is("Hello WSSecurity CamelQuarkusCXF"));
+                .body(is("Hello user1 with roles and with attributes!"));
     }
 
     /**

@@ -14,9 +14,7 @@
 ## See the License for the specific language governing permissions and
 ## limitations under the License.
 ## ---------------------------------------------------------------------------
-
-password-callback.username=user1
-password-callback.password=password1
-
-quarkus.cxf.path=/soapservice
-quarkus.native.resources.includes = wsdl/*.wsdl
+ /subsystem=elytron/properties-realm=examplePropRealm:add(groups-attribute=groups,groups-properties={path=example-roles.properties,relative-to=jboss.server.config.dir},users-properties={path=example-users.properties,relative-to=jboss.server.config.dir,plain-text=true})
+ /subsystem=elytron/security-domain=exampleSD:add(realms=[{realm=examplePropRealm,role-decoder=groups-to-roles}],default-realm=examplePropRealm,permission-mapper=default-permission-mapper)
+ /subsystem=elytron/http-authentication-factory=example-http-auth:add(http-server-mechanism-factory=global,security-domain=exampleSD,mechanism-configurations=[{mechanism-name=BASIC,mechanism-realm-configurations=[{realm-name=exampleApplicationDomain}]}])
+ /subsystem=undertow/application-security-domain=exampleApplicationDomain:add(http-authentication-factory=example-http-auth)
