@@ -24,13 +24,13 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import com.helloworld.service.HelloService;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.cxf.jaxws.CxfEndpoint;
 import org.apache.cxf.ext.logging.LoggingFeature;
 import org.apache.cxf.ws.security.wss4j.WSS4JOutInterceptor;
 import org.apache.wss4j.common.ConfigurationConstants;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.jboss.jbossws.ws_extensions.wssecuritypolicy.ServiceIface;
 
 @ApplicationScoped
 public class CxfSoapRoutes extends RouteBuilder {
@@ -54,7 +54,7 @@ public class CxfSoapRoutes extends RouteBuilder {
     public void configure() {
 
         from("direct:wsSecurityClient")
-                .to("cxf:bean:secureEndpoint");
+                .to("cxf:bean:secureEndpoint?dataFormat=POJO");
 
     }
 
@@ -86,10 +86,11 @@ public class CxfSoapRoutes extends RouteBuilder {
     @Named
     CxfEndpoint secureEndpoint() {
         final CxfEndpoint result = new CxfEndpoint();
-        result.setServiceClass(ServiceIface.class);
+        result.setServiceClass(HelloService.class);
         //http://127.0.0.1:8080/UsernameTokenElytronTestCase/UsernameToken/ElytronUsernameTokenImpl?wsdl
-        result.setAddress(serviceBaseUri + "/UsernameTokenElytronTestCase/UsernameToken/ElytronUsernameTokenImpl");
-        result.setWsdlURL("wsdl/UsernameToken.wsdl");
+        //        result.setAddress(serviceBaseUri + "/UsernameTokenElytronTestCase/UsernameToken/ElytronUsernameTokenImpl");
+        result.setWsdlURL("wsdl/HelloService.wsdl");
+        result.setAddress(serviceBaseUri + "/hello-ws/HelloService");
         result.getFeatures().add(loggingFeature);
         result.getOutInterceptors().add(wssInterceptor);
 

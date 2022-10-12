@@ -44,8 +44,8 @@
                             <sourceRoot>${project.build.directory}/generated-sources</sourceRoot>
                             <wsdlOptions>
                                 <wsdlOption>
-                                    <wsdl>${basedir}/src/main/resources/wsdl/UsernameToken.wsdl</wsdl>
-                                    <wsdlLocation>classpath:wsdl/UsernameToken.wsdl</wsdlLocation>
+                                    <wsdl>${basedir}/src/main/resources/wsdl/HelloService.wsdl</wsdl>
+                                    <wsdlLocation>classpath:wsdl/HelloService.wsdl</wsdlLocation>
                                     <extraargs>
                                         <extraarg>-xjc-Xts</extraarg>
                                     </extraargs>
