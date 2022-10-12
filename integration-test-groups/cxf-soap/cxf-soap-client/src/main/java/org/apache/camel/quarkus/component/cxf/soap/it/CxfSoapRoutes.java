@@ -16,6 +16,9 @@
  */
 package org.apache.camel.quarkus.component.cxf.soap.it;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
@@ -23,18 +26,26 @@ import javax.inject.Named;
 
 import com.helloworld.service.HelloPortType;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.cxf.common.message.CxfConstants;
 import org.apache.camel.component.cxf.jaxws.CxfEndpoint;
 import org.apache.cxf.ext.logging.LoggingFeature;
+import org.apache.cxf.ws.security.wss4j.WSS4JOutInterceptor;
+import org.apache.wss4j.common.ConfigurationConstants;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
 public class CxfSoapRoutes extends RouteBuilder {
 
     @Inject
+    @Named("passwordCallback")
+    PasswordCallback passwordCallback;
+
+    @Inject
     @Named("loggingFeature")
     LoggingFeature loggingFeature;
 
+    @Inject
+    @Named("wssInterceptor")
+    WSS4JOutInterceptor wssInterceptor;
     @ConfigProperty(name = "camel-quarkus.it.helloWorld.baseUri")
     String serviceBaseUri;
 
@@ -42,10 +53,6 @@ public class CxfSoapRoutes extends RouteBuilder {
     public void configure() {
 
         from("direct:simpleSoapClient")
-                .to("cxf:bean:soapClientEndpoint?dataFormat=POJO");
-
-        from("direct:complexSoapClient")
-                .setHeader(CxfConstants.OPERATION_NAME).constant("Person")
                 .to("cxf:bean:soapClientEndpoint?dataFormat=POJO");
     }
 
@@ -67,7 +74,22 @@ public class CxfSoapRoutes extends RouteBuilder {
         result.setAddress(serviceBaseUri + "/hello-ws/HelloService");
         result.setWsdlURL("wsdl/HelloService.wsdl");
         result.getFeatures().add(loggingFeature);
+
+        result.getOutInterceptors().add(wssInterceptor);
         return result;
     }
 
+    @Produces
+    @ApplicationScoped
+    @Named
+    WSS4JOutInterceptor wssInterceptor() {
+        final Map<String, Object> props = new HashMap<>();
+        props.put(ConfigurationConstants.ACTION, "UsernameToken");
+        props.put(ConfigurationConstants.PASSWORD_TYPE, "PasswordText");
+        props.put(ConfigurationConstants.USER, "camel");
+        props.put("passwordCallbackRef", passwordCallback);
+        props.put(ConfigurationConstants.ADD_USERNAMETOKEN_NONCE, "true");
+        props.put(ConfigurationConstants.ADD_USERNAMETOKEN_CREATED, "true");
+        return new WSS4JOutInterceptor(props);
+    }
 }

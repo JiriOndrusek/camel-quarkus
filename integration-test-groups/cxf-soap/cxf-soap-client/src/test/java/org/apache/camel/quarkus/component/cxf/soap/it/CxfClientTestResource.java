@@ -36,12 +36,13 @@ public class CxfClientTestResource implements QuarkusTestResourceLifecycleManage
                     .withExposedPorts(WILDFLY_PORT)
                     .waitingFor(Wait.forHttp("/hello-ws/HelloService?wsdl"));
 
-            helloContainer.start();
+            //            helloContainer.start();
 
             return Map.of(
                     "camel-quarkus.it.helloWorld.baseUri",
                     "http://" + helloContainer.getHost() + ":" +
-                            helloContainer.getMappedPort(WILDFLY_PORT));
+                            "8080");
+            //                            helloContainer.getMappedPort(WILDFLY_PORT));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
