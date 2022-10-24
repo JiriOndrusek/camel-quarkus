@@ -17,6 +17,8 @@
 package org.apache.camel.quarkus.component.aws2.cw.it;
 
 import java.net.URI;
+import java.util.List;
+import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -25,10 +27,12 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import io.quarkus.scheduler.Scheduled;
+import org.apache.camel.CamelExecutionException;
 import org.apache.camel.ProducerTemplate;
 
 @Path("/aws2-cw")
@@ -57,6 +61,37 @@ public class Aws2CwResource {
             @PathParam("metric-name") String name,
             @PathParam("metric-unit") String unit) throws Exception {
         endpointUri = "aws2-cw://" + namespace + "?name=" + name + "&value=" + value + "&unit=" + unit;
+        return Response
+                .created(new URI("https://camel.apache.org/"))
+                .build();
+    }
+
+    @Path("/send-metric-maps/{namespace}")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response postMap(
+            List<Map<String, Object>> data,
+            @PathParam("namespace") String namespace,
+            @QueryParam("customClientName") String customClientName) throws Exception {
+
+        String uri = "aws2-cw://" + namespace;
+        uri = customClientName != null && !customClientName.isEmpty()
+                ? uri + "?autowiredEnabled=false&amazonCwClient=#" + customClientName : uri;
+
+        for (Map<String, Object> item : data) {
+            try {
+                producerTemplate.requestBodyAndHeaders(uri, null, item, String.class);
+            } catch (Exception e) {
+                if (e instanceof CamelExecutionException && e.getCause() != null) {
+                    return Response
+                            .ok(e.getCause().getMessage())
+                            .build();
+                }
+                throw e;
+            }
+        }
+
         return Response
                 .created(new URI("https://camel.apache.org/"))
                 .build();
