@@ -96,12 +96,11 @@
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-log</artifactId>
         </dependency>
-        <!-- https://github.com/apache/camel-quarkus/issues/4225
+        <!-- https://github.com/apache/camel-quarkus/issues/4298
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-microprofile-fault-tolerance</artifactId>
-        </dependency>
-        -->
+        </dependency>-->
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-mock</artifactId>
@@ -377,6 +376,7 @@
                         </exclusion>
                     </exclusions>
                 </dependency>
+                <!-- https://github.com/apache/camel-quarkus/issues/4298
                 <dependency>
                     <groupId>org.apache.camel.quarkus</groupId>
                     <artifactId>camel-quarkus-microprofile-fault-tolerance-deployment</artifactId>
@@ -389,7 +389,7 @@
                             <artifactId>*</artifactId>
                         </exclusion>
                     </exclusions>
-                </dependency>
+                </dependency>-->
                 <dependency>
                     <groupId>org.apache.camel.quarkus</groupId>
                     <artifactId>camel-quarkus-mock-deployment</artifactId>

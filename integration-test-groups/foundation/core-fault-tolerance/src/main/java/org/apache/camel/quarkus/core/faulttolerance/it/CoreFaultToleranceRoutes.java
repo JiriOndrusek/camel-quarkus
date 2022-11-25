@@ -32,8 +32,9 @@ public class CoreFaultToleranceRoutes extends RouteBuilder {
 
     @Override
     public void configure() {
-        from("direct:faultTolerance").circuitBreaker().id("ftp").process(exchange -> {
-            exchange.getMessage().setBody(RESULT);
-        }).onFallback().setBody().constant(FALLBACK_RESULT).end();
+        //        Disabled with the test https://github.com/apache/camel-quarkus/issues/4298
+        //        from("direct:faultTolerance").circuitBreaker().id("ftp").process(exchange -> {
+        //            exchange.getMessage().setBody(RESULT);
+        //        }).onFallback().setBody().constant(FALLBACK_RESULT).end();
     }
 }

@@ -16,22 +16,11 @@
  */
 package org.apache.camel.quarkus.core.faulttolerance.it;
 
-import java.util.concurrent.ExecutorService;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 
-import io.smallrye.faulttolerance.core.circuit.breaker.CircuitBreaker;
 import org.apache.camel.CamelContext;
-import org.apache.camel.component.microprofile.faulttolerance.FaultToleranceProcessor;
 
 @Path("/core")
 @ApplicationScoped
@@ -40,32 +29,33 @@ public class CoreFaultToleranceResource {
     @Inject
     CamelContext context;
 
-    @Named("customCircuitBreaker")
-    CircuitBreaker<Integer> customCircuitBreaker;
+    //    https://github.com/apache/camel-quarkus/issues/4298
+    //    @Named("customCircuitBreaker")
+    //    CircuitBreaker<Integer> customCircuitBreaker;
+    //
+    //    @Named("customBulkheadExecutorService")
+    //    ExecutorService customBulkheadExecutorService;
 
-    @Named("customBulkheadExecutorService")
-    ExecutorService customBulkheadExecutorService;
-
-    @Path("/fault-tolerance-configurations")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public JsonObject faultToleranceConfigurations() {
-        FaultToleranceProcessor ftp = context.getProcessor("ftp", FaultToleranceProcessor.class);
-
-        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
-        objectBuilder.add("isCustomCircuitBreakerRef", ftp.getCircuitBreaker() == customCircuitBreaker);
-        objectBuilder.add("delay", ftp.getDelay());
-        objectBuilder.add("successThreshold", ftp.getSuccessThreshold());
-        objectBuilder.add("requestVolumeThreshold", ftp.getRequestVolumeThreshold());
-        objectBuilder.add("failureRatio", (int) (ftp.getFailureRate() * 100));
-        objectBuilder.add("timeoutEnabled", ftp.isTimeoutEnabled());
-        objectBuilder.add("timeoutDuration", ftp.getTimeoutDuration());
-        objectBuilder.add("timeoutPoolSize", ftp.getTimeoutPoolSize());
-        objectBuilder.add("bulkheadEnabled", ftp.isBulkheadEnabled());
-        objectBuilder.add("bulkheadMaxConcurrentCalls", ftp.getBulkheadMaxConcurrentCalls());
-        objectBuilder.add("bulkheadWaitingTaskQueue", ftp.getBulkheadWaitingTaskQueue());
-        objectBuilder.add("isCustomBulkheadExecutorServiceRef", ftp.getExecutorService() == customBulkheadExecutorService);
-
-        return objectBuilder.build();
-    }
+    //    @Path("/fault-tolerance-configurations")
+    //    @GET
+    //    @Produces(MediaType.APPLICATION_JSON)
+    //    public JsonObject faultToleranceConfigurations() {
+    //        FaultToleranceProcessor ftp = context.getProcessor("ftp", FaultToleranceProcessor.class);
+    //
+    //        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+    //        objectBuilder.add("isCustomCircuitBreakerRef", ftp.getCircuitBreaker() == customCircuitBreaker);
+    //        objectBuilder.add("delay", ftp.getDelay());
+    //        objectBuilder.add("successThreshold", ftp.getSuccessThreshold());
+    //        objectBuilder.add("requestVolumeThreshold", ftp.getRequestVolumeThreshold());
+    //        objectBuilder.add("failureRatio", (int) (ftp.getFailureRate() * 100));
+    //        objectBuilder.add("timeoutEnabled", ftp.isTimeoutEnabled());
+    //        objectBuilder.add("timeoutDuration", ftp.getTimeoutDuration());
+    //        objectBuilder.add("timeoutPoolSize", ftp.getTimeoutPoolSize());
+    //        objectBuilder.add("bulkheadEnabled", ftp.isBulkheadEnabled());
+    //        objectBuilder.add("bulkheadMaxConcurrentCalls", ftp.getBulkheadMaxConcurrentCalls());
+    //        objectBuilder.add("bulkheadWaitingTaskQueue", ftp.getBulkheadWaitingTaskQueue());
+    //        objectBuilder.add("isCustomBulkheadExecutorServiceRef", ftp.getExecutorService() == customBulkheadExecutorService);
+    //
+    //        return objectBuilder.build();
+    //    }
 }
