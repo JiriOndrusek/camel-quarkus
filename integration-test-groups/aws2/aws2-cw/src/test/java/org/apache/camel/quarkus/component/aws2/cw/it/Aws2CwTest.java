@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -151,9 +152,13 @@ class Aws2CwTest {
                 Cw2Constants.METRIC_DIMENSION_NAME, "type",
                 Cw2Constants.METRIC_DIMENSION_VALUE, "odd"));
 
+        String dataAsString = data.stream().map(
+                item -> item.entrySet().stream().map(e -> e.getKey() + ";" + e.getValue()).collect(Collectors.joining(";")))
+                .collect(Collectors.joining(";;"));
+
         RestAssured.given()
-                .contentType(ContentType.JSON)
-                .body(data)
+                .contentType(ContentType.TEXT)
+                .body(dataAsString)
                 .post("/aws2-cw/send-metric-maps/" + namespace)
                 .then()
                 .statusCode(201);
@@ -184,12 +189,12 @@ class Aws2CwTest {
                                     .period(30)
                                     .build())
                             .datapoints();
-                    LOG.debug("Expecting some datapoints for metric " + namespace + "/" + metricName + " (type='odd'), got "
+                    LOG.info("Expecting some datapoints for metric " + namespace + "/" + metricName + " (type='odd'), got "
                             + oddDatapoints);
                     if (oddDatapoints.isEmpty()) {
                         return false;
                     }
-                    LOG.debug("Expecting some datapoints for metric " + namespace + "/" + metricName + " (type='even'), got "
+                    LOG.info("Expecting some datapoints for metric " + namespace + "/" + metricName + " (type='even'), got "
                             + evenDatapoints);
                     if (evenDatapoints.isEmpty()) {
                         return false;
