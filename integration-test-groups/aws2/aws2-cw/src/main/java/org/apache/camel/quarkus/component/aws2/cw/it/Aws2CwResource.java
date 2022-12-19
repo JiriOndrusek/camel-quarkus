@@ -18,7 +18,6 @@ package org.apache.camel.quarkus.component.aws2.cw.it;
 
 import java.net.URI;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -38,6 +37,7 @@ import io.quarkus.scheduler.Scheduled;
 import org.apache.camel.CamelExecutionException;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.aws2.cw.Cw2Constants;
+import org.apache.camel.quarkus.test.SerializationUtil;
 
 @Path("/aws2-cw")
 @ApplicationScoped
@@ -83,43 +83,22 @@ public class Aws2CwResource {
         uri = customClientName != null && !customClientName.isEmpty()
                 ? uri + "?autowiredEnabled=false&amazonCwClient=#" + customClientName : uri;
 
+        List<Object> headersList = (List<Object>) SerializationUtil.deserialize(data);
 
-        String[] items = data.split(";;");
+        for (Object o : headersList) {
 
-
-
-        for (String s : items) {
-
-            Map<String, Object> headers = new HashMap<>();
-
-            String[] item = s.split(";");
-            for(int i = 0; i + 1 < item.length;) {
-
-                String key = item[i];
-                String stringValue = item[i + 1];
-                Object value;
-                if(Cw2Constants.METRIC_VALUE.equals(key)) {
-                    value = Integer.parseInt(stringValue);
-                } else if(Cw2Constants.METRIC_DIMENSIONS.equals(key)) {
-                    Map<String, String> m = new HashMap<>();
-                    m.put()
-                    value = item[i + 1];
-                }
-
-                headers.put(key, value);
-                i += 2;
-            }
-//            //use Instant as timestamp header
-//            Map<String, Object> typedHeaders = item.entrySet().stream().collect(Collectors.toMap(
-//                    e -> e.getKey(),
-//                    e -> {
-//                        if (Cw2Constants.METRIC_TIMESTAMP.equals(e.getKey()) && e.getValue() instanceof Long) {
-//                            return Instant.ofEpochMilli((Long) e.getValue());
-//                        }
-//                        return e.getValue();
-//                    }));
+            Map<String, Object> headers = (Map<String, Object>) o;
+            //use Instant as a timestamp header
+            Map<String, Object> typedHeaders = headers.entrySet().stream().collect(Collectors.toMap(
+                    e -> e.getKey(),
+                    e -> {
+                        if (Cw2Constants.METRIC_TIMESTAMP.equals(e.getKey()) && e.getValue() instanceof Long) {
+                            return Instant.ofEpochMilli((Long) e.getValue());
+                        }
+                        return e.getValue();
+                    }));
             try {
-                producerTemplate.requestBodyAndHeaders(uri, null, headers, String.class);
+                producerTemplate.requestBodyAndHeaders(uri, null, typedHeaders, String.class);
             } catch (Exception e) {
                 if (e instanceof CamelExecutionException && e.getCause() != null) {
                     return Response

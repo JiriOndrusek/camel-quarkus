@@ -21,13 +21,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.component.aws2.cw.Cw2Constants;
+import org.apache.camel.quarkus.test.SerializationUtil;
 import org.apache.camel.quarkus.test.support.aws2.Aws2Client;
 import org.apache.camel.quarkus.test.support.aws2.Aws2TestResource;
 import org.apache.camel.util.CollectionHelper;
@@ -129,7 +129,6 @@ class Aws2CwTest {
                 Cw2Constants.METRIC_UNIT, "Count",
                 Cw2Constants.METRIC_DIMENSION_NAME, "type",
                 Cw2Constants.METRIC_DIMENSION_VALUE, "even"));
-
         data.add(CollectionHelper.mapOf(
                 Cw2Constants.METRIC_NAMESPACE, namespace,
                 Cw2Constants.METRIC_NAME, metricName,
@@ -152,9 +151,7 @@ class Aws2CwTest {
                 Cw2Constants.METRIC_DIMENSION_NAME, "type",
                 Cw2Constants.METRIC_DIMENSION_VALUE, "odd"));
 
-        String dataAsString = data.stream().map(
-                item -> item.entrySet().stream().map(e -> e.getKey() + ";" + e.getValue()).collect(Collectors.joining(";")))
-                .collect(Collectors.joining(";;"));
+        String dataAsString = SerializationUtil.serialize(data);
 
         RestAssured.given()
                 .contentType(ContentType.TEXT)
@@ -236,10 +233,12 @@ class Aws2CwTest {
                 Cw2Constants.METRIC_VALUE, 2 * value,
                 Cw2Constants.METRIC_UNIT, "Count"));
 
+        String dataAsString = SerializationUtil.serialize(data);
+
         RestAssured.given()
-                .contentType(ContentType.JSON)
+                .contentType(ContentType.TEXT)
                 .queryParam("customClientName", "customClient")
-                .body(data)
+                .body(dataAsString)
                 .post("/aws2-cw/send-metric-maps/" + namespace)
                 .then()
                 .statusCode(200)

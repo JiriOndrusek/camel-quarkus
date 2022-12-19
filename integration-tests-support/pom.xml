@@ -49,6 +49,7 @@
         <module>mongodb</module>
         <module>process-executor-support</module>
         <module>test-support</module>
+        <module>test-support-serialization</module>
         <module>mock-backend</module>
         <module>wiremock</module>
         <module>xslt-support</module>
