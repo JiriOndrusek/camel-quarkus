@@ -16,46 +16,31 @@
  */
 package org.apache.camel.quarkus.test.extensions.routeBuilder;
 
-import java.util.function.Supplier;
-
 import io.quarkus.test.ContinuousTestingTestUtils;
 import io.quarkus.test.QuarkusDevModeTest;
 import org.apache.camel.quarkus.test.extensions.continousDev.HelloResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class RouteBuilderTest {
+public class UseRouteBuilderUtil {
 
-    @RegisterExtension
-    static final QuarkusDevModeTest TEST = new QuarkusDevModeTest()
-            .setArchiveProducer(new Supplier<>() {
-                @Override
-                public JavaArchive get() {
-                    return ShrinkWrap.create(JavaArchive.class)
-                            .addClasses(RouteBuilderResource.class, HelloRouteBuilder.class, HelloResource.class)
+    static QuarkusDevModeTest createTestModule(boolean addRouteBuilder, Class testClass) {
+        QuarkusDevModeTest retVal = new QuarkusDevModeTest()
+                .setArchiveProducer(() -> {
+                    JavaArchive ja = ShrinkWrap.create(JavaArchive.class)
+                            .addClasses(RouteBuilderResource.class, HelloResource.class)
                             .add(new StringAsset(
                                     ContinuousTestingTestUtils.appProperties("camel-quarkus.junit5.message=Sheldon")),
                                     "application.properties");
-                }
-            })
-            .setTestArchiveProducer(new Supplier<>() {
-                @Override
-                public JavaArchive get() {
-                    return ShrinkWrap.create(JavaArchive.class).addClasses(RouteBuilderFalseET.class, RouteBuilderTrueET.class);
-                }
-            });
+                    if (addRouteBuilder) {
+                        ja.addClass(HelloRouteBuilder.class);
+                    }
+                    return ja;
+                })
+                .setTestArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class).addClasses(testClass));
 
-    @Test
-    public void checkTests() throws InterruptedException {
-        ContinuousTestingTestUtils utils = new ContinuousTestingTestUtils();
-        ContinuousTestingTestUtils.TestStatus ts = utils.waitForNextCompletion();
-
-        Assertions.assertEquals(0L, ts.getTestsFailed());
-        Assertions.assertEquals(4L, ts.getTestsPassed());
-        Assertions.assertEquals(0L, ts.getTestsSkipped());
+        return retVal;
     }
+
 }
