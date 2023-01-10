@@ -14,19 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.aws2.cw.it;
+package org.apache.camel.component.aws2.cw;
 
-import javax.enterprise.inject.Produces;
-import javax.inject.Named;
-
-import org.apache.camel.component.aws2.cw.CloudWatchClientMock;
-import org.apache.camel.component.aws2.cw.Cw2Component;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
+import software.amazon.awssdk.services.cloudwatch.model.PutMetricDataRequest;
+import software.amazon.awssdk.services.cloudwatch.model.PutMetricDataResponse;
 
-public class ClientBuilder {
+public class CloudWatchClientMock implements CloudWatchClient {
 
-    @Named("customClient")
-    CloudWatchClient produceClient() {
-        return new CloudWatchClientMock();
+    public CloudWatchClientMock() {
+        System.out.println(1);
+    }
+
+    @Override
+    public String serviceName() {
+        return null;
+    }
+
+    @Override
+    public void close() {
+    }
+
+    @Override
+    public PutMetricDataResponse putMetricData(PutMetricDataRequest request) {
+        PutMetricDataResponse.Builder builder = PutMetricDataResponse.builder();
+        throw new RuntimeException(this.getClass().getSimpleName());
     }
 }

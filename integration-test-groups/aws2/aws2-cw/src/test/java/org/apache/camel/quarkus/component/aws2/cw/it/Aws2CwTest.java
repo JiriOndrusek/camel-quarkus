@@ -146,7 +146,7 @@ class Aws2CwTest {
         data.add(CollectionHelper.mapOf(
                 Cw2Constants.METRIC_NAMESPACE, namespace, Cw2Constants.METRIC_NAME, metricName,
                 Cw2Constants.METRIC_VALUE, 2 * value + 5,
-                Cw2Constants.METRIC_TIMESTAMP, System.currentTimeMillis() - 24 * 60 * 60 * 10000,
+                Cw2Constants.METRIC_TIMESTAMP, System.currentTimeMillis() - 24 * 60 * 60 * 1000,
                 Cw2Constants.METRIC_UNIT, "Count",
                 Cw2Constants.METRIC_DIMENSION_NAME, "type",
                 Cw2Constants.METRIC_DIMENSION_VALUE, "odd"));
@@ -238,7 +238,7 @@ class Aws2CwTest {
                 .post("/aws2-cw/send-metric-map/" + namespace)
                 .then()
                 .statusCode(200)
-                .body(is("MockedClient"));
+                .body(is("CloudWatchClientMock"));
     }
 
 }

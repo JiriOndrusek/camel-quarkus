@@ -80,9 +80,8 @@ public class Aws2CwResource {
 
         String uri = "aws2-cw://" + namespace;
         uri = customClientName != null && !customClientName.isEmpty()
-                ? uri + "?autowiredEnabled=false&amazonCwClient=#" + customClientName : uri;
+                ? uri + "?amazonCwClient=#" + customClientName : uri;
 
-        //use Instant as timestamp header
         Map<String, Object> typedHeaders = formParams.entrySet().stream().collect(Collectors.toMap(
                 e -> e.getKey(),
                 e -> {
