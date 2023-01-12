@@ -25,7 +25,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.quarkus.test.support.aws2.Aws2Client;
-import org.apache.camel.quarkus.test.support.aws2.Aws2TestResource;
+import org.apache.camel.quarkus.test.support.aws2.Aws2TestDefaultResource;
 import org.awaitility.Awaitility;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Test;
@@ -36,9 +36,9 @@ import software.amazon.awssdk.services.cloudwatch.model.GetMetricStatisticsReque
 import software.amazon.awssdk.services.cloudwatch.model.Statistic;
 
 @QuarkusTest
-@QuarkusTestResource(Aws2TestResource.class)
-class Aws2CwTest {
-    private static final Logger LOG = Logger.getLogger(Aws2CwTest.class);
+@QuarkusTestResource(Aws2TestDefaultResource.class)
+class AbstractAws2CwTest {
+    private static final Logger LOG = Logger.getLogger(AbstractAws2CwTest.class);
 
     @Aws2Client(Service.CLOUDWATCH)
     CloudWatchClient client;

@@ -16,9 +16,11 @@
  */
 package org.apache.camel.quarkus.component.aws2.cw.it;
 
-import io.quarkus.test.junit.QuarkusIntegrationTest;
+import io.quarkus.test.common.QuarkusTestResource;
+import io.quarkus.test.junit.QuarkusTest;
+import org.apache.camel.quarkus.test.support.aws2.Aws2TestDefaultResource;
 
-@QuarkusIntegrationTest
-class Aws2CwIT extends Aws2CwTest {
-
+@QuarkusTest
+@QuarkusTestResource(Aws2TestDefaultResource.class)
+class Aws2DefaultCwTest extends AbstractAws2CwTest {
 }

@@ -34,10 +34,15 @@ import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.core.SdkClient;
 
-public final class Aws2TestResource implements QuarkusTestResourceLifecycleManager {
-    private static final Logger LOG = LoggerFactory.getLogger(Aws2TestResource.class);
+abstract class AbstractAws2TestResource implements QuarkusTestResourceLifecycleManager {
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractAws2TestResource.class);
 
     private Aws2TestEnvContext envContext;
+
+    abstract Aws2TestEnvContext createContext(String accessKey, String secretKey, String region,
+            boolean useDefaultCredentialsProvider,
+            Optional<LocalStackContainer> localstack,
+            Service[] exportCredentialsServices);
 
     @SuppressWarnings("resource")
     @Override
@@ -51,8 +56,8 @@ public final class Aws2TestResource implements QuarkusTestResourceLifecycleManag
         final boolean startMockBackend = MockBackendUtils.startMockBackend(false);
         final boolean useDefaultCredentialsProvider = defaultCredentialsProviderValue != null &&
                 !defaultCredentialsProviderValue.isEmpty() &&
-                Boolean.parseBoolean(defaultCredentialsProviderValue);
-        //todo do we need to have non empty region
+                Boolean.parseBoolean(defaultCredentialsProviderValue)
+                && realRegion != null;
         final boolean usingMockBackend = startMockBackend && !realCredentialsProvided && !useDefaultCredentialsProvider;
 
         ServiceLoader<Aws2TestEnvCustomizer> loader = ServiceLoader.load(Aws2TestEnvCustomizer.class);
@@ -83,7 +88,7 @@ public final class Aws2TestResource implements QuarkusTestResourceLifecycleManag
             localstack.withLogConsumer(new Slf4jLogConsumer(LOG));
             localstack.start();
 
-            envContext = new Aws2TestEnvContext(localstack.getAccessKey(), localstack.getSecretKey(), localstack.getRegion(),
+            envContext = createContext(localstack.getAccessKey(), localstack.getSecretKey(), localstack.getRegion(),
                     useDefaultCredentialsProvider, Optional.of(localstack), exportCredentialsServices);
 
         } else {
@@ -96,7 +101,7 @@ public final class Aws2TestResource implements QuarkusTestResourceLifecycleManag
                         "Real account (AWS_ACCESS_KEY and AWS_SECRET_KEY) can not be used together with default credentials provider (AWS_USE_DEFAULT_CREDENTIALS_PROVIDER = true)");
             }
             MockBackendUtils.logRealBackendUsed();
-            envContext = new Aws2TestEnvContext(realKey, realSecret, realRegion, useDefaultCredentialsProvider,
+            envContext = createContext(realKey, realSecret, realRegion, useDefaultCredentialsProvider,
                     Optional.empty(), new Service[0]);
         }
 

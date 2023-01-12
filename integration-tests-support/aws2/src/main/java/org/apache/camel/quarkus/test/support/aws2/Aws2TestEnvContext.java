@@ -60,7 +60,7 @@ public class Aws2TestEnvContext {
 
     public Aws2TestEnvContext(String accessKey, String secretKey, String region, boolean useDefaultCredentialsProvider,
             Optional<LocalStackContainer> localstack,
-            Service[] exportCredentialsServices) {
+            Service[] exportCredentialsServices, boolean staticCredentialsForLocalService) {
         this.accessKey = accessKey;
         this.secretKey = secretKey;
         this.region = region;
@@ -72,13 +72,25 @@ public class Aws2TestEnvContext {
             for (Service service : exportCredentialsServices) {
                 String s = camelServiceAcronym(service);
                 if (s != null) {
-                    if (credentialsProvider == CredentialsProvider.staticProvider) {
+                    if (staticCredentialsForLocalService) {
                         properties.put("camel.component.aws2-" + s + ".access-key", accessKey);
                         properties.put("camel.component.aws2-" + s + ".secret-key", secretKey);
                     } else {
+                        //if default provider is already defined on the system, fail this execution
+                        try {
+                            DefaultCredentialsProvider.create();
+                        } catch (Exception e) {
+                            throw new RuntimeException();
+                        }
+
+                        System.setProperty("aws.accessKeyId", accessKey);
+                        System.setProperty("aws.secretAccessKey", secretKey);
+                        closeable(() -> {
+                            System.clearProperty("aws.accessKeyId");
+                            System.clearProperty("aws.secretAccessKey");
+                        });
                         properties.put("camel.component.aws2-" + s + ".useDefaultCredentialsProvider", "true");
                     }
-                    //todo is ot really needed for default provider?
                     properties.put("camel.component.aws2-" + s + ".region", region);
 
                     properties.put("camel.component.aws2-" + s + ".override-endpoint", "true");
@@ -173,7 +185,6 @@ public class Aws2TestEnvContext {
                 .credentialsProvider(
                         credentialsProvider == CredentialsProvider.defaultProvider ? DefaultCredentialsProvider.create()
                                 : StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)));
-        //todo in default provider might it be null?
         builder.region(Region.of(region));
 
         if (localstack.isPresent()) {
