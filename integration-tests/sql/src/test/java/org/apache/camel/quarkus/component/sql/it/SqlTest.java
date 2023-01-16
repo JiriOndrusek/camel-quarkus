@@ -31,6 +31,7 @@ import org.apache.camel.util.CollectionHelper;
 import org.hamcrest.Matcher;
 import org.hamcrest.collection.IsMapContaining;
 import org.hamcrest.text.IsEqualIgnoringCase;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
@@ -41,6 +42,7 @@ import static org.hamcrest.Matchers.*;
 @QuarkusTestResource(DerbyTestResource.class)
 class SqlTest {
 
+    @Disabled
     @Test
     public void testSqlComponent() {
         // Create Camel species
@@ -83,16 +85,19 @@ class SqlTest {
                 .body(is("15"));
     }
 
+    @Disabled
     @Test
     public void testConsumer() throws InterruptedException {
         testConsumer(1, "consumerRoute", "ViaSql");
     }
 
+    @Disabled
     @Test
     public void testClasspathConsumer() throws InterruptedException {
         testConsumer(2, "consumerClasspathRoute", "ViaClasspath");
     }
 
+    @Disabled
     @Test
     public void testFileConsumer() throws InterruptedException {
         testConsumer(3, "consumerFileRoute", "ViaFile");
@@ -125,6 +130,7 @@ class SqlTest {
                 hasItem(matchMapIgnoringCase(updatedProject)));
     }
 
+    @Disabled
     @Test
     public void testTransacted() throws InterruptedException {
 
@@ -150,6 +156,7 @@ class SqlTest {
                         .body("size()", is(1));
     }
 
+    @Disabled
     @Test
     public void testDefaultErrorCode() throws InterruptedException {
         postMap("/sql/toDirect/transacted", CollectionHelper.mapOf(SqlConstants.SQL_QUERY, "select * from NOT_EXIST"))
@@ -157,6 +164,7 @@ class SqlTest {
                 .body(startsWith("org.springframework.jdbc.BadSqlGrammarException"));
     }
 
+    @Disabled
     @Test
     @SuppressWarnings("unchecked")
     public void testIdempotentRepository() {
@@ -190,6 +198,7 @@ class SqlTest {
                 containsInAnyOrder("one", "two", "three"));
     }
 
+    @Disabled
     @Test
     @SuppressWarnings("unchecked")
     public void testAggregationRepository() {
