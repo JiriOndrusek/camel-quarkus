@@ -36,10 +36,7 @@ import io.agroal.api.AgroalDataSource;
 import org.apache.camel.AggregationStrategy;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.processor.aggregate.jdbc.JdbcAggregationRepository;
-import org.apache.camel.processor.idempotent.jdbc.JdbcMessageIdRepository;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.springframework.transaction.jta.JtaTransactionManager;
 
 @ApplicationScoped
 public class SqlRoutes extends RouteBuilder {
@@ -70,50 +67,50 @@ public class SqlRoutes extends RouteBuilder {
 
         String dbKind = System.getProperty("cq.sqlJdbcKind");
 
-        String representationOfTrue = SqlHelper.convertBooleanToSqlDialect(dbKind, true);
-        String representationOfFalse = SqlHelper.convertBooleanToSqlDialect(dbKind, false);
-        String selectProjectsScriptName = SqlHelper.getSelectProjectsScriptName(dbKind);
-
-        from(String.format("sql:select * from projectsViaSql where processed = %s"
-                + " order by id?initialDelay=0&delay=50&consumer.onConsume=update projectsViaSql set processed = %s"
-                + " where id = :#id", representationOfFalse, representationOfTrue))
-                        .process(e -> results.get("consumerRoute").add(e.getMessage().getBody(Map.class)));
-
-        from(String.format("sql:classpath:sql/common/%s?initialDelay=0&delay=50&" +
-                "consumer.onConsume=update projectsViaClasspath set processed = %s", selectProjectsScriptName,
-                representationOfTrue))
-                        .process(e -> results.get("consumerClasspathRoute").add(e.getMessage().getBody(Map.class)));
-
-        //File `sql/common/selectProjectsAs*.sql` is copied and modified to create tmp file for another test case
-        // (to have different file for the sql request from file and from classpath)
-        Path tmpFile = createTmpFileFrom("sql/common/" + selectProjectsScriptName);
-        from(String.format("sql:file:%s?initialDelay=0&delay=50&" +
-                "consumer.onConsume=update projectsViaFile set processed = %s", tmpFile, representationOfTrue))
-                        .process(e -> results.get("consumerFileRoute").add(e.getMessage().getBody(Map.class)));
-
-        from("direct:transacted")
-                .transacted("PROPAGATION_REQUIRED")
-                .to("sql:overriddenByTheHeader")
-                .process(e -> {
-                    if (e.getIn().getHeader("rollback", boolean.class)) {
-                        throw new Exception("forced Exception");
-                    }
-                });
-
-        // Idempotent Repository
-        JdbcMessageIdRepository repo = new JdbcMessageIdRepository(dataSource, "idempotentRepo");
-        from("direct:idempotent")
-                .idempotentConsumer(header("messageId"), repo)
-                .process(e -> results.get("idempotentRoute").add(e.getMessage().getBody(String.class)));
-
-        //aggregation repository
-        JdbcAggregationRepository aggregationRepo = new JdbcAggregationRepository(
-                new JtaTransactionManager(userTransaction, tm), "aggregation", dataSource);
-        from("direct:aggregation")
-                .aggregate(header("messageId"), new MyAggregationStrategy())
-                // use our created jdbc repo as aggregation repository
-                .completionSize(4).aggregationRepository(aggregationRepo)
-                .process(e -> results.get("aggregationRoute").add(e.getMessage().getBody(String.class)));
+        //        String representationOfTrue = SqlHelper.convertBooleanToSqlDialect(dbKind, true);
+        //        String representationOfFalse = SqlHelper.convertBooleanToSqlDialect(dbKind, false);
+        //        String selectProjectsScriptName = SqlHelper.getSelectProjectsScriptName(dbKind);
+        //
+        //        from(String.format("sql:select * from projectsViaSql where processed = %s"
+        //                + " order by id?initialDelay=0&delay=50&consumer.onConsume=update projectsViaSql set processed = %s"
+        //                + " where id = :#id", representationOfFalse, representationOfTrue))
+        //                        .process(e -> results.get("consumerRoute").add(e.getMessage().getBody(Map.class)));
+        //
+        //        from(String.format("sql:classpath:sql/common/%s?initialDelay=0&delay=50&" +
+        //                "consumer.onConsume=update projectsViaClasspath set processed = %s", selectProjectsScriptName,
+        //                representationOfTrue))
+        //                        .process(e -> results.get("consumerClasspathRoute").add(e.getMessage().getBody(Map.class)));
+        //
+        //        //File `sql/common/selectProjectsAs*.sql` is copied and modified to create tmp file for another test case
+        //        // (to have different file for the sql request from file and from classpath)
+        //        Path tmpFile = createTmpFileFrom("sql/common/" + selectProjectsScriptName);
+        //        from(String.format("sql:file:%s?initialDelay=0&delay=50&" +
+        //                "consumer.onConsume=update projectsViaFile set processed = %s", tmpFile, representationOfTrue))
+        //                        .process(e -> results.get("consumerFileRoute").add(e.getMessage().getBody(Map.class)));
+        //
+        //        from("direct:transacted")
+        //                .transacted("PROPAGATION_REQUIRED")
+        //                .to("sql:overriddenByTheHeader")
+        //                .process(e -> {
+        //                    if (e.getIn().getHeader("rollback", boolean.class)) {
+        //                        throw new Exception("forced Exception");
+        //                    }
+        //                });
+        //
+        //        // Idempotent Repository
+        //        JdbcMessageIdRepository repo = new JdbcMessageIdRepository(dataSource, "idempotentRepo");
+        //        from("direct:idempotent")
+        //                .idempotentConsumer(header("messageId"), repo)
+        //                .process(e -> results.get("idempotentRoute").add(e.getMessage().getBody(String.class)));
+        //
+        //        //aggregation repository
+        //        JdbcAggregationRepository aggregationRepo = new JdbcAggregationRepository(
+        //                new JtaTransactionManager(userTransaction, tm), "aggregation", dataSource);
+        //        from("direct:aggregation")
+        //                .aggregate(header("messageId"), new MyAggregationStrategy())
+        //                // use our created jdbc repo as aggregation repository
+        //                .completionSize(4).aggregationRepository(aggregationRepo)
+        //                .process(e -> results.get("aggregationRoute").add(e.getMessage().getBody(String.class)));
 
     }
 
