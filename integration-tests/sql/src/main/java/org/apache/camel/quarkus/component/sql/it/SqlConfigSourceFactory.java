@@ -30,8 +30,6 @@ public class SqlConfigSourceFactory implements ConfigSourceFactory {
 
     private static MapBackedConfigSource source;
 
-    private static int port = 0;
-
     static {
         String jdbcUrl = System.getenv("SQL_JDBC_URL");
 
@@ -41,21 +39,14 @@ public class SqlConfigSourceFactory implements ConfigSourceFactory {
             props.put("quarkus.datasource.jdbc.url", jdbcUrl);
             props.put("quarkus.datasource.username", System.getenv("SQL_JDBC_USERNAME"));
             props.put("quarkus.datasource.password", System.getenv("SQL_JDBC_PASSWORD"));
+        } else {
+            //do not start dev service for derby (docker image is used instead of it)
+            // derby does not start - it is still in process, see https://quarkus.io/guides/databases-dev-services
+            props.put("quarkus.devservices.enabled", String.valueOf(!"derby".equals(System.getProperty("cq.sqlJdbcKind"))));
         }
-
-        if (SqlHelper.isDerbyInDocker()) {
-            //            props.put("quarkus.datasource.jdbc.url",
-            //                    "jdbc:derby://localhost:" + port + "/DOCKERDB;create=true");
-        }
-
-        props.put("quarkus.devservices.enabled", SqlHelper.shouldStartDevService() + "");
 
         source = new MapBackedConfigSource("env_database", props) {
         };
-    }
-
-    public static void setPort(int port) {
-        SqlConfigSourceFactory.port = port;
     }
 
     @Override

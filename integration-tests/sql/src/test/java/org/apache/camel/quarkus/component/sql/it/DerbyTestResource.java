@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
-import org.apache.camel.quarkus.test.AvailablePortFinder;
 import org.apache.camel.util.CollectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,16 +40,11 @@ public class DerbyTestResource<T extends GenericContainer> implements QuarkusTes
 
     private GenericContainer container;
 
-    static {
-        int port = AvailablePortFinder.getNextAvailable();
-        SqlConfigSourceFactory.setPort(port);
-        System.setProperty("derbyPort", port + "");
-    }
-
     @Override
     public Map<String, String> start() {
         //should be started only for derby in docker
-        if (!SqlHelper.isDerbyInDocker()) {
+        // derby dev service does not work - it is still in process, see https://quarkus.io/guides/databases-dev-services
+        if (!SqlHelper.useDocker()) {
             return Collections.emptyMap();
         }
 
@@ -68,7 +62,6 @@ public class DerbyTestResource<T extends GenericContainer> implements QuarkusTes
 
             container = new GenericContainer("az82/docker-derby")
                     .withExposedPorts(1527)
-                    //            .withExposedPort(SqlHelper.getDerbyDockerPort(), 1527)
                     .withCopyFileToContainer(
                             MountableFile.forClasspathResource("derby/" + jars[0].getName()),
                             "/dbs/storedProcedure.jar")
@@ -76,27 +69,8 @@ public class DerbyTestResource<T extends GenericContainer> implements QuarkusTes
 
             container.start();
 
-            //            quarkus.datasource.jdbc.url",
-            //            "jdbc:derby://localhost:" + port + "/DOCKERDB;create=true"
-            //
-            String port = container.getMappedPort(1527) + "";
-            System.out.println("---------------------------------------------------------");
-            System.out.println("---------------------------------------------------------");
-            System.out.println("---------------------------------------------------------");
-            System.out.println("-------------------- p " + port + " ----------------------------");
-            System.out.println("---------------------------------------------------------");
-            System.out.println("---------------------------------------------------------");
-
-            //            System.out.println(">>>>>>>>>>>>>>>>>>> sleeping <<<<<<<<<<<<<<<<<<<<<<,");
-            //            try {
-            //                Thread.sleep(60 * 1000);
-            //            } catch (InterruptedException e) {
-            //                e.printStackTrace();
-            //            }
             return CollectionHelper.mapOf("quarkus.datasource.jdbc.url",
-                    //                    "jdbc:derby://localhost:" + port + "/DOCKERDB;user=DOCKERDB;password=DOCKERDB'",
-                    "jdbc:derby://localhost:" + port + "/DOCKERDB;create=true",
-                    "camel.sql.derby.port", port);
+                    "jdbc:derby://localhost:" + container.getMappedPort(1527) + "/DOCKERDB;create=true");
 
         } catch (Exception e) {
             LOGGER.error("Container does not start", e);

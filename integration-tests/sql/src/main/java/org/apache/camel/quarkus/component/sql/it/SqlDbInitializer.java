@@ -47,7 +47,10 @@ public class SqlDbInitializer {
 
         runScripts("initDb.sql");
 
-        runScripts("initDb_docker.sql");
+        if (SqlHelper.useDocker()) {
+            //docker execution may require more sql scripts
+            runScripts("initDb_docker.sql");
+        }
     }
 
     private void runScripts(String fileName) throws SQLException, IOException {

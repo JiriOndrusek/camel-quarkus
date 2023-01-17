@@ -71,7 +71,18 @@ class SqlTest {
                 .body(is("Dromedarius 1"));
     }
 
-    //    @Disabled
+    @Test
+    public void testSqlStoredComponent() {
+
+        // Invoke ADD_NUMS stored procedure
+        RestAssured.given()
+                .queryParam("numA", 10)
+                .queryParam("numB", 5)
+                .get("/sql/storedproc")
+                .then()
+                .statusCode(200)
+                .body(is("15"));
+    }
 
     @Test
     public void testConsumer() throws InterruptedException {
@@ -239,18 +250,5 @@ class SqlTest {
             }
         }
         return m;
-    }
-
-    @Test
-    public void testSqlStoredComponent() {
-
-        // Invoke ADD_NUMS stored procedure
-        RestAssured.given()
-                .queryParam("numA", 10)
-                .queryParam("numB", 5)
-                .get("/sql/storedproc")
-                .then()
-                .statusCode(200)
-                .body(is("15"));
     }
 }

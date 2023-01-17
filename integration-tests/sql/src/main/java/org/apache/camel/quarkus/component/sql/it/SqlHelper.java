@@ -42,23 +42,12 @@ public class SqlHelper {
         return BOOLEAN_AS_NUMBER.contains(dbKind) ? "selectProjectsAsNumber.sql" : "selectProjectsAsBoolean.sql";
     }
 
-    public static boolean shouldStartDevService() {
-        String jdbcUrl = System.getenv("SQL_JDBC_URL");
-        return jdbcUrl == null && !isDerbyInDocker();
+    public static boolean useDocker() {
+        //derby dev service does not start, so docker us used
+        return "derby"
+                .equals(ConfigProvider.getConfig().getOptionalValue("quarkus.datasource.db-kind", String.class)
+                        .orElse(System.getProperty("cq.sqlJdbcKind")))
+                && System.getenv("SQL_JDBC_URL") == null;
     }
 
-    public static boolean isDerbyInDocker() {
-        return "derby".equals(System.getProperty("cq.sqlJdbcKind")) && System.getenv("SQL_JDBC_URL") == null;
-        //                && Boolean.parseBoolean(System.getenv("SQL_USE_DERBY_DOCKER"));
-    }
-
-    public static Integer getDerbyDockerPort() {
-        if (!isDerbyInDocker()) {
-            return null;
-        }
-        String url = ConfigProvider.getConfig().getValue("quarkus.datasource.jdbc.url", String.class);
-        //parse port from 'jdbc:derby://localhost:12345/DOCKERDB;create=true'
-        String port = url.replace("jdbc:derby://localhost:", "").replace("/DOCKERDB;create=true", "");
-        return Integer.parseInt(port);
-    }
 }

@@ -20,20 +20,4 @@ import io.quarkus.test.junit.QuarkusIntegrationTest;
 
 @QuarkusIntegrationTest
 class SqlIT extends SqlTest {
-
-    //    @Test
-    //    public void testSqlStoredComponent() {
-    //
-    //        try {
-    //            super.testSqlStoredComponent();
-    //        } finally {
-    //            System.out.println(">>>>>>>>>>>>>>>>>>> sleeping <<<<<<<<<<<<<<<<<<<<<<,");
-    //            try {
-    //                Thread.sleep(60 * 60 * 1000);
-    //            } catch (InterruptedException e) {
-    //                e.printStackTrace();
-    //            }
-    //        }
-    //    }
-
 }
