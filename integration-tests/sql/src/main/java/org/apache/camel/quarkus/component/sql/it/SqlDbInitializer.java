@@ -47,9 +47,9 @@ public class SqlDbInitializer {
 
         runScripts("initDb.sql");
         //for derby in docker, more scripts are required
-        if (SqlHelper.isDerbyInDocker()) {
-            runScripts("initDb_docker.sql");
-        }
+        //        if (SqlHelper.isDerbyInDocker()) {
+        runScripts("initDb_docker.sql");
+        //        }
 
     }
 
