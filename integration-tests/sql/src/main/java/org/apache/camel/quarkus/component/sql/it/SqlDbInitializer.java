@@ -45,18 +45,6 @@ public class SqlDbInitializer {
 
     public void initDb() throws SQLException, IOException {
 
-        //for derby in docker, more scripts are required
-        if (System.getProperty("executed") == null && SqlHelper.isDerbyInDocker()) {
-            System.out.println("---------------------------------------------------------");
-            System.out.println("---------------------------------------------------------");
-            System.out.println("---------------------------------------------------------");
-            System.out.println("--------------------   scripta----------------------------");
-            System.out.println("---------------------------------------------------------");
-            System.out.println("---------------------------------------------------------");
-
-            System.setProperty("executed", "true");
-        }
-
         runScripts("initDb.sql");
 
         runScripts("initDb_docker.sql");

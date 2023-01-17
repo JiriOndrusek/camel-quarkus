@@ -41,7 +41,7 @@ import static org.hamcrest.Matchers.*;
 @QuarkusTestResource(DerbyTestResource.class)
 class SqlTest {
 
-    //@Test
+    @Test
     public void testSqlComponent() {
         // Create Camel species
         RestAssured.given()
@@ -73,17 +73,17 @@ class SqlTest {
 
     //    @Disabled
 
-    //@Test
+    @Test
     public void testConsumer() throws InterruptedException {
         testConsumer(1, "consumerRoute", "ViaSql");
     }
 
-    //@Test
+    @Test
     public void testClasspathConsumer() throws InterruptedException {
         testConsumer(2, "consumerClasspathRoute", "ViaClasspath");
     }
 
-    //@Test
+    @Test
     public void testFileConsumer() throws InterruptedException {
         testConsumer(3, "consumerFileRoute", "ViaFile");
     }
@@ -115,7 +115,7 @@ class SqlTest {
                 hasItem(matchMapIgnoringCase(updatedProject)));
     }
 
-    //@Test
+    @Test
     public void testTransacted() throws InterruptedException {
 
         postMap("/sql/toDirect/transacted", CollectionHelper.mapOf(SqlConstants.SQL_QUERY,
@@ -140,14 +140,14 @@ class SqlTest {
                         .body("size()", is(1));
     }
 
-    //@Test
+    @Test
     public void testDefaultErrorCode() throws InterruptedException {
         postMap("/sql/toDirect/transacted", CollectionHelper.mapOf(SqlConstants.SQL_QUERY, "select * from NOT_EXIST"))
                 .statusCode(200)
                 .body(startsWith("org.springframework.jdbc.BadSqlGrammarException"));
     }
 
-    //@Test
+    @Test
     @SuppressWarnings("unchecked")
     public void testIdempotentRepository() {
         // add value with key 1
@@ -180,7 +180,7 @@ class SqlTest {
                 containsInAnyOrder("one", "two", "three"));
     }
 
-    //@Test
+    @Test
     @SuppressWarnings("unchecked")
     public void testAggregationRepository() {
         postMapWithParam("/sql/toDirect/aggregation", "body", "A", CollectionHelper.mapOf("messageId", "123"))

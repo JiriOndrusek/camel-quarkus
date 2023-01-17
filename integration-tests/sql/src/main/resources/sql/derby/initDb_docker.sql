@@ -15,9 +15,6 @@
 -- limitations under the License.
 --
 
-
--- CREATE SCHEMA DOCKERDB
-
 CALL sqlj.install_jar('/dbs/storedProcedure.jar', 'AddNumsProcedure' , 0)
---
+
 CALL syscs_util.syscs_set_database_property('derby.database.classpath', 'APP.ADDNUMSPROCEDURE')
