@@ -45,12 +45,21 @@ public class SqlDbInitializer {
 
     public void initDb() throws SQLException, IOException {
 
-        runScripts("initDb.sql");
         //for derby in docker, more scripts are required
-        //        if (SqlHelper.isDerbyInDocker()) {
-        runScripts("initDb_docker.sql");
-        //        }
+        if (System.getProperty("executed") == null && SqlHelper.isDerbyInDocker()) {
+            System.out.println("---------------------------------------------------------");
+            System.out.println("---------------------------------------------------------");
+            System.out.println("---------------------------------------------------------");
+            System.out.println("--------------------   scripta----------------------------");
+            System.out.println("---------------------------------------------------------");
+            System.out.println("---------------------------------------------------------");
 
+            System.setProperty("executed", "true");
+        }
+
+        runScripts("initDb.sql");
+
+        runScripts("initDb_docker.sql");
     }
 
     private void runScripts(String fileName) throws SQLException, IOException {

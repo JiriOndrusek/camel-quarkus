@@ -155,7 +155,8 @@ public class SqlResource {
         args.put("num2", numB);
 
         Map<String, List<LinkedCaseInsensitiveMap>> results = producerTemplate
-                .requestBodyAndHeaders("sql-stored:ADD_NUMS(INTEGER ${headers.num1},INTEGER ${headers.num2})", null, args,
+                .requestBodyAndHeaders("sql-stored:ADD_NUMS(INTEGER ${headers.num1},INTEGER ${headers.num2})", null,
+                        args,
                         Map.class);
 
         //different db types behaves differently

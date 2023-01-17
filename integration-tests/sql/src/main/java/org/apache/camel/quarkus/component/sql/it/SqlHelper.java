@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.microprofile.config.ConfigProvider;
+
 public class SqlHelper {
 
     private static Set<String> BOOLEAN_AS_NUMBER = new HashSet<>(Arrays.asList("db2", "mssql", "oracle"));
@@ -46,11 +48,17 @@ public class SqlHelper {
     }
 
     public static boolean isDerbyInDocker() {
-        return "derby".equals(System.getProperty("cq.sqlJdbcKind"))
-                && Boolean.parseBoolean(System.getenv("SQL_USE_DERBY_DOCKER"));
+        return "derby".equals(System.getProperty("cq.sqlJdbcKind")) && System.getenv("SQL_JDBC_URL") == null;
+        //                && Boolean.parseBoolean(System.getenv("SQL_USE_DERBY_DOCKER"));
     }
 
     public static Integer getDerbyDockerPort() {
-        return isDerbyInDocker() ? Integer.parseInt(System.getenv("SQL_USE_DERBY_PORT")) : null;
+        if (!isDerbyInDocker()) {
+            return null;
+        }
+        String url = ConfigProvider.getConfig().getValue("quarkus.datasource.jdbc.url", String.class);
+        //parse port from 'jdbc:derby://localhost:12345/DOCKERDB;create=true'
+        String port = url.replace("jdbc:derby://localhost:", "").replace("/DOCKERDB;create=true", "");
+        return Integer.parseInt(port);
     }
 }
