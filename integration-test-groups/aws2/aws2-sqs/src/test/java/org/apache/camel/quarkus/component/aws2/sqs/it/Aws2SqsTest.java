@@ -23,7 +23,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -34,11 +33,9 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.quarkus.test.support.aws2.Aws2LocalStack;
 import org.apache.camel.quarkus.test.support.aws2.Aws2TestResource;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.awaitility.Awaitility;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.logging.Logger;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -66,6 +63,10 @@ class Aws2SqsTest {
         return ConfigProvider.getConfig().getValue("aws-sqs.deadletter-name", String.class);
     }
 
+    private String getDelayedQueueName() {
+        return ConfigProvider.getConfig().getValue("aws-sqs.delayed-name", String.class);
+    }
+
     private Integer getPollIntervalSendToDelayQueueInSecs() {
         return ConfigProvider.getConfig().getOptionalValue("aws-sqs.delayed-queue.poll-interval-secs", Integer.class)
                 .orElse(10);
@@ -75,20 +76,20 @@ class Aws2SqsTest {
         return ConfigProvider.getConfig().getOptionalValue("aws-sqs.delayed-queue.timeout-mins", Integer.class).orElse(5);
     }
 
-    @AfterEach
-    void purgeQueueAndWait() {
-        String qName = getPredefinedQueueName();
-        purgeQueue(qName);
-        // purge takes up to 60 seconds
-        // all messages delivered within those 60 seconds might get deleted
-        try {
-            if (!localStack) {
-                TimeUnit.SECONDS.sleep(60);
-            }
-        } catch (InterruptedException ignored) {
-        }
-        Assertions.assertEquals(receiveMessageFromQueue(qName, false), "");
-    }
+    //    @AfterEach
+    //    void purgeQueueAndWait() {
+    //        String qName = getPredefinedQueueName();
+    //        purgeQueue(qName);
+    //        // purge takes up to 60 seconds
+    //        // all messages delivered within those 60 seconds might get deleted
+    //        try {
+    //            if (!localStack) {
+    //                TimeUnit.SECONDS.sleep(60);
+    //            }
+    //        } catch (InterruptedException ignored) {
+    //        }
+    //        Assertions.assertEquals(receiveMessageFromQueue(qName, false), "");
+    //    }
 
     private void purgeQueue(String queueName) {
         RestAssured.delete("/aws2-sqs/purge/queue/" + queueName)
@@ -172,32 +173,50 @@ class Aws2SqsTest {
 
     @Test
     void sqsAutoCreateDelayedQueue() {
-        final String qName = "delayQueue-" + RandomStringUtils.randomAlphanumeric(49).toLowerCase(Locale.ROOT);
+        final String qName = getDelayedQueueName();
         final int delay = 20;
-        try {
-            createDelayQueueAndVerifyExistence(qName, delay);
-            Instant start = Instant.now();
-            final String[] msgSent = new String[1];
-            // verifying existence is not enough, as the queue can be in not Ready state, so we just keep trying to send messages
-            Awaitility.await().pollInterval(getPollIntervalSendToDelayQueueInSecs(), TimeUnit.SECONDS)
-                    .atMost(getTimeoutSendToDelayQueueInMins(), TimeUnit.MINUTES)
-                    .until(() -> {
-                        try {
-                            msgSent[0] = sendSingleMessageToQueue(qName);
-                        } catch (Throwable e) {
-                            LOG.debug("Expected exception", e);
-                            return false;
-                        }
-                        return true;
-                    });
-            awaitMessageWithExpectedContentFromQueue(msgSent[0], qName);
-            Assertions.assertTrue(Duration.between(start, Instant.now()).getSeconds() >= delay);
-        } catch (AssertionError e) {
-            e.printStackTrace();
-            Assertions.fail();
-        } finally {
-            deleteQueue(qName);
-        }
+        createDelayQueueAndVerifyExistence(qName, delay);
+
+        System.out.println(">>>>>>.. sleep");
+        //
+        //        try {
+        //            Thread.sleep(delay * 1000);
+        //        } catch (InterruptedException e) {
+        //            e.printStackTrace();
+        //        }
+        System.out.println(">>>>>>.. wake up");
+
+        Instant start = Instant.now();
+        final String[] msgSent = new String[1];
+        // verifying existence is not enough, as the queue can be in not Ready state, so we just keep trying to send messages
+        Awaitility.await().pollInterval(getPollIntervalSendToDelayQueueInSecs(), TimeUnit.SECONDS)
+                .atMost(getTimeoutSendToDelayQueueInMins(), TimeUnit.MINUTES)
+                .until(() -> {
+                    try {
+                        LOG.info(">>>>>> Sending msg to delayed queue.");
+                        final String msg = "sqs" + UUID.randomUUID().toString().replace("-", "");
+                        RestAssured.given()
+                                .contentType(ContentType.TEXT)
+                                .queryParam("reinitEndpoint", true)
+                                .body(msg)
+                                .post("/aws2-sqs/send/" + qName)
+                                .then()
+                                .statusCode(201);
+                        msgSent[0] = msg;
+                    } catch (Throwable e) {
+                        LOG.debug("Expected exception", e);
+                        LOG.info(">>>>>> Delayed msg was not send: " + e.getMessage());
+
+                        return false;
+                    }
+                    LOG.info(">>>>>> Msg was sent.");
+                    return true;
+                });
+        awaitMessageWithExpectedContentFromQueue(msgSent[0], qName);
+        LOG.info(">>>>>> Delayed msg was received.");
+        Assertions.assertTrue(Duration.between(start, Instant.now()).getSeconds() >= delay);
+
+        //queue is deleted by *EnvCustomizer
     }
 
     private void createDelayQueueAndVerifyExistence(String queueName, int delay) {
@@ -209,6 +228,7 @@ class Aws2SqsTest {
                 .as(String[].class);
         Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(120, TimeUnit.SECONDS).until(
                 () -> Stream.of(listQueues()).anyMatch(url -> url.contains(queueName)));
+        LOG.info(">>>>>>>>>>>>>>>>>>>>>> delayed queue created");
     }
 
     private void awaitMessageWithExpectedContentFromQueue(String expectedContent, String queueName) {

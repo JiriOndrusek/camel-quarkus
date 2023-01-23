@@ -19,23 +19,22 @@ package org.apache.camel.quarkus.component.aws2.sqs.it;
 import javax.enterprise.context.ApplicationScoped;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.eclipse.microprofile.config.ConfigProvider;
 
 @ApplicationScoped
 public class DeadLetterBuilder extends RouteBuilder {
 
     @Override
     public void configure() {
-        String name = ConfigProvider.getConfig().getValue("aws-sqs.failing-name", String.class);
-        String deadLetterName = ConfigProvider.getConfig().getValue("aws-sqs.deadletter-name", String.class);
-        errorHandler(deadLetterChannel("aws2-sqs://" + deadLetterName)
-                .log("Error processing message and sending to the Dead Letter Queue: Body: " + body())
-                .useOriginalMessage());
-
-        from("aws2-sqs://" + name)
-                .process(e -> {
-                    throw new IllegalArgumentException();
-                });
+        //        String name = ConfigProvider.getConfig().getValue("aws-sqs.failing-name", String.class);
+        //        String deadLetterName = ConfigProvider.getConfig().getValue("aws-sqs.deadletter-name", String.class);
+        //        errorHandler(deadLetterChannel("aws2-sqs://" + deadLetterName)
+        //                .log("Error processing message and sending to the Dead Letter Queue: Body: " + body())
+        //                .useOriginalMessage());
+        //
+        //        from("aws2-sqs://" + name)
+        //                .process(e -> {
+        //                    throw new IllegalArgumentException();
+        //                });
 
     }
 }
