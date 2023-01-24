@@ -10243,7 +10243,7 @@
       <dependency>
         <groupId>org.apache.kafka</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>connect-runtime</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>3.3.1</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>3.3.2</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <exclusions>
           <exclusion>
             <groupId>jakarta.activation</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
@@ -10314,18 +10314,18 @@
       </dependency>
       <dependency>
         <groupId>org.bouncycastle</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <artifactId>bcmail-jdk15on</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>1.70</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <artifactId>bcmail-jdk18on</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>1.72</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
       </dependency>
       <dependency>
         <groupId>org.bouncycastle</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <artifactId>bcpg-jdk15on</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>1.70</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <artifactId>bcpg-jdk18on</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>1.72</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
       </dependency>
       <dependency>
         <groupId>org.bouncycastle</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <artifactId>bcutil-jdk15on</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>1.70</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <artifactId>bcutil-jdk18on</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>1.72</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
       </dependency>
       <dependency>
         <groupId>org.codehaus.jackson</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
@@ -21576,6 +21576,11 @@
       <dependency>
         <groupId>org.bouncycastle</groupId><!-- io.quarkus:quarkus-bom:2.16.0.Final -->
         <artifactId>bctls-jdk15on</artifactId><!-- io.quarkus:quarkus-bom:2.16.0.Final -->
+        <version>1.70</version><!-- io.quarkus:quarkus-bom:2.16.0.Final -->
+      </dependency>
+      <dependency>
+        <groupId>org.bouncycastle</groupId><!-- io.quarkus:quarkus-bom:2.16.0.Final -->
+        <artifactId>bcutil-jdk15on</artifactId><!-- io.quarkus:quarkus-bom:2.16.0.Final -->
         <version>1.70</version><!-- io.quarkus:quarkus-bom:2.16.0.Final -->
       </dependency>
       <dependency>

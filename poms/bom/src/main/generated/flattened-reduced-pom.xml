@@ -10238,7 +10238,7 @@
       <dependency>
         <groupId>org.apache.kafka</groupId>
         <artifactId>connect-runtime</artifactId>
-        <version>3.3.1</version>
+        <version>3.3.2</version>
         <exclusions>
           <exclusion>
             <groupId>jakarta.activation</groupId>
@@ -10309,18 +10309,18 @@
       </dependency>
       <dependency>
         <groupId>org.bouncycastle</groupId>
-        <artifactId>bcmail-jdk15on</artifactId>
-        <version>1.70</version>
+        <artifactId>bcmail-jdk18on</artifactId>
+        <version>1.72</version>
       </dependency>
       <dependency>
         <groupId>org.bouncycastle</groupId>
-        <artifactId>bcpg-jdk15on</artifactId>
-        <version>1.70</version>
+        <artifactId>bcpg-jdk18on</artifactId>
+        <version>1.72</version>
       </dependency>
       <dependency>
         <groupId>org.bouncycastle</groupId>
-        <artifactId>bcutil-jdk15on</artifactId>
-        <version>1.70</version>
+        <artifactId>bcutil-jdk18on</artifactId>
+        <version>1.72</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.jackson</groupId>

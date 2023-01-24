@@ -40,7 +40,6 @@ public final class AvailablePortFinder {
     private static final String[] QUARKUS_PORT_PROPERTIES = new String[] {
             "quarkus.http.test-port",
             "quarkus.http.test-ssl-port",
-            "quarkus.https.test-port",
     };
 
     /**
