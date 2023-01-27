@@ -28,13 +28,16 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
+import io.restassured.response.ValidatableResponse;
 import org.apache.camel.component.aws2.ddb.Ddb2Constants;
 import org.apache.camel.component.aws2.ddb.Ddb2Operations;
+import org.apache.camel.quarkus.test.support.aws2.Aws2DefaultCredentialsProviderAvailabilityCondition;
 import org.apache.camel.quarkus.test.support.aws2.Aws2TestResource;
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import software.amazon.awssdk.services.dynamodb.model.TableStatus;
 
 import static org.apache.camel.quarkus.component.aws2.ddb.it.Aws2DdbResource.Table;
@@ -289,6 +292,23 @@ class Aws2DdbTest {
                     return result.jsonPath().getMap("$");
                 },
                 map -> map.isEmpty());
+    }
+
+    //test can be executed only if mock backend is used and no defaultCredentialsprovider is defined in the system
+    @ExtendWith(Aws2DefaultCredentialsProviderAvailabilityCondition.class)
+    @Test
+    public void defaultCredentialsProviderOnLocalstackTest() {
+        simpleTestFroDefaultCredentialsProvider(false).statusCode(500);
+
+        simpleTestFroDefaultCredentialsProvider(true).statusCode(204);
+    }
+
+    private ValidatableResponse simpleTestFroDefaultCredentialsProvider(boolean setCredentials) {
+        final String key = "key" + UUID.randomUUID().toString().replace("-", "");
+
+        /* Ensure initially empty */
+        return RestAssured.get("/aws2-ddb/getItemWithDefaultCredentialsProvider/" + key + "/" + setCredentials)
+                .then();
     }
 
 }
