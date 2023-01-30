@@ -25,6 +25,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.quarkus.test.support.aws2.Aws2Client;
+import org.apache.camel.quarkus.test.support.aws2.Aws2DefaultCredentialsProviderAvailabilityCondition;
 import org.apache.camel.quarkus.test.support.aws2.Aws2TestResource;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.awaitility.Awaitility;
@@ -32,6 +33,7 @@ import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.localstack.LocalStackContainer.Service;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -61,7 +63,7 @@ class Aws2KinesisTest {
                 .statusCode(201);
 
         Awaitility.await().atMost(10, TimeUnit.SECONDS).until(
-                () -> RestAssured.get("/aws2-kinesis/receive").then().extract(),
+                () -> RestAssured.get("/aws2-kinesis/receive/").then().extract(),
                 response -> {
                     final int status = response.statusCode();
                     final String body = status == 200 ? response.body().asString() : null;
@@ -70,7 +72,38 @@ class Aws2KinesisTest {
                 });
     }
 
+    //test can be executed only if mock backend is used and no defaultCredentialsprovider is defined in the system
+    @ExtendWith(Aws2DefaultCredentialsProviderAvailabilityCondition.class)
     @Test
+    public void kinesisWithDefaultCedentialsProvider() {
+        sendReceiveWithDefaultCredetialsProvider(false);
+        //        sendReceiveWithDefaultCredetialsProvider(true);
+    }
+
+    private void sendReceiveWithDefaultCredetialsProvider(boolean setSystemCredentials) {
+        final String msg = "kinesis-" + java.util.UUID.randomUUID().toString().replace("-", "");
+        RestAssured.given() //
+                .contentType(ContentType.TEXT)
+                .body(msg)
+                .queryParam("useDefaultCredentialsProvider", true)
+                .queryParam("setSystemCredentials", setSystemCredentials)
+                .post("/aws2-kinesis/send") //
+                .then()
+                .statusCode(setSystemCredentials ? 201 : 500);
+
+        if (setSystemCredentials) {
+            Awaitility.await().atMost(10, TimeUnit.SECONDS).until(
+                    () -> RestAssured.get("/aws2-kinesis/receive/").then().extract(),
+                    response -> {
+                        final int status = response.statusCode();
+                        final String body = status == 200 ? response.body().asString() : null;
+                        LOG.info("Got " + status + " " + body);
+                        return response.statusCode() == 200 && msg.equals(body);
+                    });
+        }
+    }
+
+    //    @Test
     public void firehose() {
         final String msg = RandomStringUtils.randomAlphanumeric(32 * 1024);
         final String msgPrefix = msg.substring(0, 32);
