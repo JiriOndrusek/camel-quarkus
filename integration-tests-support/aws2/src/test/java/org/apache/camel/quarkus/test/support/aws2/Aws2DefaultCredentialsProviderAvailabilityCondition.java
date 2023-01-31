@@ -20,29 +20,20 @@ import org.apache.camel.quarkus.test.mock.backend.MockBackendUtils;
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExecutionCondition;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
-import software.amazon.awssdk.core.exception.SdkClientException;
 
 public class Aws2DefaultCredentialsProviderAvailabilityCondition implements ExecutionCondition {
-
-    public static final String UNABLE_TO_LOAD_CREDENTIALS_MSG = "Unable to load credentials";
 
     @Override
     public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
         if (!MockBackendUtils.startMockBackend(false)) {
             return ConditionEvaluationResult.disabled("Test can be executed only with mock backend.");
         }
-        try {
-            DefaultCredentialsProvider.create().resolveCredentials();
-        } catch (Exception e) {
-            //if message starts with "Unable to load credentials", allow testing
-            if (e instanceof SdkClientException && e.getMessage() != null
-                    && e.getMessage().startsWith(UNABLE_TO_LOAD_CREDENTIALS_MSG)) {
-                return ConditionEvaluationResult
-                        .enabled("DefaultCredentialsProvider is NOT defined in the system, Testing can proceed.");
-            }
+        if (DefaultCredentialsProviderHelper.isDefaultCredentialsProviderDefinedOnSystem()) {
+            return ConditionEvaluationResult.disabled("DefaultCredentialsProvider is already defined in the system.");
         }
-        return ConditionEvaluationResult.disabled("DefaultCredentialsProvider is already defined in the system.");
+
+        return ConditionEvaluationResult
+                .enabled("DefaultCredentialsProvider is NOT defined in the system, Testing can proceed.");
     }
 
 }

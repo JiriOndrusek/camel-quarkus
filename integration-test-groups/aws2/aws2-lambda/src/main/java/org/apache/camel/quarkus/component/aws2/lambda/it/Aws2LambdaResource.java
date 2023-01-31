@@ -42,6 +42,7 @@ import org.apache.camel.CamelExecutionException;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.aws2.lambda.Lambda2Constants;
 import org.apache.camel.component.aws2.lambda.Lambda2Operations;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 import software.amazon.awssdk.core.SdkBytes;
@@ -78,6 +79,8 @@ public class Aws2LambdaResource {
 
     @Inject
     ProducerTemplate producerTemplate;
+
+    private boolean useDefaultCredentials;
 
     @Path("/function/create/{functionName}")
     @POST
@@ -396,8 +399,31 @@ public class Aws2LambdaResource {
         }
     }
 
-    private static String componentUri(String functionName, Lambda2Operations operation) {
-        return "aws2-lambda:" + functionName + "?operation=" + operation;
+    @Path("/setUseDefaultCredentialsProvider")
+    @POST
+    public Response setUseDefaultCredentials(boolean useDefaultCredentialsProvider) throws Exception {
+        this.useDefaultCredentials = useDefaultCredentialsProvider;
+        return Response.ok().build();
+    }
+
+    @Path("/setCredentials")
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response setCredentials() throws Exception {
+
+        //defaultCredentials provider gets the credentials from fixed location. One of them is system.properties,
+        //therefore to succeed the test, system.properties has to be initialized with the values from the configuration
+        System.setProperty("aws.accessKeyId",
+                ConfigProvider.getConfig().getValue("camel.component.aws2-lambda.access-key", String.class));
+        System.setProperty("aws.secretAccessKey",
+                ConfigProvider.getConfig().getValue("camel.component.aws2-lambda.secret-key", String.class));
+
+        return Response.ok().build();
+    }
+
+    private String componentUri(String functionName, Lambda2Operations operation) {
+        return "aws2-lambda:" + functionName + "?operation=" + operation + "&useDefaultCredentialsProvider="
+                + useDefaultCredentials;
     }
 
     @Provider

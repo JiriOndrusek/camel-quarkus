@@ -31,6 +31,7 @@ import io.restassured.http.ContentType;
 import io.restassured.response.ExtractableResponse;
 import org.apache.camel.quarkus.test.support.aws2.Aws2TestResource;
 import org.jboss.logging.Logger;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.awaitility.Awaitility.await;
@@ -92,6 +93,36 @@ class Aws2LambdaTest {
                 .delete("/aws2-lambda/function/delete/" + functionName)
                 .then()
                 .statusCode(204);
+    }
+
+    @Test
+    public void useDefaultCredentialsProviderTest() {
+        RestAssured.given()
+                .body(true)
+                .post("/aws2-lambda/setUseDefaultCredentialsProvider")
+                .then()
+                .statusCode(200);
+
+        try {
+            performingOperationsOnLambdaFunctionShouldSucceed();
+            Assertions.fail("should fail");
+        } catch (Exception e) {
+            //do nothing
+        }
+
+        //        RestAssured.given()
+        //                .body(false)
+        //                .post("/aws2-lambda/setCredentials")
+        //                .then()
+        //                .statusCode(200);
+
+        performingOperationsOnLambdaFunctionShouldSucceed();
+
+        RestAssured.given()
+                .body(false)
+                .post("/aws2-lambda/setUseDefaultCredentialsProvider")
+                .then()
+                .statusCode(200);
     }
 
     public void getUpdateListAndInvokeFunctionShouldSucceed(String functionName) {
