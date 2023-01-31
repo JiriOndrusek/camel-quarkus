@@ -101,7 +101,7 @@ public final class Aws2TestResource implements QuarkusTestResourceLifecycleManag
 
         customizers.forEach(customizer -> customizer.customize(envContext));
 
-        envContext.setClearDefaultCredentialsProvider(useDefaultCredentialsProvider);
+        envContext.setClearDefaultCredentialsProvider(!Aws2Helper.isDefaultCredentialsProviderDefinedOnSystem());
 
         return envContext.getProperties();
     }
@@ -138,6 +138,10 @@ public final class Aws2TestResource implements QuarkusTestResourceLifecycleManag
                 }
             }
             c = c.getSuperclass();
+        }
+        if (testInstance instanceof BaseAWs2TestSupport) {
+            ((BaseAWs2TestSupport) testInstance)
+                    .setClearDefaultCredentialsProvider(envContext.isClearDefaultCredentialsProvider());
         }
 
     }

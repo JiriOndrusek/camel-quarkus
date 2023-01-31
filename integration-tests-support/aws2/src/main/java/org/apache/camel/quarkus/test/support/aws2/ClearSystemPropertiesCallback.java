@@ -28,13 +28,12 @@ public class ClearSystemPropertiesCallback implements QuarkusTestAfterEachCallba
     public void afterEach(QuarkusTestMethodContext context) {
 
         //.detect whether defaultCredentialsProvider is configured
-        if (!Aws2Helper.isDefaultCredentialsProviderDefinedOnSystem()) {
+        if (context.getTestInstance() instanceof DefaultCredentialsProviderAware &&
+                ((DefaultCredentialsProviderAware) context.getTestInstance()).isClearDefaultCredentialsProvider()) {
             LOG.debug("Clearing both System.properties `aws.secretAccessKey` and `aws.accessKeyId`.");
             //system properties has to be cleared after the test
             System.clearProperty("aws.accessKeyId");
             System.clearProperty("aws.secretAccessKey");
-
-            System.out.println("------------------- clearing propertoes -+-----------------------");
         }
     }
 

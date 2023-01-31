@@ -1,10 +1,11 @@
 package org.apache.camel.quarkus.test.support.aws2;
 
 import io.restassured.RestAssured;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-public abstract class BaseAWs2TestSupport {
+public abstract class BaseAWs2TestSupport implements DefaultCredentialsProviderAware {
 
     //todo try to register a second rest api on /aws and do not require this parametet
     private final String restPath;
@@ -63,7 +64,7 @@ public abstract class BaseAWs2TestSupport {
                 .statusCode(200);
 
         // should fail without credentials for aws
-        testMethodForDefaultCredentialsProvider();
+        Assertions.assertThrows(AssertionError.class, () -> testMethodForDefaultCredentialsProvider());
 
         RestAssured.given()
                 .body(false)
