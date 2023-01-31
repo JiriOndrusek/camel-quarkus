@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.ListIterator;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -57,6 +56,7 @@ public class Aws2TestEnvContext {
     private final String region;
     private final Optional<LocalStackContainer> localstack;
     private final CredentialsProvider credentialsProvider;
+    private boolean clearDefaultCredentialsProvider;
 
     public Aws2TestEnvContext(String accessKey, String secretKey, String region, boolean useDefaultCredentialsProvider,
             Optional<LocalStackContainer> localstack,
@@ -70,7 +70,7 @@ public class Aws2TestEnvContext {
 
         localstack.ifPresent(ls -> {
             for (Service service : exportCredentialsServices) {
-                String s = camelServiceAcronym(service);
+                String s = Aws2Helper.camelServiceAcronym(service);
                 if (s != null) {
                     if (credentialsProvider == CredentialsProvider.staticProvider) {
                         properties.put("camel.component.aws2-" + s + ".access-key", accessKey);
@@ -105,7 +105,7 @@ public class Aws2TestEnvContext {
      */
     public void removeClient(Service[] services) {
         for (Service service : services) {
-            String s = camelServiceAcronym(service);
+            String s = Aws2Helper.camelServiceAcronym(service);
             properties.remove("camel.component.aws2-" + s + ".access-key");
             properties.remove("camel.component.aws2-" + s + ".secret-key");
             properties.remove("camel.component.aws2-" + s + ".region");
@@ -115,7 +115,7 @@ public class Aws2TestEnvContext {
 
     public void removeOverrideEndpoint(Service[] services) {
         for (Service service : services) {
-            String s = camelServiceAcronym(service);
+            String s = Aws2Helper.camelServiceAcronym(service);
             properties.remove("camel.component.aws2-" + s + ".override-endpoint");
             properties.remove("camel.component.aws2-" + s + ".uri-endpoint-override");
         }
@@ -211,23 +211,6 @@ public class Aws2TestEnvContext {
         });
     }
 
-    private static String camelServiceAcronym(Service service) {
-        switch (service) {
-        case DYNAMODB:
-            return "ddb";
-        case DYNAMODB_STREAMS:
-            return "ddbstream";
-        case FIREHOSE:
-            return "kinesis-firehose";
-        case CLOUDWATCH:
-            return "cw";
-        case SECRETSMANAGER:
-            return "secrets-manager";
-        default:
-            return service.name().toLowerCase(Locale.ROOT);
-        }
-    }
-
     public String getRegion() {
         return region;
     }
@@ -248,4 +231,11 @@ public class Aws2TestEnvContext {
         return credentialsProvider == CredentialsProvider.defaultProvider;
     }
 
+    public boolean isClearDefaultCredentialsProvider() {
+        return clearDefaultCredentialsProvider;
+    }
+
+    public void setClearDefaultCredentialsProvider(boolean clearDefaultCredentialsProvider) {
+        this.clearDefaultCredentialsProvider = clearDefaultCredentialsProvider;
+    }
 }

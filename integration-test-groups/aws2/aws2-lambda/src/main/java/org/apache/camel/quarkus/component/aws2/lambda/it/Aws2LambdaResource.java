@@ -42,9 +42,11 @@ import org.apache.camel.CamelExecutionException;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.aws2.lambda.Lambda2Constants;
 import org.apache.camel.component.aws2.lambda.Lambda2Operations;
+import org.apache.camel.quarkus.test.support.aws2.BaseAws2Resource;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
+import org.testcontainers.containers.localstack.LocalStackContainer;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.lambda.model.AliasConfiguration;
 import software.amazon.awssdk.services.lambda.model.CreateEventSourceMappingResponse;
@@ -67,7 +69,7 @@ import software.amazon.awssdk.services.lambda.model.UpdateFunctionCodeResponse;
 
 @Path("/aws2-lambda")
 @ApplicationScoped
-public class Aws2LambdaResource {
+public class Aws2LambdaResource extends BaseAws2Resource {
 
     private static final Logger LOG = Logger.getLogger(Aws2LambdaResource.class);
 
@@ -80,7 +82,9 @@ public class Aws2LambdaResource {
     @Inject
     ProducerTemplate producerTemplate;
 
-    private boolean useDefaultCredentials;
+    public Aws2LambdaResource() {
+        super(LocalStackContainer.Service.LAMBDA);
+    }
 
     @Path("/function/create/{functionName}")
     @POST

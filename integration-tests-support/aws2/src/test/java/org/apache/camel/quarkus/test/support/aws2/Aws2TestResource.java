@@ -101,6 +101,8 @@ public final class Aws2TestResource implements QuarkusTestResourceLifecycleManag
 
         customizers.forEach(customizer -> customizer.customize(envContext));
 
+        envContext.setClearDefaultCredentialsProvider(useDefaultCredentialsProvider);
+
         return envContext.getProperties();
     }
 

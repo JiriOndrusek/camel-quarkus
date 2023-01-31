@@ -71,17 +71,17 @@
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-integration-test-support</artifactId>
-            <scope>test</scope>
+<!--       todo should be test scope     <scope>test</scope>-->
         </dependency>
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-integration-test-support-mock-backend</artifactId>
-            <scope>test</scope>
+<!--     todo should be test scope        <scope>test</scope>-->
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>localstack</artifactId>
-            <scope>test</scope>
+            <!--       todo should be test scope     <scope>test</scope>-->
             <exclusions>
                 <exclusion>
                     <groupId>junit</groupId>
@@ -92,12 +92,17 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit4-mock</artifactId>
-            <scope>test</scope>
+<!--        todo should be test scope     <scope>test</scope>-->
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+<!--   todo should be test scope          <scope>test</scope>-->
         </dependency>
         <dependency><!-- Workaround for https://github.com/testcontainers/testcontainers-java/issues/1442 -->
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-core</artifactId>
-            <scope>test</scope>
+<!--    todo should be test scope         <scope>test</scope>-->
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -105,5 +110,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
     </dependencies>
 </project>

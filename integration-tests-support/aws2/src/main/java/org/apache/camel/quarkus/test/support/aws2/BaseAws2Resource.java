@@ -16,7 +16,6 @@
  */
 package org.apache.camel.quarkus.test.support.aws2;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -25,14 +24,19 @@ import javax.ws.rs.core.Response;
 
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.logging.Logger;
+import org.testcontainers.containers.localstack.LocalStackContainer;
 
-@Path("/aws2")
-@ApplicationScoped
-public class Aws2Resource {
+public class BaseAws2Resource {
 
-    private static final Logger LOG = Logger.getLogger(Aws2Resource.class);
+    private static final Logger LOG = Logger.getLogger(BaseAws2Resource.class);
 
-    private boolean useDefaultCredentials;
+    protected boolean useDefaultCredentials;
+
+    private final LocalStackContainer.Service service;
+
+    public BaseAws2Resource(LocalStackContainer.Service service) {
+        this.service = service;
+    }
 
     @Path("/setUseDefaultCredentialsProvider")
     @POST
@@ -44,16 +48,18 @@ public class Aws2Resource {
     @Path("/initializeDefaultCredentials")
     @POST
     @Produces(MediaType.TEXT_PLAIN)
-    public Response setCredentials() throws Exception {
+    public Response initializeDefaultCredentials() throws Exception {
+
+        String s = Aws2Helper.camelServiceAcronym(service);
 
         LOG.debug(
                 "Setting both System.properties `aws.secretAccessKey` and `aws.accessKeyId` to cover defaultCredentialsProviderTest.");
         //defaultCredentials provider gets the credentials from fixed location. One of them is system.properties,
         //therefore to succeed the test, system.properties has to be initialized with the values from the configuration
         System.setProperty("aws.accessKeyId",
-                ConfigProvider.getConfig().getValue("camel.component.aws2-lambda.access-key", String.class));
+                ConfigProvider.getConfig().getValue("camel.component.aws2-" + s + ".access-key", String.class));
         System.setProperty("aws.secretAccessKey",
-                ConfigProvider.getConfig().getValue("camel.component.aws2-lambda.secret-key", String.class));
+                ConfigProvider.getConfig().getValue("camel.component.aws2-" + s + ".secret-key", String.class));
 
         return Response.ok().build();
     }

@@ -16,23 +16,26 @@
  */
 package org.apache.camel.quarkus.test.support.aws2;
 
-import io.quarkus.test.junit.callback.QuarkusTestAfterAllCallback;
-import io.quarkus.test.junit.callback.QuarkusTestContext;
+import io.quarkus.test.junit.callback.QuarkusTestAfterEachCallback;
+import io.quarkus.test.junit.callback.QuarkusTestMethodContext;
 import org.jboss.logging.Logger;
 
-public class ClearSystemPropertiesCallback implements QuarkusTestAfterAllCallback {
+public class ClearSystemPropertiesCallback implements QuarkusTestAfterEachCallback {
 
     private static final Logger LOG = Logger.getLogger(ClearSystemPropertiesCallback.class);
 
     @Override
-    public void afterAll(QuarkusTestContext context) {
+    public void afterEach(QuarkusTestMethodContext context) {
 
         //.detect whether defaultCredentialsProvider is configured
-        if (!DefaultCredentialsProviderHelper.isDefaultCredentialsProviderDefinedOnSystem()) {
+        if (!Aws2Helper.isDefaultCredentialsProviderDefinedOnSystem()) {
             LOG.debug("Clearing both System.properties `aws.secretAccessKey` and `aws.accessKeyId`.");
             //system properties has to be cleared after the test
             System.clearProperty("aws.accessKeyId");
             System.clearProperty("aws.secretAccessKey");
+
+            System.out.println("------------------- clearing propertoes -+-----------------------");
         }
     }
+
 }
