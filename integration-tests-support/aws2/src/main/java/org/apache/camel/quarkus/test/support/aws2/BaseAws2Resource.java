@@ -45,8 +45,6 @@ public class BaseAws2Resource {
     @Path("/setUseDefaultCredentialsProvider")
     @POST
     public Response setUseDefaultCredentials(boolean useDefaultCredentialsProvider) throws Exception {
-        LOG.info(
-                "Setting setUseDefaultCredentials to " + useDefaultCredentialsProvider);
         this.useDefaultCredentials = useDefaultCredentialsProvider;
         return Response.ok().build();
     }

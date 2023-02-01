@@ -36,13 +36,15 @@ import javax.ws.rs.core.Response;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.aws2.sqs.Sqs2Constants;
+import org.apache.camel.quarkus.test.support.aws2.BaseAws2Resource;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.testcontainers.containers.localstack.LocalStackContainer;
 import software.amazon.awssdk.services.sqs.model.ListQueuesResponse;
 import software.amazon.awssdk.services.sqs.model.SendMessageBatchResponse;
 
 @Path("/aws2-sqs")
 @ApplicationScoped
-public class Aws2SqsResource {
+public class Aws2SqsResource extends BaseAws2Resource {
 
     @ConfigProperty(name = "aws-sqs.queue-name")
     String queueName;
@@ -52,6 +54,10 @@ public class Aws2SqsResource {
 
     @Inject
     ConsumerTemplate consumerTemplate;
+
+    public Aws2SqsResource() {
+        super(LocalStackContainer.Service.SQS);
+    }
 
     @Path("send")
     @POST
@@ -81,7 +87,7 @@ public class Aws2SqsResource {
     @DELETE
     @Produces(MediaType.TEXT_PLAIN)
     public Response purgeQueue(@PathParam("queueName") String queueName) throws Exception {
-        producerTemplate.sendBody(componentUri(queueName) + "?operation=purgeQueue",
+        producerTemplate.sendBody(componentUri(queueName) + "&operation=purgeQueue",
                 null);
         return Response.ok().build();
     }
@@ -92,7 +98,7 @@ public class Aws2SqsResource {
     public String sqsReceive(@PathParam("queueName") String queueName, @PathParam("deleteMessage") String deleteMessage)
             throws Exception {
         return consumerTemplate.receiveBody(componentUri(queueName)
-                + "?deleteAfterRead=" + deleteMessage + "&deleteIfFiltered=" + deleteMessage + "&defaultVisibilityTimeout=0",
+                + "&deleteAfterRead=" + deleteMessage + "&deleteIfFiltered=" + deleteMessage + "&defaultVisibilityTimeout=0",
                 10000,
                 String.class);
     }
@@ -111,7 +117,7 @@ public class Aws2SqsResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<String> listQueues() throws Exception {
-        return producerTemplate.requestBody(componentUri() + "?operation=listQueues", null, ListQueuesResponse.class)
+        return producerTemplate.requestBody(componentUri() + "&operation=listQueues", null, ListQueuesResponse.class)
                 .queueUrls();
     }
 
@@ -121,7 +127,7 @@ public class Aws2SqsResource {
     @Produces(MediaType.TEXT_PLAIN)
     public Response sendBatchMessage(List<String> messages) throws Exception {
         final SendMessageBatchResponse response = producerTemplate.requestBody(
-                componentUri() + "?operation=sendBatchMessage",
+                componentUri() + "&operation=sendBatchMessage",
                 messages,
                 SendMessageBatchResponse.class);
         return Response
@@ -135,7 +141,7 @@ public class Aws2SqsResource {
     @Produces(MediaType.TEXT_PLAIN)
     public Response deleteMessage(@PathParam("queueName") String queueName, @PathParam("receipt") String receipt)
             throws Exception {
-        producerTemplate.sendBodyAndHeader(componentUri(queueName) + "?operation=deleteMessage",
+        producerTemplate.sendBodyAndHeader(componentUri(queueName) + "&operation=deleteMessage",
                 null,
                 Sqs2Constants.RECEIPT_HANDLE,
                 URLDecoder.decode(receipt, StandardCharsets.UTF_8));
@@ -146,7 +152,7 @@ public class Aws2SqsResource {
     @DELETE
     @Produces(MediaType.TEXT_PLAIN)
     public Response deleteQueue(@PathParam("queueName") String queueName) throws Exception {
-        producerTemplate.sendBody(componentUri(queueName) + "?operation=deleteQueue",
+        producerTemplate.sendBody(componentUri(queueName) + "&operation=deleteQueue",
                 null);
         return Response.ok().build();
     }
@@ -166,11 +172,11 @@ public class Aws2SqsResource {
     }
 
     private String componentUri() {
-        return "aws2-sqs://" + queueName;
+        return componentUri(queueName);
     }
 
     private String componentUri(String queueName) {
-        return "aws2-sqs://" + queueName;
+        return "aws2-sqs://" + queueName + "?useDefaultCredentialsProvider=" + useDefaultCredentials;
     }
 
 }
