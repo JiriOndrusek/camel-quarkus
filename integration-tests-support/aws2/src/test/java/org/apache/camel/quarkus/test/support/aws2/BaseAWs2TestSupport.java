@@ -1,23 +1,26 @@
 package org.apache.camel.quarkus.test.support.aws2;
 
+import io.quarkus.test.junit.callback.QuarkusTestAfterEachCallback;
+import io.quarkus.test.junit.callback.QuarkusTestMethodContext;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-public abstract class BaseAWs2TestSupport implements DefaultCredentialsProviderAware {
+public abstract class BaseAWs2TestSupport implements DefaultCredentialsProviderAware, QuarkusTestAfterEachCallback {
 
     //todo try to register a second rest api on /aws and do not require this parametet
     private final String restPath;
 
-    private boolean clearDefaultCredentialsProvider;
+    private boolean clearAwsSystemCredentials;
 
     public BaseAWs2TestSupport(String restPath) {
         this.restPath = restPath;
     }
 
     /**
-     * Testing method used for {@link #useDefaultCredentialsProviderTest()}.
+     * Testing method used for {@link #successfulDefaultCredentialsProviderTest()} and
+     * {@link #failingDefaultCredentialsProviderTest()}.
      *
      * This method is called twice.
      * 1 - Credentials are not set, therefore this method should fail.
@@ -38,13 +41,21 @@ public abstract class BaseAWs2TestSupport implements DefaultCredentialsProviderA
                 .statusCode(200);
 
         RestAssured.given()
-                .body(false)
+                .body(true)
                 .post(restPath + "/initializeDefaultCredentials")
                 .then()
                 .statusCode(200);
 
         //should succeed
         testMethodForDefaultCredentialsProvider();
+
+        if (isClearAwsSystemCredentials()) {
+            RestAssured.given()
+                    .body(false)
+                    .post(restPath + "/initializeDefaultCredentials")
+                    .then()
+                    .statusCode(200);
+        }
 
         RestAssured.given()
                 .body(false)
@@ -73,11 +84,16 @@ public abstract class BaseAWs2TestSupport implements DefaultCredentialsProviderA
                 .statusCode(200);
     }
 
-    public boolean isClearDefaultCredentialsProvider() {
-        return clearDefaultCredentialsProvider;
+    @Override
+    public void afterEach(QuarkusTestMethodContext context) {
+
     }
 
-    public void setClearDefaultCredentialsProvider(boolean clearDefaultCredentialsProvider) {
-        this.clearDefaultCredentialsProvider = clearDefaultCredentialsProvider;
+    public boolean isClearAwsSystemCredentials() {
+        return clearAwsSystemCredentials;
+    }
+
+    public void setClearAwsSystemCredentials(boolean clearAwsSystemCredentials) {
+        this.clearAwsSystemCredentials = clearAwsSystemCredentials;
     }
 }

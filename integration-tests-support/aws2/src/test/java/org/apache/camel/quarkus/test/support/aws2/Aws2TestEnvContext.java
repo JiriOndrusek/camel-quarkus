@@ -56,7 +56,7 @@ public class Aws2TestEnvContext {
     private final String region;
     private final Optional<LocalStackContainer> localstack;
     private final CredentialsProvider credentialsProvider;
-    private boolean clearDefaultCredentialsProvider;
+    private boolean clearAwsSystemCredentials;
 
     public Aws2TestEnvContext(String accessKey, String secretKey, String region, boolean useDefaultCredentialsProvider,
             Optional<LocalStackContainer> localstack,
@@ -231,11 +231,11 @@ public class Aws2TestEnvContext {
         return credentialsProvider == CredentialsProvider.defaultProvider;
     }
 
-    public boolean isClearDefaultCredentialsProvider() {
-        return clearDefaultCredentialsProvider;
+    public boolean isClearAwsSystemCredentials() {
+        return clearAwsSystemCredentials;
     }
 
-    public void setClearDefaultCredentialsProvider(boolean clearDefaultCredentialsProvider) {
-        this.clearDefaultCredentialsProvider = clearDefaultCredentialsProvider;
+    public void setClearAwsSystemCredentials(boolean clearAwsSystemCredentials) {
+        this.clearAwsSystemCredentials = clearAwsSystemCredentials;
     }
 }

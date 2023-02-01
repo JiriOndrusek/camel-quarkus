@@ -101,7 +101,11 @@ public final class Aws2TestResource implements QuarkusTestResourceLifecycleManag
 
         customizers.forEach(customizer -> customizer.customize(envContext));
 
-        envContext.setClearDefaultCredentialsProvider(!Aws2Helper.isDefaultCredentialsProviderDefinedOnSystem());
+        if (!Aws2Helper.isDefaultCredentialsProviderDefinedOnSystem()) {
+            envContext.setClearAwsSystemCredentials(true);
+            envContext.closeable(() -> Aws2Helper.clearAwsSysteCredentials());
+            envContext.property("quarkus.test.enable-callbacks-for-integration-tests", "true");
+        }
 
         return envContext.getProperties();
     }
@@ -141,7 +145,7 @@ public final class Aws2TestResource implements QuarkusTestResourceLifecycleManag
         }
         if (testInstance instanceof BaseAWs2TestSupport) {
             ((BaseAWs2TestSupport) testInstance)
-                    .setClearDefaultCredentialsProvider(envContext.isClearDefaultCredentialsProvider());
+                    .setClearAwsSystemCredentials(envContext.isClearAwsSystemCredentials());
         }
 
     }

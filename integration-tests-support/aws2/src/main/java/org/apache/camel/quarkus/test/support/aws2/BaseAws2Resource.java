@@ -41,6 +41,8 @@ public class BaseAws2Resource {
     @Path("/setUseDefaultCredentialsProvider")
     @POST
     public Response setUseDefaultCredentials(boolean useDefaultCredentialsProvider) throws Exception {
+        LOG.info(
+                "Setting setUseDefaultCredentials to " + useDefaultCredentialsProvider);
         this.useDefaultCredentials = useDefaultCredentialsProvider;
         return Response.ok().build();
     }
@@ -48,18 +50,23 @@ public class BaseAws2Resource {
     @Path("/initializeDefaultCredentials")
     @POST
     @Produces(MediaType.TEXT_PLAIN)
-    public Response initializeDefaultCredentials() throws Exception {
-
+    public Response initializeDefaultCredentials(boolean initialize) throws Exception {
         String s = Aws2Helper.camelServiceAcronym(service);
 
-        LOG.debug(
-                "Setting both System.properties `aws.secretAccessKey` and `aws.accessKeyId` to cover defaultCredentialsProviderTest.");
-        //defaultCredentials provider gets the credentials from fixed location. One of them is system.properties,
-        //therefore to succeed the test, system.properties has to be initialized with the values from the configuration
-        System.setProperty("aws.accessKeyId",
-                ConfigProvider.getConfig().getValue("camel.component.aws2-" + s + ".access-key", String.class));
-        System.setProperty("aws.secretAccessKey",
-                ConfigProvider.getConfig().getValue("camel.component.aws2-" + s + ".secret-key", String.class));
+        if (initialize) {
+
+            LOG.info(
+                    "Setting both System.properties `aws.secretAccessKey` and `aws.accessKeyId` to cover defaultCredentialsProviderTest.");
+            //defaultCredentials provider gets the credentials from fixed location. One of them is system.properties,
+            //therefore to succeed the test, system.properties has to be initialized with the values from the configuration
+            Aws2Helper.setAwsSysteCredentials(
+                    ConfigProvider.getConfig().getValue("camel.component.aws2-" + s + ".access-key", String.class),
+                    ConfigProvider.getConfig().getValue("camel.component.aws2-" + s + ".secret-key", String.class));
+
+        } else {
+            LOG.info("Clearing both System.properties `aws.secretAccessKey` and `aws.accessKeyId`.");
+            Aws2Helper.clearAwsSysteCredentials();
+        }
 
         return Response.ok().build();
     }

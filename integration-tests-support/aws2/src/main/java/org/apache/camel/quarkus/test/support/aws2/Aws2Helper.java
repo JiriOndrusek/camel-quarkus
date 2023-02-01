@@ -40,4 +40,16 @@ public class Aws2Helper {
         }
     }
 
+    public static void setAwsSysteCredentials(String accessKey, String secretKey) {
+        System.setProperty("aws.accessKeyId", accessKey);
+        System.setProperty("aws.secretAccessKey", secretKey);
+
+    }
+
+    public static void clearAwsSysteCredentials() {
+        //system properties has to be cleared after the test
+        System.clearProperty("aws.accessKeyId");
+        System.clearProperty("aws.secretAccessKey");
+    }
+
 }
