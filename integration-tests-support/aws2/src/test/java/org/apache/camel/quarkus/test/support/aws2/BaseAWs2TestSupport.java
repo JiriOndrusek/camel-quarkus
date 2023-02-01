@@ -7,12 +7,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-public abstract class BaseAWs2TestSupport implements DefaultCredentialsProviderAware, QuarkusTestAfterEachCallback {
+public abstract class BaseAWs2TestSupport implements QuarkusTestAfterEachCallback {
 
     //todo try to register a second rest api on /aws and do not require this parametet
     private final String restPath;
-
-    private boolean clearAwsSystemCredentials;
 
     public BaseAWs2TestSupport(String restPath) {
         this.restPath = restPath;
@@ -30,7 +28,7 @@ public abstract class BaseAWs2TestSupport implements DefaultCredentialsProviderA
      */
     public abstract void testMethodForDefaultCredentialsProvider();
 
-    //test can be executed only if mock backend is used and no defaultCredentialsprovider is defined in the system
+    //test can be executed only if mock backend is used and no defaultCredentialsProvider is defined in the system
     @ExtendWith(Aws2DefaultCredentialsProviderAvailabilityCondition.class)
     @Test
     public void successfulDefaultCredentialsProviderTest() {
@@ -49,13 +47,11 @@ public abstract class BaseAWs2TestSupport implements DefaultCredentialsProviderA
         //should succeed
         testMethodForDefaultCredentialsProvider();
 
-        if (isClearAwsSystemCredentials()) {
-            RestAssured.given()
-                    .body(false)
-                    .post(restPath + "/initializeDefaultCredentials")
-                    .then()
-                    .statusCode(200);
-        }
+        RestAssured.given()
+                .body(false)
+                .post(restPath + "/initializeDefaultCredentials")
+                .then()
+                .statusCode(200);
 
         RestAssured.given()
                 .body(false)
@@ -89,11 +85,4 @@ public abstract class BaseAWs2TestSupport implements DefaultCredentialsProviderA
 
     }
 
-    public boolean isClearAwsSystemCredentials() {
-        return clearAwsSystemCredentials;
-    }
-
-    public void setClearAwsSystemCredentials(boolean clearAwsSystemCredentials) {
-        this.clearAwsSystemCredentials = clearAwsSystemCredentials;
-    }
 }

@@ -16,12 +16,14 @@
  */
 package org.apache.camel.quarkus.test.support.aws2;
 
+import javax.enterprise.event.Observes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import io.quarkus.runtime.ShutdownEvent;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.logging.Logger;
 import org.testcontainers.containers.localstack.LocalStackContainer;
@@ -33,6 +35,8 @@ public class BaseAws2Resource {
     protected boolean useDefaultCredentials;
 
     private final LocalStackContainer.Service service;
+
+    private boolean clearAwsSystemCredentials;
 
     public BaseAws2Resource(LocalStackContainer.Service service) {
         this.service = service;
@@ -54,7 +58,8 @@ public class BaseAws2Resource {
         String s = Aws2Helper.camelServiceAcronym(service);
 
         if (initialize) {
-
+            //set flag to clear at the end
+            clearAwsSystemCredentials = true;
             LOG.debug(
                     "Setting both System.properties `aws.secretAccessKey` and `aws.accessKeyId` to cover defaultCredentialsProviderTest.");
             //defaultCredentials provider gets the credentials from fixed location. One of them is system.properties,
@@ -66,9 +71,16 @@ public class BaseAws2Resource {
         } else {
             LOG.debug("Clearing both System.properties `aws.secretAccessKey` and `aws.accessKeyId`.");
             Aws2Helper.clearAwsSysteCredentials();
+            clearAwsSystemCredentials = false;
         }
 
         return Response.ok().build();
+    }
+
+    void onStop(@Observes ShutdownEvent ev) {
+        if (clearAwsSystemCredentials) {
+            Aws2Helper.clearAwsSysteCredentials();
+        }
     }
 
     public boolean isUseDefaultCredentials() {
