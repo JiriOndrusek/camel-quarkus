@@ -44,9 +44,10 @@ import org.apache.camel.Message;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.aws2.ddb.Ddb2Constants;
 import org.apache.camel.component.aws2.ddb.Ddb2Operations;
+import org.apache.camel.quarkus.test.support.aws2.BaseAws2Resource;
 import org.apache.camel.util.CollectionHelper;
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.testcontainers.containers.localstack.LocalStackContainer;
 import software.amazon.awssdk.services.dynamodb.model.AttributeAction;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValueUpdate;
@@ -57,7 +58,11 @@ import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughputDescr
 
 @Path("/aws2-ddb")
 @ApplicationScoped
-public class Aws2DdbResource {
+public class Aws2DdbResource extends BaseAws2Resource {
+
+    public Aws2DdbResource() {
+        super(LocalStackContainer.Service.DYNAMODB);
+    }
 
     public enum Table {
         basic, operations, stream
@@ -104,43 +109,12 @@ public class Aws2DdbResource {
     }
 
     @SuppressWarnings("unchecked")
-    @Path("/getItemWithDefaultCredentialsProvider/{key}/{setCredentials}")
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public String getItemWithDefaultCredentialsProvider(
-            @PathParam("key") String key,
-            @PathParam("setCredentials") boolean setCredentials) {
-        try {
-            if (setCredentials) {
-                //defaultCredentials provider gets the credentials from fixed location. One of them is system.properties,
-                //therefore to succeed the test, system.properties has to be initialized with the values from the configuration
-                System.setProperty("aws.accessKeyId",
-                        ConfigProvider.getConfig().getValue("camel.component.aws2-ddb.access-key", String.class));
-                System.setProperty("aws.secretAccessKey",
-                        ConfigProvider.getConfig().getValue("camel.component.aws2-ddb.secret-key", String.class));
-            }
-            return getItem(key, true);
-        } finally {
-            if (setCredentials) {
-                //system properties has to be cleared after the test
-                System.clearProperty("aws.accessKeyId");
-                System.clearProperty("aws.secretAccessKey");
-            }
-        }
-    }
-
-    @SuppressWarnings("unchecked")
     @Path("/item/{key}")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String getItem(@PathParam("key") String key) {
-        return getItem(key, false);
-    }
-
-    private String getItem(String key, boolean useDefaultCredentialsProvider) {
-
         final Map<String, AttributeValue> item = (Map<String, AttributeValue>) producerTemplate
-                .send(componentUri(Ddb2Operations.GetItem) + "&useDefaultCredentialsProvider=" + useDefaultCredentialsProvider,
+                .send(componentUri(Ddb2Operations.GetItem),
                         e -> {
                             e.getMessage().setHeader(Ddb2Constants.CONSISTENT_READ, true);
                             e.getMessage().setHeader(Ddb2Constants.ATTRIBUTE_NAMES,
@@ -331,6 +305,6 @@ public class Aws2DdbResource {
         default:
             tableName = this.tableName;
         }
-        return "aws2-ddb://" + tableName + "?operation=" + op;
+        return "aws2-ddb://" + tableName + "?operation=" + op + "&useDefaultCredentialsProvider=" + useDefaultCredentials;
     }
 }

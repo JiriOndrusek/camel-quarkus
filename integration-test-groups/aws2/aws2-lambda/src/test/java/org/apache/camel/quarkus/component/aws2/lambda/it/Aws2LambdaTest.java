@@ -101,8 +101,10 @@ class Aws2LambdaTest extends BaseAWs2TestSupport {
 
     @Override
     public void testMethodForDefaultCredentialsProvider() {
-        //the other test should fail/succeed based on default credentials existence
-        performingOperationsOnLambdaFunctionShouldSucceed();
+        RestAssured.given()
+                .get("/aws2-lambda/function/list/")
+                .then()
+                .statusCode(200);
     }
 
     public void getUpdateListAndInvokeFunctionShouldSucceed(String functionName) {

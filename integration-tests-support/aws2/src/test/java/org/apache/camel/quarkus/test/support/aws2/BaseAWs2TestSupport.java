@@ -75,7 +75,7 @@ public abstract class BaseAWs2TestSupport implements DefaultCredentialsProviderA
                 .statusCode(200);
 
         // should fail without credentials for aws
-        Assertions.assertThrows(Exception.class, () -> testMethodForDefaultCredentialsProvider());
+        Assertions.assertThrows(AssertionError.class, () -> testMethodForDefaultCredentialsProvider());
 
         RestAssured.given()
                 .body(false)

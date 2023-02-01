@@ -28,16 +28,14 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
-import io.restassured.response.ValidatableResponse;
 import org.apache.camel.component.aws2.ddb.Ddb2Constants;
 import org.apache.camel.component.aws2.ddb.Ddb2Operations;
-import org.apache.camel.quarkus.test.support.aws2.Aws2DefaultCredentialsProviderAvailabilityCondition;
 import org.apache.camel.quarkus.test.support.aws2.Aws2TestResource;
+import org.apache.camel.quarkus.test.support.aws2.BaseAWs2TestSupport;
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import software.amazon.awssdk.services.dynamodb.model.TableStatus;
 
 import static org.apache.camel.quarkus.component.aws2.ddb.it.Aws2DdbResource.Table;
@@ -45,9 +43,13 @@ import static org.hamcrest.CoreMatchers.is;
 
 @QuarkusTest
 @QuarkusTestResource(Aws2TestResource.class)
-class Aws2DdbTest {
+class Aws2DdbTest extends BaseAWs2TestSupport {
 
     private static final Logger LOG = Logger.getLogger(Aws2DdbTest.class);
+
+    public Aws2DdbTest() {
+        super("/aws2-ddb");
+    }
 
     @Test
     public void crud() {
@@ -294,21 +296,13 @@ class Aws2DdbTest {
                 map -> map.isEmpty());
     }
 
-    //test can be executed only if mock backend is used and no defaultCredentialsprovider is defined in the system
-    @ExtendWith(Aws2DefaultCredentialsProviderAvailabilityCondition.class)
-    @Test
-    public void defaultCredentialsProviderOnLocalstackTest() {
-        simpleTestFroDefaultCredentialsProvider(false).statusCode(500);
-
-        simpleTestFroDefaultCredentialsProvider(true).statusCode(204);
-    }
-
-    private ValidatableResponse simpleTestFroDefaultCredentialsProvider(boolean setCredentials) {
+    @Override
+    public void testMethodForDefaultCredentialsProvider() {
         final String key = "key" + UUID.randomUUID().toString().replace("-", "");
 
-        /* Ensure initially empty */
-        return RestAssured.get("/aws2-ddb/getItemWithDefaultCredentialsProvider/" + key + "/" + setCredentials)
-                .then();
+        //simple interaction with aws ddb
+        RestAssured.get("/aws2-ddb/item/" + key)
+                .then()
+                .statusCode(204);
     }
-
 }
