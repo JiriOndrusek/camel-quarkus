@@ -55,7 +55,7 @@ public class BaseAws2Resource {
 
         if (initialize) {
 
-            LOG.info(
+            LOG.debug(
                     "Setting both System.properties `aws.secretAccessKey` and `aws.accessKeyId` to cover defaultCredentialsProviderTest.");
             //defaultCredentials provider gets the credentials from fixed location. One of them is system.properties,
             //therefore to succeed the test, system.properties has to be initialized with the values from the configuration
@@ -64,7 +64,7 @@ public class BaseAws2Resource {
                     ConfigProvider.getConfig().getValue("camel.component.aws2-" + s + ".secret-key", String.class));
 
         } else {
-            LOG.info("Clearing both System.properties `aws.secretAccessKey` and `aws.accessKeyId`.");
+            LOG.debug("Clearing both System.properties `aws.secretAccessKey` and `aws.accessKeyId`.");
             Aws2Helper.clearAwsSysteCredentials();
         }
 
