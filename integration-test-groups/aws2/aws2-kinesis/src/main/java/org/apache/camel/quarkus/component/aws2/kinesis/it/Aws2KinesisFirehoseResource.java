@@ -31,7 +31,6 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.aws2.kinesis.Kinesis2Constants;
 import org.apache.camel.quarkus.test.support.aws2.BaseAws2Resource;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.testcontainers.containers.localstack.LocalStackContainer;
 
 @Path("/aws2-kinesis-firehose")
 @ApplicationScoped
@@ -44,7 +43,7 @@ public class Aws2KinesisFirehoseResource extends BaseAws2Resource {
     ProducerTemplate producerTemplate;
 
     public Aws2KinesisFirehoseResource() {
-        super(LocalStackContainer.Service.FIREHOSE);
+        super("kinesis-firehose");
     }
 
     @Path("/send")

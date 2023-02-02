@@ -1,8 +1,5 @@
 package org.apache.camel.quarkus.test.support.aws2;
 
-import java.util.Locale;
-
-import org.testcontainers.containers.localstack.LocalStackContainer;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.core.exception.SdkClientException;
 
@@ -21,23 +18,6 @@ public class Aws2Helper {
             }
         }
         return true;
-    }
-
-    public static String camelServiceAcronym(LocalStackContainer.Service service) {
-        switch (service) {
-        case DYNAMODB:
-            return "ddb";
-        case DYNAMODB_STREAMS:
-            return "ddbstream";
-        case FIREHOSE:
-            return "kinesis-firehose";
-        case CLOUDWATCH:
-            return "cw";
-        case SECRETSMANAGER:
-            return "secrets-manager";
-        default:
-            return service.name().toLowerCase(Locale.ROOT);
-        }
     }
 
     public static void setAwsSysteCredentials(String accessKey, String secretKey) {

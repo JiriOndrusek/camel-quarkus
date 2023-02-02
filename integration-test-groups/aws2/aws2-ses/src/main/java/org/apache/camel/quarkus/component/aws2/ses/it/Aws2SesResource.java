@@ -33,7 +33,6 @@ import org.apache.camel.FluentProducerTemplate;
 import org.apache.camel.component.aws2.ses.Ses2Constants;
 import org.apache.camel.quarkus.test.support.aws2.BaseAws2Resource;
 import org.jboss.logging.Logger;
-import org.testcontainers.containers.localstack.LocalStackContainer;
 
 @Path("/aws2-ses")
 @ApplicationScoped
@@ -44,7 +43,7 @@ public class Aws2SesResource extends BaseAws2Resource {
     FluentProducerTemplate producerTemplate;
 
     public Aws2SesResource() {
-        super(LocalStackContainer.Service.SES);
+        super("ses");
     }
 
     @Path("/send")

@@ -36,7 +36,6 @@ import org.apache.camel.component.aws2.kinesis.Kinesis2Constants;
 import org.apache.camel.quarkus.test.support.aws2.BaseAws2Resource;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
-import org.testcontainers.containers.localstack.LocalStackContainer;
 
 @Path("/aws2-kinesis")
 @ApplicationScoped
@@ -55,7 +54,7 @@ public class Aws2KinesisResource extends BaseAws2Resource {
     Queue<String> aws2KinesisMessages;
 
     public Aws2KinesisResource() {
-        super(LocalStackContainer.Service.KINESIS);
+        super("kinesis");
     }
 
     @Path("/send")

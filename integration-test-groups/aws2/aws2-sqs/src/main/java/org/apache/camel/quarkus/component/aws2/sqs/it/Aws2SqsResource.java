@@ -38,7 +38,6 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.aws2.sqs.Sqs2Constants;
 import org.apache.camel.quarkus.test.support.aws2.BaseAws2Resource;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.testcontainers.containers.localstack.LocalStackContainer;
 import software.amazon.awssdk.services.sqs.model.ListQueuesResponse;
 import software.amazon.awssdk.services.sqs.model.SendMessageBatchResponse;
 
@@ -56,7 +55,7 @@ public class Aws2SqsResource extends BaseAws2Resource {
     ConsumerTemplate consumerTemplate;
 
     public Aws2SqsResource() {
-        super(LocalStackContainer.Service.SQS);
+        super("sqs");
     }
 
     @Path("send")

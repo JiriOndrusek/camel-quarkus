@@ -26,7 +26,6 @@ import javax.ws.rs.core.Response;
 import io.quarkus.runtime.ShutdownEvent;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.logging.Logger;
-import org.testcontainers.containers.localstack.LocalStackContainer;
 
 public class BaseAws2Resource {
 
@@ -34,11 +33,11 @@ public class BaseAws2Resource {
 
     protected boolean useDefaultCredentials;
 
-    private final LocalStackContainer.Service service;
+    private final String service;
 
     private boolean clearAwsSystemCredentials;
 
-    public BaseAws2Resource(LocalStackContainer.Service service) {
+    public BaseAws2Resource(String service) {
         this.service = service;
     }
 
@@ -53,8 +52,6 @@ public class BaseAws2Resource {
     @POST
     @Produces(MediaType.TEXT_PLAIN)
     public Response initializeDefaultCredentials(boolean initialize) throws Exception {
-        String s = Aws2Helper.camelServiceAcronym(service);
-
         if (initialize) {
             //set flag to clear at the end
             clearAwsSystemCredentials = true;
@@ -63,8 +60,8 @@ public class BaseAws2Resource {
             //defaultCredentials provider gets the credentials from fixed location. One of them is system.properties,
             //therefore to succeed the test, system.properties has to be initialized with the values from the configuration
             Aws2Helper.setAwsSysteCredentials(
-                    ConfigProvider.getConfig().getValue("camel.component.aws2-" + s + ".access-key", String.class),
-                    ConfigProvider.getConfig().getValue("camel.component.aws2-" + s + ".secret-key", String.class));
+                    ConfigProvider.getConfig().getValue("camel.component.aws2-" + service + ".access-key", String.class),
+                    ConfigProvider.getConfig().getValue("camel.component.aws2-" + service + ".secret-key", String.class));
 
         } else {
             LOG.debug("Clearing both System.properties `aws.secretAccessKey` and `aws.accessKeyId`.");

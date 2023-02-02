@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.ListIterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -69,7 +70,7 @@ public class Aws2TestEnvContext {
 
         localstack.ifPresent(ls -> {
             for (Service service : exportCredentialsServices) {
-                String s = Aws2Helper.camelServiceAcronym(service);
+                String s = camelServiceAcronym(service);
                 if (s != null) {
                     if (credentialsProvider == CredentialsProvider.staticProvider) {
                         properties.put("camel.component.aws2-" + s + ".access-key", accessKey);
@@ -104,7 +105,7 @@ public class Aws2TestEnvContext {
      */
     public void removeClient(Service[] services) {
         for (Service service : services) {
-            String s = Aws2Helper.camelServiceAcronym(service);
+            String s = camelServiceAcronym(service);
             properties.remove("camel.component.aws2-" + s + ".access-key");
             properties.remove("camel.component.aws2-" + s + ".secret-key");
             properties.remove("camel.component.aws2-" + s + ".region");
@@ -114,7 +115,7 @@ public class Aws2TestEnvContext {
 
     public void removeOverrideEndpoint(Service[] services) {
         for (Service service : services) {
-            String s = Aws2Helper.camelServiceAcronym(service);
+            String s = camelServiceAcronym(service);
             properties.remove("camel.component.aws2-" + s + ".override-endpoint");
             properties.remove("camel.component.aws2-" + s + ".uri-endpoint-override");
         }
@@ -208,6 +209,21 @@ public class Aws2TestEnvContext {
                 throw new RuntimeException("Could not call " + clientType.getName() + ".builder()", e);
             }
         });
+    }
+
+    private static String camelServiceAcronym(Service service) {
+        switch (service) {
+        case DYNAMODB:
+            return "ddb";
+        case DYNAMODB_STREAMS:
+            return "ddbstream";
+        case FIREHOSE:
+            return "kinesis-firehose";
+        case CLOUDWATCH:
+            return "cw";
+        default:
+            return service.name().toLowerCase(Locale.ROOT);
+        }
     }
 
     public String getRegion() {

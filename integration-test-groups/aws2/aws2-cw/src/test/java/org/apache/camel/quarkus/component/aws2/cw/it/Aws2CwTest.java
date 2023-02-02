@@ -33,6 +33,7 @@ import org.apache.camel.quarkus.test.support.aws2.BaseAWs2TestSupport;
 import org.apache.camel.util.CollectionHelper;
 import org.awaitility.Awaitility;
 import org.jboss.logging.Logger;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.localstack.LocalStackContainer.Service;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 import software.amazon.awssdk.services.cloudwatch.model.Datapoint;
@@ -75,7 +76,7 @@ class Aws2CwTest extends BaseAWs2TestSupport {
                 .statusCode(201);
     }
 
-    //    @Test
+    @Test
     public void metric() {
 
         final Instant startTime = Instant.ofEpochMilli(System.currentTimeMillis() - 10000);
@@ -122,7 +123,7 @@ class Aws2CwTest extends BaseAWs2TestSupport {
 
     }
 
-    //    @Test
+    @Test
     public void headers() {
         final Instant startTime = Instant.ofEpochMilli(System.currentTimeMillis() - 10000);
 
@@ -243,7 +244,7 @@ class Aws2CwTest extends BaseAWs2TestSupport {
 
     }
 
-    //    @Test
+    @Test
     public void customClient() {
         final String namespace = "cq-metrics-" + java.util.UUID.randomUUID().toString().replace("-", "");
         final String metricName = "metricName" + java.util.UUID.randomUUID().toString().replace("-", "");

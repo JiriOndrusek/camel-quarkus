@@ -52,7 +52,6 @@ import org.apache.camel.component.aws2.s3.AWS2S3Constants;
 import org.apache.camel.component.aws2.s3.AWS2S3Operations;
 import org.apache.camel.quarkus.test.support.aws2.BaseAws2Resource;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.testcontainers.containers.localstack.LocalStackContainer;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.services.s3.model.Bucket;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
@@ -76,7 +75,7 @@ public class Aws2S3Resource extends BaseAws2Resource {
     Optional<String> kmsKeyId;
 
     public Aws2S3Resource() {
-        super(LocalStackContainer.Service.S3);
+        super("s3");
     }
 
     @Path("object/{key}")

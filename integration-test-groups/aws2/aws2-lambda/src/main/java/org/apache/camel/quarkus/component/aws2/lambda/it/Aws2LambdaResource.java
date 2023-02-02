@@ -46,7 +46,6 @@ import org.apache.camel.quarkus.test.support.aws2.BaseAws2Resource;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
-import org.testcontainers.containers.localstack.LocalStackContainer;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.lambda.model.AliasConfiguration;
 import software.amazon.awssdk.services.lambda.model.CreateEventSourceMappingResponse;
@@ -83,7 +82,7 @@ public class Aws2LambdaResource extends BaseAws2Resource {
     ProducerTemplate producerTemplate;
 
     public Aws2LambdaResource() {
-        super(LocalStackContainer.Service.LAMBDA);
+        super("lambda");
     }
 
     @Path("/function/create/{functionName}")

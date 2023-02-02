@@ -47,7 +47,6 @@ import org.apache.camel.component.aws2.ddb.Ddb2Operations;
 import org.apache.camel.quarkus.test.support.aws2.BaseAws2Resource;
 import org.apache.camel.util.CollectionHelper;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.testcontainers.containers.localstack.LocalStackContainer;
 import software.amazon.awssdk.services.dynamodb.model.AttributeAction;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValueUpdate;
@@ -61,7 +60,7 @@ import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughputDescr
 public class Aws2DdbResource extends BaseAws2Resource {
 
     public Aws2DdbResource() {
-        super(LocalStackContainer.Service.DYNAMODB);
+        super("ddb");
     }
 
     public enum Table {

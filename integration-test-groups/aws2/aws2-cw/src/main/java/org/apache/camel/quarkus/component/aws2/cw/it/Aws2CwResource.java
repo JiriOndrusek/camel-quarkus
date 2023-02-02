@@ -38,7 +38,6 @@ import org.apache.camel.CamelExecutionException;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.aws2.cw.Cw2Constants;
 import org.apache.camel.quarkus.test.support.aws2.BaseAws2Resource;
-import org.testcontainers.containers.localstack.LocalStackContainer;
 
 @Path("/aws2-cw")
 @ApplicationScoped
@@ -50,7 +49,7 @@ public class Aws2CwResource extends BaseAws2Resource {
     private volatile String endpointUri;
 
     public Aws2CwResource() {
-        super(LocalStackContainer.Service.CLOUDWATCH);
+        super("cw");
     }
 
     @Scheduled(every = "1s")
