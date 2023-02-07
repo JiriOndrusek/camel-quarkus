@@ -16,8 +16,13 @@
  */
 package org.apache.camel.quarkus.component.mail.deployment;
 
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ServiceProviderBuildItem;
+import org.jboss.jandex.IndexView;
 
 class MailProcessor {
 
@@ -27,4 +32,53 @@ class MailProcessor {
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
     }
+
+    @BuildStep
+    void registerOkhttpServiceProvider(BuildProducer<ServiceProviderBuildItem> services) {
+        services.produce(
+                new ServiceProviderBuildItem("jakarta.mail.util.StreamProvider", "com.sun.mail.util.MailStreamProvider"));
+        services.produce(
+                new ServiceProviderBuildItem("jakarta.mail.Provider", "com.sun.mail.imap.IMAPProvider"));
+        services.produce(
+                new ServiceProviderBuildItem("jakarta.mail.Provider", "com.sun.mail.imap.IMAPSSLProvider"));
+        services.produce(
+                new ServiceProviderBuildItem("jakarta.mail.Provider", "com.sun.mail.smtp.SMTPSSLProvider"));
+        services.produce(
+                new ServiceProviderBuildItem("jakarta.mail.Provider", "com.sun.mail.smtp.SMTPProvider"));
+        services.produce(
+                new ServiceProviderBuildItem("jakarta.mail.Provider", "com.sun.mail.pop3.POP3Provider"));
+        services.produce(
+                new ServiceProviderBuildItem("jakarta.mail.Provider", "com.sun.mail.pop3.POP3SSLProvider"));
+        //        services.produce(
+        //                new ServiceProviderBuildItem("jakarta.activation.spi.MimeTypeRegistryProvider",
+        //                        "com.sun.activation.registries.MimeTypeRegistryProviderImpl"));
+    }
+
+    @BuildStep
+    void registerDependencyForIndex(BuildProducer<IndexDependencyBuildItem> items) {
+        items.produce(new IndexDependencyBuildItem("jakarta.activation", "jakarta.activation-api"));
+        items.produce(new IndexDependencyBuildItem("org.eclipse.angus", "angus-activation"));
+    }
+
+    @BuildStep
+    void registerNativeImageResources(BuildProducer<ServiceProviderBuildItem> services, CombinedIndexBuildItem combinedIndex) {
+        //        Stream.of("jakarta.mail.util.StreamProvider", "jakarta.mail.Provider");
+        IndexView index = combinedIndex.getIndex();
+        index.getKnownClasses().stream().peek(i -> System.out.println("" + i.name()));
+
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+
+        index.getKnownClasses()
+                .stream()
+                .filter(classInfo -> classInfo.name().prefix().toString().equals("jakarta.activation.spi.")
+                        && classInfo.name().toString().endsWith("Provider"))
+                .peek(ci -> System.out.println("---" + ci))
+                .forEach(classInfo -> index.getKnownDirectImplementors(classInfo.name())
+                        .stream()
+                        .peek(ci -> System.out.println("-------" + ci))
+                        .forEach(service -> services.produce(
+                                new ServiceProviderBuildItem(classInfo.simpleName(),
+                                        service.simpleName()))));
+    }
+
 }
