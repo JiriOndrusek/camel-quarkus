@@ -34,7 +34,7 @@ public class AfterEachCallback implements QuarkusTestAfterEachCallback {
             }
 
             if (!CallbackUtil.isPerClass(testInstance)) {
-                CallbackUtil.resetContext(testInstance);
+                CallbackUtil.resetContext(testInstance, true);
             }
         }
     }

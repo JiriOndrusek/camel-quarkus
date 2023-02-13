@@ -6,9 +6,10 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.quarkus.test.CamelQuarkusTestSupport;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 @QuarkusTest
-//@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class RouteTest extends CamelQuarkusTestSupport {
 
     @Override

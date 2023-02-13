@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.test.junit5.patterns;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
@@ -25,6 +26,7 @@ import org.apache.camel.quarkus.test.CamelQuarkusTestSupport;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
+@TestProfile(AdviceWithLambdaTest.class)
 public class AdviceWithLambdaTest extends CamelQuarkusTestSupport {
 
     @Override
