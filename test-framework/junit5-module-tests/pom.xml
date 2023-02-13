@@ -27,15 +27,13 @@
         <relativePath>../poms/build-parent/pom.xml</relativePath>
     </parent>
 
-    <artifactId>camel-quarkus-test-framework</artifactId>
+    <artifactId>camel-quarkus-test-module-tests</artifactId>
     <packaging>pom</packaging>
 
-    <name>Camel Quarkus :: Test Framework :: Parent</name>
+    <name>Camel Quarkus :: Test Framework :: Module Tests</name>
 
     <modules>
-        <module>junit5</module>
-        <module>junit5-extension-tests</module>
-        <module>junit5-module-tests</module>
+        <module>doubleRoutingBuilder</module>
     </modules>
 
     <dependencyManagement>
