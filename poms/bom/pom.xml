@@ -129,6 +129,11 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <artifactId>netty-transport-classes-epoll</artifactId>
+                <groupId>io.netty</groupId>
+                <version>4.1.87.Final</version>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.camel</groupId>
                 <artifactId>camel-amqp</artifactId>
                 <version>${camel.version}</version>
