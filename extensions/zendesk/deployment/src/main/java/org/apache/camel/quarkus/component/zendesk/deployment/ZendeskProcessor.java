@@ -16,11 +16,13 @@
  */
 package org.apache.camel.quarkus.component.zendesk.deployment;
 
+import io.netty.incubator.channel.uring.IOUringEventLoopGroup;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.AdditionalApplicationArchiveMarkerBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import org.apache.camel.quarkus.core.deployment.util.CamelSupport;
 import org.jboss.jandex.IndexView;
 
@@ -36,6 +38,11 @@ class ZendeskProcessor {
     @BuildStep
     AdditionalApplicationArchiveMarkerBuildItem boxArchiveMarker() {
         return new AdditionalApplicationArchiveMarkerBuildItem("org/zendesk");
+    }
+
+    @BuildStep
+    RuntimeInitializedClassBuildItem test() {
+        return new RuntimeInitializedClassBuildItem(IOUringEventLoopGroup.class.getName());
     }
 
     @BuildStep

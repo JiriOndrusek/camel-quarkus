@@ -45,21 +45,9 @@
         </dependency>
         <dependency>
             <artifactId>netty-transport-native-unix-common</artifactId>
-            <version></version>
             <groupId>io.netty</groupId>
         </dependency>
-        <dependency>
-            <artifactId>netty-transport-classes-epoll</artifactId>
-            <groupId>io.netty</groupId>
-        </dependency>
-        <dependency>
-            <artifactId>netty-transport-classes-kqueue</artifactId>
-            <groupId>io.netty</groupId>
-        </dependency>
-        <dependency>
-            <artifactId>netty-transport-classes-epoll</artifactId>
-            <groupId>io.netty</groupId>
-        </dependency>
+
 
         <!-- test dependencies -->
         <dependency>
