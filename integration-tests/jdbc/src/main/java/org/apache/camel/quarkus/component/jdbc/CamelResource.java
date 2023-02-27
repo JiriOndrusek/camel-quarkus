@@ -34,6 +34,8 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.quarkus.component.jdbc.model.Camel;
 
@@ -46,6 +48,9 @@ public class CamelResource {
 
     @Inject
     ProducerTemplate template;
+
+    @Inject
+    CamelContext context;
 
     @PostConstruct
     void postConstruct() throws SQLException {
@@ -108,5 +113,16 @@ public class CamelResource {
     @Produces(MediaType.TEXT_PLAIN)
     public String executeStatement(String statement) throws Exception {
         return template.requestBody("jdbc:camel-ds", statement, String.class);
+    }
+
+    @POST
+    @Path("/xa/{id}")
+    public Response testXA(@PathParam("id") String id, String message) {
+        try {
+            template.sendBodyAndHeader("direct:xa", message, "id", id);
+        } catch (Exception e) {
+            //ignore exception, the data in db will be asserted
+        }
+        return Response.ok().build();
     }
 }

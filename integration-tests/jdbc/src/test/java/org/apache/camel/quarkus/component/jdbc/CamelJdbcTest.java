@@ -21,6 +21,7 @@ import io.quarkus.test.h2.H2DatabaseTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.is;
@@ -49,8 +50,30 @@ public class CamelJdbcTest {
     @Test
     void testExecuteStatement() {
         RestAssured.given()
-                .contentType(ContentType.TEXT).body("select id from camels order by id desc")
+                .contentType(ContentType.TEXT).body("select id from camels where id < 4 order by id desc")
                 .post("/test/execute")
                 .then().body(is("[{ID=3}, {ID=2}, {ID=1}]"));
+    }
+
+    @Test
+    public void testJmsXACommit() {
+        RestAssured.given()
+                .body("success")
+                .post("/test/xa/4")
+                .then()
+                .statusCode(200);
+
+        RestAssured.when().get("/test/species/4").then().body(Matchers.is("[{SPECIES=Camelus success}]"));
+    }
+
+    @Test
+    public void testJmsXARollback() {
+        RestAssured.given()
+                .body("fail")
+                .post("test/xa/5")
+                .then()
+                .statusCode(200);
+
+        RestAssured.when().get("/test/species/5").then().body(Matchers.is("[]"));
     }
 }
