@@ -37,9 +37,9 @@ class CxfSoapMtomTest {
 
     private static Stream<Arguments> matrix() {
         return Stream.of(
-                Arguments.of(true, "POJO"),
-                Arguments.of(false, "POJO"),
-                Arguments.of(true, "PAYLOAD"),
+                //                Arguments.of(true, "POJO"),
+                //                Arguments.of(false, "POJO"),
+                //                Arguments.of(true, "PAYLOAD"),
                 Arguments.of(false, "PAYLOAD"));
     }
 

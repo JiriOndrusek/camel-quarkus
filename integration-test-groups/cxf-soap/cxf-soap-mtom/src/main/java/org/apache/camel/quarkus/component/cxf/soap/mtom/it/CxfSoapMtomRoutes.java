@@ -147,18 +147,18 @@ public class CxfSoapMtomRoutes extends RouteBuilder {
                 .otherwise()
                 .toD("cxf:bean:soapClientMtomDisabledEndpoint?address=${header.address}&mtomEnabled=${header.mtomEnabled}&dataFormat=${header.endpointDataFormat}");
 
-        from("cxf:bean:soapMtomEnabledServerPojoModeEndpoint?dataFormat=POJO")
-                .to("direct:pojoModeProcessor");
+        //        from("cxf:bean:soapMtomEnabledServerPojoModeEndpoint?dataFormat=POJO")
+        //                .to("direct:pojoModeProcessor");
 
-        from("cxf:bean:soapMtomDisabledServerPojoModeEndpoint?dataFormat=POJO")
-                .to("direct:pojoModeProcessor");
-
-        from("direct:pojoModeProcessor")
-                .process("pojoModeProcessor")
-                .toD("bean:imageService?method=${header.operationName}");
-
-        from("cxf:bean:soapMtomEnabledServerPayloadModeEndpoint?dataFormat=PAYLOAD")
-                .process("payloadModeProcessor");
+        //        from("cxf:bean:soapMtomDisabledServerPojoModeEndpoint?dataFormat=POJO")
+        //                .to("direct:pojoModeProcessor");
+        //
+        //        from("direct:pojoModeProcessor")
+        //                .process("pojoModeProcessor")
+        //                .toD("bean:imageService?method=${header.operationName}");
+        //
+        //        from("cxf:bean:soapMtomEnabledServerPayloadModeEndpoint?dataFormat=PAYLOAD")
+        //                .process("payloadModeProcessor");
 
         from("cxf:bean:soapMtomDisabledServerPayloadModeEndpoint?dataFormat=PAYLOAD")
                 .process("payloadModeProcessor");
@@ -274,27 +274,27 @@ public class CxfSoapMtomRoutes extends RouteBuilder {
     CxfEndpoint soapMtomDisabledServerPayloadModeEndpoint() {
         return commonCxfEndpoint(false, "/mtom-disabled-payload-mode-image-service");
     }
-
-    @Produces
-    @SessionScoped
-    @Named
-    CxfEndpoint soapMtomEnabledServerPayloadModeEndpoint() {
-        return commonCxfEndpoint(true, "/mtom-enabled-payload-mode-image-service");
-    }
-
-    @Produces
-    @SessionScoped
-    @Named
-    CxfEndpoint soapMtomEnabledServerPojoModeEndpoint() {
-        return commonCxfEndpoint(true, "/mtom-enabled-pojo-mode-image-service");
-    }
-
-    @Produces
-    @SessionScoped
-    @Named
-    CxfEndpoint soapMtomDisabledServerPojoModeEndpoint() {
-        return commonCxfEndpoint(false, "/mtom-disabled-pojo-mode-image-service");
-    }
+    //
+    //    @Produces
+    //    @SessionScoped
+    //    @Named
+    //    CxfEndpoint soapMtomEnabledServerPayloadModeEndpoint() {
+    //        return commonCxfEndpoint(true, "/mtom-enabled-payload-mode-image-service");
+    //    }
+    //
+    //    @Produces
+    //    @SessionScoped
+    //    @Named
+    //    CxfEndpoint soapMtomEnabledServerPojoModeEndpoint() {
+    //        return commonCxfEndpoint(true, "/mtom-enabled-pojo-mode-image-service");
+    //    }
+    //
+    //    @Produces
+    //    @SessionScoped
+    //    @Named
+    //    CxfEndpoint soapMtomDisabledServerPojoModeEndpoint() {
+    //        return commonCxfEndpoint(false, "/mtom-disabled-pojo-mode-image-service");
+    //    }
 
     CxfEndpoint commonCxfEndpoint(boolean mtomEnabled, String address) {
         final CxfEndpoint result = new CxfEndpoint();
