@@ -23,7 +23,6 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -37,13 +36,26 @@ public class CxfSoapConverterResource {
     @Inject
     ProducerTemplate producerTemplate;
 
-    @Path("/getPerson/{personId}")
+    @Path("/pojo")
     @POST
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response getPerson(@PathParam("personId") String personId) throws Exception {
-        final GetPersonResponse response = producerTemplate.requestBody("direct:converterInvoker", personId,
-                GetPersonResponse.class);
+    public Response pojo(String personId) throws Exception {
+        final GetPersonResponse response = producerTemplate.requestBodyAndHeader("direct:converterInvoker", personId,
+                "operation", "pojoConverter", GetPersonResponse.class);
+        return Response
+                .created(new URI("https://camel.apache.org/"))
+                .entity(response.getPersonId())
+                .build();
+    }
+
+    @Path("/consumer")
+    @POST
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response consumer(String msg) throws Exception {
+        final GetPersonResponse response = producerTemplate.requestBodyAndHeader("direct:converterInvoker", msg,
+                "operation", "consumerConverter", GetPersonResponse.class);
         return Response
                 .created(new URI("https://camel.apache.org/"))
                 .entity(response.getPersonId())
