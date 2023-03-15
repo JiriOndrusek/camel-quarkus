@@ -20,11 +20,12 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 
-import org.apache.camel.component.cxf.common.DataFormat;
 import org.w3c.dom.Element;
 
 import io.quarkus.runtime.LaunchMode;
@@ -33,8 +34,6 @@ import jakarta.enterprise.context.SessionScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.cxf.common.CxfPayload;
 import org.apache.camel.component.cxf.jaxws.CxfEndpoint;
@@ -49,14 +48,9 @@ import org.eclipse.microprofile.config.ConfigProvider;
 @ApplicationScoped
 public class CxfSoapConverterRoutes extends RouteBuilder {
 
-    protected static final String ECHO_RESPONSE
-            = "<ns1:echoResponse xmlns:ns1=\"http://jaxws.cxf.component.camel.apache.org/\">"
-            + "<return xmlns=\"http://jaxws.cxf.component.camel.apache.org/\">echo Hello World!</return>"
-            + "</ns1:echoResponse>";
+    protected static final String ELEMENT_NAMESPACE = "http://camel.apache.org/wsdl-first/types";
 
-    public static String REQUEST_HELLO =
-            "<ns1:echo xmlns:ns1=\"http://cxf.component.camel.apache.org/\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">" +
-            "<arg0 xmlns=\"http://cxf.component.camel.apache.org/\">%s</arg0></ns1:echo>";
+    public static final String PATTERN_GET_PERSON = "<GetPerson .*><personId>(.+)</personId></GetPerson>";
 
     public static final String REQUEST_GET_PERSON = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<GetPerson xmlns=\"http://camel.apache.org/wsdl-first/types\" " +
@@ -83,13 +77,8 @@ public class CxfSoapConverterRoutes extends RouteBuilder {
                     Map<String, Object> headers = exchange.getIn().getHeaders();
                     List<Source> elements = new ArrayList<>();
                     String reqMessage;
-                    if ("pojoConverter".equals(operation)) {
-                        headers.put("address", getServerUrl() + "/soapservice/PayLoadConvert/RouterPort");
-                        reqMessage = String.format(REQUEST_GET_PERSON, exchange.getIn().getBody(String.class));
-                    } else {
-                        headers.put("address", getServerUrl() + "/soapservice/PayLoadConvert/RouterPort2");
-                        reqMessage = String.format(REQUEST_HELLO, exchange.getIn().getBody(String.class));
-                    }
+                    headers.put("address", getServerUrl() + "/soapservice/PayLoadConvert/RouterPort");
+                    reqMessage = String.format(REQUEST_GET_PERSON, exchange.getIn().getBody(String.class));
                     elements.add(new DOMSource(StaxUtils
                             .read(new StringReader(reqMessage))
                             .getDocumentElement()));
@@ -97,46 +86,38 @@ public class CxfSoapConverterRoutes extends RouteBuilder {
                             new ArrayList<SoapHeader>(), elements, null);
                     exchange.getIn().setBody(payload);
                 })
-                .choice().when(simple("${header.operation} == 'pojoConverter'"))
-                .toD("cxf:bean:soapConverterEndpoint?address=${header.address}&dataFormat=PAYLOAD")
-                .otherwise()
-                .toD("cxf:bean:soapConsumerConverterEndpoint?address=${header.address}&dataFormat=PAYLOAD");
+                .toD("cxf:bean:soapConverterEndpoint?address=${header.address}&dataFormat=PAYLOAD");
 
         from("cxf:bean:soapConverterEndpoint?dataFormat=PAYLOAD")
                 .process(exchange -> {
-                    // just try to turn the payload to the parameter we want
-                    // to use
-                    GetPerson request = exchange.getIn().getBody(GetPerson.class);
+                    String operation = exchange.getIn().getHeader("operation", String.class);
+                    if ("pojoConverter".equals(operation)) {
+                        // just try to turn the payload to the parameter we want
+                        // to use
+                        GetPerson request = exchange.getIn().getBody(GetPerson.class);
 
-                    exchange.getMessage().setBody(String.format(RESPONSE_GET_PERSON, request.getPersonId() + "2"));
+                        exchange.getMessage().setBody(String.format(RESPONSE_GET_PERSON, request.getPersonId() + "2"));
+                    } else {
+                        CxfPayload<SoapHeader> requestPayload = exchange.getIn().getBody(CxfPayload.class);
+                        List<Source> inElements = requestPayload.getBodySources();
+                        Element in = new XmlConverter().toDOMElement(inElements.get(0));
+                        // Just check the element namespace
+                        if (!in.getNamespaceURI().equals(ELEMENT_NAMESPACE)) {
+                            throw new IllegalArgumentException("Wrong element namespace");
+                        }
+                        // You can use a customer toStringConverter to turn a CxfPayLoad message into String as you want
+                        String request = exchange.getIn().getBody(String.class);
+                        //get value from request and therefore check the request
+                        Pattern r = Pattern.compile(PATTERN_GET_PERSON);
+                        Matcher m = r.matcher(request);
+
+                        if (m.find()) {
+                            exchange.getMessage().setBody(String.format(RESPONSE_GET_PERSON, m.group(1) + "3"));
+                        } else {
+                            throw new IllegalArgumentException("Unexpected content");
+                        }
+                    }
                 });
-
-        from("cxf:bean:soapConsumerConverterEndpoint?dataFormat=PAYLOAD").process(new Processor() {
-            @SuppressWarnings("unchecked")
-            public void process(final Exchange exchange) throws Exception {
-                CxfPayload<SoapHeader> requestPayload = exchange.getIn().getBody(CxfPayload.class);
-                List<Source> inElements = requestPayload.getBodySources();
-                // You can use a customer toStringConverter to turn a CxfPayLoad message into String as you want
-                String request = exchange.getIn().getBody(String.class);
-                String documentString = ECHO_RESPONSE;
-
-                Element in = new XmlConverter().toDOMElement(inElements.get(0));
-                // Just check the element namespace
-                if (!in.getNamespaceURI().equals(ELEMENT_NAMESPACE)) {
-                    throw new IllegalArgumentException("Wrong element namespace");
-                }
-                if (in.getLocalName().equals("echoBoolean")) {
-//                    documentString = ECHO_BOOLEAN_RESPONSE;
-//                    checkRequest("ECHO_BOOLEAN_REQUEST", request);
-                } else {
-//                    documentString = ECHO_RESPONSE;
-//                    checkRequest("ECHO_REQUEST", request);
-                }
-                // just set the documentString into to the message body
-                exchange.getMessage().setBody("documentString");
-            }
-        });
-
     }
 
     @Produces
@@ -146,19 +127,7 @@ public class CxfSoapConverterRoutes extends RouteBuilder {
         final CxfEndpoint result = new CxfEndpoint();
         result.getFeatures().add(loggingFeature);
         result.setServiceClass(org.apache.camel.wsdl_first.Person.class);
-        //        result.setWsdlURL("wsdl/person.wsdl");
         result.setAddress("/PayLoadConvert/RouterPort");
-        return result;
-    }
-
-    @Produces
-    @ApplicationScoped
-    @Named
-    CxfEndpoint soapConsumerConverterEndpoint() {
-        final CxfEndpoint result = new CxfEndpoint();
-        result.setServiceClass(EchoServiceImpl.class);
-        result.setAddress("/PayLoadConvert/RouterPort2");
-        result.getFeatures().add(loggingFeature);
         return result;
     }
 

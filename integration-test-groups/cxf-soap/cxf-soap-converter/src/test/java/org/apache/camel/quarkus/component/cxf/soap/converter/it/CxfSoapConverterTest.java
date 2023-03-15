@@ -16,10 +16,8 @@
  */
 package org.apache.camel.quarkus.component.cxf.soap.converter.it;
 
-import io.quarkiverse.cxf.test.QuarkusCxfClientTestUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -38,11 +36,14 @@ class CxfSoapConverterTest {
                 .body(equalTo("abc2"));
     }
 
-    //test is ported frim CxfConsumerPayLoadConverterTest in Camel-spring-boot/components-starter/camel-cxf-soap-starter
+    //test is ported from CxfConsumerPayLoadConverterTest in Camel-spring-boot/components-starter/camel-cxf-soap-starter
     @Test
     public void consumerConvertTest() throws Exception {
-        final EchoService echo = QuarkusCxfClientTestUtil.getClient(EchoService.class,
-                "/soapservice/PayLoadConvert/RouterPort2");
-        Assertions.assertEquals("Hello there! from Camel route", echo.echo("aaa"));
+        RestAssured.given()
+                .body("abc")
+                .post("/cxf-soap/converter/consumer/")
+                .then()
+                .statusCode(201)
+                .body(equalTo("abc3"));
     }
 }
