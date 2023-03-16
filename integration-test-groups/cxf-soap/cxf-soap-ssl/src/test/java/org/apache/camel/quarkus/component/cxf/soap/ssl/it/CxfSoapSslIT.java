@@ -14,18 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.cxf.soap.mtom.it;
+package org.apache.camel.quarkus.component.cxf.soap.ssl.it;
 
-import jakarta.jws.WebMethod;
-import jakarta.jws.WebService;
+import io.quarkus.test.junit.QuarkusIntegrationTest;
 
-@WebService
-public interface IImageService {
-
-    @WebMethod
-    ImageFile z(String name);
-
-    @WebMethod
-    String uploadImage(ImageFile image, String name);
-
+@QuarkusIntegrationTest
+class CxfSoapSslIT extends CxfSoapSslTest {
 }

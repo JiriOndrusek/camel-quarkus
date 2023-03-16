@@ -14,18 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.cxf.soap.mtom.it;
+package org.apache.camel.quarkus.component.cxf.soap.ssl.it;
 
-import jakarta.jws.WebMethod;
-import jakarta.jws.WebService;
+import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.RestAssured;
+import org.junit.jupiter.api.Test;
 
-@WebService
-public interface IImageService {
+import static org.hamcrest.Matchers.equalTo;
 
-    @WebMethod
-    ImageFile z(String name);
+@QuarkusTest
+class CxfSoapSslTest {
 
-    @WebMethod
-    String uploadImage(ImageFile image, String name);
-
+    // Test is ported from SslTest in Camel-spring-boot/components-starter/camel-cxf-soap-starter
+    @Test
+    public void testInvokingTrustRoute() throws Exception {
+        RestAssured.given()
+                .body("ssl")
+                .post("/cxf-soap/ssl/trust/")
+                .then()
+                .statusCode(201)
+                .body(equalTo("Hello ssl!"));
+    }
 }
