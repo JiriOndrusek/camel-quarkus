@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.component.cxf.soap.ssl.it;
 
 import java.net.URI;
+import java.util.Map;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -36,16 +37,31 @@ public class CxfSoapSslResource {
     @Inject
     ProducerTemplate producerTemplate;
 
-    @Path("/trusting/{trust}")
+    @Path("/trusted/{global}")
     @POST
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response trust(@PathParam("trust") boolean trust, String msg) throws Exception {
+    public Response trusted(@PathParam("global") boolean global, String msg) throws Exception {
+        return invoke(true, global, msg);
+    }
+
+    @Path("/untrusted/{global}")
+    @POST
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response trust(@PathParam("global") boolean global, String msg) throws Exception {
+        return invoke(false, global, msg);
+    }
+
+    private Response invoke(boolean trust, boolean global, String msg) throws Exception {
         String response;
         try {
-            response = producerTemplate.requestBodyAndHeader("direct:sslInvoker", msg, "trust", trust ? "Right" : "Wrong",
+            response = producerTemplate.requestBodyAndHeaders("direct:sslInvoker", msg,
+                    Map.of("global", global, "trust", trust),
                     String.class);
         } catch (Exception e) {
+            System.out.println(trust + ", g: " + global + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+            System.out.println(e.getCause().getCause().getMessage());
             return Response
                     .created(new URI("https://camel.apache.org/"))
                     .entity(e.getCause().getCause().getMessage())

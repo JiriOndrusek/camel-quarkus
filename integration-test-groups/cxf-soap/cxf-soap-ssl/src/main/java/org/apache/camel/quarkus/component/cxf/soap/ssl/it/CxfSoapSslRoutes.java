@@ -24,7 +24,9 @@ import jakarta.enterprise.context.SessionScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import org.apache.camel.CamelContext;
 import org.apache.camel.Processor;
+import org.apache.camel.SSLContextParametersAware;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.cxf.jaxws.CxfEndpoint;
 import org.apache.camel.support.jsse.KeyStoreParameters;
@@ -42,6 +44,17 @@ public class CxfSoapSslRoutes extends RouteBuilder {
     @Named("loggingFeatureConverter")
     LoggingFeature loggingFeature;
 
+    @Inject
+    CamelContext camelContext;
+
+    @Inject
+    @Named("rightSslContext")
+    SSLContextParameters correctSslContext;
+
+    @Inject
+    @Named("wrongSslContext")
+    SSLContextParameters wrongSslContext;
+
     @Override
     public void configure() {
 
@@ -49,33 +62,44 @@ public class CxfSoapSslRoutes extends RouteBuilder {
                 .process(exchange -> {
                     Map<String, Object> headers = exchange.getIn().getHeaders();
                     headers.put("address", getServerUrl() + "/soapservice/Ssl/RouterPort");
-                })
-                .toD("cxf:bean:soapConverter${header.trust}Endpoint?address=${header.address}");
 
-        from("cxf:bean:soapConverterRouterEndpoint")
+                    boolean global = exchange.getIn().getHeader("global", Boolean.class);
+                    boolean trust = exchange.getIn().getHeader("trust", Boolean.class);
+
+                    if (global) {
+                        camelContext.setSSLContextParameters(trust ? correctSslContext : wrongSslContext);
+                        headers.put("endpoint", "soapConverterSslGlobal");
+                    } else {
+                        camelContext.setSSLContextParameters(null);
+                        headers.put("endpoint", "soapConverterSslLocal" + (trust ? "Correct" : "Wrong"));
+                    }
+                    ((SSLContextParametersAware) camelContext.getComponent("cxf"))
+                            .setUseGlobalSslContextParameters(global);
+                })
+                .toD("cxf:bean:${header.endpoint}?address=${header.address}");
+
+        from("cxf:bean:soapConverterSslRouter")
                 .process("responseProcessor");
 
     }
 
     @Produces
     @SessionScoped
-    @Named
-    CxfEndpoint soapConverterRightEndpoint(@Named("rightSslContext") SSLContextParameters rightSslContext,
-            DefaultHostnameVerifier defaultHostnameVerifier) {
+    @Named("soapConverterSslLocalCorrect")
+    CxfEndpoint soapConverterSslLocalCorrect(DefaultHostnameVerifier defaultHostnameVerifier) {
         final CxfEndpoint result = new CxfEndpoint();
         result.getFeatures().add(loggingFeature);
         result.setServiceClass(GreeterService.class);
         result.setAddress("/Ssl/RouterPort");
-        result.setSslContextParameters(rightSslContext);
+        result.setSslContextParameters(correctSslContext);
         result.setHostnameVerifier(defaultHostnameVerifier);
         return result;
     }
 
     @Produces
     @SessionScoped
-    @Named
-    CxfEndpoint soapConverterWrongEndpoint(@Named("wrongSslContext") SSLContextParameters wrongSslContext,
-            DefaultHostnameVerifier defaultHostnameVerifier) {
+    @Named("soapConverterSslLocalWrong")
+    CxfEndpoint soapConverterSslLocalWrong(DefaultHostnameVerifier defaultHostnameVerifier) {
         final CxfEndpoint result = new CxfEndpoint();
         result.getFeatures().add(loggingFeature);
         result.setServiceClass(GreeterService.class);
@@ -87,15 +111,23 @@ public class CxfSoapSslRoutes extends RouteBuilder {
 
     @Produces
     @SessionScoped
-    @Named
-    CxfEndpoint soapConverterRouterEndpoint(@Named("wrongSslContext") SSLContextParameters wrongSslContext,
-            DefaultHostnameVerifier defaultHostnameVerifier) {
+    @Named("soapConverterSslGlobal")
+    CxfEndpoint soapConverterSslGlobal() {
         final CxfEndpoint result = new CxfEndpoint();
         result.getFeatures().add(loggingFeature);
         result.setServiceClass(GreeterService.class);
         result.setAddress("/Ssl/RouterPort");
-        result.setSslContextParameters(wrongSslContext);
-        result.setHostnameVerifier(defaultHostnameVerifier);
+        return result;
+    }
+
+    @Produces
+    @SessionScoped
+    @Named("soapConverterSslRouter")
+    CxfEndpoint soapConverterSslRouter() {
+        final CxfEndpoint result = new CxfEndpoint();
+        result.getFeatures().add(loggingFeature);
+        result.setServiceClass(GreeterService.class);
+        result.setAddress("/Ssl/RouterPort");
         return result;
     }
 
@@ -123,7 +155,6 @@ public class CxfSoapSslRoutes extends RouteBuilder {
             String resp = greeterService().greetMe(exchange.getIn().getBody(String.class));
             exchange.getIn().setBody(resp);
         };
-
     }
 
     private static String getServerUrl() {
@@ -143,7 +174,7 @@ public class CxfSoapSslRoutes extends RouteBuilder {
         KeyStoreParameters keyStore = new KeyStoreParameters();
         keyStore.setType("PKCS12");
         keyStore.setPassword("changeit");
-        keyStore.setResource("alice.jks");
+        keyStore.setResource("truststore-client.jks");
         trustManager.setKeyStore(keyStore);
         sslContext.setTrustManagers(trustManager);
         return sslContext;
@@ -158,7 +189,7 @@ public class CxfSoapSslRoutes extends RouteBuilder {
         KeyStoreParameters keyStore = new KeyStoreParameters();
         keyStore.setType("PKCS12");
         keyStore.setPassword("changeit");
-        keyStore.setResource("alice2.jks");
+        keyStore.setResource("truststore-wrong.jks");
         trustManager.setKeyStore(keyStore);
         sslContext.setTrustManagers(trustManager);
         return sslContext;
