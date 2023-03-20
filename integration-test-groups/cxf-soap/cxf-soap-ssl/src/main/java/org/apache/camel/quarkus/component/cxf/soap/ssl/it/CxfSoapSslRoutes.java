@@ -24,7 +24,6 @@ import jakarta.enterprise.context.SessionScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.cxf.jaxws.CxfEndpoint;
@@ -61,7 +60,8 @@ public class CxfSoapSslRoutes extends RouteBuilder {
     @Produces
     @SessionScoped
     @Named
-    CxfEndpoint soapConverterRightEndpoint(@Named("rightSslContext") SSLContextParameters rightSslContext, DefaultHostnameVerifier defaultHostnameVerifier) {
+    CxfEndpoint soapConverterRightEndpoint(@Named("rightSslContext") SSLContextParameters rightSslContext,
+            DefaultHostnameVerifier defaultHostnameVerifier) {
         final CxfEndpoint result = new CxfEndpoint();
         result.getFeatures().add(loggingFeature);
         result.setServiceClass(GreeterService.class);
@@ -69,12 +69,13 @@ public class CxfSoapSslRoutes extends RouteBuilder {
         result.setSslContextParameters(rightSslContext);
         result.setHostnameVerifier(defaultHostnameVerifier);
         return result;
-    } 
-    
+    }
+
     @Produces
     @SessionScoped
     @Named
-    CxfEndpoint soapConverterWrongEndpoint(@Named("wrongSslContext") SSLContextParameters wrongSslContext, DefaultHostnameVerifier defaultHostnameVerifier) {
+    CxfEndpoint soapConverterWrongEndpoint(@Named("wrongSslContext") SSLContextParameters wrongSslContext,
+            DefaultHostnameVerifier defaultHostnameVerifier) {
         final CxfEndpoint result = new CxfEndpoint();
         result.getFeatures().add(loggingFeature);
         result.setServiceClass(GreeterService.class);
@@ -87,7 +88,8 @@ public class CxfSoapSslRoutes extends RouteBuilder {
     @Produces
     @SessionScoped
     @Named
-    CxfEndpoint soapConverterRouterEndpoint(@Named("wrongSslContext") SSLContextParameters wrongSslContext, DefaultHostnameVerifier defaultHostnameVerifier) {
+    CxfEndpoint soapConverterRouterEndpoint(@Named("wrongSslContext") SSLContextParameters wrongSslContext,
+            DefaultHostnameVerifier defaultHostnameVerifier) {
         final CxfEndpoint result = new CxfEndpoint();
         result.getFeatures().add(loggingFeature);
         result.setServiceClass(GreeterService.class);
@@ -139,14 +141,14 @@ public class CxfSoapSslRoutes extends RouteBuilder {
         SSLContextParameters sslContext = new SSLContextParameters();
         TrustManagersParameters trustManager = new TrustManagersParameters();
         KeyStoreParameters keyStore = new KeyStoreParameters();
-        keyStore.setType("JKS");
+        keyStore.setType("PKCS12");
         keyStore.setPassword("changeit");
-        keyStore.setResource("/ssl/truststore-client.jks");
+        keyStore.setResource("alice.jks");
         trustManager.setKeyStore(keyStore);
         sslContext.setTrustManagers(trustManager);
         return sslContext;
     }
-    
+
     @Produces
     @ApplicationScoped
     @Named("wrongSslContext")
@@ -154,9 +156,9 @@ public class CxfSoapSslRoutes extends RouteBuilder {
         SSLContextParameters sslContext = new SSLContextParameters();
         TrustManagersParameters trustManager = new TrustManagersParameters();
         KeyStoreParameters keyStore = new KeyStoreParameters();
-        keyStore.setType("JKS");
+        keyStore.setType("PKCS12");
         keyStore.setPassword("changeit");
-        keyStore.setResource("/ssl/truststore-wrong.jks");
+        keyStore.setResource("alice2.jks");
         trustManager.setKeyStore(keyStore);
         sslContext.setTrustManagers(trustManager);
         return sslContext;

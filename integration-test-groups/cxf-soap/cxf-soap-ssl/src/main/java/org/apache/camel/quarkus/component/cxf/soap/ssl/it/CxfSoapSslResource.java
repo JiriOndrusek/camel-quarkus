@@ -28,7 +28,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.camel.ProducerTemplate;
-import org.apache.cxf.interceptor.Fault;
 
 @Path("/cxf-soap/ssl")
 @ApplicationScoped
@@ -44,8 +43,9 @@ public class CxfSoapSslResource {
     public Response trust(@PathParam("trust") boolean trust, String msg) throws Exception {
         String response;
         try {
-            response = producerTemplate.requestBodyAndHeader("direct:sslInvoker", msg, "trust", trust ? "Right" : "Wrong", String.class);
-        } catch(Exception e) {
+            response = producerTemplate.requestBodyAndHeader("direct:sslInvoker", msg, "trust", trust ? "Right" : "Wrong",
+                    String.class);
+        } catch (Exception e) {
             return Response
                     .created(new URI("https://camel.apache.org/"))
                     .entity(e.getCause().getCause().getMessage())

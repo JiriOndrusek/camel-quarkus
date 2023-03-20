@@ -16,11 +16,11 @@
  */
 package org.apache.camel.quarkus.component.cxf.soap.ssl.it;
 
+import javax.net.ssl.SSLHandshakeException;
+
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.Test;
-
-import javax.net.ssl.SSLHandshakeException;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.startsWith;
