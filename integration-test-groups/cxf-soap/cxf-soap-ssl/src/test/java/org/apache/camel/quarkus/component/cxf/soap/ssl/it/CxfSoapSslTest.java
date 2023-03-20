@@ -20,7 +20,10 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.Test;
 
+import javax.net.ssl.SSLHandshakeException;
+
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.startsWith;
 
 @QuarkusTest
 class CxfSoapSslTest {
@@ -30,20 +33,20 @@ class CxfSoapSslTest {
     public void testInvokingTrustRoute() throws Exception {
         RestAssured.given()
                 .body("ssl")
-                .post("/cxf-soap/ssl/trust/")
+                .post("/cxf-soap/ssl/trusting/true")
                 .then()
                 .statusCode(201)
                 .body(equalTo("Hello ssl!"));
     }
 
     // Test is ported from SslTest in Camel-spring-boot/components-starter/camel-cxf-soap-starter
-    //    @Test
+    @Test
     public void testInvokingWrongTrustRoute() throws Exception {
         RestAssured.given()
                 .body("ssl")
-                .post("/cxf-soap/ssl/notrust/")
+                .post("/cxf-soap/ssl/trusting/false")
                 .then()
-                .statusCode(201)
-                .body(equalTo("Hello ssl!"));
+                .statusCode(500)
+                .body(startsWith(SSLHandshakeException.class.getSimpleName()));
     }
 }

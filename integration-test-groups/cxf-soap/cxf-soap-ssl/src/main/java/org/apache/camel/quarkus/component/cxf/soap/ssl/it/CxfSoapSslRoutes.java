@@ -51,7 +51,7 @@ public class CxfSoapSslRoutes extends RouteBuilder {
                     Map<String, Object> headers = exchange.getIn().getHeaders();
                     headers.put("address", getServerUrl() + "/soapservice/Ssl/RouterPort");
                 })
-                .toD("cxf:bean:soapConverterEndpoint?address=${header.address}");
+                .toD("cxf:bean:soapConverter${header.trust}Endpoint?address=${header.address}");
 
         from("cxf:bean:soapConverterRouterEndpoint")
                 .process("responseProcessor");
@@ -61,12 +61,25 @@ public class CxfSoapSslRoutes extends RouteBuilder {
     @Produces
     @SessionScoped
     @Named
-    CxfEndpoint soapConverterEndpoint(SSLContextParameters mySslContext, DefaultHostnameVerifier defaultHostnameVerifier) {
+    CxfEndpoint soapConverterRightEndpoint(@Named("rightSslContext") SSLContextParameters rightSslContext, DefaultHostnameVerifier defaultHostnameVerifier) {
         final CxfEndpoint result = new CxfEndpoint();
         result.getFeatures().add(loggingFeature);
         result.setServiceClass(GreeterService.class);
         result.setAddress("/Ssl/RouterPort");
-        result.setSslContextParameters(mySslContext());
+        result.setSslContextParameters(rightSslContext);
+        result.setHostnameVerifier(defaultHostnameVerifier);
+        return result;
+    } 
+    
+    @Produces
+    @SessionScoped
+    @Named
+    CxfEndpoint soapConverterWrongEndpoint(@Named("wrongSslContext") SSLContextParameters wrongSslContext, DefaultHostnameVerifier defaultHostnameVerifier) {
+        final CxfEndpoint result = new CxfEndpoint();
+        result.getFeatures().add(loggingFeature);
+        result.setServiceClass(GreeterService.class);
+        result.setAddress("/Ssl/RouterPort");
+        result.setSslContextParameters(wrongSslContext);
         result.setHostnameVerifier(defaultHostnameVerifier);
         return result;
     }
@@ -74,12 +87,21 @@ public class CxfSoapSslRoutes extends RouteBuilder {
     @Produces
     @SessionScoped
     @Named
-    CxfEndpoint soapConverterRouterEndpoint() {
+    CxfEndpoint soapConverterRouterEndpoint(@Named("wrongSslContext") SSLContextParameters wrongSslContext, DefaultHostnameVerifier defaultHostnameVerifier) {
         final CxfEndpoint result = new CxfEndpoint();
         result.getFeatures().add(loggingFeature);
         result.setServiceClass(GreeterService.class);
         result.setAddress("/Ssl/RouterPort");
+        result.setSslContextParameters(wrongSslContext);
+        result.setHostnameVerifier(defaultHostnameVerifier);
         return result;
+    }
+
+    @Produces
+    @SessionScoped
+    @Named
+    GreeterService greeterService() {
+        return new GreeterImpl();
     }
 
     @Produces
@@ -93,12 +115,12 @@ public class CxfSoapSslRoutes extends RouteBuilder {
 
     @ApplicationScoped
     @Named("responseProcessor")
-    static class PojoModeProcessor implements Processor {
-        @Override
-        public void process(Exchange exchange) throws Exception {
-            String resp = new GreeterImpl().greetMe(exchange.getIn().getBody(String.class));
+    Processor responseProcessor(GreeterService greeterService) {
+
+        return exchange -> {
+            String resp = greeterService().greetMe(exchange.getIn().getBody(String.class));
             exchange.getIn().setBody(resp);
-        }
+        };
 
     }
 
@@ -112,14 +134,29 @@ public class CxfSoapSslRoutes extends RouteBuilder {
 
     @Produces
     @ApplicationScoped
-    @Named("mySslContext")
-    SSLContextParameters mySslContext() {
+    @Named("rightSslContext")
+    SSLContextParameters rightSslContext() {
         SSLContextParameters sslContext = new SSLContextParameters();
         TrustManagersParameters trustManager = new TrustManagersParameters();
         KeyStoreParameters keyStore = new KeyStoreParameters();
         keyStore.setType("JKS");
         keyStore.setPassword("changeit");
         keyStore.setResource("/ssl/truststore-client.jks");
+        trustManager.setKeyStore(keyStore);
+        sslContext.setTrustManagers(trustManager);
+        return sslContext;
+    }
+    
+    @Produces
+    @ApplicationScoped
+    @Named("wrongSslContext")
+    SSLContextParameters wrongSslContext() {
+        SSLContextParameters sslContext = new SSLContextParameters();
+        TrustManagersParameters trustManager = new TrustManagersParameters();
+        KeyStoreParameters keyStore = new KeyStoreParameters();
+        keyStore.setType("JKS");
+        keyStore.setPassword("changeit");
+        keyStore.setResource("/ssl/truststore-wrong.jks");
         trustManager.setKeyStore(keyStore);
         sslContext.setTrustManagers(trustManager);
         return sslContext;

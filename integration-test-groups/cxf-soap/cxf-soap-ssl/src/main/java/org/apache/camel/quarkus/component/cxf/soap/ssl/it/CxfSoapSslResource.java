@@ -23,10 +23,12 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.camel.ProducerTemplate;
+import org.apache.cxf.interceptor.Fault;
 
 @Path("/cxf-soap/ssl")
 @ApplicationScoped
@@ -35,12 +37,21 @@ public class CxfSoapSslResource {
     @Inject
     ProducerTemplate producerTemplate;
 
-    @Path("/trust")
+    @Path("/trusting/{trust}")
     @POST
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response trust(String msg) throws Exception {
-        final String response = producerTemplate.requestBody("direct:sslInvoker", msg, String.class);
+    public Response trust(@PathParam("trust") boolean trust, String msg) throws Exception {
+        String response;
+        try {
+            response = producerTemplate.requestBodyAndHeader("direct:sslInvoker", msg, "trust", trust ? "Right" : "Wrong", String.class);
+        } catch(Exception e) {
+            return Response
+                    .created(new URI("https://camel.apache.org/"))
+                    .entity(e.getCause().getCause().getMessage())
+                    .status(500)
+                    .build();
+        }
 
         return Response
                 .created(new URI("https://camel.apache.org/"))
