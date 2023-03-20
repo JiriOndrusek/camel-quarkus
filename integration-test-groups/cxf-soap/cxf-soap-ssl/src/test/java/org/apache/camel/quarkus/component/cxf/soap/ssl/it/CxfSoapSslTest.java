@@ -35,4 +35,15 @@ class CxfSoapSslTest {
                 .statusCode(201)
                 .body(equalTo("Hello ssl!"));
     }
+
+    // Test is ported from SslTest in Camel-spring-boot/components-starter/camel-cxf-soap-starter
+    //    @Test
+    public void testInvokingWrongTrustRoute() throws Exception {
+        RestAssured.given()
+                .body("ssl")
+                .post("/cxf-soap/ssl/notrust/")
+                .then()
+                .statusCode(201)
+                .body(equalTo("Hello ssl!"));
+    }
 }

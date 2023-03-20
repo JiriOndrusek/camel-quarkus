@@ -28,7 +28,11 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.cxf.jaxws.CxfEndpoint;
+import org.apache.camel.support.jsse.KeyStoreParameters;
+import org.apache.camel.support.jsse.SSLContextParameters;
+import org.apache.camel.support.jsse.TrustManagersParameters;
 import org.apache.cxf.ext.logging.LoggingFeature;
+import org.apache.cxf.transport.https.httpclient.DefaultHostnameVerifier;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 
@@ -49,7 +53,7 @@ public class CxfSoapSslRoutes extends RouteBuilder {
                 })
                 .toD("cxf:bean:soapConverterEndpoint?address=${header.address}");
 
-        from("cxf:bean:soapConverterEndpoint")
+        from("cxf:bean:soapConverterRouterEndpoint")
                 .process("responseProcessor");
 
     }
@@ -57,7 +61,20 @@ public class CxfSoapSslRoutes extends RouteBuilder {
     @Produces
     @SessionScoped
     @Named
-    CxfEndpoint soapConverterEndpoint(/*SSLContextParameters mySslContext, DefaultHostnameVerifier defaultHostnameVerifier*/) {
+    CxfEndpoint soapConverterEndpoint(SSLContextParameters mySslContext, DefaultHostnameVerifier defaultHostnameVerifier) {
+        final CxfEndpoint result = new CxfEndpoint();
+        result.getFeatures().add(loggingFeature);
+        result.setServiceClass(GreeterService.class);
+        result.setAddress("/Ssl/RouterPort");
+        result.setSslContextParameters(mySslContext());
+        result.setHostnameVerifier(defaultHostnameVerifier);
+        return result;
+    }
+
+    @Produces
+    @SessionScoped
+    @Named
+    CxfEndpoint soapConverterRouterEndpoint() {
         final CxfEndpoint result = new CxfEndpoint();
         result.getFeatures().add(loggingFeature);
         result.setServiceClass(GreeterService.class);
@@ -87,9 +104,32 @@ public class CxfSoapSslRoutes extends RouteBuilder {
 
     private static String getServerUrl() {
         Config config = ConfigProvider.getConfig();
-        final int port = LaunchMode.current().equals(LaunchMode.TEST) ? config.getValue("quarkus.http.test-port", Integer.class)
-                : config.getValue("quarkus.http.port", Integer.class);
-        return String.format("http://localhost:%d", port);
+        final int port = LaunchMode.current().equals(LaunchMode.TEST)
+                ? config.getValue("quarkus.http.test-ssl-port", Integer.class)
+                : config.getValue("quarkus.http.ssl-port", Integer.class);
+        return String.format("https://localhost:%d", port);
+    }
+
+    @Produces
+    @ApplicationScoped
+    @Named("mySslContext")
+    SSLContextParameters mySslContext() {
+        SSLContextParameters sslContext = new SSLContextParameters();
+        TrustManagersParameters trustManager = new TrustManagersParameters();
+        KeyStoreParameters keyStore = new KeyStoreParameters();
+        keyStore.setType("JKS");
+        keyStore.setPassword("changeit");
+        keyStore.setResource("/ssl/truststore-client.jks");
+        trustManager.setKeyStore(keyStore);
+        sslContext.setTrustManagers(trustManager);
+        return sslContext;
+    }
+
+    @Produces
+    @ApplicationScoped
+    @Named("defaultHostnameVerifier")
+    DefaultHostnameVerifier defaultHostnameVerifier() {
+        return new DefaultHostnameVerifier();
     }
 
 }
