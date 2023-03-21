@@ -16,24 +16,8 @@
  */
 package org.apache.camel.quarkus.component.cxf.soap.ssl.it;
 
-import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
-import org.junit.jupiter.api.Test;
+import io.quarkus.test.junit.QuarkusIntegrationTest;
 
-// Tests require restart of Quarkus to avoid persisting of global ssl context.
-@QuarkusTest
-@TestProfile(CxfSoapSslTest.class)
-public class CxfSoapSslTest extends AbstractSslTest {
-
-    // Test is ported from SslTest in Camel-spring-boot/components-starter/camel-cxf-soap-starter
-    @Test
-    public void testInvokingTrustedRoute() throws Exception {
-        testInvoke(false, true);
-    }
-
-    // Test is ported from SslTest in Camel-spring-boot/components-starter/camel-cxf-soap-starter
-    @Test
-    public void testInvokingUntrustedRoute() throws Exception {
-        testInvoke(false, false);
-    }
+@QuarkusIntegrationTest
+class CxfSoapGlobalUntrustedSslIT extends CxfSoapGlobalUntrustedSslTest {
 }

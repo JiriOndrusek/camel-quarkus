@@ -16,40 +16,19 @@
  */
 package org.apache.camel.quarkus.component.cxf.soap.ssl.it;
 
-import javax.net.ssl.SSLHandshakeException;
-
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import io.restassured.RestAssured;
 import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.startsWith;
-
 @QuarkusTest
-@TestProfile(SslTestProfile.class)
-class CxfSoapGlobalSslTest {
+@TestProfile(CxfSoapGlobalTrustedSslTest.class)
+public class CxfSoapGlobalTrustedSslTest extends AbstractSslTest {
 
     // Test is ported from SslTest in Camel-spring-boot/components-starter/camel-cxf-soap-starter
+    // Test requires restart of Quarkus to avoid persisting of globalssl context.
     @Test
     public void testInvokingTrustedRoute() throws Exception {
-
-        RestAssured.given()
-                .body("ssl")
-                .post("/cxf-soap/ssl/trusted/true")
-                .then()
-                .statusCode(201)
-                .body(equalTo("Hello ssl!"));
+        testInvoke(true, true);
     }
 
-    // Test is ported from SslTest in Camel-spring-boot/components-starter/camel-cxf-soap-starter
-    @Test
-    public void testInvokingUntrustedRoute() throws Exception {
-        RestAssured.given()
-                .body("ssl")
-                .post("/cxf-soap/ssl/untrusted/true")
-                .then()
-                .statusCode(500)
-                .body(startsWith(SSLHandshakeException.class.getSimpleName()));
-    }
 }

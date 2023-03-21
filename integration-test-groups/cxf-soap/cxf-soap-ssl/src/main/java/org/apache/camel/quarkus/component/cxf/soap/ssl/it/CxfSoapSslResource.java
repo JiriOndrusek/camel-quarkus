@@ -49,7 +49,7 @@ public class CxfSoapSslResource {
     @POST
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response trust(@PathParam("global") boolean global, String msg) throws Exception {
+    public Response untrusted(@PathParam("global") boolean global, String msg) throws Exception {
         return invoke(false, global, msg);
     }
 
@@ -60,8 +60,6 @@ public class CxfSoapSslResource {
                     Map.of("global", global, "trust", trust),
                     String.class);
         } catch (Exception e) {
-            System.out.println(trust + ", g: " + global + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-            System.out.println(e.getCause().getCause().getMessage());
             return Response
                     .created(new URI("https://camel.apache.org/"))
                     .entity(e.getCause().getCause().getMessage())
