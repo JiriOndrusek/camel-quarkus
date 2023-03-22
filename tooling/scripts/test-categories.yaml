@@ -145,6 +145,7 @@ group-10:
   - consul
   - digitalocean
   - fop
+  - groovy
   - joor
   - kotlin
   - mail
