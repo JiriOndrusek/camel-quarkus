@@ -28,6 +28,7 @@ import io.quarkus.deployment.builditem.RemovedResourceBuildItem;
 import io.quarkus.deployment.builditem.SystemPropertyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveMethodBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import io.quarkus.maven.dependency.ArtifactKey;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
@@ -64,6 +65,8 @@ class CxfSoapProcessor {
 
         reflectiveMethods.produce(new ReflectiveMethodBuildItem("org.apache.cxf.frontend.AbstractWSDLBasedEndpointFactory",
                 "getServiceFactory", new String[0]));
+        reflectiveClass
+                .produce(ReflectiveClassBuildItem.builder("org.opensaml.core.xml.config.XMLObjectProviderRegistry").build());
 
     }
 
@@ -71,9 +74,26 @@ class CxfSoapProcessor {
     CxfRouteRegistrationRequestorBuildItem requestCxfRouteRegistration() {
         return new CxfRouteRegistrationRequestorBuildItem(FEATURE);
     }
-//
-//    @BuildStep
-//    RemovedResourceBuildItem removeEhcacheTokenStore() {
-//        return new RemovedResourceBuildItem(ArtifactKey.ga("org.apache.cxf", "cxf-rt-ws-rm", Collections.singleton()EHCacheTokenStoreFactory))
-//    }
+
+    @BuildStep
+    RemovedResourceBuildItem removeEhcacheTokenStore() {
+        return new RemovedResourceBuildItem(ArtifactKey.ga("org.ehcache", "ehcache"),
+                Collections.singleton("org.ehcache.core.osgi.OsgiServiceLoader"));
+    }
+
+    @BuildStep
+    RemovedResourceBuildItem removewssec() {
+        return new RemovedResourceBuildItem(ArtifactKey.ga("org.apache.wss4j", "wss4j-ws-security-stax"),
+                Collections.singleton("org.apache.wss4j.stax.setup.WSSec"));
+    }
+
+    @BuildStep
+    void removeEhcacheTokenStore(BuildProducer<RuntimeInitializedClassBuildItem> runtimeInitialized) {
+        //        runtimeInitialized
+        //                .produce(new RuntimeInitializedClassBuildItem("org.apache.wss4j.common.saml.builder.SAML1ComponentBuilder"));
+        //        runtimeInitialized.produce(new RuntimeInitializedClassBuildItem(
+        //                "org.apache.wss4j.common.saml.builder.SAML2ComponentBuilder "));
+        //            runtimeInitialized.produce(new RuntimeInitializedClassBuildItem(
+        //                    "org.apache.cxf.ws.security.policy.interceptors.SpnegoContextTokenInInterceptor"));
+    }
 }

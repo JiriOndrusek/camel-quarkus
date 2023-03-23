@@ -51,6 +51,11 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <groupId>org.apache.santuario</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <artifactId>xmlsec</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>3.0.2</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+      </dependency>
+      <dependency>
         <groupId>org.apache.camel</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>camel-amqp</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <version>4.0.0-M2</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
@@ -6761,11 +6766,6 @@
       <dependency>
         <groupId>jakarta.xml.ws</groupId><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha4 -->
         <artifactId>jakarta.xml.ws-api</artifactId><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha4 -->
-        <version>3.0.1</version><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha4 -->
-      </dependency>
-      <dependency>
-        <groupId>org.apache.santuario</groupId><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha4 -->
-        <artifactId>xmlsec</artifactId><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha4 -->
         <version>3.0.1</version><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha4 -->
       </dependency>
       <dependency>

@@ -100,7 +100,11 @@
                 <scope>import</scope>
             </dependency>
             <!-- Dependencies a..z; do not remove this comment, it is important when sorting via  mvn process-resources -Pformat -->
-
+            <dependency>
+                <groupId>org.apache.santuario</groupId>
+                <artifactId>xmlsec</artifactId>
+                <version>3.0.2</version>
+            </dependency>
             <!--$ org.apache.camel $-->
             <dependency>
                 <groupId>org.apache.camel</groupId>
