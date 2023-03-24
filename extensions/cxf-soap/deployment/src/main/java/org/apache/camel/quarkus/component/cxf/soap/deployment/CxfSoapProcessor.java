@@ -16,6 +16,7 @@
  */
 package org.apache.camel.quarkus.component.cxf.soap.deployment;
 
+import java.util.Collections;
 import java.util.stream.Stream;
 
 import io.quarkiverse.cxf.deployment.CxfRouteRegistrationRequestorBuildItem;
@@ -23,9 +24,11 @@ import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.RemovedResourceBuildItem;
 import io.quarkus.deployment.builditem.SystemPropertyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveMethodBuildItem;
+import io.quarkus.maven.dependency.ArtifactKey;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 
@@ -68,4 +71,9 @@ class CxfSoapProcessor {
     CxfRouteRegistrationRequestorBuildItem requestCxfRouteRegistration() {
         return new CxfRouteRegistrationRequestorBuildItem(FEATURE);
     }
+//
+//    @BuildStep
+//    RemovedResourceBuildItem removeEhcacheTokenStore() {
+//        return new RemovedResourceBuildItem(ArtifactKey.ga("org.apache.cxf", "cxf-rt-ws-rm", Collections.singleton()EHCacheTokenStoreFactory))
+//    }
 }

@@ -16,13 +16,18 @@
  */
 package org.apache.camel.quarkus.component.cxf.soap.wsrm.it;
 
+import java.util.concurrent.TimeUnit;
+
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.QuarkusTestProfile;
 import io.quarkus.test.junit.TestProfile;
 import io.restassured.RestAssured;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
 // Tests require restart of Quarkus to avoid persisting of global ssl context.
 @QuarkusTest
@@ -34,7 +39,7 @@ public class CxfSoapWsrmTest implements QuarkusTestProfile {
     public void testWSRM() {
         RestAssured.given()
                 .body("wsrm1")
-                .post("/cxf-soap/ssl/test")
+                .post("/cxf-soap/wsrm")
                 .then()
                 .statusCode(201)
                 .body(equalTo("Hello wsrm1!"));
@@ -42,9 +47,41 @@ public class CxfSoapWsrmTest implements QuarkusTestProfile {
         //second message will be lost (in the first attempt)
         RestAssured.given()
                 .body("wsrm2")
-                .post("/cxf-soap/ssl/test")
+                .post("/cxf-soap/wsrm")
                 .then()
                 .statusCode(201)
                 .body(equalTo("Hello wsrm2!"));
+    }
+
+    @Test
+    public void testNoWSRM() throws InterruptedException {
+        RestAssured.given()
+                .body("noWsrm1")
+                .post("/cxf-soap/noWsrm")
+                .then()
+                .statusCode(204);
+
+        Awaitility.await().pollInterval(50, TimeUnit.MILLISECONDS).atMost(10, TimeUnit.SECONDS).until(() -> {
+            String body = RestAssured.get("/cxf-soap/noWsrm")
+                    .then()
+                    .extract().asString();
+
+            return "Hello noWsrm1!".equals(body);
+        });
+
+        //second message will be lost (in the first attempt)
+        RestAssured.given()
+                .body("noWsrm2")
+                .post("/cxf-soap/noWsrm")
+                .then()
+                .statusCode(204);
+
+        //wait some time to get result (which should not be there)
+        Thread.sleep(10000);
+
+        RestAssured.get("/cxf-soap/noWsrm")
+                .then()
+                .statusCode(200)
+                .body(not(is("Hello noWsrm2!")));
     }
 }

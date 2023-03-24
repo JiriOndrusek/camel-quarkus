@@ -17,10 +17,13 @@
 package org.apache.camel.quarkus.component.cxf.soap.wsrm.it;
 
 import java.net.URI;
+import java.util.LinkedList;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -28,23 +31,42 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.camel.ProducerTemplate;
 
-@Path("/cxf-soap/ssl")
+@Path("/cxf-soap")
 @ApplicationScoped
 public class CxfSoapWsrmResource {
 
     @Inject
     ProducerTemplate producerTemplate;
 
-    @Path("/test/")
+    @Inject
+    @Named("results")
+    LinkedList<String> results;
+
+    @Path("/wsrm")
     @POST
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response trusted(String msg) throws Exception {
-        String response = producerTemplate.requestBody("direct:sslInvoker", msg, String.class);
+    public Response wsrm(String msg) throws Exception {
+        String response = producerTemplate.requestBodyAndHeader("seda:sslInvoker", msg, "enableWsrm", true,
+                String.class);
 
         return Response
                 .created(new URI("https://camel.apache.org/"))
                 .entity(response)
                 .build();
+    }
+
+    @Path("/noWsrm")
+    @POST
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.TEXT_PLAIN)
+    public void noWsrm(String msg) throws Exception {
+        producerTemplate.sendBodyAndHeader("seda:sslInvoker", msg, "enableWsrm", false);
+    }
+
+    @Path("/noWsrm")
+    @GET
+    public String noWsrm() throws Exception {
+        return results.isEmpty() ? null : results.getLast();
     }
 }

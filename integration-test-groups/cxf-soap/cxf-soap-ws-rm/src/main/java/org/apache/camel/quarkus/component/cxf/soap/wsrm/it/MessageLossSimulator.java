@@ -1,5 +1,9 @@
 package org.apache.camel.quarkus.component.cxf.soap.wsrm.it;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ListIterator;
+
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.interceptor.InterceptorChain;
 import org.apache.cxf.interceptor.MessageSenderInterceptor;
@@ -10,10 +14,6 @@ import org.apache.cxf.phase.PhaseInterceptor;
 import org.apache.cxf.ws.rm.RMContextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ListIterator;
 
 public class MessageLossSimulator extends AbstractPhaseInterceptor<Message> {
     private static final Logger LOG = LoggerFactory.getLogger(MessageLossSimulator.class.getName());
@@ -30,7 +30,7 @@ public class MessageLossSimulator extends AbstractPhaseInterceptor<Message> {
         } else {
             try {
                 Object o = map.getClass().getMethod("getAction").invoke(map);
-                return (String)o.getClass().getMethod("getValue").invoke(o);
+                return (String) o.getClass().getMethod("getValue").invoke(o);
             } catch (Throwable var2) {
                 throw new Fault(var2);
             }
@@ -46,8 +46,8 @@ public class MessageLossSimulator extends AbstractPhaseInterceptor<Message> {
                 InterceptorChain chain = message.getInterceptorChain();
                 ListIterator it = chain.getIterator();
 
-                while(it.hasNext()) {
-                    PhaseInterceptor<?> pi = (PhaseInterceptor)it.next();
+                while (it.hasNext()) {
+                    PhaseInterceptor<?> pi = (PhaseInterceptor) it.next();
                     if (MessageSenderInterceptor.class.getName().equals(pi.getId())) {
                         chain.remove(pi);
                         LOG.debug("Removed MessageSenderInterceptor from interceptor chain.");
@@ -59,7 +59,7 @@ public class MessageLossSimulator extends AbstractPhaseInterceptor<Message> {
                 message.getInterceptorChain().add(new AbstractPhaseInterceptor<Message>("prepare-send-ending") {
                     public void handleMessage(Message message) throws Fault {
                         try {
-                            ((OutputStream)message.getContent(OutputStream.class)).close();
+                            ((OutputStream) message.getContent(OutputStream.class)).close();
                         } catch (IOException var3) {
                             throw new Fault(var3);
                         }
