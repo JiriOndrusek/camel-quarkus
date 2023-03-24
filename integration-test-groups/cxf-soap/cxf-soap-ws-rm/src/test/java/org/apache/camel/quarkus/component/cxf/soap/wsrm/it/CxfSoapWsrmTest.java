@@ -31,12 +31,20 @@ public class CxfSoapWsrmTest implements QuarkusTestProfile {
 
     // Test is ported from SslTest in Camel-spring-boot/components-starter/camel-cxf-soap-starter
     @Test
-    public void testInvokingTrustedRoute() {
+    public void testWSRM() {
         RestAssured.given()
-                .body("ssl")
+                .body("wsrm1")
                 .post("/cxf-soap/ssl/test")
                 .then()
                 .statusCode(201)
-                .body(equalTo("Hello ssl!"));
+                .body(equalTo("Hello wsrm1!"));
+
+        //second message will be lost (in the first attempt)
+        RestAssured.given()
+                .body("wsrm2")
+                .post("/cxf-soap/ssl/test")
+                .then()
+                .statusCode(201)
+                .body(equalTo("Hello wsrm2!"));
     }
 }

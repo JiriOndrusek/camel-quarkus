@@ -28,6 +28,9 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.cxf.jaxws.CxfEndpoint;
 import org.apache.cxf.ext.logging.LoggingFeature;
+import org.apache.cxf.ws.rm.manager.AcksPolicyType;
+import org.apache.cxf.ws.rm.manager.DestinationPolicyType;
+import org.apache.cxf.ws.rmp.v200502.RMAssertion;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 
@@ -44,27 +47,93 @@ public class CxfSoapWsrmRoutes extends RouteBuilder {
         from("direct:sslInvoker")
                 .process(exchange -> {
                     Map<String, Object> headers = exchange.getIn().getHeaders();
-                    headers.put("address", getServerUrl() + "/soapservice/Ssl/RouterPort");
+                    headers.put("address", getServerUrl() + "/soapservice/wsrm/RouterPort");
 
                     //router endpoint does not contain ssl configuration, therefore can be used for notrust test case
-                    headers.put("endpoint", "soapSslRouter");
+                    headers.put("endpoint", "wsrmClientEndpoint");
                 })
                 .toD("cxf:bean:${header.endpoint}?address=${header.address}");
 
-        from("cxf:bean:soapSslRouter")
+        from("cxf:bean:wsrmServerEndpoint")
                 .process("responseProcessor");
 
     }
 
     @Produces
     @SessionScoped
-    @Named("soapSslRouter")
-    CxfEndpoint soapSslRouter() {
+    @Named("noWsrmClientEndpoint")
+    CxfEndpoint noWwsrmClientEndpoint() {
         final CxfEndpoint result = new CxfEndpoint();
         result.getFeatures().add(loggingFeature);
         result.setServiceClass(GreeterService.class);
-        result.setAddress("/Ssl/RouterPort");
+        result.setAddress("/wsrm/RouterPort");
+        result.getFeatures().add(new org.apache.cxf.ws.addressing.WSAddressingFeature());
+        //simulate lost messages
+        result.getOutInterceptors().add(new MessageLossSimulator());
         return result;
+    }
+
+    @Produces
+    @SessionScoped
+    @Named("wsrmClientEndpoint")
+    CxfEndpoint wsrmClientEndpoint() {
+        CxfEndpoint result = noWwsrmClientEndpoint();
+
+        org.apache.cxf.ws.rm.feature.RMFeature rmFeature = new org.apache.cxf.ws.rm.feature.RMFeature();
+        RMAssertion.BaseRetransmissionInterval baseRetransmissionInterval = new RMAssertion.BaseRetransmissionInterval();
+        baseRetransmissionInterval.setMilliseconds(Long.valueOf(4000));
+        RMAssertion.AcknowledgementInterval acknowledgementInterval = new RMAssertion.AcknowledgementInterval();
+        acknowledgementInterval.setMilliseconds(Long.valueOf(2000));
+
+        RMAssertion rmAssertion = new RMAssertion();
+        rmAssertion.setAcknowledgementInterval(acknowledgementInterval);
+        rmAssertion.setBaseRetransmissionInterval(baseRetransmissionInterval);
+
+        AcksPolicyType acksPolicy = new AcksPolicyType();
+        acksPolicy.setIntraMessageThreshold(0);
+        DestinationPolicyType destinationPolicy = new DestinationPolicyType();
+        destinationPolicy.setAcksPolicy(acksPolicy);
+
+        rmFeature.setRMAssertion(rmAssertion);
+        rmFeature.setDestinationPolicy(destinationPolicy);
+
+        result.getFeatures().add(rmFeature);
+
+        return result;
+    }
+
+    @Produces
+    @SessionScoped
+    @Named("wsrmServerEndpoint")
+    CxfEndpoint wsrmServerEndpoint() {
+
+        CxfEndpoint cxfEndpoint = new CxfEndpoint();
+        cxfEndpoint.setServiceClass(GreeterService.class);
+        cxfEndpoint.getFeatures().add(loggingFeature);
+        cxfEndpoint.setAddress("/wsrm/RouterPort");
+        cxfEndpoint.getInInterceptors().add(new org.apache.cxf.ext.logging.LoggingInInterceptor());
+        cxfEndpoint.getOutInterceptors().add(new org.apache.cxf.ext.logging.LoggingOutInterceptor());
+        cxfEndpoint.getFeatures().add(new org.apache.cxf.ws.addressing.WSAddressingFeature());
+
+        org.apache.cxf.ws.rm.feature.RMFeature rmFeature = new org.apache.cxf.ws.rm.feature.RMFeature();
+        RMAssertion.BaseRetransmissionInterval baseRetransmissionInterval = new RMAssertion.BaseRetransmissionInterval();
+        baseRetransmissionInterval.setMilliseconds(Long.valueOf(4000));
+        RMAssertion.AcknowledgementInterval acknowledgementInterval = new RMAssertion.AcknowledgementInterval();
+        acknowledgementInterval.setMilliseconds(Long.valueOf(2000));
+
+        RMAssertion rmAssertion = new RMAssertion();
+        rmAssertion.setAcknowledgementInterval(acknowledgementInterval);
+        rmAssertion.setBaseRetransmissionInterval(baseRetransmissionInterval);
+
+        AcksPolicyType acksPolicy = new AcksPolicyType();
+        acksPolicy.setIntraMessageThreshold(0);
+        DestinationPolicyType destinationPolicy = new DestinationPolicyType();
+        destinationPolicy.setAcksPolicy(acksPolicy);
+
+        rmFeature.setRMAssertion(rmAssertion);
+        rmFeature.setDestinationPolicy(destinationPolicy);
+        cxfEndpoint.getFeatures().add(rmFeature);
+        return cxfEndpoint;
     }
 
     @Produces
