@@ -107,8 +107,6 @@ class MinioTest {
 
     @Test
     public void testBasicOperations() throws Exception {
-        initClient();
-
         producerRequest(null, "Hi Sheldon.", Collections.singletonMap(MinioConstants.OBJECT_NAME, "putName"))
                 .statusCode(200)
                 .body(containsString("Hi Sheldon"));
@@ -161,22 +159,27 @@ class MinioTest {
                 .then();
     }
 
-    private void initClient() throws Exception {
-        initClient(BUCKET_NAME);
+    private MinioClient initClient() throws Exception {
+        return initClient(BUCKET_NAME);
     }
 
-    private void initClient(String bucketName) throws Exception {
+    private MinioClient initClient(String bucketName) throws Exception {
         if (minioClient == null) {
             minioClient = new MinioClientProducer().produceMinioClient();
         }
         if (!minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build())) {
             minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
         }
+        return minioClient;
     }
 
     private void sendViaClient(String content, String objectName) {
+        sendViaClient(minioClient, content, objectName);
+    }
+
+    private void sendViaClient(MinioClient client, String content, String objectName) {
         try (InputStream is = new ByteArrayInputStream((content.getBytes()))) {
-            minioClient.putObject(
+            client.putObject(
                     PutObjectArgs.builder()
                             .bucket(BUCKET_NAME)
                             .object(objectName)
@@ -186,5 +189,24 @@ class MinioTest {
         } catch (MinioException | GeneralSecurityException | IOException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+
+    @Test
+    void testGetObjectRange() throws Exception {
+        MinioClient client = initClient();
+
+        sendViaClient(client, "MinIO is a cloud storage server compatible with Amazon S3, ...", "element.txt");
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .queryParam(MinioConstants.MINIO_OPERATION, MinioOperations.getPartialObject)
+                .queryParam(MinioConstants.OFFSET, 1)
+                .queryParam(MinioConstants.LENGTH, 8)
+                .queryParam(MinioConstants.OBJECT_NAME, "element.txt")
+                .post("minio/operation")
+                .then()
+                .statusCode(200)
+                .body(containsString("inIO is"));
     }
 }

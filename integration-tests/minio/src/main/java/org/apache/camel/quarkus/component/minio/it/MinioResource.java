@@ -16,11 +16,13 @@
  */
 package org.apache.camel.quarkus.component.minio.it;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import io.minio.GetObjectArgs;
+import io.minio.GetObjectResponse;
 import io.minio.Result;
 import io.minio.messages.Bucket;
 import io.minio.messages.Item;
@@ -57,7 +59,7 @@ public class MinioResource {
     public String consumer() {
 
         final String message = consumerTemplate.receiveBody(
-                "minio://mycamel?moveAfterRead=true&destinationBucketName=camel-kafka-connector&autoCreateBucket=true"
+                "minio://mycamel?moveAfterRead=true&destinationBucketName=camel-kafka-connector"
                         + "&accessKey=" + SERVER_ACCESS_KEY
                         + "&secretKey=RAW(" + SERVER_SECRET_KEY + ")",
                 5000, String.class);
@@ -72,7 +74,9 @@ public class MinioResource {
             @QueryParam(MinioConstants.MINIO_OPERATION) String operation,
             @QueryParam(MinioConstants.OBJECT_NAME) String objectName,
             @QueryParam(MinioConstants.DESTINATION_OBJECT_NAME) String destinationObjectName,
-            @QueryParam(MinioConstants.DESTINATION_BUCKET_NAME) String destinationBucketName) {
+            @QueryParam(MinioConstants.DESTINATION_BUCKET_NAME) String destinationBucketName,
+            @QueryParam(MinioConstants.OFFSET) Integer offset,
+            @QueryParam(MinioConstants.LENGTH) Integer length) {
 
         String endpoint = "minio:mycamel?accessKey=" + SERVER_ACCESS_KEY
                 + "&secretKey=RAW(" + SERVER_SECRET_KEY + ")";
@@ -92,6 +96,12 @@ public class MinioResource {
         if (destinationBucketName != null) {
             headers.put(MinioConstants.DESTINATION_BUCKET_NAME, destinationBucketName);
         }
+        if (offset != null) {
+            headers.put(MinioConstants.OFFSET, offset);
+        }
+        if (length != null) {
+            headers.put(MinioConstants.LENGTH, length);
+        }
 
         if (op == MinioOperations.getObject) {
             return producerTemplate.requestBodyAndHeaders(endpoint, body, headers, String.class);
@@ -109,9 +119,17 @@ public class MinioResource {
                     } else {
                         sb.append(o);
                     }
-                }
-                if (r instanceof Bucket) {
+                } else if (r instanceof Bucket) {
                     sb.append("bucket: ").append(((Bucket) r).name());
+                } else if (r instanceof GetObjectResponse) {
+                    if(length != null && offset != null) {
+                        byte[] bytes = new byte[length];
+                        ((GetObjectResponse)r).read(bytes, 0, length-offset);
+                        sb.append(new String(bytes, StandardCharsets.UTF_8));
+                    } else {
+                        errorSB.append("Offset and length is required!");
+                    }
+
                 } else {
                     sb.append(r);
                 }
