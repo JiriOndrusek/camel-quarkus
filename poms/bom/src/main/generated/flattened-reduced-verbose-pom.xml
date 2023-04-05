@@ -2289,7 +2289,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>camel-tika</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>4.0.0-M2</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>4.0.0-SNAPSHOT</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
@@ -6857,12 +6857,22 @@
       </dependency>
       <dependency>
         <groupId>org.apache.cxf</groupId><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha5 -->
+        <artifactId>cxf-rt-databinding-aegis</artifactId><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha5 -->
+        <version>4.0.0</version><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha5 -->
+      </dependency>
+      <dependency>
+        <groupId>org.apache.cxf</groupId><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha5 -->
         <artifactId>cxf-rt-databinding-jaxb</artifactId><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha5 -->
         <version>4.0.0</version><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha5 -->
       </dependency>
       <dependency>
         <groupId>org.apache.cxf</groupId><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha5 -->
         <artifactId>cxf-rt-frontend-simple</artifactId><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha5 -->
+        <version>4.0.0</version><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha5 -->
+      </dependency>
+      <dependency>
+        <groupId>org.apache.cxf</groupId><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha5 -->
+        <artifactId>cxf-rt-javascript</artifactId><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha5 -->
         <version>4.0.0</version><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha5 -->
       </dependency>
       <dependency>
@@ -6903,6 +6913,11 @@
       <dependency>
         <groupId>org.apache.cxf</groupId><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha5 -->
         <artifactId>cxf-tools-common</artifactId><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha5 -->
+        <version>4.0.0</version><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha5 -->
+      </dependency>
+      <dependency>
+        <groupId>org.apache.cxf</groupId><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha5 -->
+        <artifactId>cxf-tools-java2ws</artifactId><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha5 -->
         <version>4.0.0</version><!-- io.quarkiverse.cxf:quarkus-cxf-bom:2.0.0.Alpha5 -->
       </dependency>
       <dependency>
