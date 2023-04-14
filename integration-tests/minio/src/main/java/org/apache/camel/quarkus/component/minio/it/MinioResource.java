@@ -35,6 +35,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.minio.MinioConstants;
@@ -70,16 +71,22 @@ public class MinioResource {
     @POST
     @Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.TEXT_PLAIN)
-    public String operation(String body,
+    public Response operation(String body,
             @QueryParam(MinioConstants.MINIO_OPERATION) String operation,
             @QueryParam(MinioConstants.OBJECT_NAME) String objectName,
             @QueryParam(MinioConstants.DESTINATION_OBJECT_NAME) String destinationObjectName,
             @QueryParam(MinioConstants.DESTINATION_BUCKET_NAME) String destinationBucketName,
             @QueryParam(MinioConstants.OFFSET) Integer offset,
-            @QueryParam(MinioConstants.LENGTH) Integer length) {
+            @QueryParam(MinioConstants.OFFSET) Integer length,
+            @QueryParam("autoCreateBucket") Boolean autoCreateBucket,
+            @QueryParam("bucket") String bucket) {
 
-        String endpoint = "minio:mycamel?accessKey=" + SERVER_ACCESS_KEY
-                + "&secretKey=RAW(" + SERVER_SECRET_KEY + ")";
+        String endpoint = String.format("minio:%s?accessKey=" + SERVER_ACCESS_KEY
+                + "&secretKey=RAW(" + SERVER_SECRET_KEY + ")", (bucket != null ? bucket : "mycamel"));
+
+        if(autoCreateBucket != null) {
+            endpoint = endpoint + "&autoCreateBucket=" + autoCreateBucket;
+        }
 
         MinioOperations op = (operation != "" && !"".equals(operation) ? MinioOperations.valueOf(operation) : null);
 
@@ -104,12 +111,20 @@ public class MinioResource {
         }
 
         if (op == MinioOperations.getObject) {
-            return producerTemplate.requestBodyAndHeaders(endpoint, body, headers, String.class);
+            return Response.ok().entity(producerTemplate.requestBodyAndHeaders(endpoint, body, headers, String.class))
+                    .build();
         }
 
-        final Iterable objectList = producerTemplate.requestBodyAndHeaders(endpoint, body, headers, Iterable.class);
-        StringBuilder sb = new StringBuilder();
-        StringBuilder errorSB = new StringBuilder();
+        Iterable objectList = null;
+        try {
+            objectList = producerTemplate.requestBodyAndHeaders(endpoint, body, headers, Iterable.class);
+        } catch(Exception e) {
+            return Response.status(500)
+                    .entity(e.getMessage())
+                    .build();
+        }
+        var sb = new StringBuilder();
+        var errorSB = new StringBuilder();
         objectList.forEach(r -> {
             try {
                 if (r instanceof Result) {
@@ -122,9 +137,9 @@ public class MinioResource {
                 } else if (r instanceof Bucket) {
                     sb.append("bucket: ").append(((Bucket) r).name());
                 } else if (r instanceof GetObjectResponse) {
-                    if(length != null && offset != null) {
+                    if (length != null && offset != null) {
                         byte[] bytes = new byte[length];
-                        ((GetObjectResponse)r).read(bytes, 0, length-offset);
+                        ((GetObjectResponse) r).read(bytes, 0, length - offset);
                         sb.append(new String(bytes, StandardCharsets.UTF_8));
                     } else {
                         errorSB.append("Offset and length is required!");
@@ -138,7 +153,11 @@ public class MinioResource {
                 errorSB.append(e.toString());
             }
         });
-        return errorSB.length() > 0 ? errorSB.toString() : sb.toString();
+        var respBuilder = errorSB.length() > 0 ?
+                Response.status(500).entity(errorSB.toString()) :
+                Response.ok().entity(sb.toString());
+
+        return respBuilder.build();
     }
 
     @Path("/getUsingPojo")

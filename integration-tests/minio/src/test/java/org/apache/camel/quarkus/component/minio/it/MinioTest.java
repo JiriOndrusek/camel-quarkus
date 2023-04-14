@@ -42,8 +42,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 
 @QuarkusTest
 @QuarkusTestResource(MinioTestResource.class)
@@ -191,7 +194,6 @@ class MinioTest {
         }
     }
 
-
     @Test
     void testGetObjectRange() throws Exception {
         MinioClient client = initClient();
@@ -208,5 +210,20 @@ class MinioTest {
                 .then()
                 .statusCode(200)
                 .body(containsString("inIO is"));
+    }
+
+    @Test
+    public void testAUtocreateBucket() throws Exception {
+        //creates bucket mycamel
+        initClient();
+        String nonExistingBucket1 = "nonexistingbucket1";
+        String nonExistingBucket2 = "nonexistingbucket2";
+        producerRequest(MinioOperations.listBuckets, null, CollectionHelper.mapOf("autoCreateBucket", "true", "bucket", nonExistingBucket1))
+                .statusCode(200)
+                .body(both(containsString("bucket: " + BUCKET_NAME)).and(containsString("bucket: " + nonExistingBucket1)));
+
+        producerRequest(MinioOperations.listBuckets, null, CollectionHelper.mapOf("autoCreateBucket", "false", "bucket", nonExistingBucket2))
+                .statusCode(500)
+                .body(containsString("Failed to resolve endpoint"));
     }
 }
