@@ -21,8 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -37,20 +35,15 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import io.restassured.response.ValidatableResponse;
-import io.restassured.specification.RequestSpecification;
 import org.apache.camel.component.minio.MinioConstants;
 import org.apache.camel.component.minio.MinioOperations;
-import org.apache.camel.util.CollectionHelper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.awaitility.Awaitility.await;
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.not;
 
 @QuarkusTest
 @QuarkusTestResource(MinioTestResource.class)
@@ -63,7 +56,7 @@ class MinioTest {
 
     @Test
     public void testConsumer() throws Exception {
-        initClient();
+        initClient(BUCKET_NAME);
 
         sendViaClient("Dummy content", "consumerObject");
 
@@ -78,64 +71,85 @@ class MinioTest {
 
     @Test
     public void testDeleteObject() throws Exception {
-        initClient();
+        initClient(BUCKET_NAME);
 
         sendViaClient("Dummy content", "testDeleteObject");
 
-//        producerRequest(MinioOperations.listObjects, null, Collections.emptyMap())
-//                .statusCode(200)
-//                .body(containsString("item: testDeleteObject"));
-//
-//        producerRequest(MinioOperations.deleteObject, null,
-//                Collections.singletonMap(MinioConstants.OBJECT_NAME, "testDeleteObject"))
-//                        .statusCode(200)
-//                        .body(containsString("true"));
-//
-//        producerRequest(MinioOperations.listObjects, null, Collections.emptyMap())
-//                .statusCode(200)
-//                .body(equalTo(""));
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .queryParam("params", params(
+                        MinioConstants.MINIO_OPERATION, MinioOperations.listObjects))
+                .post("/minio/operation2")
+                .then()
+                .statusCode(200)
+                .body(containsString("item: testDeleteObject"));
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .queryParam("params", params(
+                        MinioConstants.MINIO_OPERATION, MinioOperations.deleteObject,
+                        MinioConstants.OBJECT_NAME, "testDeleteObject"))
+                .post("/minio/operation2")
+                .then()
+                .statusCode(200)
+                .body(containsString("true"));
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .queryParam("params", params(
+                        MinioConstants.MINIO_OPERATION, MinioOperations.listObjects))
+                .post("/minio/operation2")
+                .then()
+                .statusCode(200)
+                .body(equalTo(""));
     }
 
     @Test
     public void testDeleteBucket() throws Exception {
-        initClient();
-//
-//        producerRequest(MinioOperations.listBuckets, null, Collections.emptyMap())
-//                .statusCode(200)
-//                .body(containsString("bucket: " + BUCKET_NAME));
-//
-//        producerRequest(MinioOperations.deleteBucket, null, Collections.emptyMap())
-//                .statusCode(200);
-//
-//        producerRequest(MinioOperations.listBuckets, null, Collections.emptyMap())
-//                .statusCode(200)
-//                .body(equalTo(""));
+        initClient(BUCKET_NAME);
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .queryParam("params", params(
+                        MinioConstants.MINIO_OPERATION, MinioOperations.listBuckets))
+                .post("/minio/operation2")
+                .then()
+                .statusCode(200)
+                .body(containsString("bucket: " + BUCKET_NAME));
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .queryParam("params", params(
+                        MinioConstants.MINIO_OPERATION, MinioOperations.deleteBucket))
+                .post("/minio/operation2")
+                .then()
+                .statusCode(200);
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .queryParam("params", params(
+                        MinioConstants.MINIO_OPERATION, MinioOperations.listBuckets))
+                .post("/minio/operation2")
+                .then()
+                .statusCode(200)
+                .body(equalTo(""));
     }
 
     @Test
     public void testBasicOperations() throws Exception {
-//        producerRequest(null, "Hi Sheldon.", Collections.singletonMap(MinioConstants.OBJECT_NAME, "putName"))
-//                .statusCode(200)
-//                .body(containsString("Hi Sheldon"));
-//
+
         RestAssured.given()
                 .contentType(ContentType.TEXT)
-                .queryParam("parameters", parameters(MinioConstants.OBJECT_NAME, "putName"))
+                .queryParam("params", params(MinioConstants.OBJECT_NAME, "putName"))
                 .body("Hi Sheldon.")
                 .post("minio/operation2")
                 .then()
                 .statusCode(200)
                 .body(containsString("Hi Sheldon"));
 
-//        producerRequest(MinioOperations.copyObject, null, CollectionHelper.mapOf(MinioConstants.OBJECT_NAME, "putName",
-//                MinioConstants.DESTINATION_OBJECT_NAME, "copyName",
-//                MinioConstants.DESTINATION_BUCKET_NAME, BUCKET_NAME))
-//                        .statusCode(200);
-//
-
         RestAssured.given()
                 .contentType(ContentType.TEXT)
-                .queryParam("parameters", parameters(
+                .queryParam("params", params(
                         MinioConstants.MINIO_OPERATION, MinioOperations.copyObject,
                         MinioConstants.OBJECT_NAME, "putName",
                         MinioConstants.DESTINATION_OBJECT_NAME, "copyName",
@@ -144,14 +158,11 @@ class MinioTest {
                 .then()
                 .statusCode(200);
 
-
-//        producerRequest(MinioOperations.getObject, null, Collections.singletonMap(MinioConstants.OBJECT_NAME, "copyName"))
-//                .statusCode(200)
-//                .body(containsString("Hi Sheldon"));
-
         RestAssured.given()
                 .contentType(ContentType.TEXT)
-                .queryParam("parameters", parameters(MinioConstants.OBJECT_NAME, "copyName"))
+                .queryParam("params", params(
+                        MinioConstants.MINIO_OPERATION, MinioOperations.getObject,
+                        MinioConstants.OBJECT_NAME, "copyName"))
                 .post("minio/operation2")
                 .then()
                 .statusCode(200)
@@ -160,12 +171,12 @@ class MinioTest {
 
     @Test
     public void testGetViaPojo() throws Exception {
-        initClient();
+        initClient(BUCKET_NAME);
         initClient(BUCKET_NAME + "2");
 
         RestAssured.given()
                 .contentType(ContentType.TEXT)
-                .queryParam("parameters", parameters(MinioConstants.OBJECT_NAME, "putViaPojoName"))
+                .queryParam("params", params(MinioConstants.OBJECT_NAME, "putViaPojoName"))
                 .body("Hi Sheldon.")
                 .post("minio/operation2")
                 .then()
@@ -174,7 +185,7 @@ class MinioTest {
 
         RestAssured.given()
                 .contentType(ContentType.TEXT)
-                .queryParam("parameters", parameters(
+                .queryParam("params", params(
                         MinioConstants.MINIO_OPERATION, MinioOperations.copyObject,
                         MinioConstants.OBJECT_NAME, "putViaPojoName",
                         MinioConstants.DESTINATION_OBJECT_NAME, "copyViaPojoName",
@@ -184,32 +195,71 @@ class MinioTest {
                 .then()
                 .statusCode(200);
 
-        producerRequest(MinioOperations.getObject, BUCKET_NAME + "2",
-                Collections.singletonMap(MinioConstants.OBJECT_NAME, "copyViaPojoName"),
-                "/minio/getUsingPojo")
-                        .statusCode(200)
-                        .body(containsString("Hi Sheldon"));
-    }
-
-    private ValidatableResponse producerRequest(MinioOperations operation, String body, Map<String, String> params) {
-        return producerRequest(operation, body, params, "/minio/operation");
-    }
-
-    private ValidatableResponse producerRequest(MinioOperations operation, String body, Map<String, String> params,
-            String path) {
-        RequestSpecification request = RestAssured.given()
+        RestAssured.given()
                 .contentType(ContentType.TEXT)
-                .queryParam(MinioConstants.MINIO_OPERATION, operation != null ? operation.name() : null);
-
-        params.forEach((k, v) -> request.queryParam(k, v));
-
-        return request.body(body == null ? "" : body)
-                .post(path)
-                .then();
+                .queryParam(MinioConstants.MINIO_OPERATION, MinioOperations.getObject)
+                .queryParam(MinioConstants.OBJECT_NAME, "copyViaPojoName")
+                .body(BUCKET_NAME + "2")
+                .post("/minio/getUsingPojo")
+                .then()
+                .statusCode(200)
+                .body(containsString("Hi Sheldon"));
     }
 
-    private MinioClient initClient() throws Exception {
-        return initClient(BUCKET_NAME);
+    @Test
+    void testGetObjectRange() throws Exception {
+        MinioClient client = initClient(BUCKET_NAME);
+
+        sendViaClient(client, "MinIO is a cloud storage server compatible with Amazon S3, ...", "element.txt");
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .queryParam("params", params(
+                        MinioConstants.MINIO_OPERATION, MinioOperations.getPartialObject,
+                        MinioConstants.OFFSET, 1,
+                        MinioConstants.LENGTH, 8,
+                        MinioConstants.OBJECT_NAME, "element.txt"))
+                .post("minio/operation2")
+                .then()
+                .statusCode(200)
+                .body(containsString("inIO is"));
+    }
+
+    @Test
+    public void testAUtocreateBucket() throws Exception {
+        //creates bucket mycamel
+        initClient(BUCKET_NAME);
+        String nonExistingBucket1 = "nonexistingbucket1";
+        String nonExistingBucket2 = "nonexistingbucket2";
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .queryParam("params", params(
+                        MinioConstants.MINIO_OPERATION, MinioOperations.listBuckets,
+                        "autoCreateBucket", "true",
+                        "bucket", nonExistingBucket1))
+                .post("/minio/operation2")
+                .then()
+                .statusCode(200)
+                .body(both(containsString("bucket: " + BUCKET_NAME)).and(containsString("bucket: " + nonExistingBucket1)));
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .queryParam("params", params(
+                        MinioConstants.MINIO_OPERATION, MinioOperations.listBuckets,
+                        "autoCreateBucket", "false",
+                        "bucket", nonExistingBucket2))
+                .post("/minio/operation2")
+                .then()
+                .statusCode(500)
+                .body(containsString("Failed to resolve endpoint"));
+    }
+
+    private static String params(Object... os) {
+        return Stream.concat(Arrays.stream(new String[] { os[0].toString() }),
+                IntStream.range(1, os.length)
+                        .mapToObj(i -> (i % 2 == 0 ? "," : ":") + os[i].toString()))
+                .collect(Collectors.joining());
     }
 
     private MinioClient initClient(String bucketName) throws Exception {
@@ -239,63 +289,4 @@ class MinioTest {
             throw new IllegalStateException(e);
         }
     }
-
-    @Test
-    void testGetObjectRange() throws Exception {
-        MinioClient client = initClient();
-
-        sendViaClient(client, "MinIO is a cloud storage server compatible with Amazon S3, ...", "element.txt");
-
-        RestAssured.given()
-                .contentType(ContentType.TEXT)
-                .queryParam("parameters", parameters(
-                        MinioConstants.MINIO_OPERATION, MinioOperations.getPartialObject,
-                            MinioConstants.OFFSET, 1,
-                            MinioConstants.LENGTH, 8,
-                            MinioConstants.OBJECT_NAME, "element.txt"))
-                .post("minio/operation2")
-                .then()
-                .statusCode(200)
-                .body(containsString("inIO is"));
-    }
-
-    @Test
-    public void testAUtocreateBucket() throws Exception {
-        //creates bucket mycamel
-        initClient();
-        String nonExistingBucket1 = "nonexistingbucket1";
-        String nonExistingBucket2 = "nonexistingbucket2";
-
-        RestAssured.given()
-                .contentType(ContentType.TEXT)
-                .queryParam("parameters", parameters(
-                        MinioConstants.MINIO_OPERATION, MinioOperations.listBuckets,
-                        "autoCreateBucket", "true",
-                        "bucket", nonExistingBucket1))
-                .post("/minio/operation2")
-                .then()
-                .statusCode(200)
-                .body(both(containsString("bucket: " + BUCKET_NAME)).and(containsString("bucket: " + nonExistingBucket1)));
-
-        RestAssured.given()
-                .contentType(ContentType.TEXT)
-                .queryParam("parameters", parameters(
-                        MinioConstants.MINIO_OPERATION, MinioOperations.listBuckets,
-                        "autoCreateBucket", "false",
-                        "bucket", nonExistingBucket2))
-                .post("/minio/operation2")
-                .then()
-                .statusCode(500)
-                .body(containsString("Failed to resolve endpoint"));
-    }
-
-    private static String parameters(Object... os) {
-        return Stream.concat(Arrays.stream(new String[] {os[0].toString()}),
-                        IntStream.range(1, os.length)
-                            .mapToObj(i -> (i % 2 == 0 ? "," : ":") + os[i].toString())
-                )
-                .collect(Collectors.joining());
-    }
-
-
 }

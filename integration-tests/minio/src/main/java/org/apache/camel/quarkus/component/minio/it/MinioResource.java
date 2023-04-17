@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import io.minio.GetObjectArgs;
@@ -88,7 +87,7 @@ public class MinioResource {
         String endpoint = String.format("minio:%s?accessKey=" + SERVER_ACCESS_KEY
                 + "&secretKey=RAW(" + SERVER_SECRET_KEY + ")", (bucket != null ? bucket : "mycamel"));
 
-        if(autoCreateBucket != null) {
+        if (autoCreateBucket != null) {
             endpoint = endpoint + "&autoCreateBucket=" + autoCreateBucket;
         }
 
@@ -122,7 +121,7 @@ public class MinioResource {
         Iterable objectList = null;
         try {
             objectList = producerTemplate.requestBodyAndHeaders(endpoint, body, headers, Iterable.class);
-        } catch(Exception e) {
+        } catch (Exception e) {
             return Response.status(500)
                     .entity(e.getMessage())
                     .build();
@@ -157,9 +156,8 @@ public class MinioResource {
                 errorSB.append(e.toString());
             }
         });
-        var respBuilder = errorSB.length() > 0 ?
-                Response.status(500).entity(errorSB.toString()) :
-                Response.ok().entity(sb.toString());
+        var respBuilder = errorSB.length() > 0 ? Response.status(500).entity(errorSB.toString())
+                : Response.ok().entity(sb.toString());
 
         return respBuilder.build();
     }
@@ -169,66 +167,63 @@ public class MinioResource {
     @Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.TEXT_PLAIN)
     public Response operation2(String body,
-                              @QueryParam("parameters") String parametersString) {
-//            @QueryParam(MinioConstants.MINIO_OPERATION) String operation,
-//            @QueryParam(MinioConstants.OBJECT_NAME) String objectName,
-//            @QueryParam(MinioConstants.DESTINATION_OBJECT_NAME) String destinationObjectName,
-//            @QueryParam(MinioConstants.DESTINATION_BUCKET_NAME) String destinationBucketName,
-//            @QueryParam(MinioConstants.OFFSET) Integer offset,
-//            @QueryParam(MinioConstants.OFFSET) Integer length,
-//            @QueryParam("autoCreateBucket") Boolean autoCreateBucket,
-//            @QueryParam("bucket") String bucket) {
+            @QueryParam("params") String parametersString) {
+        //            @QueryParam(MinioConstants.MINIO_OPERATION) String operation,
+        //            @QueryParam(MinioConstants.OBJECT_NAME) String objectName,
+        //            @QueryParam(MinioConstants.DESTINATION_OBJECT_NAME) String destinationObjectName,
+        //            @QueryParam(MinioConstants.DESTINATION_BUCKET_NAME) String destinationBucketName,
+        //            @QueryParam(MinioConstants.OFFSET) Integer offset,
+        //            @QueryParam(MinioConstants.OFFSET) Integer length,
+        //            @QueryParam("autoCreateBucket") Boolean autoCreateBucket,
+        //            @QueryParam("bucket") String bucket) {
 
         //transform string to map to avoid jackson
         Map<String, Object> headers = Arrays.stream(parametersString.split(","))
                 .map(s -> new Pair(s.split(":")[0], s.split(":")[1]))
-                .map(p -> {switch (p.getLeft().toString()) {
-                                case MinioConstants.OFFSET:
-                                case MinioConstants.LENGTH:
-                                    return new Pair<>(p.getLeft(), Integer.parseInt(p.getRight().toString()));
-                                case MinioConstants.MINIO_OPERATION:
-                                    return new Pair<>(p.getLeft(), MinioOperations.valueOf(p.getRight().toString()));
-                                default:
-                                    return p;
-                            }})
+                .map(p -> {
+                    switch (p.getLeft().toString()) {
+                    case MinioConstants.OFFSET:
+                    case MinioConstants.LENGTH:
+                        return new Pair<>(p.getLeft(), Integer.parseInt(p.getRight().toString()));
+                    case MinioConstants.MINIO_OPERATION:
+                        return new Pair<>(p.getLeft(), MinioOperations.valueOf(p.getRight().toString()));
+                    default:
+                        return p;
+                    }
+                })
                 .collect(Collectors.toMap(p -> p.getLeft().toString(), p -> p.getRight()));
-
-
 
         String endpoint = String.format("minio:%s?accessKey=" + SERVER_ACCESS_KEY
                 + "&secretKey=RAW(" + SERVER_SECRET_KEY + ")", headers.getOrDefault("bucket", "mycamel"));
         headers.remove("bucket");
 
-
-
-
-        if(headers.containsKey("autoCreateBucket")) {
+        if (headers.containsKey("autoCreateBucket")) {
             endpoint = endpoint + "&autoCreateBucket=" + headers.remove("autoCreateBucket");
         }
 
         MinioOperations op = (MinioOperations) headers.getOrDefault(MinioConstants.MINIO_OPERATION, null);
         Integer length = (Integer) headers.getOrDefault(MinioConstants.LENGTH, null);
         Integer offset = (Integer) headers.getOrDefault(MinioConstants.OFFSET, null);
-//
-//
-//        if (op != null) {
-//            headers.put(MinioConstants.MINIO_OPERATION, op);
-//        }
-//        if (objectName != null) {
-//            headers.put(MinioConstants.OBJECT_NAME, objectName);
-//        }
-//        if (destinationObjectName != null) {
-//            headers.put(MinioConstants.DESTINATION_OBJECT_NAME, destinationObjectName);
-//        }
-//        if (destinationBucketName != null) {
-//            headers.put(MinioConstants.DESTINATION_BUCKET_NAME, destinationBucketName);
-//        }
-//        if (offset != null) {
-//            headers.put(MinioConstants.OFFSET, offset);
-//        }
-//        if (length != null) {
-//            headers.put(MinioConstants.LENGTH, length);
-//        }
+        //
+        //
+        //        if (op != null) {
+        //            headers.put(MinioConstants.MINIO_OPERATION, op);
+        //        }
+        //        if (objectName != null) {
+        //            headers.put(MinioConstants.OBJECT_NAME, objectName);
+        //        }
+        //        if (destinationObjectName != null) {
+        //            headers.put(MinioConstants.DESTINATION_OBJECT_NAME, destinationObjectName);
+        //        }
+        //        if (destinationBucketName != null) {
+        //            headers.put(MinioConstants.DESTINATION_BUCKET_NAME, destinationBucketName);
+        //        }
+        //        if (offset != null) {
+        //            headers.put(MinioConstants.OFFSET, offset);
+        //        }
+        //        if (length != null) {
+        //            headers.put(MinioConstants.LENGTH, length);
+        //        }
 
         if (op == MinioOperations.getObject) {
             return Response.ok().entity(producerTemplate.requestBodyAndHeaders(endpoint, body, headers, String.class))
@@ -238,7 +233,7 @@ public class MinioResource {
         Iterable objectList = null;
         try {
             objectList = producerTemplate.requestBodyAndHeaders(endpoint, body, headers, Iterable.class);
-        } catch(Exception e) {
+        } catch (Exception e) {
             return Response.status(500)
                     .entity(e.getMessage())
                     .build();
@@ -273,9 +268,8 @@ public class MinioResource {
                 errorSB.append(e.toString());
             }
         });
-        var respBuilder = errorSB.length() > 0 ?
-                Response.status(500).entity(errorSB.toString()) :
-                Response.ok().entity(sb.toString());
+        var respBuilder = errorSB.length() > 0 ? Response.status(500).entity(errorSB.toString())
+                : Response.ok().entity(sb.toString());
 
         return respBuilder.build();
     }
