@@ -20,6 +20,10 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.TimeUnit;
+
+import static org.awaitility.Awaitility.await;
+
 @QuarkusTest
 class SnmpTest {
 
@@ -30,5 +34,26 @@ class SnmpTest {
                 .then()
                 .statusCode(200);
     }
+
+    @Test
+    public void testSendReceiveTrap() throws Exception {
+
+        RestAssured.given()
+                .body("TEXT")
+                .post("/snmp/sendTrap")
+                .then()
+                .statusCode(200);
+
+        await().atMost(10L, TimeUnit.SECONDS).pollDelay(100, TimeUnit.MILLISECONDS).until(() -> {
+                    String result = RestAssured.given()
+                            .get("/snmp/resultsFromTrap")
+                            .then()
+                            .statusCode(200)
+                            .extract().body().asString();
+
+                    return "TEXT".equals(result);
+                });
+    }
+
 
 }

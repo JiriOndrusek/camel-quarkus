@@ -18,13 +18,32 @@ package org.apache.camel.quarkus.component.snmp.it;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.camel.CamelContext;
+import org.apache.camel.Endpoint;
+import org.apache.camel.Exchange;
+import org.apache.camel.Producer;
+import org.apache.camel.ProducerTemplate;
+import org.apache.camel.component.snmp.SnmpMessage;
 import org.jboss.logging.Logger;
+import org.snmp4j.PDU;
+import org.snmp4j.PDUv1;
+import org.snmp4j.mp.SnmpConstants;
+import org.snmp4j.smi.OID;
+import org.snmp4j.smi.OctetString;
+import org.snmp4j.smi.TimeTicks;
+import org.snmp4j.smi.Variable;
+import org.snmp4j.smi.VariableBinding;
+
+import java.util.Deque;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Path("/snmp")
 @ApplicationScoped
@@ -33,6 +52,14 @@ public class SnmpResource {
     private static final Logger LOG = Logger.getLogger(SnmpResource.class);
 
     private static final String COMPONENT_SNMP = "snmp";
+
+    @Inject
+    @Named("snmpTrapResults")
+    Deque<SnmpMessage> snmpTrapResults;
+
+    @Inject
+    ProducerTemplate producerTemplate;
+
     @Inject
     CamelContext context;
 
@@ -46,5 +73,43 @@ public class SnmpResource {
         }
         LOG.warnf("Could not load [%s] from the Camel context", COMPONENT_SNMP);
         return Response.status(500, COMPONENT_SNMP + " could not be loaded from the Camel context").build();
+    }
+
+    @Path("/sendTrap")
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response sendTrap(String payload) throws Exception {
+        PDU trap = createTrap(payload);
+
+        producerTemplate.sendBody("direct:snmpTrap", trap);
+
+        return Response.ok().build();
+    }
+
+    @Path("/resultsFromTrap")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response resultsFromTrap() throws Exception {
+        OID oid = new OID("1.2.3.4.5");
+        String result = snmpTrapResults.stream().map(m -> m.getSnmpMessage().getVariable(oid).toString()).collect(Collectors.joining(","));
+
+        return Response.ok(result).build();
+    }
+
+    public PDU createTrap(String payload) {
+        PDUv1 trap = new PDUv1();
+        trap.setGenericTrap(PDUv1.ENTERPRISE_SPECIFIC);
+        trap.setSpecificTrap(1);
+
+        OID oid = new OID("1.2.3.4.5");
+        trap.add(new VariableBinding(SnmpConstants.snmpTrapOID, oid));
+        trap.add(new VariableBinding(SnmpConstants.sysUpTime, new TimeTicks(5000))); // put your uptime here
+        trap.add(new VariableBinding(SnmpConstants.sysDescr, new OctetString("System Description")));
+        trap.setEnterprise(oid);
+
+        //Add Payload
+        Variable var = new OctetString(payload);
+        trap.add(new VariableBinding(oid, var));
+        return trap;
     }
 }
