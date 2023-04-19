@@ -16,6 +16,11 @@
  */
 package org.apache.camel.quarkus.component.snmp.it;
 
+import java.util.Deque;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -23,39 +28,54 @@ import jakarta.inject.Singleton;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.snmp.SnmpMessage;
-import org.snmp4j.Snmp;
-
-import java.util.Deque;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.CopyOnWriteArrayList;
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.snmp4j.mp.SnmpConstants;
 
 @ApplicationScoped
 public class SnmpRoute extends RouteBuilder {
 
+    private String host = "0.0.0.0";
+    private String port = "161"; //0 udp fails withdifferent reason
+    private String oids = "1.3.6.1.2.1.1.1.0";
+
     @Inject
     @Named("snmpTrapResults")
-    Deque<SnmpMessage> snmpTrapResults;
+    Map<String, Deque<SnmpMessage>> snmpResults;
 
     @Override
     public void configure() {
-        //trap consumer
-        from("direct:snmpTrap")
-                .log(LoggingLevel.INFO, "Sending Trap pdu ${body}")
-                .to("snmp:127.0.0.1:1662?protocol=udp&type=TRAP&snmpVersion=0");
+        //todo use annotation
+        String listeningAddress = ConfigProvider.getConfig().getValue("snmpListenAddress", String.class);
+        //PDFU producer
+        from("direct:producePDU")
+                .to("snmp://" + listeningAddress + "?retries=1&protocol=udp&oids=" + oids);
 
-        from("snmp:0.0.0.0:1662?protocol=udp&type=TRAP&snmpVersion=0")
-                .process(e -> snmpTrapResults.add(e.getIn().getBody(SnmpMessage.class)));
+                //trap consumer
+                from("direct:snmpTrap" + SnmpConstants.version1)
+                        .log(LoggingLevel.INFO, "Sending Trap pdu ${body}")
+                        .to("snmp:127.0.0.1:1662?protocol=udp&type=TRAP&snmpVersion=0");
+
+                from("direct:snmpTrap" + SnmpConstants.version2c)
+                        .log(LoggingLevel.INFO, "Sending Trap pdu ${body}")
+                        .to("snmp:127.0.0.1:1662?protocol=udp&type=TRAP&snmpVersion=0");
+
+                from("snmp:0.0.0.0:1662?protocol=udp&type=TRAP&snmpVersion=0")
+                        .process(e -> snmpResults.get("trap").add(e.getIn().getBody(SnmpMessage.class)));
+
+//                //todo try 0.0.0.0
+//                        from(String.format("snmp:%s?protocol=udp&type=POLL", host, port, oids))
+//                                .process(e -> snmpResults.get("poll").add(e.getIn().getBody(SnmpMessage.class)));
     }
 
     static class Producers {
         @jakarta.enterprise.inject.Produces
         @Singleton
         @Named("snmpTrapResults")
-        Deque<SnmpMessage> snmpTrapResults() {
-            return new ConcurrentLinkedDeque<>();
+        Map<String, Deque<SnmpMessage>> snmpResults() {
+            Map<String, Deque<SnmpMessage>> map = new ConcurrentHashMap<>();
+            map.put("trap", new ConcurrentLinkedDeque());
+            map.put("poll", new ConcurrentLinkedDeque());
+            return map;
         }
     }
 }

@@ -16,6 +16,10 @@
  */
 package org.apache.camel.quarkus.component.snmp.it;
 
+import java.util.Deque;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -23,12 +27,10 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.camel.CamelContext;
-import org.apache.camel.Endpoint;
-import org.apache.camel.Exchange;
-import org.apache.camel.Producer;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.snmp.SnmpMessage;
 import org.jboss.logging.Logger;
@@ -41,10 +43,6 @@ import org.snmp4j.smi.TimeTicks;
 import org.snmp4j.smi.Variable;
 import org.snmp4j.smi.VariableBinding;
 
-import java.util.Deque;
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Path("/snmp")
 @ApplicationScoped
 public class SnmpResource {
@@ -55,7 +53,7 @@ public class SnmpResource {
 
     @Inject
     @Named("snmpTrapResults")
-    Deque<SnmpMessage> snmpTrapResults;
+    Map<String, Deque<SnmpMessage>> snmpResults;
 
     @Inject
     ProducerTemplate producerTemplate;
@@ -75,23 +73,33 @@ public class SnmpResource {
         return Response.status(500, COMPONENT_SNMP + " could not be loaded from the Camel context").build();
     }
 
-    @Path("/sendTrap")
+    @Path("/sendPDU")
     @POST
     @Produces(MediaType.TEXT_PLAIN)
-    public Response sendTrap(String payload) throws Exception {
-        PDU trap = createTrap(payload);
-
-        producerTemplate.sendBody("direct:snmpTrap", trap);
+    public Response sendPDU(String payload) {
+        String pdu = producerTemplate.requestBody("direct:producePDU", "", String.class);
 
         return Response.ok().build();
     }
 
-    @Path("/resultsFromTrap")
-    @GET
+    @Path("/sendTrap")
+    @POST
     @Produces(MediaType.TEXT_PLAIN)
-    public Response resultsFromTrap() throws Exception {
+    public Response sendTrap(@QueryParam("version") String version, String payload) throws Exception {
+        PDU trap = createTrap(payload);
+
+        producerTemplate.sendBody("direct:snmpTrap" + version, trap);
+
+        return Response.ok().build();
+    }
+
+    @Path("/results")
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response results(String from) throws Exception {
         OID oid = new OID("1.2.3.4.5");
-        String result = snmpTrapResults.stream().map(m -> m.getSnmpMessage().getVariable(oid).toString()).collect(Collectors.joining(","));
+        String result = snmpResults.get(from).stream().map(m -> m.getSnmpMessage().getVariable(oid).toString())
+                .collect(Collectors.joining(","));
 
         return Response.ok(result).build();
     }
