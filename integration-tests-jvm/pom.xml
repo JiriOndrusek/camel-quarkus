@@ -95,7 +95,6 @@
         <module>robotframework</module>
         <module>schematron</module>
         <module>smpp</module>
-        <module>snmp</module>
         <module>splunk-hec</module>
         <module>stitch</module>
         <module>stomp</module>

@@ -206,6 +206,7 @@
         <module>sjms2-qpid-amqp-client</module>
         <module>slack</module>
         <!--<module>smallrye-reactive-messaging</module>-->
+        <module>snmp</module>
         <module>soap</module>
         <module>solr</module>
         <module>splunk</module>
