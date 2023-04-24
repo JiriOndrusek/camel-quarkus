@@ -16,12 +16,13 @@
  */
 package org.apache.camel.quarkus.component.snmp.deployment;
 
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.annotations.ExecutionTime;
-import io.quarkus.deployment.annotations.Record;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
-import io.quarkus.deployment.pkg.steps.NativeBuild;
-import org.apache.camel.quarkus.core.JvmOnlyRecorder;
+import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
+import org.jboss.jandex.IndexView;
 import org.jboss.logging.Logger;
 
 class SnmpProcessor {
@@ -31,16 +32,27 @@ class SnmpProcessor {
 
     @BuildStep
     FeatureBuildItem feature() {
+        System.out.println("++++++++++++++++++++++++++");
         return new FeatureBuildItem(FEATURE);
     }
 
-    /**
-     * Remove this once this extension starts supporting the native mode.
-     */
-    @BuildStep(onlyIf = NativeBuild.class)
-    @Record(value = ExecutionTime.RUNTIME_INIT)
-    void warnJvmInNative(JvmOnlyRecorder recorder) {
-        JvmOnlyRecorder.warnJvmInNative(LOG, FEATURE); // warn at build time
-        recorder.warnJvmInNative(FEATURE); // warn at runtime
+    @BuildStep
+    void runtimeInitializations(BuildProducer<RuntimeInitializedClassBuildItem> runtimeInitializedClasses,
+            CombinedIndexBuildItem combinedIndex) {
+        System.out.println("---------------------------");
+        IndexView index = combinedIndex.getIndex();
+
+        index.getKnownClasses().stream()
+                .filter(c -> c.name().toString().matches("org.snmp4j.smi.*Address"))
+                .peek(n -> System.out.println(".." + n))
+                .map(c -> c.name().toString())
+                .map(RuntimeInitializedClassBuildItem::new)
+                .forEach(runtimeInitializedClasses::produce);
+
+    }
+
+    @BuildStep
+    NativeImageResourceBuildItem nativeResources() {
+        return new NativeImageResourceBuildItem("org/snmp4j/address.properties");
     }
 }
