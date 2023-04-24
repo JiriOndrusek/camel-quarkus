@@ -33,7 +33,7 @@
     <description>Receive traps and poll SNMP (Simple Network Management Protocol) capable devices.</description>
 
     <properties>
-        <camel.quarkus.jvmSince>2.17.0</camel.quarkus.jvmSince>
+        <camel.quarkus.jvmSince>1.1.0</camel.quarkus.jvmSince>
         <camel.quarkus.nativeSince>2.17.0</camel.quarkus.nativeSince>
     </properties>
 

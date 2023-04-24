@@ -18,20 +18,14 @@ package org.apache.camel.quarkus.component.snmp.deployment;
 
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.annotations.ExecutionTime;
-import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
-import io.quarkus.deployment.pkg.steps.NativeBuild;
-import org.apache.camel.quarkus.core.JvmOnlyRecorder;
 import org.jboss.jandex.IndexView;
-import org.jboss.logging.Logger;
 
 class SnmpProcessor {
 
-    private static final Logger LOG = Logger.getLogger(SnmpProcessor.class);
     private static final String FEATURE = "camel-snmp";
 
     @BuildStep
@@ -40,8 +34,8 @@ class SnmpProcessor {
     }
 
     @BuildStep
-    void java2wsdl(BuildProducer<RuntimeInitializedClassBuildItem> runtimeInitializedClasses,
-                   CombinedIndexBuildItem combinedIndex) {
+    void runtime(BuildProducer<RuntimeInitializedClassBuildItem> runtimeInitializedClasses,
+            CombinedIndexBuildItem combinedIndex) {
         IndexView index = combinedIndex.getIndex();
 
         index.getKnownClasses().stream()
