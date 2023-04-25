@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -37,17 +36,12 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.component.minio.MinioConstants;
 import org.apache.camel.component.minio.MinioOperations;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
 
 @QuarkusTest
@@ -59,15 +53,13 @@ class MinioTest {
 
     private MinioClient minioClient;
 
-
-    @ConfigProperty(name = "MinioClientProducer_url")
     String endpoint;
 
     @Test
     public void testConsumerMoveAfterRead() throws Exception {
         initClient(BUCKET_NAME);
 
-        sendViaClient("Hi Sheldon!", "consumerObject");
+        sendViaClient("Hi Sheldon!", "consumerObjectMAR");
 
         RestAssured.get("/minio/consumer")
                 .then()
@@ -78,9 +70,9 @@ class MinioTest {
                 .contentType(ContentType.TEXT)
                 .queryParam("params", params(
                         MinioConstants.MINIO_OPERATION, MinioOperations.getObject,
-                        MinioConstants.OBJECT_NAME, "consumerObject",
+                        MinioConstants.OBJECT_NAME, "consumerObjectMAR",
                         MinioConstants.BUCKET_NAME, "movedafterread"))
-                .post("minio/operation2")
+                .post("minio/operation")
                 .then()
                 .statusCode(200)
                 .body(is("Hi Sheldon!"));
@@ -92,7 +84,7 @@ class MinioTest {
 
         sendViaClient("Hi Sheldon!", "consumerObject");
 
-        RestAssured.get("/minio/consumerWithClientCreation/"+endpoint)
+        RestAssured.get("/minio/consumerWithClientCreation/" + endpoint)
                 .then()
                 .statusCode(200)
                 .body(is("Hi Sheldon!"));
@@ -103,7 +95,7 @@ class MinioTest {
                         MinioConstants.MINIO_OPERATION, MinioOperations.getObject,
                         MinioConstants.OBJECT_NAME, "consumerObject",
                         MinioConstants.BUCKET_NAME, "movedafterread"))
-                .post("minio/operation2")
+                .post("minio/operation")
                 .then()
                 .statusCode(200)
                 .body(is("Hi Sheldon!"));
@@ -126,7 +118,7 @@ class MinioTest {
                 .contentType(ContentType.TEXT)
                 .queryParam("params", params(
                         MinioConstants.MINIO_OPERATION, MinioOperations.listObjects))
-                .post("/minio/operation2")
+                .post("/minio/operation")
                 .then()
                 .statusCode(200)
                 .body(containsString("item: testDeleteObject"));
@@ -136,7 +128,7 @@ class MinioTest {
                 .queryParam("params", params(
                         MinioConstants.MINIO_OPERATION, MinioOperations.deleteObject,
                         MinioConstants.OBJECT_NAME, "testDeleteObject"))
-                .post("/minio/operation2")
+                .post("/minio/operation")
                 .then()
                 .statusCode(200)
                 .body(containsString("true"));
@@ -145,10 +137,10 @@ class MinioTest {
                 .contentType(ContentType.TEXT)
                 .queryParam("params", params(
                         MinioConstants.MINIO_OPERATION, MinioOperations.listObjects))
-                .post("/minio/operation2")
+                .post("/minio/operation")
                 .then()
                 .statusCode(200)
-                .body(equalTo(""));
+                .body(not(containsString("item: testDeleteObject")));
     }
 
     @Test
@@ -159,7 +151,7 @@ class MinioTest {
                 .contentType(ContentType.TEXT)
                 .queryParam("params", params(
                         MinioConstants.MINIO_OPERATION, MinioOperations.listBuckets))
-                .post("/minio/operation2")
+                .post("/minio/operation")
                 .then()
                 .statusCode(200)
                 .body(containsString("bucket: " + BUCKET_NAME));
@@ -167,8 +159,9 @@ class MinioTest {
         RestAssured.given()
                 .contentType(ContentType.TEXT)
                 .queryParam("params", params(
-                        MinioConstants.MINIO_OPERATION, MinioOperations.deleteBucket))
-                .post("/minio/operation2")
+                        MinioConstants.MINIO_OPERATION, MinioOperations.deleteBucket,
+                        MinioConstants.BUCKET_NAME, BUCKET_NAME))
+                .post("/minio/operation")
                 .then()
                 .statusCode(200);
 
@@ -176,7 +169,7 @@ class MinioTest {
                 .contentType(ContentType.TEXT)
                 .queryParam("params", params(
                         MinioConstants.MINIO_OPERATION, MinioOperations.listBuckets))
-                .post("/minio/operation2")
+                .post("/minio/operation")
                 .then()
                 .statusCode(200)
                 .body(not(containsString("bucket: " + BUCKET_NAME)));
@@ -189,7 +182,7 @@ class MinioTest {
                 .contentType(ContentType.TEXT)
                 .queryParam("params", params(MinioConstants.OBJECT_NAME, "putName"))
                 .body("Hi Sheldon.")
-                .post("minio/operation2")
+                .post("minio/operation")
                 .then()
                 .statusCode(200)
                 .body(containsString("Hi Sheldon"));
@@ -201,7 +194,7 @@ class MinioTest {
                         MinioConstants.OBJECT_NAME, "putName",
                         MinioConstants.DESTINATION_OBJECT_NAME, "copyName",
                         MinioConstants.DESTINATION_BUCKET_NAME, BUCKET_NAME))
-                .post("minio/operation2")
+                .post("minio/operation")
                 .then()
                 .statusCode(200);
 
@@ -210,7 +203,7 @@ class MinioTest {
                 .queryParam("params", params(
                         MinioConstants.MINIO_OPERATION, MinioOperations.getObject,
                         MinioConstants.OBJECT_NAME, "copyName"))
-                .post("minio/operation2")
+                .post("minio/operation")
                 .then()
                 .statusCode(200)
                 .body(containsString("Hi Sheldon"));
@@ -225,7 +218,7 @@ class MinioTest {
                 .contentType(ContentType.TEXT)
                 .queryParam("params", params(MinioConstants.OBJECT_NAME, "putViaPojoName"))
                 .body("Hi Sheldon.")
-                .post("minio/operation2")
+                .post("minio/operation")
                 .then()
                 .statusCode(200)
                 .body(containsString("Hi Sheldon"));
@@ -238,7 +231,7 @@ class MinioTest {
                         MinioConstants.DESTINATION_OBJECT_NAME, "copyViaPojoName",
                         MinioConstants.DESTINATION_BUCKET_NAME, BUCKET_NAME + "2"))
                 .body("Hi Sheldon.")
-                .post("minio/operation2")
+                .post("minio/operation")
                 .then()
                 .statusCode(200);
 
@@ -272,11 +265,10 @@ class MinioTest {
                         MinioConstants.MINIO_OPERATION, MinioOperations.getObject,
                         MinioConstants.OBJECT_NAME, "object1",
                         MinioConstants.BUCKET_NAME, "movingtobucket"))
-                .post("minio/operation2")
+                .post("minio/operation")
                 .then()
                 .statusCode(200)
                 .body(is("Hi Sheldon!"));
-
 
         sendViaClient(mc, "movingfrombucket", "Hi Leonard!", "object2");
 
@@ -292,7 +284,7 @@ class MinioTest {
                         MinioConstants.MINIO_OPERATION, MinioOperations.getObject,
                         MinioConstants.OBJECT_NAME, "object2",
                         MinioConstants.BUCKET_NAME, "movingtobucket"))
-                .post("minio/operation2")
+                .post("minio/operation")
                 .then()
                 .statusCode(500)
                 .body(is("The specified key does not exist."));
@@ -311,7 +303,7 @@ class MinioTest {
                         MinioConstants.OFFSET, 1,
                         MinioConstants.LENGTH, 8,
                         MinioConstants.OBJECT_NAME, "element.txt"))
-                .post("minio/operation2")
+                .post("minio/operation")
                 .then()
                 .statusCode(200)
                 .body(containsString("inIO is"));
@@ -330,7 +322,7 @@ class MinioTest {
                         MinioConstants.MINIO_OPERATION, MinioOperations.listBuckets,
                         "autoCreateBucket", "true",
                         "bucket", nonExistingBucket1))
-                .post("/minio/operation2")
+                .post("/minio/operation")
                 .then()
                 .statusCode(200)
                 .body(both(containsString("bucket: " + BUCKET_NAME)).and(containsString("bucket: " + nonExistingBucket1)));
@@ -341,10 +333,46 @@ class MinioTest {
                         MinioConstants.MINIO_OPERATION, MinioOperations.listBuckets,
                         "autoCreateBucket", "false",
                         "bucket", nonExistingBucket2))
-                .post("/minio/operation2")
+                .post("/minio/operation")
                 .then()
                 .statusCode(500)
                 .body(containsString("Failed to resolve endpoint"));
+    }
+
+    @Test
+    public void testETag() throws Exception {
+        initClient(BUCKET_NAME);
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .queryParam("params", params(
+                        MinioConstants.OBJECT_NAME, "element1.txt"))
+                .queryParam("returnHeaders", true)
+                .body("MinIO is a cloud storage server compatible with Amazon S3, ...")
+                .post("minio/operation")
+                .then()
+                .statusCode(200)
+                .body(matchesPattern("headers.*" + MinioConstants.E_TAG + ":\\w+.+"));
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .queryParam("params", params(
+                        MinioConstants.MINIO_OPERATION, MinioOperations.getObject,
+                        MinioConstants.OBJECT_NAME, "element1.txt"))
+                .post("minio/operation")
+                .then()
+                .statusCode(200)
+                .body(is("MinIO is a cloud storage server compatible with Amazon S3, ..."));
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .queryParam("params", params(
+                        MinioConstants.MINIO_OPERATION, MinioOperations.deleteObject,
+                        MinioConstants.OBJECT_NAME, "element1.txt"))
+                .post("/minio/operation")
+                .then()
+                .statusCode(200)
+                .body(containsString("true"));
     }
 
     private static String params(Object... os) {
@@ -384,5 +412,9 @@ class MinioTest {
         } catch (MinioException | GeneralSecurityException | IOException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
     }
 }

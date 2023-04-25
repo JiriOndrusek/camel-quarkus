@@ -16,13 +16,10 @@
  */
 package org.apache.camel.quarkus.component.minio.it;
 
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 import io.minio.GetObjectArgs;
@@ -46,14 +43,10 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.ResolveEndpointFailedException;
 import org.apache.camel.component.minio.MinioComponent;
 import org.apache.camel.component.minio.MinioConstants;
-import org.apache.camel.component.minio.MinioEndpoint;
 import org.apache.camel.component.minio.MinioOperations;
 import org.apache.camel.util.Pair;
-import org.eclipse.microprofile.config.ConfigProvider;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @Path("/minio")
 @ApplicationScoped
@@ -61,7 +54,7 @@ public class MinioResource {
 
     public static final String SERVER_ACCESS_KEY = "testAccessKey";
     public static final String SERVER_SECRET_KEY = "testSecretKey";
-    private static final String URL_AUTH_PARAMS = "accessKey=" + SERVER_ACCESS_KEY + "&secretKey=RAW(" + SERVER_SECRET_KEY + ")";
+    private static final String URL_AUTH = "accessKey=" + SERVER_ACCESS_KEY + "&secretKey=RAW(" + SERVER_SECRET_KEY + ")";
 
     @Inject
     ProducerTemplate producerTemplate;
@@ -81,11 +74,12 @@ public class MinioResource {
         minioComponent.getConfiguration().setMinioClient(null);
         minioComponent.setAutowiredEnabled(false);
         try {
-            String url = "minio://mycamel?endpoint=" + endpoint + "&moveAfterRead=true&destinationBucketName=movedafterread&" + URL_AUTH_PARAMS;
+            String url = "minio://mycamel?endpoint=" + endpoint + "&moveAfterRead=true&destinationBucketName=movedafterread&"
+                    + URL_AUTH;
 
             return Response.ok().entity(consumerTemplate.receiveBody(url, 5000, String.class)).build();
 
-        } catch(Exception e) {
+        } catch (Exception e) {
             return Response.status(500).entity(e.getCause().getMessage()).build();
         } finally {
             minioComponent.getConfiguration().setMinioClient(client);
@@ -123,119 +117,36 @@ public class MinioResource {
         return Response.ok().build();
     }
 
+    @Path("/getUsingPojo")
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    @Consumes(MediaType.TEXT_PLAIN)
+    public String getUsingPojo(String bucket,
+            @QueryParam(MinioConstants.OBJECT_NAME) String objectName) {
+
+        String endpoint = "minio:mycamel?pojoRequest=true&minioClient=#minioClient";
+
+        GetObjectArgs.Builder body = GetObjectArgs.builder()
+                .bucket(bucket)
+                .object(objectName);
+
+        Map<String, Object> headers = Collections.singletonMap(MinioConstants.MINIO_OPERATION, MinioOperations.getObject);
+
+        return producerTemplate.requestBodyAndHeaders(endpoint, body, headers, String.class);
+    }
+
     @Path("/operation")
     @POST
     @Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.TEXT_PLAIN)
     public Response operation(String body,
-            @QueryParam(MinioConstants.MINIO_OPERATION) String operation,
-            @QueryParam(MinioConstants.OBJECT_NAME) String objectName,
-            @QueryParam(MinioConstants.DESTINATION_OBJECT_NAME) String destinationObjectName,
-            @QueryParam(MinioConstants.DESTINATION_BUCKET_NAME) String destinationBucketName,
-            @QueryParam(MinioConstants.OFFSET) Integer offset,
-            @QueryParam(MinioConstants.OFFSET) Integer length,
-            @QueryParam("autoCreateBucket") Boolean autoCreateBucket,
-            @QueryParam("bucket") String bucket) {
-
-        String endpoint = "minio:" + (bucket != null ? bucket : "mycamel");
-
-        if (autoCreateBucket != null) {
-            endpoint = endpoint + "&autoCreateBucket=" + autoCreateBucket;
-        }
-
-        MinioOperations op = (operation != "" && !"".equals(operation) ? MinioOperations.valueOf(operation) : null);
-
-        Map<String, Object> headers = new HashMap<>();
-        if (op != null) {
-            headers.put(MinioConstants.MINIO_OPERATION, op);
-        }
-        if (objectName != null) {
-            headers.put(MinioConstants.OBJECT_NAME, objectName);
-        }
-        if (destinationObjectName != null) {
-            headers.put(MinioConstants.DESTINATION_OBJECT_NAME, destinationObjectName);
-        }
-        if (destinationBucketName != null) {
-            headers.put(MinioConstants.DESTINATION_BUCKET_NAME, destinationBucketName);
-        }
-        if (offset != null) {
-            headers.put(MinioConstants.OFFSET, offset);
-        }
-        if (length != null) {
-            headers.put(MinioConstants.LENGTH, length);
-        }
-
-        if (op == MinioOperations.getObject) {
-            return Response.ok().entity(producerTemplate.requestBodyAndHeaders(endpoint, body, headers, String.class))
-                    .build();
-        }
-
-        Iterable objectList = null;
-        try {
-            objectList = producerTemplate.requestBodyAndHeaders(endpoint, body, headers, Iterable.class);
-        } catch (Exception e) {
-            return Response.status(500)
-                    .entity(e.getMessage())
-                    .build();
-        }
-        var sb = new StringBuilder();
-        var errorSB = new StringBuilder();
-        objectList.forEach(r -> {
-            try {
-                if (r instanceof Result) {
-                    Object o = ((Result) r).get();
-                    if (o instanceof Item) {
-                        sb.append("item: ").append(((Item) o).objectName());
-                    } else {
-                        sb.append(o);
-                    }
-                } else if (r instanceof Bucket) {
-                    sb.append("bucket: ").append(((Bucket) r).name());
-                } else if (r instanceof GetObjectResponse) {
-                    if (length != null && offset != null) {
-                        byte[] bytes = new byte[length];
-                        ((GetObjectResponse) r).read(bytes, 0, length - offset);
-                        sb.append(new String(bytes, StandardCharsets.UTF_8));
-                    } else {
-                        errorSB.append("Offset and length is required!");
-                    }
-
-                } else {
-                    sb.append(r);
-                }
-                sb.append(", ");
-            } catch (Exception e) {
-                errorSB.append(e.toString());
-            }
-        });
-        var respBuilder = errorSB.length() > 0 ? Response.status(500).entity(errorSB.toString())
-                : Response.ok().entity(sb.toString());
-
-        return respBuilder.build();
-    }
-
-    @Path("/operation2")
-    @POST
-    @Produces(MediaType.TEXT_PLAIN)
-    @Consumes(MediaType.TEXT_PLAIN)
-    public Response operation2(String body,
-            @QueryParam("params") String parametersString) {
+            //map of values in the format k1:v1,k2:v2,....
+            @QueryParam("params") String parametersString,
+            //if true result string starts with the headers from the received exchange
+            @QueryParam("returnHeaders") boolean returnHeaders) {
 
         //transform string to map to avoid jackson
-        Map<String, Object> headers = Arrays.stream(parametersString.split(","))
-                .map(s -> new Pair(s.split(":")[0], s.split(":")[1]))
-                .map(p -> {
-                    switch (p.getLeft().toString()) {
-                    case MinioConstants.OFFSET:
-                    case MinioConstants.LENGTH:
-                        return new Pair<>(p.getLeft(), Integer.parseInt(p.getRight().toString()));
-                    case MinioConstants.MINIO_OPERATION:
-                        return new Pair<>(p.getLeft(), MinioOperations.valueOf(p.getRight().toString()));
-                    default:
-                        return p;
-                    }
-                })
-                .collect(Collectors.toMap(p -> p.getLeft().toString(), p -> p.getRight()));
+        Map<String, Object> headers = deserializeMap(parametersString);
 
         String endpoint = String.format("minio:%s?accessKey=" + SERVER_ACCESS_KEY
                 + "&secretKey=RAW(" + SERVER_SECRET_KEY + ")", headers.getOrDefault("bucket", "mycamel"));
@@ -249,28 +160,43 @@ public class MinioResource {
         Integer length = (Integer) headers.getOrDefault(MinioConstants.LENGTH, null);
         Integer offset = (Integer) headers.getOrDefault(MinioConstants.OFFSET, null);
 
-
         if (op == MinioOperations.getObject) {
             try {
                 return Response.ok().entity(producerTemplate.requestBodyAndHeaders(endpoint, body, headers, String.class))
                         .build();
-            } catch(Exception e) {
+            } catch (Exception e) {
                 return Response.status(500).entity(e.getCause().getMessage())
                         .build();
             }
-
         }
 
-        Iterable objectList = null;
+        Iterable objectList;
+        var sb = new StringBuilder();
+        var errorSB = new StringBuilder();
         try {
-            objectList = producerTemplate.requestBodyAndHeaders(endpoint, body, headers, Iterable.class);
+            Exchange exchange = producerTemplate.request(endpoint, e -> {
+                e.getIn().setHeaders(headers);
+                e.getIn().setBody(body);
+            });
+            if (returnHeaders) {
+                sb.append("headers[")
+                        .append(exchange.getIn().getHeaders().entrySet().stream().map(e -> e.getKey() + ":" + e.getValue())
+                                .collect(Collectors.joining(",")))
+                        .append("]");
+            }
+            objectList = exchange.getIn(Iterable.class);//producerTemplate.requestBodyAndHeaders(endpoint, body, headers, Iterable.class);
         } catch (Exception e) {
             return Response.status(500)
                     .entity(e.getMessage())
                     .build();
         }
-        var sb = new StringBuilder();
-        var errorSB = new StringBuilder();
+        formatResult(length, offset, objectList, sb, errorSB);
+        var respBuilder = errorSB.length() > 0 ? Response.status(500).entity(errorSB.toString())
+                : Response.ok().entity(sb.toString());
+        return respBuilder.build();
+    }
+
+    private void formatResult(Integer length, Integer offset, Iterable objectList, StringBuilder sb, StringBuilder errorSB) {
         objectList.forEach(r -> {
             try {
                 if (r instanceof Result) {
@@ -299,28 +225,23 @@ public class MinioResource {
                 errorSB.append(e);
             }
         });
-        var respBuilder = errorSB.length() > 0 ? Response.status(500).entity(errorSB.toString())
-                : Response.ok().entity(sb.toString());
-
-        return respBuilder.build();
     }
 
-    @Path("/getUsingPojo")
-    @POST
-    @Produces(MediaType.TEXT_PLAIN)
-    @Consumes(MediaType.TEXT_PLAIN)
-    public String getUsingPojo(String bucket,
-            @QueryParam(MinioConstants.OBJECT_NAME) String objectName) {
-
-        String endpoint = "minio:mycamel?pojoRequest=true&minioClient=#minioClient";
-
-        GetObjectArgs.Builder body = GetObjectArgs.builder()
-                .bucket(bucket)
-                .object(objectName);
-
-        Map<String, Object> headers = Collections.singletonMap(MinioConstants.MINIO_OPERATION, MinioOperations.getObject);
-
-        return producerTemplate.requestBodyAndHeaders(endpoint, body, headers, String.class);
-
+    private Map<String, Object> deserializeMap(String parametersString) {
+        return Arrays.stream(parametersString.split(","))
+                .map(s -> new Pair(s.split(":")[0], s.split(":")[1]))
+                .map(p -> {
+                    switch (p.getLeft().toString()) {
+                    case MinioConstants.OFFSET:
+                    case MinioConstants.LENGTH:
+                        return new Pair<>(p.getLeft(), Integer.parseInt(p.getRight().toString()));
+                    case MinioConstants.MINIO_OPERATION:
+                        return new Pair<>(p.getLeft(), MinioOperations.valueOf(p.getRight().toString()));
+                    default:
+                        return p;
+                    }
+                })
+                .collect(Collectors.toMap(p -> p.getLeft().toString(), p -> p.getRight()));
     }
+
 }
