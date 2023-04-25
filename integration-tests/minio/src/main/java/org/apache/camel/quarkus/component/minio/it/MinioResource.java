@@ -22,10 +22,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 import io.minio.GetObjectArgs;
 import io.minio.GetObjectResponse;
+import io.minio.MinioClient;
 import io.minio.Result;
 import io.minio.messages.Bucket;
 import io.minio.messages.Item;
@@ -40,12 +42,18 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.ResolveEndpointFailedException;
+import org.apache.camel.component.minio.MinioComponent;
 import org.apache.camel.component.minio.MinioConstants;
+import org.apache.camel.component.minio.MinioEndpoint;
 import org.apache.camel.component.minio.MinioOperations;
 import org.apache.camel.util.Pair;
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @Path("/minio")
 @ApplicationScoped
@@ -61,13 +69,37 @@ public class MinioResource {
     @Inject
     ConsumerTemplate consumerTemplate;
 
+    @Inject
+    CamelContext camelContext;
+
+    @Path("/consumerWithClientCreation/{endpoint}")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response consumerWithClientCreation(@PathParam("endpoint") String endpoint) {
+        MinioComponent minioComponent = camelContext.getComponent("minio", MinioComponent.class);
+        MinioClient client = minioComponent.getConfiguration().getMinioClient();
+        minioComponent.getConfiguration().setMinioClient(null);
+        minioComponent.setAutowiredEnabled(false);
+        try {
+            String url = "minio://mycamel?endpoint=" + endpoint + "&moveAfterRead=true&destinationBucketName=movedafterread&" + URL_AUTH_PARAMS;
+
+            return Response.ok().entity(consumerTemplate.receiveBody(url, 5000, String.class)).build();
+
+        } catch(Exception e) {
+            return Response.status(500).entity(e.getCause().getMessage()).build();
+        } finally {
+            minioComponent.getConfiguration().setMinioClient(client);
+            minioComponent.setAutowiredEnabled(true);
+        }
+    }
+
     @Path("/consumer")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String consumer() {
 
         final String message = consumerTemplate.receiveBody(
-                "minio://mycamel?moveAfterRead=true&destinationBucketName=camel-kafka-connector&" + URL_AUTH_PARAMS,
+                "minio://mycamel?moveAfterRead=true&destinationBucketName=movedafterread",
                 5000, String.class);
         return message;
     }
@@ -78,7 +110,7 @@ public class MinioResource {
     public Response consumeAndMove(@PathParam("removeHeader") boolean removeHeader) {
 
         final Exchange exchange = consumerTemplate.receive(
-                "minio://movingfrombucket?deleteAfterRead=true&" + URL_AUTH_PARAMS,
+                "minio://movingfrombucket?deleteAfterRead=true",
                 5000);
 
         Exchange exchangeToSend = exchange.copy();
@@ -86,7 +118,7 @@ public class MinioResource {
             exchangeToSend.getIn().removeHeader(MinioConstants.BUCKET_NAME);
         }
 
-        producerTemplate.send("minio://movingtobucket?" + URL_AUTH_PARAMS, exchangeToSend);
+        producerTemplate.send("minio://movingtobucket", exchangeToSend);
 
         return Response.ok().build();
     }
@@ -105,7 +137,7 @@ public class MinioResource {
             @QueryParam("autoCreateBucket") Boolean autoCreateBucket,
             @QueryParam("bucket") String bucket) {
 
-        String endpoint = String.format("minio:%s?s", (bucket != null ? bucket : "mycamel"), URL_AUTH_PARAMS);
+        String endpoint = "minio:" + (bucket != null ? bucket : "mycamel");
 
         if (autoCreateBucket != null) {
             endpoint = endpoint + "&autoCreateBucket=" + autoCreateBucket;
@@ -264,7 +296,7 @@ public class MinioResource {
                 }
                 sb.append(", ");
             } catch (Exception e) {
-                errorSB.append(e.toString());
+                errorSB.append(e);
             }
         });
         var respBuilder = errorSB.length() > 0 ? Response.status(500).entity(errorSB.toString())
@@ -280,9 +312,7 @@ public class MinioResource {
     public String getUsingPojo(String bucket,
             @QueryParam(MinioConstants.OBJECT_NAME) String objectName) {
 
-        String endpoint = "minio:mycamel?" + URL_AUTH_PARAMS
-                + "&pojoRequest=true"
-                + "&minioClient=#minioClient";
+        String endpoint = "minio:mycamel?pojoRequest=true&minioClient=#minioClient";
 
         GetObjectArgs.Builder body = GetObjectArgs.builder()
                 .bucket(bucket)

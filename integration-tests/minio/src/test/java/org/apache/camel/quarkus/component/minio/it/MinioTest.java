@@ -37,6 +37,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.component.minio.MinioConstants;
 import org.apache.camel.component.minio.MinioOperations;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,19 +59,61 @@ class MinioTest {
 
     private MinioClient minioClient;
 
+
+    @ConfigProperty(name = "MinioClientProducer_url")
+    String endpoint;
+
     @Test
-    public void testConsumer() throws Exception {
+    public void testConsumerMoveAfterRead() throws Exception {
         initClient(BUCKET_NAME);
 
-        sendViaClient("Dummy content", "consumerObject");
+        sendViaClient("Hi Sheldon!", "consumerObject");
 
-        //wait for the result from the server
-        await().atMost(10L, TimeUnit.SECONDS).untilAsserted(() -> {
-            String result = RestAssured.get("/minio/consumer")
-                    .then()
-                    .extract().asString();
-            Assertions.assertEquals("Dummy content", result);
-        });
+        RestAssured.get("/minio/consumer")
+                .then()
+                .statusCode(200)
+                .body(is("Hi Sheldon!"));
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .queryParam("params", params(
+                        MinioConstants.MINIO_OPERATION, MinioOperations.getObject,
+                        MinioConstants.OBJECT_NAME, "consumerObject",
+                        MinioConstants.BUCKET_NAME, "movedafterread"))
+                .post("minio/operation2")
+                .then()
+                .statusCode(200)
+                .body(is("Hi Sheldon!"));
+    }
+
+    @Test
+    public void testConsumerWithoutDetectionOfClient() throws Exception {
+        initClient(BUCKET_NAME);
+
+        sendViaClient("Hi Sheldon!", "consumerObject");
+
+        RestAssured.get("/minio/consumerWithClientCreation/"+endpoint)
+                .then()
+                .statusCode(200)
+                .body(is("Hi Sheldon!"));
+
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .queryParam("params", params(
+                        MinioConstants.MINIO_OPERATION, MinioOperations.getObject,
+                        MinioConstants.OBJECT_NAME, "consumerObject",
+                        MinioConstants.BUCKET_NAME, "movedafterread"))
+                .post("minio/operation2")
+                .then()
+                .statusCode(200)
+                .body(is("Hi Sheldon!"));
+
+        sendViaClient("Hi Sheldon!", "consumerObject");
+
+        RestAssured.get("/minio/consumerWithClientCreation/non_existing_endpoint_!@#$")
+                .then()
+                .statusCode(500)
+                .body(is("invalid hostname"));
     }
 
     @Test
