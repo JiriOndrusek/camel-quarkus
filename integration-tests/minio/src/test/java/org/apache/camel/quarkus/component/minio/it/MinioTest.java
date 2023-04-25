@@ -37,13 +37,17 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.component.minio.MinioConstants;
 import org.apache.camel.component.minio.MinioOperations;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
 @QuarkusTest
 @QuarkusTestResource(MinioTestResource.class)
@@ -132,7 +136,7 @@ class MinioTest {
                 .post("/minio/operation2")
                 .then()
                 .statusCode(200)
-                .body(equalTo(""));
+                .body(not(containsString("bucket: " + BUCKET_NAME)));
     }
 
     @Test
@@ -207,6 +211,51 @@ class MinioTest {
     }
 
     @Test
+    public void testMoveDataBetweenBuckets() throws Exception {
+        MinioClient mc = initClient("movingfrombucket");
+        initClient("movingtobucket");
+
+        sendViaClient(mc, "movingfrombucket", "Hi Sheldon!", "object1");
+
+        //move after read with removed bucket_name header
+        RestAssured.get("/minio/consumeAndMove/true")
+                .then()
+                .statusCode(200);
+
+        //move to another bucket should be successful
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .queryParam("params", params(
+                        MinioConstants.MINIO_OPERATION, MinioOperations.getObject,
+                        MinioConstants.OBJECT_NAME, "object1",
+                        MinioConstants.BUCKET_NAME, "movingtobucket"))
+                .post("minio/operation2")
+                .then()
+                .statusCode(200)
+                .body(is("Hi Sheldon!"));
+
+
+        sendViaClient(mc, "movingfrombucket", "Hi Leonard!", "object2");
+
+        //move after read with the header "bucket_name" intact
+        RestAssured.get("/minio/consumeAndMove/false")
+                .then()
+                .statusCode(200);
+
+        //moved object should not exist
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .queryParam("params", params(
+                        MinioConstants.MINIO_OPERATION, MinioOperations.getObject,
+                        MinioConstants.OBJECT_NAME, "object2",
+                        MinioConstants.BUCKET_NAME, "movingtobucket"))
+                .post("minio/operation2")
+                .then()
+                .statusCode(500)
+                .body(is("The specified key does not exist."));
+    }
+
+    @Test
     void testGetObjectRange() throws Exception {
         MinioClient client = initClient(BUCKET_NAME);
 
@@ -226,7 +275,7 @@ class MinioTest {
     }
 
     @Test
-    public void testAUtocreateBucket() throws Exception {
+    public void testAutocreateBucket() throws Exception {
         //creates bucket mycamel
         initClient(BUCKET_NAME);
         String nonExistingBucket1 = "nonexistingbucket1";
@@ -277,10 +326,14 @@ class MinioTest {
     }
 
     private void sendViaClient(MinioClient client, String content, String objectName) {
+        sendViaClient(client, BUCKET_NAME, content, objectName);
+    }
+
+    private void sendViaClient(MinioClient client, String bucketName, String content, String objectName) {
         try (InputStream is = new ByteArrayInputStream((content.getBytes()))) {
             client.putObject(
                     PutObjectArgs.builder()
-                            .bucket(BUCKET_NAME)
+                            .bucket(bucketName)
                             .object(objectName)
                             .contentType("text/xml")
                             .stream(is, -1, PART_SIZE)

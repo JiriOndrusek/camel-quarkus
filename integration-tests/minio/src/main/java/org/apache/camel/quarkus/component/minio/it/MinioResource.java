@@ -16,6 +16,7 @@
  */
 package org.apache.camel.quarkus.component.minio.it;
 
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,11 +35,13 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.camel.ConsumerTemplate;
+import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.minio.MinioConstants;
 import org.apache.camel.component.minio.MinioOperations;
@@ -50,6 +53,7 @@ public class MinioResource {
 
     public static final String SERVER_ACCESS_KEY = "testAccessKey";
     public static final String SERVER_SECRET_KEY = "testSecretKey";
+    private static final String URL_AUTH_PARAMS = "accessKey=" + SERVER_ACCESS_KEY + "&secretKey=RAW(" + SERVER_SECRET_KEY + ")";
 
     @Inject
     ProducerTemplate producerTemplate;
@@ -63,11 +67,28 @@ public class MinioResource {
     public String consumer() {
 
         final String message = consumerTemplate.receiveBody(
-                "minio://mycamel?moveAfterRead=true&destinationBucketName=camel-kafka-connector"
-                        + "&accessKey=" + SERVER_ACCESS_KEY
-                        + "&secretKey=RAW(" + SERVER_SECRET_KEY + ")",
+                "minio://mycamel?moveAfterRead=true&destinationBucketName=camel-kafka-connector&" + URL_AUTH_PARAMS,
                 5000, String.class);
         return message;
+    }
+
+    @Path("/consumeAndMove/{removeHeader}")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response consumeAndMove(@PathParam("removeHeader") boolean removeHeader) {
+
+        final Exchange exchange = consumerTemplate.receive(
+                "minio://movingfrombucket?deleteAfterRead=true&" + URL_AUTH_PARAMS,
+                5000);
+
+        Exchange exchangeToSend = exchange.copy();
+        if (removeHeader) {
+            exchangeToSend.getIn().removeHeader(MinioConstants.BUCKET_NAME);
+        }
+
+        producerTemplate.send("minio://movingtobucket?" + URL_AUTH_PARAMS, exchangeToSend);
+
+        return Response.ok().build();
     }
 
     @Path("/operation")
@@ -84,8 +105,7 @@ public class MinioResource {
             @QueryParam("autoCreateBucket") Boolean autoCreateBucket,
             @QueryParam("bucket") String bucket) {
 
-        String endpoint = String.format("minio:%s?accessKey=" + SERVER_ACCESS_KEY
-                + "&secretKey=RAW(" + SERVER_SECRET_KEY + ")", (bucket != null ? bucket : "mycamel"));
+        String endpoint = String.format("minio:%s?s", (bucket != null ? bucket : "mycamel"), URL_AUTH_PARAMS);
 
         if (autoCreateBucket != null) {
             endpoint = endpoint + "&autoCreateBucket=" + autoCreateBucket;
@@ -168,14 +188,6 @@ public class MinioResource {
     @Consumes(MediaType.TEXT_PLAIN)
     public Response operation2(String body,
             @QueryParam("params") String parametersString) {
-        //            @QueryParam(MinioConstants.MINIO_OPERATION) String operation,
-        //            @QueryParam(MinioConstants.OBJECT_NAME) String objectName,
-        //            @QueryParam(MinioConstants.DESTINATION_OBJECT_NAME) String destinationObjectName,
-        //            @QueryParam(MinioConstants.DESTINATION_BUCKET_NAME) String destinationBucketName,
-        //            @QueryParam(MinioConstants.OFFSET) Integer offset,
-        //            @QueryParam(MinioConstants.OFFSET) Integer length,
-        //            @QueryParam("autoCreateBucket") Boolean autoCreateBucket,
-        //            @QueryParam("bucket") String bucket) {
 
         //transform string to map to avoid jackson
         Map<String, Object> headers = Arrays.stream(parametersString.split(","))
@@ -204,30 +216,17 @@ public class MinioResource {
         MinioOperations op = (MinioOperations) headers.getOrDefault(MinioConstants.MINIO_OPERATION, null);
         Integer length = (Integer) headers.getOrDefault(MinioConstants.LENGTH, null);
         Integer offset = (Integer) headers.getOrDefault(MinioConstants.OFFSET, null);
-        //
-        //
-        //        if (op != null) {
-        //            headers.put(MinioConstants.MINIO_OPERATION, op);
-        //        }
-        //        if (objectName != null) {
-        //            headers.put(MinioConstants.OBJECT_NAME, objectName);
-        //        }
-        //        if (destinationObjectName != null) {
-        //            headers.put(MinioConstants.DESTINATION_OBJECT_NAME, destinationObjectName);
-        //        }
-        //        if (destinationBucketName != null) {
-        //            headers.put(MinioConstants.DESTINATION_BUCKET_NAME, destinationBucketName);
-        //        }
-        //        if (offset != null) {
-        //            headers.put(MinioConstants.OFFSET, offset);
-        //        }
-        //        if (length != null) {
-        //            headers.put(MinioConstants.LENGTH, length);
-        //        }
+
 
         if (op == MinioOperations.getObject) {
-            return Response.ok().entity(producerTemplate.requestBodyAndHeaders(endpoint, body, headers, String.class))
-                    .build();
+            try {
+                return Response.ok().entity(producerTemplate.requestBodyAndHeaders(endpoint, body, headers, String.class))
+                        .build();
+            } catch(Exception e) {
+                return Response.status(500).entity(e.getCause().getMessage())
+                        .build();
+            }
+
         }
 
         Iterable objectList = null;
@@ -281,8 +280,7 @@ public class MinioResource {
     public String getUsingPojo(String bucket,
             @QueryParam(MinioConstants.OBJECT_NAME) String objectName) {
 
-        String endpoint = "minio:mycamel?accessKey=" + SERVER_ACCESS_KEY
-                + "&secretKey=RAW(" + SERVER_SECRET_KEY + ")"
+        String endpoint = "minio:mycamel?" + URL_AUTH_PARAMS
                 + "&pojoRequest=true"
                 + "&minioClient=#minioClient";
 
