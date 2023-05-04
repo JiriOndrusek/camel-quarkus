@@ -30,6 +30,8 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.apache.camel.ConsumerTemplate;
+import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.snmp.SnmpMessage;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -58,6 +60,9 @@ public class SnmpResource {
     @Inject
     @Named("snmpTrapResults")
     Map<String, Deque<SnmpMessage>> snmpResults;
+
+    @Inject
+    ConsumerTemplate consumerTemplate;
 
     @Inject
     ProducerTemplate producerTemplate;
@@ -104,6 +109,19 @@ public class SnmpResource {
         producerTemplate.sendBody(url, trap);
 
         return Response.ok().build();
+    }
+
+    @Path("/poll/{version}")
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response poll(@PathParam("version") int version, String oid) {
+        String url = String.format("snmp:%s?protocol=udp&snmpVersion=%d&type=POLL&oids=%s", snmpListenAddress, version, oid);
+
+        Exchange e = consumerTemplate.receive(url);
+
+        String result = e.getIn().getBody(SnmpMessage.class).getSnmpMessage().getVariableBindings().stream()
+                .map(v -> v.getVariable().toString()).collect(Collectors.joining(","));
+        return Response.ok(result).build();
     }
 
     @Path("/results/{from}")

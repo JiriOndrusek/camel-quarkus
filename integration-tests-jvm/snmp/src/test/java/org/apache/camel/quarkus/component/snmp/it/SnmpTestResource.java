@@ -136,12 +136,12 @@ public class SnmpTestResource implements QuarkusTestResourceLifecycleManager {
             responsePDU.setErrorStatus(PDU.noError);
             responsePDU.setErrorIndex(0);
             if (vbs.isEmpty()) {
-                VariableBinding vb = generateResponseBinding(counter, SnmpTest.PRODUCE_PDU_OID);
+                VariableBinding vb = generateResponseBinding(counter, version, SnmpTest.PRODUCE_PDU_OID);
                 if (vb != null) {
                     responsePDU.add(vb);
                 }
             } else {
-                vbs.stream().forEach(vb -> responsePDU.add(generateResponseBinding(counter, vb.getOid())));
+                vbs.stream().forEach(vb -> responsePDU.add(generateResponseBinding(counter, version, vb.getOid())));
             }
             if (responsePDU.getVariableBindings().isEmpty()) {
                 return null;
@@ -149,7 +149,7 @@ public class SnmpTestResource implements QuarkusTestResourceLifecycleManager {
             return responsePDU;
         }
 
-        private VariableBinding generateResponseBinding(int counter, OID oid) {
+        private VariableBinding generateResponseBinding(int counter, int version, OID oid) {
             //get next test
             if (SnmpTest.GET_NEXT_OID.equals(oid)) {
                 //if counter < 2 return the same oid
@@ -166,11 +166,12 @@ public class SnmpTestResource implements QuarkusTestResourceLifecycleManager {
             }
 
             if (SnmpTest.POLL_OID.equals(oid)) {
-                if (counter < 4) {
-                    return new VariableBinding(SnmpTest.POLL_OID,
-                            new OctetString("My POLL Printer - response #" + counter));
+                if (counter > 1) {
+                    throw new RuntimeException(
+                            String.format("Not expected request #%d for poll of version %d.", counter, version));
                 }
-
+                return new VariableBinding(SnmpTest.POLL_OID,
+                        new OctetString("My POLL Printer - response #" + counter));
             }
 
             if (SnmpTest.PRODUCE_PDU_OID.equals(oid)) {
@@ -195,10 +196,8 @@ public class SnmpTestResource implements QuarkusTestResourceLifecycleManager {
             }
 
             if (SnmpTest.DOT_OID.equals(oid)) {
-                if (counter < 4) {
-                    return new VariableBinding(SnmpTest.DOT_OID,
-                            new OctetString("My DOT Printer - response #" + counter));
-                }
+                return new VariableBinding(SnmpTest.DOT_OID,
+                        new OctetString("My DOT Printer - response #" + counter));
             }
 
             return null;
