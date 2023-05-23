@@ -18,22 +18,11 @@ final class SwaggerSubstitutions {
 @TargetClass(OpenAPIParser.class)
 final class OpenAPIParserSubstitutions {
 
-    //    @AnnotateOriginal
-    //    @SwaggerParserInterceptorBinding
-    //    public SwaggerParseResult readLocation(String url, List<AuthorizationValue> auth, ParseOptions options) {
-    //        return null;
-    //    }
-
     @Substitute
     public SwaggerParseResult readLocation(String url, List<AuthorizationValue> auth, ParseOptions options) {
-
-        System.out.println("================ url before: " + url);
-
         if (url.startsWith("resource:")) {
             url = url.replaceFirst("resource:", "");
         }
-
-        System.out.println("=============== url after:" + url);
 
         SwaggerParseResult output = null;
 

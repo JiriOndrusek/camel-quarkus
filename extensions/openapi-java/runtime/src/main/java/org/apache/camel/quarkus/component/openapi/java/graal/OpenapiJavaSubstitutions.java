@@ -16,7 +16,6 @@
  */
 package org.apache.camel.quarkus.component.openapi.java.graal;
 
-import java.util.Calendar;
 import java.util.List;
 
 import com.oracle.svm.core.annotate.Substitute;
@@ -32,13 +31,5 @@ final class RestOpenApiReaderSubstitutions {
     @Substitute
     private static void convertAndSetItemsEnum(final Schema items, final List<String> allowableValues, final Class<?> type) {
         throw new UnsupportedOperationException("RestOpenApiReader::convertAndSetItemsEnum should not be invoked");
-    }
-}
-
-@TargetClass(Calendar.Builder.class)
-final class CalendarBuilderSubstitution {
-    @Substitute
-    public Calendar build() {
-        throw new UnsupportedOperationException("Calendar::build is not supported");
     }
 }
