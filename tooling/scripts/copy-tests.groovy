@@ -38,8 +38,13 @@ final String classNamePrefix = properties['group-tests.class.name.prefix'] ?: ""
 final Boolean directly = properties['copy-tests.dest.directly'] as Boolean 
 
 copyResources(sourceDir.resolve('src/main/resources'), destinationModuleDir.resolve('target/classes'), excl)
-copyResources(sourceDir.resolve('src/main/java'), destinationModuleDir.resolve(directly ? 'src/main/java' : 'target/src/main/java'), excl)
-copyResources(sourceDir.resolve('src/test/java'), destinationModuleDir.resolve(directly ? 'src/test/java' : 'target/src/test/java'), excl)
+if(directly) {
+    copyResources(sourceDir.resolve('src/main'), destinationModuleDir.resolve('src/main'), excl)
+    copyResources(sourceDir.resolve('src/test'), destinationModuleDir.resolve('src/test'), excl)
+} else {
+    copyResources(sourceDir.resolve('src/main/java'), destinationModuleDir.resolve('target/src/main/java'), excl)
+    copyResources(sourceDir.resolve('src/test/java'), destinationModuleDir.resolve('target/src/test/java'), excl)
+}
 copyResources(sourceDir.resolve('src/test/resources'), destinationModuleDir.resolve('target/test-classes'), excl)
 
 String scriptDir = new File(getClass().protectionDomain.codeSource.location.path).parent
