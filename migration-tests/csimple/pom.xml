@@ -26,9 +26,9 @@
         <relativePath>../../poms/build-parent-st-it/pom.xml</relativePath>
     </parent>
 
-    <artifactId>camel-quarkus-standalone-integration-test-csimple</artifactId>
-    <name>Camel Quarkus :: Integration Tests :: CSimple</name>
-    <description>Integration tests for Camel Quarkus CSimple extension</description>
+    <artifactId>camel-quarkus-standalone-migration-test-csimple</artifactId>
+    <name>Camel Quarkus :: Migration Tests :: CSimple</name>
+    <description>Migration tests for Camel Quarkus CSimple extension</description>
 
     <properties>
         <!-- Allow running our tests against alternative BOMs, such as io.quarkus.platform:quarkus-camel-bom https://repo1.maven.org/maven2/io/quarkus/platform/quarkus-camel-bom/ -->
@@ -147,6 +147,7 @@
                             <properties>
                                 <copy-tests.source.dir>${maven.multiModuleProjectDirectory}/integration-tests/csimple</copy-tests.source.dir>
                                 <copy-tests.dest.module.dir>${project.basedir}</copy-tests.dest.module.dir>
+                                <copy-tests.dest.directly>true</copy-tests.dest.directly>
                             </properties>
                         </configuration>
                     </execution>

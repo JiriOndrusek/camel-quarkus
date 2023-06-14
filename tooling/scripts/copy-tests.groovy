@@ -35,17 +35,18 @@ final Path sourceDir = Paths.get(properties['copy-tests.source.dir'])
 final Path destinationModuleDir = Paths.get(properties['copy-tests.dest.module.dir'])
 final String excl = properties['copy-tests.excludes']
 final String classNamePrefix = properties['group-tests.class.name.prefix'] ?: ""
+final Boolean directly = properties['copy-tests.dest.directly'] as Boolean 
 
 copyResources(sourceDir.resolve('src/main/resources'), destinationModuleDir.resolve('target/classes'), excl)
-copyResources(sourceDir.resolve('src/main/java'), destinationModuleDir.resolve('target/src/main/java'), excl)
-copyResources(sourceDir.resolve('src/test/java'), destinationModuleDir.resolve('target/src/test/java'), excl)
+copyResources(sourceDir.resolve('src/main/java'), destinationModuleDir.resolve(directly ? 'src/main/java' : 'target/src/main/java'), excl)
+copyResources(sourceDir.resolve('src/test/java'), destinationModuleDir.resolve(directly ? 'src/test/java' : 'target/src/test/java'), excl)
 copyResources(sourceDir.resolve('src/test/resources'), destinationModuleDir.resolve('target/test-classes'), excl)
 
 String scriptDir = new File(getClass().protectionDomain.codeSource.location.path).parent
 File sourceFile = new File("${scriptDir}/group-test-utils.groovy")
 Class groovyClass = new GroovyClassLoader(getClass().getClassLoader()).parseClass(sourceFile);
 GroovyObject utils = (GroovyObject) groovyClass.getDeclaredConstructor().newInstance();
-utils.makeTestClassNamesUnique(destinationModuleDir.resolve('target/src/test/java').toFile(), classNamePrefix)
+utils.makeTestClassNamesUnique(destinationModuleDir.resolve(directly ? 'src/test/java' : 'target/src/test/java').toFile(), classNamePrefix)
 
 static void copyResources(Path source, Path dest, String excl) {
     if (Files.exists(source)) {

@@ -194,6 +194,24 @@
                         </executions>
                     </plugin>
 
+                    <plugin>
+<!--                        disable enforce after migration?-->
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <dependencies>
+                            <dependency>
+                                <groupId>io.quarkus</groupId>
+                                <artifactId>quarkus-enforcer-rules</artifactId>
+                                <version>${quarkus.version}</version>
+                            </dependency>
+                            <!-- This dependency can be removed when MENFORCER-422 is available -->
+                            <dependency>
+                                <groupId>org.l2x6.cq</groupId>
+                                <artifactId>cq-filtered-external-enforcer-rules</artifactId>
+                                <version>${cq-plugin.version}</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
