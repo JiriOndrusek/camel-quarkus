@@ -70,6 +70,16 @@
             </dependency>
 
             <dependency>
+                <groupId>org.codehaus.groovy</groupId>
+                <artifactId>groovy</artifactId>
+                <version>3.0.8</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.groovy</groupId>
+                <artifactId>groovy-ant</artifactId>
+                <version>3.0.8</version> <!-- Replace with the desired version -->
+            </dependency>
+            <dependency>
                 <groupId>org.apache.camel.quarkus</groupId>
                 <artifactId>camel-quarkus-integration-test-support-custom-dataformat</artifactId>
                 <version>${camel-quarkus.version}</version>

@@ -211,6 +211,7 @@
                                 <version>${cq-plugin.version}</version>
                             </dependency>
                         </dependencies>
+                        <executions></executions>
                     </plugin>
                 </plugins>
             </build>
