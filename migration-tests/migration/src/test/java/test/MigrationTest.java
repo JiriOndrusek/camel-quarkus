@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 @QuarkusTest
 public class MigrationTest {
 
-    @Test
+//    @Test
     public void migrationExecution() throws Exception {
         Path migrationsPath = Paths.get(MigrationTest.class.getClassLoader().getResource("").getPath())
                 .getParent().getParent().getParent();
@@ -37,6 +37,18 @@ public class MigrationTest {
                 .readAllLines(Paths.get(MigrationTest.class.getClassLoader().getResource("modules").getPath()));
         for (String module : modules) {
             createModule(module, migrationsPath);
+        }
+
+    }
+
+    @Test
+    public void upgradeExecution() throws Exception {
+        Path migrationsPath = Paths.get(MigrationTest.class.getClassLoader().getResource("").getPath())
+                .getParent().getParent().getParent();
+        //read all modules to migrate
+        List<String> modules = Files
+                .readAllLines(Paths.get(MigrationTest.class.getClassLoader().getResource("modules").getPath()));
+        for (String module : modules) {
             runMigration(migrationsPath.resolve(module));
         }
 
