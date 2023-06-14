@@ -38,29 +38,96 @@ public class MigrationTest {
         for (String module : modules) {
             createModule(module, migrationsPath);
             copyModule(module, migrationsPath);
-            runMigration(migrationsPath.resolve(module));
-            upgradeQuarkusInPom(migrationsPath.resolve(module).resolve("pom.xml"));
         }
 
+        createGeneratedPOM(modules, migrationsPath.resolve("generated").resolve("pom.xml"));
+
+        for (String module : modules) {
+            runMigration(migrationsPath.resolve("generated").resolve(module));
+            upgradeQuarkusInPom(migrationsPath.resolve("generated").resolve(module).resolve("pom.xml"));
+        }
+    }
+
+    private void createGeneratedPOM(List<String> modules, Path targetLocation) throws Exception {
+
+        List<String> pomContent = Arrays.asList(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<!--\n" +
+                "\n" +
+                "    Licensed to the Apache Software Foundation (ASF) under one or more\n" +
+                "    contributor license agreements.  See the NOTICE file distributed with\n" +
+                "    this work for additional information regarding copyright ownership.\n" +
+                "    The ASF licenses this file to You under the Apache License, Version 2.0\n" +
+                "    (the \"License\"); you may not use this file except in compliance with\n" +
+                "    the License.  You may obtain a copy of the License at\n" +
+                "\n" +
+                "         http://www.apache.org/licenses/LICENSE-2.0\n" +
+                "\n" +
+                "    Unless required by applicable law or agreed to in writing, software\n" +
+                "    distributed under the License is distributed on an \"AS IS\" BASIS,\n" +
+                "    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n" +
+                "    See the License for the specific language governing permissions and\n" +
+                "    limitations under the License.\n" +
+                "\n" +
+                "-->\n" +
+                "<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\">\n"
+                +
+                "\n" +
+                "    <modelVersion>4.0.0</modelVersion>\n" +
+                "    <parent>\n" +
+                "        <groupId>org.apache.camel.quarkus</groupId>\n" +
+                "        <artifactId>camel-quarkus</artifactId>\n" +
+                "        <version>2.13.4-SNAPSHOT</version>\n" +
+                "        <relativePath>../../pom.xml</relativePath>\n" +
+                "    </parent>\n" +
+                "\n" +
+                "    <artifactId>camel-quarkus-migration-generated-tests</artifactId>\n" +
+                "    <packaging>pom</packaging>\n" +
+                "\n" +
+                "    <name>Camel Quarkus :: Migration Generated Tests</name>\n" +
+                "\n" +
+                "    <properties>\n" +
+                "        <quarkus.banner.enabled>false</quarkus.banner.enabled>\n" +
+                "    </properties>\n" +
+                "\n" +
+                "    <modules>").split("\\n"));
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(targetLocation.toFile()))) {
+            for (String line : pomContent) {
+                writer.write(line);
+                writer.newLine();
+            }
+            for (String module : modules) {
+                writer.write("        <module>" + module + "</module>");
+                writer.newLine();
+            }
+            writer.write("    </modules>");
+            writer.newLine();
+            writer.write("</project>");
+            writer.newLine();
+        }
     }
 
     private void createModule(final String module, Path migrationsPath) throws Exception {
         System.out.println("**************** creating " + module + " *************************");
 
-        if (Files.list(migrationsPath).anyMatch(new Predicate<Path>() {
-            public boolean test(Path path) {
-                return path.toString().endsWith(File.separator + module) && path.toFile().exists();
-            }
-        })) {
+        if (migrationsPath.resolve("generated").toFile().exists()
+                && Files.list(migrationsPath.resolve("generated")).anyMatch(new Predicate<Path>() {
+                    public boolean test(Path path) {
+                        return path.toString().endsWith(File.separator + module) && path.toFile().exists();
+                    }
+                })) {
             System.out.println("already exists");
             return;
         }
 
         //create folder
-        migrationsPath.resolve(module).toFile().mkdirs();
+        if (!migrationsPath.resolve("generated").toFile().exists()) {
+            migrationsPath.resolve("generated").toFile().mkdirs();
+        }
+        migrationsPath.resolve("generated").resolve(module).toFile().mkdirs();
         //copy pom file
         copyAndModifyPom(migrationsPath.getParent().resolve("integration-tests").resolve(module).resolve("pom.xml"),
-                migrationsPath.resolve(module).resolve("pom.xml"));
+                migrationsPath.resolve("generated").resolve(module).resolve("pom.xml"));
     }
 
     private void copyModule(final String module, Path migrationsPath) throws Exception {
@@ -68,8 +135,8 @@ public class MigrationTest {
         Map<String, String> properties = new HashMap<String, String>();
         properties.put("copy-tests.source.dir",
                 migrationsPath.getParent().resolve("integration-tests").resolve(module).toString());
-        properties.put("copy-tests.dest.module.dir", migrationsPath.resolve(module).toString());
-        properties.put("copy-tests.dest.directly", toString());
+        properties.put("copy-tests.dest.module.dir", migrationsPath.resolve("generated").resolve(module).toString());
+        properties.put("copy-tests.dest.directly", "true");
         // Create a GroovyShell with the binding
         GroovyShell shell = new GroovyShell();
         shell.setProperty("properties", properties);
@@ -175,8 +242,11 @@ public class MigrationTest {
                 if (line.contains("</parent>")) {
                     part = PomPart.header;
                 }
-                if (line.contains("build-parent-it")) {
-                    iterator.set(line.replaceFirst("build-parent-it", "build-parent-mi-it"));
+                if (line.contains("<artifactId>camel-quarkus-build-parent-it</artifactId>")) {
+                    iterator.set(line.replaceFirst("camel-quarkus-build-parent-it", "camel-quarkus-build-parent-mi-it"));
+                }
+                if (line.contains("../poms/build-parent-it")) {
+                    iterator.set(line.replaceFirst("../poms/build-parent-it", "../../poms/build-parent-mi-it"));
                 }
                 continue;
             case header:
