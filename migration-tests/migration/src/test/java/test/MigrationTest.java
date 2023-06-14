@@ -51,6 +51,7 @@ public class MigrationTest {
         for (String module : modules) {
             copyModule(module, migrationsPath);
             runMigration(migrationsPath.resolve(module));
+            upgradeQuarkusInPom(migrationsPath.resolve(module).resolve("pom.xml"));
         }
 
     }
@@ -70,7 +71,7 @@ public class MigrationTest {
         //create folder
         migrationsPath.resolve(module).toFile().mkdirs();
         //copy pom file
-        copyAndModifyPon(migrationsPath.getParent().resolve("integration-tests").resolve(module).resolve("pom.xml"),
+        copyAndModifyPom(migrationsPath.getParent().resolve("integration-tests").resolve(module).resolve("pom.xml"),
                 migrationsPath.resolve(module).resolve("pom.xml"));
     }
 
@@ -88,10 +89,34 @@ public class MigrationTest {
         // Run the Groovy script
         Path groovyScript = migrationsPath.getParent().resolve("tooling").resolve("scripts").resolve("copy-tests.groovy");
         Object result = shell.evaluate(groovyScript.toFile());
-
     }
 
-    private void copyAndModifyPon(Path pom, Path targetLocation) throws Exception {
+    private void upgradeQuarkusInPom(Path pom) throws Exception {
+        System.out.println(
+                "**************** upgrading Qarkus and Camel Quarkus BOM version (" + pom + ") *************************");
+        LinkedList<String> pomContent = new LinkedList<>(Files.readAllLines(pom));
+        for (final ListIterator<String> iterator = pomContent.listIterator(); iterator.hasNext();) {
+            String line = iterator.next();
+            if (line.contains("<quarkus.version>")) {
+                iterator.set("<quarkus.version>999-SNAPSHOT</quarkus.version>");
+            }
+            if (line.contains("<quarkus.platform.version>")) {
+                iterator.set("<quarkus.platform.version>999-SNAPSHOT</quarkus.platform.version>");
+            }
+            if (line.contains("<camel-quarkus.platform.version>")) {
+                iterator.set("<camel-quarkus.platform.version>3.0.0-SNAPSHOT</camel-quarkus.platform.version>");
+            }
+        }
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(pom.toFile()))) {
+            for (String line : pomContent) {
+                writer.write(line);
+                writer.newLine();
+            }
+        }
+    }
+
+    private void copyAndModifyPom(Path pom, Path targetLocation) throws Exception {
         LinkedList<String> pomContent = new LinkedList<>(Files.readAllLines(pom));
 
         // Modify the content (remove and add lines)
