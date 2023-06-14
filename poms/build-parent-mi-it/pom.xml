@@ -21,18 +21,16 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.apache.camel.quarkus</groupId>
-        <artifactId>camel-quarkus-build-parent</artifactId>
-        <version>2.13.4-SNAPSHOT</version>
-        <relativePath>../build-parent/pom.xml</relativePath>
-    </parent>
+    <groupId>org.apache.camel.quarkus</groupId>
+    <version>2.13.4-SNAPSHOT</version>
 
-    <artifactId>camel-quarkus-build-parent-st-it</artifactId>
+
+    <artifactId>camel-quarkus-build-parent-mi-it</artifactId>
     <packaging>pom</packaging>
 
-    <name>Camel Quarkus :: Build Parent :: Standalone :: IT</name>
-    <description>Maven plugins configuration for Standalone Integration Tests</description>
+    <name>Camel Quarkus :: Build Parent :: Migration :: IT</name>
+    <description>Maven plugins configuration for Migration Integration Tests</description>
+
 
     <properties>
         <!-- Allow running our tests against alternative BOMs, such as io.quarkus.platform:quarkus-camel-bom https://repo1.maven.org/maven2/io/quarkus/platform/quarkus-camel-bom/ -->
@@ -45,6 +43,11 @@
         <camel-quarkus.version>2.13.4-SNAPSHOT</camel-quarkus.version><!-- This needs to be set to the underlying CQ version from command line when testing against Platform BOMs -->
 
         <quarkus.banner.enabled>false</quarkus.banner.enabled>
+        <!-- from parent/pom -->
+        <quarkus.version>2.13.8.Final</quarkus.version>
+        <assertj.version>3.23.1</assertj.version>
+        <build-helper-maven-plugin.version>3.1.0</build-helper-maven-plugin.version>
+        <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -69,6 +72,11 @@
                 <version>${camel-quarkus.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -142,6 +150,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>${build-helper-maven-plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>reserve-network-port</id>
@@ -178,6 +187,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
+                        <version>${maven-surefire-plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>default-test</id>
@@ -194,27 +204,28 @@
                         </executions>
                     </plugin>
 
-                    <plugin>
-<!--                        disable enforce after migration?-->
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-enforcer-plugin</artifactId>
-                        <dependencies>
-                            <dependency>
-                                <groupId>io.quarkus</groupId>
-                                <artifactId>quarkus-enforcer-rules</artifactId>
-                                <version>${quarkus.version}</version>
-                            </dependency>
-                            <!-- This dependency can be removed when MENFORCER-422 is available -->
-                            <dependency>
-                                <groupId>org.l2x6.cq</groupId>
-                                <artifactId>cq-filtered-external-enforcer-rules</artifactId>
-                                <version>${cq-plugin.version}</version>
-                            </dependency>
-                        </dependencies>
-                        <executions></executions>
-                    </plugin>
+<!--                    <plugin>-->
+<!--                        &lt;!&ndash;                        disable enforce after migration?&ndash;&gt;-->
+<!--                        <groupId>org.apache.maven.plugins</groupId>-->
+<!--                        <artifactId>maven-enforcer-plugin</artifactId>-->
+<!--                        <dependencies>-->
+<!--                            <dependency>-->
+<!--                                <groupId>io.quarkus</groupId>-->
+<!--                                <artifactId>quarkus-enforcer-rules</artifactId>-->
+<!--                                <version>${quarkus.version}</version>-->
+<!--                            </dependency>-->
+<!--                            &lt;!&ndash; This dependency can be removed when MENFORCER-422 is available &ndash;&gt;-->
+<!--                            <dependency>-->
+<!--                                <groupId>org.l2x6.cq</groupId>-->
+<!--                                <artifactId>cq-filtered-external-enforcer-rules</artifactId>-->
+<!--                                <version>${cq-plugin.version}</version>-->
+<!--                            </dependency>-->
+<!--                        </dependencies>-->
+<!--                        <executions></executions>-->
+<!--                    </plugin>-->
                 </plugins>
             </build>
         </profile>
     </profiles>
 </project>
+

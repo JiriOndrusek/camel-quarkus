@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 @QuarkusTest
 public class MigrationTest {
 
-    //    @Test
+    @Test
     public void createModules() throws Exception {
         Path migrationsPath = Paths.get(MigrationTest.class.getClassLoader().getResource("").getPath())
                 .getParent().getParent().getParent();
@@ -37,18 +37,6 @@ public class MigrationTest {
                 .readAllLines(Paths.get(MigrationTest.class.getClassLoader().getResource("modules").getPath()));
         for (String module : modules) {
             createModule(module, migrationsPath);
-        }
-
-    }
-
-    @Test
-    public void upgradeExecution() throws Exception {
-        Path migrationsPath = Paths.get(MigrationTest.class.getClassLoader().getResource("").getPath())
-                .getParent().getParent().getParent();
-        //read all modules to migrate
-        List<String> modules = Files
-                .readAllLines(Paths.get(MigrationTest.class.getClassLoader().getResource("modules").getPath()));
-        for (String module : modules) {
             copyModule(module, migrationsPath);
             runMigration(migrationsPath.resolve(module));
             upgradeQuarkusInPom(migrationsPath.resolve(module).resolve("pom.xml"));
@@ -181,15 +169,14 @@ public class MigrationTest {
             case start:
                 if (line.contains("<parent>")) {
                     part = PomPart.parent;
-                    iterator.remove();
                 }
                 continue;
             case parent:
                 if (line.contains("</parent>")) {
-                    iterator.remove();
                     part = PomPart.header;
-                } else if (!line.contains("groupId") && !line.contains("version")) {
-                    iterator.remove();
+                }
+                if (line.contains("build-parent-it")) {
+                    iterator.set(line.replaceFirst("build-parent-it", "build-parent-mi-it"));
                 }
                 continue;
             case header:
@@ -259,14 +246,27 @@ public class MigrationTest {
                                 iterator.add(s);
                             }
                         });
-                part = PomPart.done;
-                break;
+                part = PomPart.other;
+                continue;
+            case other:
+                if (line.contains("<plugins>")) {
+                    part = PomPart.plugins;
+                    iterator.remove();
+                }
+                continue;
+            case plugins:
+                iterator.remove();
+                if (line.contains("</plugins>")) {
+                    part = PomPart.other;
+
+                }
+                continue;
             }
         }
     }
 
     private enum PomPart {
-        start, parent, header, dependencies, done
+        start, parent, header, dependencies, plugins, other
     }
 
 }
