@@ -28,8 +28,8 @@ import org.junit.jupiter.api.Test;
 @QuarkusTest
 public class MigrationTest {
 
-//    @Test
-    public void migrationExecution() throws Exception {
+    //    @Test
+    public void createModules() throws Exception {
         Path migrationsPath = Paths.get(MigrationTest.class.getClassLoader().getResource("").getPath())
                 .getParent().getParent().getParent();
         //read all modules to migrate
@@ -49,6 +49,7 @@ public class MigrationTest {
         List<String> modules = Files
                 .readAllLines(Paths.get(MigrationTest.class.getClassLoader().getResource("modules").getPath()));
         for (String module : modules) {
+            copyModule(module, migrationsPath);
             runMigration(migrationsPath.resolve(module));
         }
 
@@ -68,7 +69,12 @@ public class MigrationTest {
 
         //create folder
         migrationsPath.resolve(module).toFile().mkdirs();
+        //copy pom file
+        copyAndModifyPon(migrationsPath.getParent().resolve("integration-tests").resolve(module).resolve("pom.xml"),
+                migrationsPath.resolve(module).resolve("pom.xml"));
+    }
 
+    private void copyModule(final String module, Path migrationsPath) throws Exception {
         //copy content using copy-tests.groovy
         Map<String, String> properties = new HashMap<String, String>();
         properties.put("copy-tests.source.dir",
@@ -82,10 +88,6 @@ public class MigrationTest {
         // Run the Groovy script
         Path groovyScript = migrationsPath.getParent().resolve("tooling").resolve("scripts").resolve("copy-tests.groovy");
         Object result = shell.evaluate(groovyScript.toFile());
-
-        //copy pom file
-        copyAndModifyPon(migrationsPath.getParent().resolve("integration-tests").resolve(module).resolve("pom.xml"),
-                migrationsPath.resolve(module).resolve("pom.xml"));
 
     }
 
