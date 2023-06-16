@@ -1,1 +1,10 @@
+foundation-grouped
+jms-artemis-client
+jms-qpid-amqp-client
+cxf-soap-grouped
+file
 ftp
+rest
+quartz
+amqp
+sql

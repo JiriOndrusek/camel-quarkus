@@ -47,7 +47,7 @@ public class MigrationTest {
             if (!runMigration(migrationsPath.resolve("generated").resolve(module))) {
                 failedModules.add(module);
             }
-            ;
+
             upgradeQuarkusInPom(migrationsPath.resolve("generated").resolve(module).resolve("pom.xml"));
         }
 
@@ -165,6 +165,9 @@ public class MigrationTest {
                 iterator.set("<quarkus.platform.version>999-SNAPSHOT</quarkus.platform.version>");
             }
             if (line.contains("<camel-quarkus.platform.version>")) {
+                iterator.set("<camel-quarkus.platform.version>3.0.0-SNAPSHOT</camel-quarkus.platform.version>");
+            }
+            if (line.contains("<camel-quarkus.version>2.13.4-SNAPSHOT</camel-quarkus.version>>")) {
                 iterator.set("<camel-quarkus.platform.version>3.0.0-SNAPSHOT</camel-quarkus.platform.version>");
             }
         }
@@ -316,6 +319,9 @@ public class MigrationTest {
                     part = PomPart.plugins;
                     iterator.remove();
                 }
+                if (line.contains("<profiles>")) {
+                    break;
+                }
                 continue;
             case plugins:
                 iterator.remove();
@@ -354,7 +360,7 @@ public class MigrationTest {
                         +
                         "        <camel-quarkus.platform.artifact-id>camel-quarkus-bom</camel-quarkus.platform.artifact-id>\n" +
                         "        <camel-quarkus.platform.version>2.13.4-SNAPSHOT</camel-quarkus.platform.version>\n" +
-                        "        <camel-quarkus.version>3.0.0-SNAPSHOT</camel-quarkus.version><!-- This needs to be set to the underlying CQ version from command line when testing against Platform BOMs -->\n"
+                        "        <camel-quarkus.version>2.13.4-SNAPSHOT</camel-quarkus.version><!-- This needs to be set to the underlying CQ version from command line when testing against Platform BOMs -->\n"
                         +
                         "\n" +
                         "        <quarkus.banner.enabled>false</quarkus.banner.enabled>\n" +
@@ -366,6 +372,9 @@ public class MigrationTest {
 
     private boolean containProperties(List<String> lines, String tag) {
         for (String line : lines) {
+            if (line.contains("<profiles>")) {
+                break;
+            }
             if (line.contains(tag)) {
                 return true;
             }
