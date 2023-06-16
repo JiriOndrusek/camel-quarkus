@@ -18,11 +18,11 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import groovy.lang.GroovyShell;
 import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
@@ -42,10 +42,16 @@ public class MigrationTest {
 
         createGeneratedPOM(modules, migrationsPath.resolve("generated").resolve("pom.xml"));
 
+        List<String> failedModules = new LinkedList<>();
         for (String module : modules) {
-            runMigration(migrationsPath.resolve("generated").resolve(module));
+            if (!runMigration(migrationsPath.resolve("generated").resolve(module))) {
+                failedModules.add(module);
+            }
+            ;
             upgradeQuarkusInPom(migrationsPath.resolve("generated").resolve(module).resolve("pom.xml"));
         }
+
+        Assertions.assertTrue(failedModules.isEmpty(), "Following modules failed during upgrade: " + failedModules);
     }
 
     private void createGeneratedPOM(List<String> modules, Path targetLocation) throws Exception {
@@ -186,7 +192,7 @@ public class MigrationTest {
 
     }
 
-    private void runMigration(Path module) {
+    private boolean runMigration(Path module) {
         try {
             ProcessBuilder builder = new ProcessBuilder();
             System.out.println("************ upgrading " + module.getFileName() + " *************************");
@@ -210,9 +216,12 @@ public class MigrationTest {
                 process.destroyForcibly();
             }
 
+            return process.exitValue() == 0;
+
         } catch (Exception e) {
             //todo disable module for the testing
             e.printStackTrace();
+            return false;
         }
     }
 
@@ -228,6 +237,8 @@ public class MigrationTest {
 
     private void modifyPom(LinkedList<String> fileContent) {
 
+        boolean containsProperties = containProperties(fileContent, "<properties>");
+        boolean containsDependencies = containProperties(fileContent, "<dependencies>");
         //instead of parent, keep only groupId and version
         PomPart part = PomPart.start;
         for (final ListIterator<String> iterator = fileContent.listIterator(); iterator.hasNext();) {
@@ -259,30 +270,17 @@ public class MigrationTest {
                 if (line.contains("<dependencies>")) {
                     part = PomPart.dependencies;
                     iterator.remove();
+                    iterator.previous();
                 }
                 continue;
             case dependencies:
-                iterator.remove();
-                Arrays.stream(("    <properties>\n" +
-                        "        <quarkus.version>2.13.8.Final</quarkus.version><!-- https://repo1.maven.org/maven2/io/quarkus/quarkus-bom/ -->\n"
-                        +
-                        "        <!-- Allow running our tests against alternative BOMs, such as io.quarkus.platform:quarkus-camel-bom https://repo1.maven.org/maven2/io/quarkus/platform/quarkus-camel-bom/ -->\n"
-                        +
-                        "        <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>\n" +
-                        "        <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>\n" +
-                        "        <quarkus.platform.version>${quarkus.version}</quarkus.platform.version>\n" +
-                        "        <camel-quarkus.platform.group-id>org.apache.camel.quarkus</camel-quarkus.platform.group-id>\n"
-                        +
-                        "        <camel-quarkus.platform.artifact-id>camel-quarkus-bom</camel-quarkus.platform.artifact-id>\n" +
-                        "        <camel-quarkus.platform.version>2.13.4-SNAPSHOT</camel-quarkus.platform.version>\n" +
-                        "        <camel-quarkus.version>3.0.0-SNAPSHOT</camel-quarkus.version><!-- This needs to be set to the underlying CQ version from command line when testing against Platform BOMs -->\n"
-                        +
-                        "\n" +
-                        "        <quarkus.banner.enabled>false</quarkus.banner.enabled>\n" +
-                        "        <maven.compiler.source>17</maven.compiler.source>\n" +
-                        "        <maven.compiler.target>17</maven.compiler.target>\n" +
-                        "    </properties>\n" +
-                        "\n" +
+                //                iterator.remove();
+
+                if (!containsProperties) {
+                    appendProperties(iterator, true);
+                }
+
+                Arrays.stream(("\n" +
                         "    <dependencyManagement>\n" +
                         "        <dependencies>\n" +
                         "            <dependency>\n" +
@@ -309,13 +307,8 @@ public class MigrationTest {
                         "        </dependencies>\n" +
                         "    </dependencyManagement>\n" +
                         "\n" +
-                        "    <dependencies>\n" +
-                        "        <dependency>").split("\\n"))
-                        .forEach(new Consumer<String>() {
-                            public void accept(String s) {
-                                iterator.add(s);
-                            }
-                        });
+                        "    <dependencies>\n").split("\\n"))
+                        .forEach(s -> iterator.add(s));
                 part = PomPart.other;
                 continue;
             case other:
@@ -333,6 +326,53 @@ public class MigrationTest {
                 continue;
             }
         }
+
+        //append properties if already exists
+        if (containsProperties) {
+            for (final ListIterator<String> iterator = fileContent.listIterator(); iterator.hasNext();) {
+                if (iterator.next().contains("</properties>")) {
+                    iterator.remove();
+                    appendProperties(iterator, false);
+                }
+            }
+        }
+    }
+
+    private void appendProperties(ListIterator<String> iterator, boolean startignTag) {
+        if (startignTag) {
+            iterator.add("    <properties>\n");
+        }
+        Arrays.stream(
+                ("        <quarkus.version>2.13.8.Final</quarkus.version><!-- https://repo1.maven.org/maven2/io/quarkus/quarkus-bom/ -->\n"
+                        +
+                        "        <!-- Allow running our tests against alternative BOMs, such as io.quarkus.platform:quarkus-camel-bom https://repo1.maven.org/maven2/io/quarkus/platform/quarkus-camel-bom/ -->\n"
+                        +
+                        "        <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>\n" +
+                        "        <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>\n" +
+                        "        <quarkus.platform.version>${quarkus.version}</quarkus.platform.version>\n" +
+                        "        <camel-quarkus.platform.group-id>org.apache.camel.quarkus</camel-quarkus.platform.group-id>\n"
+                        +
+                        "        <camel-quarkus.platform.artifact-id>camel-quarkus-bom</camel-quarkus.platform.artifact-id>\n" +
+                        "        <camel-quarkus.platform.version>2.13.4-SNAPSHOT</camel-quarkus.platform.version>\n" +
+                        "        <camel-quarkus.version>3.0.0-SNAPSHOT</camel-quarkus.version><!-- This needs to be set to the underlying CQ version from command line when testing against Platform BOMs -->\n"
+                        +
+                        "\n" +
+                        "        <quarkus.banner.enabled>false</quarkus.banner.enabled>\n" +
+                        "        <maven.compiler.source>17</maven.compiler.source>\n" +
+                        "        <maven.compiler.target>17</maven.compiler.target>\n" +
+                        "    </properties>\n").split("\\n"))
+                .forEach(s -> iterator.add(s));
+    }
+
+    private boolean containProperties(List<String> lines, String tag) {
+        for (String line : lines) {
+            if (line.contains(tag)) {
+                return true;
+            }
+        }
+
+        //todo quit earlier
+        return false;
     }
 
     private enum PomPart {
