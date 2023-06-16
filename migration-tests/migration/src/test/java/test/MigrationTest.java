@@ -242,6 +242,7 @@ public class MigrationTest {
 
         boolean containsProperties = containProperties(fileContent, "<properties>");
         boolean containsDependencies = containProperties(fileContent, "<dependencies>");
+        List<String> currentPlugin = new LinkedList<>();
         //instead of parent, keep only groupId and version
         PomPart part = PomPart.start;
         for (final ListIterator<String> iterator = fileContent.listIterator(); iterator.hasNext();) {
@@ -317,18 +318,38 @@ public class MigrationTest {
             case other:
                 if (line.contains("<plugins>")) {
                     part = PomPart.plugins;
-                    iterator.remove();
+                    //                    iterator.remove();
                 }
                 if (line.contains("<profiles>")) {
                     break;
                 }
                 continue;
             case plugins:
-                iterator.remove();
                 if (line.contains("</plugins>")) {
                     part = PomPart.other;
 
+                } else if (line.contains("<plugin>")) {
+                    currentPlugin.add(line);
+                    iterator.remove();
+                } else if (line.contains("groovy")) {
+                    currentPlugin = new LinkedList<>();
+                    iterator.remove();
+                } else if (line.contains("</plugin>")) {
+                    iterator.remove();
+                    if (!currentPlugin.isEmpty()) {
+                        currentPlugin.add(line);
+                        currentPlugin.forEach(l -> iterator.add(l));
+                    }
+                    currentPlugin.clear();
                 }
+                //remove lines, is plugin is being recorded
+                else if (!currentPlugin.isEmpty()) {
+                    currentPlugin.add(line);
+                    iterator.remove();
+                } else {
+                    iterator.remove();
+                }
+
                 continue;
             }
         }
