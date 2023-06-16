@@ -167,8 +167,8 @@ public class MigrationTest {
             if (line.contains("<camel-quarkus.platform.version>")) {
                 iterator.set("<camel-quarkus.platform.version>3.0.0-SNAPSHOT</camel-quarkus.platform.version>");
             }
-            if (line.contains("<camel-quarkus.version>2.13.4-SNAPSHOT</camel-quarkus.version>>")) {
-                iterator.set("<camel-quarkus.platform.version>3.0.0-SNAPSHOT</camel-quarkus.platform.version>");
+            if (line.contains("<camel-quarkus.version>")) {
+                iterator.set("<camel-quarkus.version>3.0.0-SNAPSHOT</camel-quarkus.version>");
             }
         }
 
@@ -372,15 +372,13 @@ public class MigrationTest {
 
     private boolean containProperties(List<String> lines, String tag) {
         for (String line : lines) {
-            if (line.contains("<profiles>")) {
+            if (line.contains("<dependencies>")) {
                 break;
             }
             if (line.contains(tag)) {
                 return true;
             }
         }
-
-        //todo quit earlier
         return false;
     }
 
