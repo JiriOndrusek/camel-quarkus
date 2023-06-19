@@ -51,13 +51,6 @@ public class RestResource {
                 .build();
     }
 
-    @Path("/inspect/camel-context/lightweight")
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public boolean lightweight() {
-        return camelContext.adapt(ExtendedCamelContext.class).isLightweight();
-    }
-
     @Path("/invoke/route")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
