@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements.  See the NOTICE file distributed with
+    this work for additional information regarding copyright ownership.
+    The ASF licenses this file to You under the Apache License, Version 2.0
+    (the "License"); you may not use this file except in compliance with
+    the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.apache.camel.quarkus</groupId>
+    <version>2.13.4-SNAPSHOT</version>
+
+<!--    <parent>-->
+<!--        <groupId>org.apache.camel.quarkus</groupId>-->
+<!--        <artifactId>camel-quarkus-build-parent</artifactId>-->
+<!--        <version>2.13.4-SNAPSHOT</version>-->
+<!--        <relativePath>../build-parent/pom.xml</relativePath>-->
+<!--    </parent>-->
+
+
+    <artifactId>camel-quarkus-build-parent-mi-it</artifactId>
+    <packaging>pom</packaging>
+
+    <name>Camel Quarkus :: Build Parent :: Migration :: IT</name>
+    <description>Maven plugins configuration for Migration Integration Tests</description>
+
+
+    <properties>
+        <!-- Allow running our tests against alternative BOMs, such as io.quarkus.platform:quarkus-camel-bom https://repo1.maven.org/maven2/io/quarkus/platform/quarkus-camel-bom/ -->
+        <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
+        <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
+        <quarkus.platform.version>${quarkus.version}</quarkus.platform.version>
+        <camel-quarkus.platform.group-id>org.apache.camel.quarkus</camel-quarkus.platform.group-id>
+        <camel-quarkus.platform.artifact-id>camel-quarkus-bom</camel-quarkus.platform.artifact-id>
+        <camel-quarkus.platform.version>2.13.4-SNAPSHOT</camel-quarkus.platform.version>
+        <camel-quarkus.version>2.13.4-SNAPSHOT</camel-quarkus.version><!-- This needs to be set to the underlying CQ version from command line when testing against Platform BOMs -->
+
+        <quarkus.banner.enabled>false</quarkus.banner.enabled>
+        <!-- from parent/pom -->
+        <quarkus.version>2.13.8.Final</quarkus.version>
+        <assertj.version>3.23.1</assertj.version>
+        <build-helper-maven-plugin.version>3.1.0</build-helper-maven-plugin.version>
+        <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
+        <keytool-maven-plugin.version>1.7</keytool-maven-plugin.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${quarkus.platform.group-id}</groupId>
+                <artifactId>${quarkus.platform.artifact-id}</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>${camel-quarkus.platform.group-id}</groupId>
+                <artifactId>${camel-quarkus.platform.artifact-id}</artifactId>
+                <version>${camel-quarkus.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel.quarkus</groupId>
+                <artifactId>camel-quarkus-bom-test</artifactId>
+                <version>${camel-quarkus.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>${quarkus.platform.group-id}</groupId>
+                    <artifactId>quarkus-maven-plugin</artifactId>
+                    <version>${quarkus.platform.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <configuration>
+                                <systemProperties>
+                                    <quarkus.http.test-port>${test.http.port.native}</quarkus.http.test-port>
+                                    <quarkus.http.test-ssl-port>${test.https.port.native}</quarkus.http.test-ssl-port>
+                                    <!-- https://github.com/quarkusio/quarkus/issues/20228  -->
+                                    <quarkus.https.test-port>${test.https.port.native}</quarkus.https.test-port>
+                                </systemProperties>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.camel.maven</groupId>
+                    <artifactId>camel-salesforce-maven-plugin</artifactId>
+                    <version>${camel.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.camel.maven</groupId>
+                    <artifactId>camel-servicenow-maven-plugin</artifactId>
+                    <version>${camel.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>keytool-maven-plugin</artifactId>
+                    <version>${keytool-maven-plugin.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>full</id>
+            <activation>
+                <property>
+                    <name>!quickly</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>${build-helper-maven-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>reserve-network-port</id>
+                                <goals>
+                                    <goal>reserve-network-port</goal>
+                                </goals>
+                                <phase>process-resources</phase>
+                                <configuration>
+                                    <portNames>
+                                        <portName>test.http.port.jvm</portName>
+                                        <portName>test.https.port.jvm</portName>
+                                        <portName>test.http.port.native</portName>
+                                        <portName>test.https.port.native</portName>
+                                    </portNames>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>${quarkus.platform.group-id}</groupId>
+                        <artifactId>quarkus-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>quarkus-build</id>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>${maven-surefire-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>default-test</id>
+                                <phase>test</phase>
+                                <configuration>
+                                    <systemProperties>
+                                        <quarkus.http.test-port>${test.http.port.jvm}</quarkus.http.test-port>
+                                        <quarkus.http.test-ssl-port>${test.https.port.jvm}</quarkus.http.test-ssl-port>
+                                        <!-- https://github.com/quarkusio/quarkus/issues/20228  -->
+                                        <quarkus.https.test-port>${test.https.port.jvm}</quarkus.https.test-port>
+                                    </systemProperties>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+<!--                    <plugin>-->
+<!--                        &lt;!&ndash;                        disable enforce after migration?&ndash;&gt;-->
+<!--                        <groupId>org.apache.maven.plugins</groupId>-->
+<!--                        <artifactId>maven-enforcer-plugin</artifactId>-->
+<!--                        <dependencies>-->
+<!--                            <dependency>-->
+<!--                                <groupId>io.quarkus</groupId>-->
+<!--                                <artifactId>quarkus-enforcer-rules</artifactId>-->
+<!--                                <version>${quarkus.version}</version>-->
+<!--                            </dependency>-->
+<!--                            &lt;!&ndash; This dependency can be removed when MENFORCER-422 is available &ndash;&gt;-->
+<!--                            <dependency>-->
+<!--                                <groupId>org.l2x6.cq</groupId>-->
+<!--                                <artifactId>cq-filtered-external-enforcer-rules</artifactId>-->
+<!--                                <version>${cq-plugin.version}</version>-->
+<!--                            </dependency>-->
+<!--                        </dependencies>-->
+<!--                        <executions></executions>-->
+<!--                    </plugin>-->
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
+

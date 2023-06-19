@@ -1,0 +1,341 @@
+[WARNING] Settings for server brewroot uses legacy format
+[WARNING] Settings for server brewroot uses legacy format
+[WARNING] Settings for server MRRC-GA uses legacy format
+[WARNING] Settings for server MRRC-GA uses legacy format
+[WARNING] Settings for server central uses legacy format
+[WARNING] Settings for server central uses legacy format
+[WARNING] Settings for server apache-snapshots-repository uses legacy format
+[WARNING] Settings for server apache-snapshots-repository uses legacy format
+[WARNING] Settings for server apache.snapshots.https uses legacy format
+[WARNING] Settings for server apache.snapshots.https uses legacy format
+[WARNING] Settings for server redhat-ga-repository uses legacy format
+[WARNING] Settings for server redhat-ga-repository uses legacy format
+[WARNING] Settings for server ops4j-snapshots-repository uses legacy format
+[WARNING] Settings for server ops4j-snapshots-repository uses legacy format
+[WARNING] Settings for server brew-jb-fsw uses legacy format
+[WARNING] Settings for server brew-jb-fsw uses legacy format
+[WARNING] Settings for server jboss-public uses legacy format
+[WARNING] Settings for server jboss-public uses legacy format
+[WARNING] Settings for server jbeap-latest-repository uses legacy format
+[WARNING] Settings for server jbeap-latest-repository uses legacy format
+[WARNING] Settings for server jbfuse-latest-repository uses legacy format
+[WARNING] Settings for server jbfuse-latest-repository uses legacy format
+[WARNING] Settings for server sonatype uses legacy format
+[WARNING] Settings for server sonatype uses legacy format
+[WARNING] Settings for server redhat-ea-repository uses legacy format
+[WARNING] Settings for server redhat-ea-repository uses legacy format
+[WARNING] Settings for server jetty-releases uses legacy format
+[WARNING] Settings for server jetty-releases uses legacy format
+[WARNING] Settings for server jetty-snapshots uses legacy format
+[WARNING] Settings for server jetty-snapshots uses legacy format
+[WARNING] Settings for server jboss-early-access-repository uses legacy format
+[WARNING] Settings for server jboss-early-access-repository uses legacy format
+[WARNING] Settings for server servicemix.m2-repo uses legacy format
+[WARNING] Settings for server servicemix.m2-repo uses legacy format
+[WARNING] Settings for server com.springsource.repository.bundles.release uses legacy format
+[WARNING] Settings for server com.springsource.repository.bundles.release uses legacy format
+[WARNING] Settings for server com.springsource.repository.bundles.external uses legacy format
+[WARNING] Settings for server com.springsource.repository.bundles.external uses legacy format
+[WARNING] Settings for server scriptengines uses legacy format
+[WARNING] Settings for server scriptengines uses legacy format
+[WARNING] Settings for server jb-fuse-7-brew uses legacy format
+[WARNING] Settings for server jb-fuse-7-brew uses legacy format
+[WARNING] Settings for server indy uses legacy format
+[WARNING] Settings for server indy uses legacy format
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --< org.apache.camel.quarkus:camel-quarkus-integration-test-jms-artemis-client >--
+[INFO] Building Camel Quarkus :: Integration Tests :: JMS Artemis Client 2.13.4-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- dependency:3.1.1:tree (default-cli) @ camel-quarkus-integration-test-jms-artemis-client ---
+[INFO] org.apache.camel.quarkus:camel-quarkus-integration-test-jms-artemis-client:jar:2.13.4-SNAPSHOT
+[INFO] +- org.apache.camel.quarkus:camel-quarkus-jms:jar:2.13.4-SNAPSHOT:compile
+[INFO] |  +- org.apache.camel.quarkus:camel-quarkus-core:jar:2.13.4-SNAPSHOT:compile
+[INFO] |  |  +- io.quarkus:quarkus-development-mode-spi:jar:2.13.8.Final:compile
+[INFO] |  |  +- org.apache.camel:camel-base:jar:3.18.7:compile
+[INFO] |  |  |  +- org.apache.camel:camel-api:jar:3.18.7:compile
+[INFO] |  |  |  +- org.apache.camel:camel-management-api:jar:3.18.7:compile
+[INFO] |  |  |  \- org.apache.camel:camel-util:jar:3.18.7:compile
+[INFO] |  |  +- org.apache.camel:camel-componentdsl:jar:3.18.7:compile
+[INFO] |  |  +- org.apache.camel:camel-core-catalog:jar:3.18.7:compile
+[INFO] |  |  |  \- org.apache.camel:camel-tooling-model:jar:3.18.7:compile
+[INFO] |  |  |     \- org.apache.camel:camel-util-json:jar:3.18.7:compile
+[INFO] |  |  +- org.apache.camel:camel-core-engine:jar:3.18.7:compile
+[INFO] |  |  |  +- org.apache.camel:camel-base-engine:jar:3.18.7:compile
+[INFO] |  |  |  \- org.apache.camel:camel-core-reifier:jar:3.18.7:compile
+[INFO] |  |  +- org.apache.camel:camel-core-languages:jar:3.18.7:compile
+[INFO] |  |  |  \- org.apache.camel:camel-core-model:jar:3.18.7:compile
+[INFO] |  |  +- org.apache.camel:camel-core-processor:jar:3.18.7:compile
+[INFO] |  |  +- org.apache.camel:camel-endpointdsl:jar:3.18.7:compile
+[INFO] |  |  +- org.apache.camel:camel-main:jar:3.18.7:compile
+[INFO] |  |  +- org.apache.camel:camel-microprofile-config:jar:3.18.7:compile
+[INFO] |  |  |  \- org.eclipse.microprofile.config:microprofile-config-api:jar:2.0.1:compile
+[INFO] |  |  \- org.jboss.spec.javax.xml.bind:jboss-jaxb-api_2.3_spec:jar:2.0.0.Final:compile
+[INFO] |  +- org.apache.camel.quarkus:camel-quarkus-support-spring:jar:2.13.4-SNAPSHOT:compile
+[INFO] |  |  +- org.apache.camel.quarkus:camel-quarkus-support-commons-logging:jar:2.13.4-SNAPSHOT:compile
+[INFO] |  |  +- org.apache.camel.quarkus:camel-quarkus-support-spring-beans:jar:2.13.4-SNAPSHOT:compile
+[INFO] |  |  +- org.apache.camel.quarkus:camel-quarkus-support-spring-context:jar:2.13.4-SNAPSHOT:compile
+[INFO] |  |  \- org.apache.camel.quarkus:camel-quarkus-support-spring-core:jar:2.13.4-SNAPSHOT:compile
+[INFO] |  \- org.apache.camel:camel-jms:jar:3.18.7:compile
+[INFO] |     +- org.apache.camel:camel-support:jar:3.18.7:compile
+[INFO] |     +- org.springframework:spring-jms:jar:5.3.27:compile
+[INFO] |     |  +- org.springframework:spring-core:jar:5.3.27:compile
+[INFO] |     |  |  \- org.springframework:spring-jcl:jar:5.3.27:compile
+[INFO] |     |  \- org.springframework:spring-messaging:jar:5.3.27:compile
+[INFO] |     +- org.springframework:spring-context:jar:5.3.27:compile
+[INFO] |     |  +- org.springframework:spring-aop:jar:5.3.27:compile
+[INFO] |     |  \- org.springframework:spring-expression:jar:5.3.27:compile
+[INFO] |     +- org.springframework:spring-tx:jar:5.3.27:compile
+[INFO] |     \- org.springframework:spring-beans:jar:5.3.27:compile
+[INFO] +- org.apache.camel.quarkus:camel-quarkus-integration-test-messaging-jms:jar:2.13.4-SNAPSHOT:compile
+[INFO] |  +- org.apache.camel.quarkus:camel-quarkus-bean:jar:2.13.4-SNAPSHOT:compile
+[INFO] |  |  \- org.apache.camel:camel-bean:jar:3.18.7:compile
+[INFO] |  +- org.apache.camel.quarkus:camel-quarkus-direct:jar:2.13.4-SNAPSHOT:compile
+[INFO] |  |  \- org.apache.camel:camel-direct:jar:3.18.7:compile
+[INFO] |  \- org.apache.camel.quarkus:camel-quarkus-integration-test-messaging-common:jar:2.13.4-SNAPSHOT:compile
+[INFO] +- io.quarkiverse.artemis:quarkus-artemis-jms:jar:2.0.1:compile
+[INFO] |  +- io.quarkiverse.artemis:quarkus-artemis-core:jar:2.0.1:compile
+[INFO] |  |  +- io.quarkus:quarkus-netty:jar:2.13.8.Final:compile
+[INFO] |  |  |  +- io.netty:netty-codec-http2:jar:4.1.86.Final:compile
+[INFO] |  |  |  \- com.aayushatharva.brotli4j:brotli4j:jar:1.8.0:compile
+[INFO] |  |  |     \- com.aayushatharva.brotli4j:native-linux-x86_64:jar:1.8.0:compile
+[INFO] |  |  +- org.apache.activemq:artemis-core-client:jar:2.26.0:compile
+[INFO] |  |  |  +- org.jgroups:jgroups:jar:5.2.0.Final:compile
+[INFO] |  |  |  +- io.netty:netty-handler-proxy:jar:4.1.86.Final:compile
+[INFO] |  |  |  \- io.netty:netty-codec-socks:jar:4.1.86.Final:compile
+[INFO] |  |  \- org.jboss.logging:commons-logging-jboss-logging:jar:1.0.0.Final:compile
+[INFO] |  \- org.apache.activemq:artemis-jms-client:jar:2.26.0:compile
+[INFO] |     +- org.apache.activemq:artemis-commons:jar:2.26.0:compile
+[INFO] |     \- org.apache.activemq:artemis-selector:jar:2.26.0:compile
+[INFO] +- io.quarkiverse.messaginghub:quarkus-pooled-jms:jar:1.0.6:compile
+[INFO] |  +- io.quarkus:quarkus-arc:jar:2.13.8.Final:compile
+[INFO] |  |  +- io.quarkus.arc:arc:jar:2.13.8.Final:compile
+[INFO] |  |  |  +- jakarta.transaction:jakarta.transaction-api:jar:1.3.3:compile
+[INFO] |  |  |  \- io.smallrye.reactive:mutiny:jar:1.7.0:compile
+[INFO] |  |  |     +- org.reactivestreams:reactive-streams:jar:1.0.3:compile
+[INFO] |  |  |     \- io.smallrye.common:smallrye-common-annotation:jar:1.13.1:compile
+[INFO] |  |  \- org.eclipse.microprofile.context-propagation:microprofile-context-propagation-api:jar:1.2:compile
+[INFO] |  \- org.messaginghub:pooled-jms:jar:2.0.5:compile
+[INFO] |     +- org.slf4j:slf4j-api:jar:1.7.36:compile
+[INFO] |     \- org.apache.commons:commons-pool2:jar:2.11.1:compile
+[INFO] +- jakarta.jms:jakarta.jms-api:jar:2.0.3:compile
+[INFO] +- io.quarkus:quarkus-junit5:jar:2.13.8.Final:test
+[INFO] |  +- io.quarkus:quarkus-bootstrap-core:jar:2.13.8.Final:test
+[INFO] |  |  +- io.quarkus:quarkus-bootstrap-app-model:jar:2.13.8.Final:test
+[INFO] |  |  \- io.smallrye.common:smallrye-common-io:jar:1.13.1:compile
+[INFO] |  +- org.eclipse.sisu:org.eclipse.sisu.inject:jar:0.3.5:test
+[INFO] |  +- io.quarkus:quarkus-test-common:jar:2.13.8.Final:test
+[INFO] |  |  +- io.quarkus:quarkus-core-deployment:jar:2.13.8.Final:test
+[INFO] |  |  |  +- org.aesh:readline:jar:2.2:test
+[INFO] |  |  |  |  \- org.fusesource.jansi:jansi:jar:1.18:test
+[INFO] |  |  |  +- org.aesh:aesh:jar:2.6:test
+[INFO] |  |  |  +- io.quarkus.gizmo:gizmo:jar:1.1.1.Final:test
+[INFO] |  |  |  |  \- org.ow2.asm:asm-util:jar:9.3:test
+[INFO] |  |  |  +- org.ow2.asm:asm:jar:9.3:test
+[INFO] |  |  |  +- org.ow2.asm:asm-commons:jar:9.3:test
+[INFO] |  |  |  |  +- org.ow2.asm:asm-tree:jar:9.3:test
+[INFO] |  |  |  |  \- org.ow2.asm:asm-analysis:jar:9.3:test
+[INFO] |  |  |  +- io.quarkus:quarkus-class-change-agent:jar:2.13.8.Final:test
+[INFO] |  |  |  +- io.quarkus:quarkus-devtools-utilities:jar:2.13.8.Final:test
+[INFO] |  |  |  +- io.quarkus:quarkus-builder:jar:2.13.8.Final:test
+[INFO] |  |  |  \- org.junit.platform:junit-platform-launcher:jar:1.9.1:test
+[INFO] |  |  +- io.quarkus:quarkus-bootstrap-maven-resolver:jar:2.13.8.Final:test
+[INFO] |  |  |  +- org.apache.maven:maven-embedder:jar:3.8.6:test
+[INFO] |  |  |  |  +- org.apache.maven:maven-settings:jar:3.8.6:test
+[INFO] |  |  |  |  +- org.apache.maven:maven-core:jar:3.8.6:test
+[INFO] |  |  |  |  |  +- org.apache.maven:maven-artifact:jar:3.8.6:test
+[INFO] |  |  |  |  |  \- org.codehaus.plexus:plexus-component-annotations:jar:2.1.0:test
+[INFO] |  |  |  |  +- org.apache.maven:maven-plugin-api:jar:3.8.6:test
+[INFO] |  |  |  |  +- org.apache.maven:maven-model:jar:3.8.6:test
+[INFO] |  |  |  |  +- org.apache.maven:maven-model-builder:jar:3.8.6:test
+[INFO] |  |  |  |  +- org.apache.maven:maven-builder-support:jar:3.8.6:test
+[INFO] |  |  |  |  +- org.apache.maven.resolver:maven-resolver-api:jar:1.6.3:test
+[INFO] |  |  |  |  +- org.apache.maven.resolver:maven-resolver-util:jar:1.6.3:test
+[INFO] |  |  |  |  +- org.apache.maven.shared:maven-shared-utils:jar:3.3.4:test
+[INFO] |  |  |  |  +- com.google.inject:guice:jar:no_aop:4.2.2:test
+[INFO] |  |  |  |  +- org.codehaus.plexus:plexus-classworlds:jar:2.6.0:test
+[INFO] |  |  |  |  +- org.codehaus.plexus:plexus-sec-dispatcher:jar:2.0:test
+[INFO] |  |  |  |  +- org.codehaus.plexus:plexus-cipher:jar:2.0:test
+[INFO] |  |  |  |  \- commons-cli:commons-cli:jar:1.4:test
+[INFO] |  |  |  +- org.eclipse.sisu:org.eclipse.sisu.plexus:jar:0.3.5:test
+[INFO] |  |  |  +- org.apache.maven:maven-settings-builder:jar:3.8.6:test
+[INFO] |  |  |  |  \- org.codehaus.plexus:plexus-interpolation:jar:1.26:test
+[INFO] |  |  |  +- org.apache.maven:maven-resolver-provider:jar:3.8.6:test
+[INFO] |  |  |  |  +- org.apache.maven:maven-repository-metadata:jar:3.8.6:test
+[INFO] |  |  |  |  +- org.apache.maven.resolver:maven-resolver-spi:jar:1.6.3:test
+[INFO] |  |  |  |  +- org.apache.maven.resolver:maven-resolver-impl:jar:1.6.3:test
+[INFO] |  |  |  |  \- org.codehaus.plexus:plexus-utils:jar:3.3.0:test
+[INFO] |  |  |  +- org.apache.maven.resolver:maven-resolver-connector-basic:jar:1.6.3:test
+[INFO] |  |  |  +- org.apache.maven.resolver:maven-resolver-transport-wagon:jar:1.6.3:test
+[INFO] |  |  |  +- org.apache.maven.wagon:wagon-http:jar:3.5.1:test
+[INFO] |  |  |  |  +- org.apache.maven.wagon:wagon-http-shared:jar:3.5.1:test
+[INFO] |  |  |  |  \- org.apache.maven.wagon:wagon-provider-api:jar:3.5.1:test
+[INFO] |  |  |  \- org.apache.maven.wagon:wagon-file:jar:3.5.1:test
+[INFO] |  |  +- io.quarkus:quarkus-bootstrap-gradle-resolver:jar:2.13.8.Final:test
+[INFO] |  |  \- org.jboss:jandex:jar:2.4.3.Final:test
+[INFO] |  +- io.quarkus:quarkus-junit5-properties:jar:2.13.8.Final:test
+[INFO] |  +- org.junit.jupiter:junit-jupiter:jar:5.9.1:test
+[INFO] |  |  +- org.junit.jupiter:junit-jupiter-api:jar:5.9.1:test
+[INFO] |  |  |  +- org.opentest4j:opentest4j:jar:1.2.0:test
+[INFO] |  |  |  +- org.junit.platform:junit-platform-commons:jar:1.9.1:test
+[INFO] |  |  |  \- org.apiguardian:apiguardian-api:jar:1.1.2:test
+[INFO] |  |  +- org.junit.jupiter:junit-jupiter-params:jar:5.9.1:test
+[INFO] |  |  \- org.junit.jupiter:junit-jupiter-engine:jar:5.9.1:test
+[INFO] |  |     \- org.junit.platform:junit-platform-engine:jar:1.9.1:test
+[INFO] |  +- io.quarkus:quarkus-core:jar:2.13.8.Final:compile
+[INFO] |  |  +- jakarta.annotation:jakarta.annotation-api:jar:1.3.5:compile
+[INFO] |  |  +- jakarta.enterprise:jakarta.enterprise.cdi-api:jar:2.0.2:compile
+[INFO] |  |  |  +- jakarta.el:jakarta.el-api:jar:3.0.3:compile
+[INFO] |  |  |  \- jakarta.interceptor:jakarta.interceptor-api:jar:1.2.5:compile
+[INFO] |  |  +- jakarta.inject:jakarta.inject-api:jar:1.0:compile
+[INFO] |  |  +- io.quarkus:quarkus-ide-launcher:jar:2.13.8.Final:compile
+[INFO] |  |  +- io.smallrye.config:smallrye-config:jar:2.12.3:compile
+[INFO] |  |  |  \- io.smallrye.config:smallrye-config-core:jar:2.12.3:compile
+[INFO] |  |  |     +- io.smallrye.common:smallrye-common-expression:jar:1.13.1:compile
+[INFO] |  |  |     |  \- io.smallrye.common:smallrye-common-function:jar:1.13.1:compile
+[INFO] |  |  |     +- io.smallrye.common:smallrye-common-constraint:jar:1.13.1:compile
+[INFO] |  |  |     +- io.smallrye.common:smallrye-common-classloader:jar:1.13.1:compile
+[INFO] |  |  |     \- io.smallrye.config:smallrye-config-common:jar:2.12.3:compile
+[INFO] |  |  +- org.jboss.logging:jboss-logging:jar:3.5.0.Final:compile
+[INFO] |  |  +- org.jboss.logmanager:jboss-logmanager-embedded:jar:1.0.10:compile
+[INFO] |  |  +- org.jboss.logging:jboss-logging-annotations:jar:2.2.1.Final:compile
+[INFO] |  |  +- org.jboss.threads:jboss-threads:jar:3.4.3.Final:compile
+[INFO] |  |  +- org.jboss.slf4j:slf4j-jboss-logmanager:jar:1.2.0.Final:compile
+[INFO] |  |  +- org.graalvm.sdk:graal-sdk:jar:22.3.0:compile
+[INFO] |  |  +- org.wildfly.common:wildfly-common:jar:1.5.4.Final-format-001:compile
+[INFO] |  |  +- io.quarkus:quarkus-bootstrap-runner:jar:2.13.8.Final:compile
+[INFO] |  |  |  \- io.github.crac:org-crac:jar:0.1.1:compile
+[INFO] |  |  \- io.quarkus:quarkus-fs-util:jar:0.0.9:compile
+[INFO] |  \- com.thoughtworks.xstream:xstream:jar:1.4.20:test
+[INFO] |     \- io.github.x-stream:mxparser:jar:1.2.2:test
+[INFO] |        \- xmlpull:xmlpull:jar:1.1.3.1:test
+[INFO] +- io.rest-assured:rest-assured:jar:4.5.1:test
+[INFO] |  +- org.codehaus.groovy:groovy:jar:3.0.8:test
+[INFO] |  +- org.codehaus.groovy:groovy-xml:jar:3.0.9:test
+[INFO] |  +- org.apache.httpcomponents:httpclient:jar:4.5.13:test
+[INFO] |  |  +- org.apache.httpcomponents:httpcore:jar:4.4.15:test
+[INFO] |  |  \- commons-codec:commons-codec:jar:1.15:test
+[INFO] |  +- org.apache.httpcomponents:httpmime:jar:4.5.13:test
+[INFO] |  +- org.hamcrest:hamcrest:jar:2.1:test
+[INFO] |  +- org.ccil.cowan.tagsoup:tagsoup:jar:1.2.1:test
+[INFO] |  +- io.rest-assured:json-path:jar:4.5.1:test
+[INFO] |  |  +- org.codehaus.groovy:groovy-json:jar:3.0.9:test
+[INFO] |  |  \- io.rest-assured:rest-assured-common:jar:4.5.1:test
+[INFO] |  \- io.rest-assured:xml-path:jar:4.5.1:test
+[INFO] |     \- org.apache.commons:commons-lang3:jar:3.12.0:test
+[INFO] +- io.quarkiverse.artemis:quarkus-test-artemis:jar:2.0.1:test
+[INFO] |  +- io.quarkus:quarkus-jsonp:jar:2.13.8.Final:compile
+[INFO] |  |  \- org.glassfish:jakarta.json:jar:1.1.6:compile
+[INFO] |  +- org.apache.activemq:artemis-server:jar:2.26.0:test
+[INFO] |  |  +- com.google.guava:guava:jar:31.1-jre:test
+[INFO] |  |  |  \- com.google.guava:failureaccess:jar:1.0.1:test
+[INFO] |  |  +- org.apache.activemq:artemis-journal:jar:2.26.0:test
+[INFO] |  |  +- org.apache.activemq:artemis-jdbc-store:jar:2.26.0:test
+[INFO] |  |  |  \- org.apache.commons:commons-dbcp2:jar:2.7.0:test
+[INFO] |  |  +- org.apache.activemq:artemis-quorum-api:jar:2.26.0:test
+[INFO] |  |  +- org.apache.activemq:activemq-artemis-native:jar:1.0.2:test
+[INFO] |  |  +- org.jctools:jctools-core:jar:2.1.2:test
+[INFO] |  |  +- io.netty:netty-buffer:jar:4.1.86.Final:compile
+[INFO] |  |  +- io.netty:netty-transport:jar:4.1.86.Final:compile
+[INFO] |  |  |  \- io.netty:netty-resolver:jar:4.1.86.Final:compile
+[INFO] |  |  +- io.netty:netty-codec-http:jar:4.1.86.Final:compile
+[INFO] |  |  +- io.netty:netty-common:jar:4.1.86.Final:compile
+[INFO] |  |  +- io.netty:netty-handler:jar:4.1.86.Final:compile
+[INFO] |  |  |  \- io.netty:netty-transport-native-unix-common:jar:4.1.86.Final:compile
+[INFO] |  |  +- io.netty:netty-transport-native-epoll:jar:linux-x86_64:4.1.86.Final:compile
+[INFO] |  |  |  \- io.netty:netty-transport-classes-epoll:jar:4.1.86.Final:compile
+[INFO] |  |  +- io.netty:netty-transport-native-kqueue:jar:osx-x86_64:4.1.86.Final:compile
+[INFO] |  |  |  \- io.netty:netty-transport-classes-kqueue:jar:4.1.86.Final:compile
+[INFO] |  |  +- io.netty:netty-codec:jar:4.1.86.Final:compile
+[INFO] |  |  +- commons-beanutils:commons-beanutils:jar:1.9.4:compile
+[INFO] |  |  |  \- commons-collections:commons-collections:jar:3.2.2:compile
+[INFO] |  |  \- org.apache.commons:commons-configuration2:jar:2.8.0:test
+[INFO] |  |     \- org.apache.commons:commons-text:jar:1.10.0:test
+[INFO] |  \- org.apache.activemq:artemis-amqp-protocol:jar:2.26.0:test
+[INFO] |     \- org.apache.qpid:proton-j:jar:0.34.0:test
+[INFO] +- org.apache.camel.quarkus:camel-quarkus-integration-test-messaging-common:test-jar:tests:2.13.4-SNAPSHOT:test
+[INFO] |  +- org.apache.camel.quarkus:camel-quarkus-jta:jar:2.13.4-SNAPSHOT:compile
+[INFO] |  |  +- org.apache.camel:camel-jta:jar:3.18.7:compile
+[INFO] |  |  \- io.quarkus:quarkus-narayana-jta:jar:2.13.8.Final:compile
+[INFO] |  |     +- io.quarkus:quarkus-transaction-annotations:jar:2.13.8.Final:compile
+[INFO] |  |     +- io.quarkus:quarkus-mutiny:jar:2.13.8.Final:compile
+[INFO] |  |     |  +- io.quarkus:quarkus-smallrye-context-propagation:jar:2.13.8.Final:compile
+[INFO] |  |     |  |  \- io.smallrye:smallrye-context-propagation:jar:1.2.2:compile
+[INFO] |  |     |  |     +- io.smallrye:smallrye-context-propagation-api:jar:1.2.2:compile
+[INFO] |  |     |  |     \- io.smallrye:smallrye-context-propagation-storage:jar:1.2.2:compile
+[INFO] |  |     |  \- io.smallrye.reactive:mutiny-smallrye-context-propagation:jar:1.7.0:compile
+[INFO] |  |     +- io.smallrye:smallrye-context-propagation-jta:jar:1.2.2:compile
+[INFO] |  |     +- io.smallrye.reactive:smallrye-reactive-converter-api:jar:2.7.0:compile
+[INFO] |  |     +- io.smallrye.reactive:smallrye-reactive-converter-mutiny:jar:2.7.0:compile
+[INFO] |  |     +- org.jboss.narayana.jta:narayana-jta:jar:5.13.1.Final:compile
+[INFO] |  |     |  +- org.jboss:jboss-transaction-spi:jar:7.6.0.Final:compile
+[INFO] |  |     |  \- org.jboss.spec.javax.resource:jboss-connector-api_1.7_spec:jar:1.0.0.Final:compile
+[INFO] |  |     \- org.jboss.narayana.jts:narayana-jts-integration:jar:5.13.1.Final:compile
+[INFO] |  +- org.apache.camel.quarkus:camel-quarkus-mock:jar:2.13.4-SNAPSHOT:compile
+[INFO] |  |  \- org.apache.camel:camel-mock:jar:3.18.7:compile
+[INFO] |  +- org.apache.camel.quarkus:camel-quarkus-xml-jaxp:jar:2.13.4-SNAPSHOT:compile
+[INFO] |  |  +- org.apache.camel:camel-xml-jaxp:jar:3.18.7:compile
+[INFO] |  |  |  \- org.apache.camel:camel-xml-io-util:jar:3.18.7:compile
+[INFO] |  |  \- io.quarkus:quarkus-jaxp:jar:2.13.8.Final:compile
+[INFO] |  +- io.quarkus:quarkus-resteasy:jar:2.13.8.Final:compile
+[INFO] |  |  +- io.quarkus:quarkus-vertx-http:jar:2.13.8.Final:compile
+[INFO] |  |  |  +- io.quarkus:quarkus-security-runtime-spi:jar:2.13.8.Final:compile
+[INFO] |  |  |  +- io.quarkus:quarkus-credentials:jar:2.13.8.Final:compile
+[INFO] |  |  |  +- io.smallrye.common:smallrye-common-vertx-context:jar:1.13.1:compile
+[INFO] |  |  |  |  \- io.vertx:vertx-core:jar:4.3.4:compile
+[INFO] |  |  |  |     +- io.netty:netty-resolver-dns:jar:4.1.86.Final:compile
+[INFO] |  |  |  |     |  \- io.netty:netty-codec-dns:jar:4.1.86.Final:compile
+[INFO] |  |  |  |     \- com.fasterxml.jackson.core:jackson-core:jar:2.13.4:compile
+[INFO] |  |  |  +- io.quarkus:quarkus-vertx-http-dev-console-runtime-spi:jar:2.13.8.Final:compile
+[INFO] |  |  |  +- io.quarkus.security:quarkus-security:jar:1.1.4.Final:compile
+[INFO] |  |  |  +- io.quarkus:quarkus-vertx:jar:2.13.8.Final:compile
+[INFO] |  |  |  |  +- io.netty:netty-codec-haproxy:jar:4.1.86.Final:compile
+[INFO] |  |  |  |  +- io.quarkus:quarkus-vertx-latebound-mdc-provider:jar:2.13.8.Final:compile
+[INFO] |  |  |  |  +- io.smallrye.reactive:smallrye-mutiny-vertx-core:jar:2.27.0:compile
+[INFO] |  |  |  |  |  +- io.smallrye.reactive:smallrye-mutiny-vertx-runtime:jar:2.27.0:compile
+[INFO] |  |  |  |  |  \- io.smallrye.reactive:vertx-mutiny-generator:jar:2.27.0:compile
+[INFO] |  |  |  |  |     \- io.vertx:vertx-codegen:jar:4.3.4:compile
+[INFO] |  |  |  |  \- io.smallrye:smallrye-fault-tolerance-vertx:jar:5.5.0:compile
+[INFO] |  |  |  +- io.smallrye.reactive:smallrye-mutiny-vertx-web:jar:2.27.0:compile
+[INFO] |  |  |  |  +- io.smallrye.reactive:smallrye-mutiny-vertx-web-common:jar:2.27.0:compile
+[INFO] |  |  |  |  +- io.smallrye.reactive:smallrye-mutiny-vertx-auth-common:jar:2.27.0:compile
+[INFO] |  |  |  |  +- io.smallrye.reactive:smallrye-mutiny-vertx-bridge-common:jar:2.27.0:compile
+[INFO] |  |  |  |  \- io.smallrye.reactive:smallrye-mutiny-vertx-uri-template:jar:2.27.0:compile
+[INFO] |  |  |  |     \- io.vertx:vertx-uri-template:jar:4.3.4:compile
+[INFO] |  |  |  \- io.vertx:vertx-web:jar:4.3.4:compile
+[INFO] |  |  |     +- io.vertx:vertx-web-common:jar:4.3.4:compile
+[INFO] |  |  |     +- io.vertx:vertx-auth-common:jar:4.3.4:compile
+[INFO] |  |  |     \- io.vertx:vertx-bridge-common:jar:4.3.4:compile
+[INFO] |  |  \- io.quarkus:quarkus-resteasy-server-common:jar:2.13.8.Final:compile
+[INFO] |  |     +- io.quarkus:quarkus-resteasy-common:jar:2.13.8.Final:compile
+[INFO] |  |     |  +- org.jboss.resteasy:resteasy-core:jar:4.7.9.Final:compile
+[INFO] |  |     |  |  +- org.jboss.spec.javax.ws.rs:jboss-jaxrs-api_2.1_spec:jar:2.0.1.Final:compile
+[INFO] |  |     |  |  +- org.jboss.resteasy:resteasy-core-spi:jar:4.7.9.Final:compile
+[INFO] |  |     |  |  \- com.ibm.async:asyncutil:jar:0.1.0:compile
+[INFO] |  |     |  \- com.sun.activation:jakarta.activation:jar:1.2.1:compile
+[INFO] |  |     \- jakarta.validation:jakarta.validation-api:jar:2.0.2:compile
+[INFO] |  \- io.quarkus:quarkus-resteasy-jsonb:jar:2.13.8.Final:compile
+[INFO] |     +- io.quarkus:quarkus-jsonb:jar:2.13.8.Final:compile
+[INFO] |     |  \- org.eclipse:yasson:jar:1.0.11:compile
+[INFO] |     +- org.jboss.resteasy:resteasy-json-binding-provider:jar:4.7.9.Final:compile
+[INFO] |     |  \- jakarta.json.bind:jakarta.json.bind-api:jar:1.0.2:compile
+[INFO] |     +- org.jboss.resteasy:resteasy-json-p-provider:jar:4.7.9.Final:compile
+[INFO] |     \- commons-io:commons-io:jar:2.11.0:compile
+[INFO] +- org.apache.camel.quarkus:camel-quarkus-integration-test-messaging-jms:test-jar:tests:2.13.4-SNAPSHOT:test
+[INFO] \- org.apache.camel.quarkus:camel-quarkus-jms-deployment:pom:2.13.4-SNAPSHOT:test
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.743 s
+[INFO] Finished at: 2023-06-16T13:21:56+02:00
+[INFO] ------------------------------------------------------------------------
+[WARNING] 
+[WARNING] Plugin validation issues were detected in 2 plugin(s)
+[WARNING] 
+[WARNING]  * org.apache.maven.plugins:maven-site-plugin:3.7.1
+[WARNING]  * org.apache.maven.plugins:maven-dependency-plugin:3.1.1
+[WARNING] 
+[WARNING] For more or less details, use 'maven.plugin.validation' property with one of the values (case insensitive): [BRIEF, DEFAULT, VERBOSE]
+[WARNING] 
