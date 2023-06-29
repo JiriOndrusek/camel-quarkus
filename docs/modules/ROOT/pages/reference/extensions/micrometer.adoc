@@ -86,7 +86,7 @@ Prometheus backend ignores negative values during increment of Counter metrics.
 
 Set whether to enable the MicrometerRoutePolicyFactory for capturing metrics on route processing times.
 | `boolean`
-| `true`
+| `false`
 
 |icon:lock[title=Fixed at build time] [[quarkus.camel.metrics.enable-message-history]]`link:#quarkus.camel.metrics.enable-message-history[quarkus.camel.metrics.enable-message-history]`
 

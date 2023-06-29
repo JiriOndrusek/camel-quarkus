@@ -104,9 +104,11 @@ class MicrometerTest extends AbstractMicrometerTest {
         RestAssured.get("/micrometer/timer")
                 .then()
                 .statusCode(200);
-        assertTrue(
-                getMetricValue(Integer.class, "counter", "camel.exchanges.succeeded", "routeId=micrometer-metrics-timer") > 0);
-        assertEquals(0, getMetricValue(Integer.class, "counter", "camel.exchanges.failed", "routeId=micrometer-metrics-timer"));
+
+        assertEquals("Metric does not exist",
+                getMetricValue(String.class, "counter", "camel.exchanges.succeeded", "routeId=micrometer-metrics-timer", 500));
+        assertEquals("Metric does not exist",
+                getMetricValue(String.class, "counter", "camel.exchanges.failed", "routeId=micrometer-metrics-timer", 500));
     }
 
     @Test

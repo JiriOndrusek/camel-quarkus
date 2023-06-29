@@ -39,3 +39,16 @@ The following extensions have been removed.
 |===
 
 
+== Change to default values of `camel.metrics.enableRoutePolicy` configuration
+
+In previous releases, the Micrometer extension default was to enable MicrometerRoutePolicyFactory (value `true`).
+
+This has now changed to reflect behavior in Camel.
+
+To enable MicrometerRoutePolicyFactory, you can add configuration propertty to `application.properties`. 
+
+```
+quarkus.camel.metrics.enable-route-policy=true
+```
+
+For more information, refer to the xref:reference/extensions/micrometerr.adoc[Camel Quarkus Micrometer Extension] documentation.
