@@ -33,6 +33,8 @@ import com.slack.api.scim.SCIMConfig;
 import com.slack.api.util.http.listener.DetailedLoggingListener;
 import com.slack.api.util.http.listener.HttpResponseListener;
 import com.slack.api.util.http.listener.ResponsePrettyPrintingListener;
+import com.slack.api.util.thread.DaemonThreadExecutorServiceProvider;
+import com.slack.api.util.thread.ExecutorServiceProvider;
 
 import static com.oracle.svm.core.annotate.RecomputeFieldValue.Kind.Reset;
 
@@ -161,13 +163,16 @@ final class SlackConfigSubstitutions {
     };
 
     @Alias
-    private List<HttpResponseListener> httpClientResponseHandlers = new ArrayList<>();
+    private ExecutorServiceProvider executorServiceProvider;
+    @Alias
+    private List<HttpResponseListener> httpClientResponseHandlers = new ArrayList();
 
     @Substitute
     @TargetElement(name = "SlackConfig")
     public SlackConfigSubstitutions() {
         httpClientResponseHandlers.add(new DetailedLoggingListener());
         httpClientResponseHandlers.add(new ResponsePrettyPrintingListener());
+        executorServiceProvider = DaemonThreadExecutorServiceProvider.getInstance();
     }
 }
 
