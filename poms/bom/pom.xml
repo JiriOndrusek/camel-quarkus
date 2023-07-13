@@ -88,7 +88,7 @@
             <dependency>
                 <groupId>io.debezium</groupId>
                 <artifactId>debezium-bom</artifactId>
-                <version>${debezium.version}</version>
+                <version>${debezium-version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
