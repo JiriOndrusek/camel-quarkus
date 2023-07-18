@@ -6376,6 +6376,10 @@
                         <groupId>commons-logging</groupId>
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <artifactId>fontbox</artifactId>
+                        <groupId>org.apache.pdfbox</groupId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>

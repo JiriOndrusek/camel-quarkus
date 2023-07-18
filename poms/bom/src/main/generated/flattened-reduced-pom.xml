@@ -6032,7 +6032,7 @@
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>google-cloud-pubsub</artifactId>
-        <version>1.121.0</version>
+        <version>1.123.17</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.android</groupId>
@@ -6299,6 +6299,10 @@
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>fontbox</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -6494,7 +6498,7 @@
       <dependency>
         <groupId>org.influxdb</groupId>
         <artifactId>influxdb-java</artifactId>
-        <version>2.22</version>
+        <version>2.23</version>
       </dependency>
       <dependency>
         <groupId>org.javassist</groupId>
@@ -6514,7 +6518,7 @@
       <dependency>
         <groupId>org.mvel</groupId>
         <artifactId>mvel2</artifactId>
-        <version>2.4.15.Final</version>
+        <version>2.5.0.Final</version>
       </dependency>
       <dependency>
         <groupId>org.mybatis</groupId>
