@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.component.splunk.it;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +32,7 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
@@ -38,6 +40,7 @@ import jakarta.ws.rs.core.Response;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.component.splunk.ProducerType;
 import org.apache.camel.component.splunk.SplunkComponent;
 import org.apache.camel.component.splunk.SplunkConfiguration;
 import org.apache.camel.component.splunk.event.SplunkEvent;
@@ -72,7 +75,6 @@ public class SplunkResource {
     SplunkComponent splunk() {
         SplunkComponent component = new SplunkComponent();
         component.setSplunkConfigurationFactory(parameters -> new SplunkConfiguration());
-
         return component;
     }
 
@@ -159,43 +161,28 @@ public class SplunkResource {
         });
     }
 
-    @Path("/submit")
+    @Path("/write/{producerType}")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response submit(Map<String, String> message, @QueryParam("index") String index) throws Exception {
-        return post(message, "submit", index, null);
-    }
-
-    @Path("/stream")
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response stream(Map<String, String> message, @QueryParam("index") String index) throws Exception {
-        return post(message, "stream", index, null);
-    }
-
-    @Path("/tcp")
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response tcp(Map<String, String> message, @QueryParam("index") String index) throws Exception {
-        return post(message, "tcp", index, tcpPort);
-    }
-
-    private Response post(Map<String, String> message, String endpoint, String index, Integer tcpPort) throws Exception {
+    public Response write(Map<String, String> message,
+                          @PathParam("producerType") String producerType,
+                          @QueryParam("index") String index) throws URISyntaxException {
         SplunkEvent se = new SplunkEvent();
         for (Map.Entry<String, String> e : message.entrySet()) {
             se.addPair(e.getKey(), e.getValue());
         }
 
-        String url = String.format(
-                "splunk:%s?scheme=http&port=%d&index=%s&sourceType=%s&source=%s",
-                endpoint, port, index, SOURCE_TYPE, SOURCE);
-        if (tcpPort != null) {
+        String url;
+        if (ProducerType.TCP == ProducerType.valueOf(producerType)) {
             url = String.format(
                     "splunk:%s?username=admin&password=changeit&scheme=http&port=%d&index=%s&sourceType=%s&source=%s&tcpReceiverLocalPort=%d&tcpReceiverPort=%d",
-                    endpoint, port, index, SOURCE_TYPE, SOURCE, LOCAL_TCP_PORT, tcpPort);
+                    producerType.toLowerCase(), port, index, SOURCE_TYPE, SOURCE, LOCAL_TCP_PORT, tcpPort);
+
+        } else {
+            url = String.format(
+                    "splunk:%s?scheme=http&port=%d&index=%s&sourceType=%s&source=%s",
+                    producerType.toLowerCase(), port, index, SOURCE_TYPE, SOURCE);
         }
         final String response = producerTemplate.requestBody(url, se, String.class);
         return Response

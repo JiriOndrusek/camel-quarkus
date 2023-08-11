@@ -66,9 +66,16 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
                     "-sourcetype",
                     SplunkResource.SOURCE_TYPE);
 
-            return CollectionHelper.mapOf(
+            Map<String, String> map = CollectionHelper.mapOf(
                     SplunkResource.PARAM_REMOTE_PORT, container.getMappedPort(REMOTE_PORT).toString(),
                     SplunkResource.PARAM_TCP_PORT, container.getMappedPort(SplunkResource.LOCAL_TCP_PORT).toString());
+
+            System.out.println("*****************************************************");
+            System.out.println(map);
+            System.out.println("*****************************************************");
+
+            Thread.sleep(6000000);
+            return map;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
