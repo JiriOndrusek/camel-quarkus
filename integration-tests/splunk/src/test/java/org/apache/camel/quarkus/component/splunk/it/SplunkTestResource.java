@@ -21,16 +21,11 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
 import org.apache.camel.component.splunk.ProducerType;
 import org.apache.camel.util.CollectionHelper;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
-
-import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.is;
 
 public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
 
@@ -45,7 +40,7 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
 
         try {
             container = new GenericContainer(SPLUNK_IMAGE_NAME)
-                    .withExposedPorts(REMOTE_PORT, SplunkResource.LOCAL_TCP_PORT, 80)
+                    .withExposedPorts(REMOTE_PORT, SplunkResource.LOCAL_TCP_PORT)
                     .withEnv("SPLUNK_START_ARGS", "--accept-license")
                     .withEnv("SPLUNK_PASSWORD", "changeit")
                     .withEnv("SPLUNK_LICENSE_URI", "Free")
@@ -53,36 +48,27 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
                     .waitingFor(
                             Wait.forLogMessage(".*Ansible playbook complete.*\\n", 1)
                                     .withStartupTimeout(Duration.ofMinutes(5)));
-//
-//            container.start();
-//
-//            container.execInContainer("sudo", "sed", "-i", "s/allowRemoteLogin=requireSetPassword/allowRemoteLogin=always/",
-//                    "/opt/splunk/etc/system/default/server.conf");
-//            container.execInContainer("sudo", "sed", "-i", "s/enableSplunkdSSL = true/enableSplunkdSSL = false/",
-//                    "/opt/splunk/etc/system/default/server.conf");
-//            container.execInContainer("sudo", "sed", "-i", "s/minFreeSpace = 5000/minFreeSpace = 100/",
-//                    "/opt/splunk/etc/system/default/server.conf");
-//
-//            container.execInContainer("sudo", "microdnf", "--nodocs", "update", "tzdata");//install tzdata package so we can specify tz other than UTC
-//
-//            container.execInContainer("sudo", "./bin/splunk", "restart");
-//            container.execInContainer("sudo", "./bin/splunk", "add", "index", TEST_INDEX);
-//            container.execInContainer("sudo", "./bin/splunk", "add", "tcp", String.valueOf(SplunkResource.LOCAL_TCP_PORT),
-//                    "-sourcetype",
-//                    ProducerType.TCP.name());
-//
-//            Map<String, String> map = CollectionHelper.mapOf(
-//                    SplunkResource.PARAM_REMOTE_PORT, container.getMappedPort(REMOTE_PORT).toString(),
-//                    SplunkResource.PARAM_TCP_PORT, container.getMappedPort(SplunkResource.LOCAL_TCP_PORT).toString(),
-//                    "80", container.getMappedPort(80).toString());
 
-                        Map<String, String> map = CollectionHelper.mapOf(
-                                SplunkResource.PARAM_REMOTE_PORT, "32817",
-                                SplunkResource.PARAM_TCP_PORT, "32816");
+            container.start();
 
-            System.out.println("*****************************************************");
-            System.out.println(map);
-            System.out.println("*****************************************************");
+            container.execInContainer("sudo", "sed", "-i", "s/allowRemoteLogin=requireSetPassword/allowRemoteLogin=always/",
+                    "/opt/splunk/etc/system/default/server.conf");
+            container.execInContainer("sudo", "sed", "-i", "s/enableSplunkdSSL = true/enableSplunkdSSL = false/",
+                    "/opt/splunk/etc/system/default/server.conf");
+            container.execInContainer("sudo", "sed", "-i", "s/minFreeSpace = 5000/minFreeSpace = 100/",
+                    "/opt/splunk/etc/system/default/server.conf");
+
+            container.execInContainer("sudo", "microdnf", "--nodocs", "update", "tzdata");//install tzdata package so we can specify tz other than UTC
+
+            container.execInContainer("sudo", "./bin/splunk", "restart");
+            container.execInContainer("sudo", "./bin/splunk", "add", "index", TEST_INDEX);
+            container.execInContainer("sudo", "./bin/splunk", "add", "tcp", String.valueOf(SplunkResource.LOCAL_TCP_PORT),
+                    "-sourcetype",
+                    ProducerType.TCP.name());
+
+            Map<String, String> map = CollectionHelper.mapOf(
+                    SplunkResource.PARAM_REMOTE_PORT, container.getMappedPort(REMOTE_PORT).toString(),
+                    SplunkResource.PARAM_TCP_PORT, container.getMappedPort(SplunkResource.LOCAL_TCP_PORT).toString());
 
             return map;
         } catch (Exception e) {

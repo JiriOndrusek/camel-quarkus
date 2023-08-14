@@ -50,7 +50,13 @@ public class SplunkRoutes extends RouteBuilder {
                         +
                         "search sourcetype=\"STREAM\" | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
                 port, ProducerType.STREAM.name()))
-                .process(e -> results.get("realtimeSearch").add(e.getMessage().getBody(SplunkEvent.class)));
+                .process(e -> {
+                    //if number of received events is at least 3, there is no need to receive more -> there are a lot of events (~1MB)
+                    List resultList = results.get("realtimeSearch");
+                    if (resultList.size() < 3) {
+                        results.get("realtimeSearch").add(e.getMessage().getBody(SplunkEvent.class));
+                    }
+                });
 
         //ConsumerType.SAVEDSEARCH
         from(String.format(

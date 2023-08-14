@@ -85,7 +85,9 @@ class SplunkTest {
                                 .statusCode(200)
                                 .extract().asString();
 
-                        return result.contains(suffix);
+                        return result.contains("Name: Sheldon" + suffix)
+                                && result.contains("Name: Leonard" + suffix)
+                                && result.contains("Name: Irma" + suffix);
                     });
         } finally {
             futureResult.cancel(true);
@@ -104,7 +106,7 @@ class SplunkTest {
                 .param("disabled", "0")
                 .param("description", "descriptionText")
                 .param("search",
-                        "search *")
+                        "sourcetype=\"TCP\" | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"")
                 .post("/services/saved/searches")
                 .then()
                 .statusCode(anyOf(is(201), is(409)));
