@@ -28,6 +28,7 @@ import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.splunk.ProducerType;
 import org.apache.camel.component.splunk.event.SplunkEvent;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -43,14 +44,13 @@ public class SplunkRoutes extends RouteBuilder {
 
     @Override
     public void configure() throws SQLException, IOException {
-        //ConsumerType.NORMAL
-        //        from(String.format("splunk://normal?username=admin&password=changeit&scheme=http&port=%d&delay=5000&initEarliestTime=-10s" +
-        //                "&search=search *",
-        //                port, SplunkResource.SOURCE_TYPE))
-        //            .process(e -> {
-        //
-        //                results.get("normalSearch").add(e.getMessage().getBody(SplunkEvent.class));
-        //            });
+                //ConsumerType.NORMAL
+                from(String.format("splunk://realtime?username=admin&password=changeit&scheme=http&port=%d&delay=3000&initEarliestTime=rt-10s&latestTime=RAW(rt+40s)&search=search *",
+                        port, ProducerType.STREAM.name()))
+                    .process(e -> {
+
+                        results.get("realtimeSearch").add(e.getMessage().getBody(SplunkEvent.class));
+                    });
 
 //        from(String.format(
 //                "splunk://savedsearch?username=admin&password=changeit&scheme=http&port=%d&delay=500&initEarliestTime=-1m&savedsearch=%s"
@@ -68,8 +68,7 @@ public class SplunkRoutes extends RouteBuilder {
     @Named("results")
     Map<String, List<SplunkEvent>> results() {
         Map<String, List<SplunkEvent>> result = new HashMap<>();
-        result.put("normalSearch", new CopyOnWriteArrayList<>());
-        result.put("savedSearch", new CopyOnWriteArrayList<>());
+        result.put("realtimeSearch", new CopyOnWriteArrayList<>());
         return result;
     }
 

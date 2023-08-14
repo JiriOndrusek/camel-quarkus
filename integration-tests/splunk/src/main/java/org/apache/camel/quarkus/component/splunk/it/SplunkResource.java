@@ -55,7 +55,6 @@ public class SplunkResource {
     public static final String PARAM_REMOTE_PORT = "org.apache.camel.quarkus.component.splunk.it.SplunkResource_remotePort";
     public static final String PARAM_TCP_PORT = "org.apache.camel.quarkus.component.splunk.it.SplunkResource_tcpPort";
     public static final String SOURCE = "test";
-    public static final String SOURCE_TYPE = "testSource";
     public static final int LOCAL_TCP_PORT = 9998;
 
     @Inject
@@ -84,22 +83,22 @@ public class SplunkResource {
         return component;
     }
 
-    @Path("/consume")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public List consume(String consumerType) throws Exception {
-
-        List result = results.get("normalSearch").stream()
-                .map(m -> m.getEventData().entrySet().stream()
-                        .filter(e -> !e.getKey().startsWith("_") || "_raw".equals(e.getKey()))
-                        .collect(Collectors.toMap(
-                                Map.Entry::getKey,
-                                Map.Entry::getValue,
-                                (v1, v2) -> v1)))
-                .collect(Collectors.toList());
-
-        return result;
-    }
+//    @Path("/consume")
+//    @GET
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public List consume(String consumerType) throws Exception {
+//
+//        List result = results.get("normalSearch").stream()
+//                .map(m -> m.getEventData().entrySet().stream()
+//                        .filter(e -> !e.getKey().startsWith("_") || "_raw".equals(e.getKey()))
+//                        .collect(Collectors.toMap(
+//                                Map.Entry::getKey,
+//                                Map.Entry::getValue,
+//                                (v1, v2) -> v1)))
+//                .collect(Collectors.toList());
+//
+//        return result;
+//    }
 
     @Path("/start/route/{routeId}")
     @GET
@@ -143,7 +142,7 @@ public class SplunkResource {
     @POST
     public String savedSearch(String name) throws Exception {
         String url = String.format(
-                "splunk://savedsearch?username=admin&password=changeit&scheme=http&port=%d&delay=500&initEarliestTime=-1m&savedsearch=%s",
+                "splunk://savedsearch?username=admin&password=changeit&scheme=http&port=%d&delay=100&initEarliestTime=-1m&savedsearch=%s",
                 port, name);
 
         final SplunkEvent m1 = consumerTemplate.receiveBody(url, 5000, SplunkEvent.class);
@@ -165,21 +164,21 @@ public class SplunkResource {
     @Path("/directRealtimePolling")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Map directRealtimePolling() throws Exception {
-        final SplunkEvent m1 = consumerTemplate.receiveBody("direct:realtimePolling", 3000, SplunkEvent.class);
+    public List directRealtimePolling() throws Exception {
+//        final SplunkEvent m1 = consumerTemplate.receiveBody("direct:realtimePolling", 3000, SplunkEvent.class);
+//
+//        if (m1 == null) {
+//            return Collections.emptyMap();
+//        }
+//
+//        Map result = m1.getEventData().entrySet().stream()
+//                .filter(e -> !e.getKey().startsWith("_"))
+//                .collect(Collectors.toMap(
+//                        Map.Entry::getKey,
+//                        Map.Entry::getValue,
+//                        (v1, v2) -> v1));
 
-        if (m1 == null) {
-            return Collections.emptyMap();
-        }
-
-        Map result = m1.getEventData().entrySet().stream()
-                .filter(e -> !e.getKey().startsWith("_"))
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        (v1, v2) -> v1));
-
-        return result;
+        return results.get("realtimeSearch");
     }
 
     @Path("/startRealtimePolling")
@@ -213,12 +212,12 @@ public class SplunkResource {
         if (ProducerType.TCP == ProducerType.valueOf(producerType)) {
             url = String.format(
                     "splunk:%s?username=admin&password=changeit&scheme=http&port=%d&index=%s&sourceType=%s&source=%s&tcpReceiverLocalPort=%d&tcpReceiverPort=%d",
-                    producerType.toLowerCase(), port, index, SOURCE_TYPE, SOURCE, LOCAL_TCP_PORT, tcpPort);
+                    producerType.toLowerCase(), port, index, producerType, SOURCE, LOCAL_TCP_PORT, tcpPort);
 
         } else {
             url = String.format(
                     "splunk:%s?scheme=http&port=%d&index=%s&sourceType=%s&source=%s",
-                    producerType.toLowerCase(), port, index, SOURCE_TYPE, SOURCE);
+                    producerType.toLowerCase(), port, index, producerType, SOURCE);
         }
         final String response = producerTemplate.requestBody(url, se, String.class);
         return Response

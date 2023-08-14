@@ -18,7 +18,11 @@ package org.apache.camel.quarkus.component.splunk.it;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -26,14 +30,18 @@ import java.util.stream.Stream;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
+import io.restassured.common.mapper.TypeRef;
 import io.restassured.http.ContentType;
 import org.apache.camel.component.splunk.ConsumerType;
 import org.apache.camel.component.splunk.ProducerType;
 import org.apache.camel.util.CollectionHelper;
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.testcontainers.shaded.org.apache.commons.lang3.RandomStringUtils;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 import static org.hamcrest.Matchers.anyOf;
@@ -43,109 +51,67 @@ import static org.hamcrest.Matchers.is;
 @QuarkusTest
 @QuarkusTestResource(SplunkTestResource.class)
 class SplunkTest {
-    // Test matrix
-    static Stream<Arguments> testMatrix() {
-        Stream.Builder<Arguments> argumentBuilder = Stream.builder();
-        //        argumentBuilder.add(Arguments.of(ConsumerType.NORMAL, ProducerType.STREAM, true));
-        //        argumentBuilder.add(Arguments.of(ConsumerType.REALTIME, ProducerType.SUBMIT, false));
-//        argumentBuilder.add(Arguments.of(ConsumerType.SAVEDSEARCH, ProducerType.SUBMIT, false));
-        argumentBuilder.add(Arguments.of(ConsumerType.NORMAL, ProducerType.SUBMIT, false));
-        return argumentBuilder.build();
-    }
 
-    //todo raw
-    @ParameterizedTest
-    @MethodSource("testMatrix")
-    void testConsumerAndProducer(ConsumerType consumerType, ProducerType producerType, boolean rawData)
-            throws InterruptedException, ExecutionException {
-        //write method depends on producerType
-        Consumer<String> write = suffix -> write(suffix, producerType);
 
-        //read depends on consumer type
-        switch (consumerType) {
-        case NORMAL -> testConsumeNormal(write);
-        case REALTIME -> testConsumeRealtime(write);
-        case SAVEDSEARCH -> testConsumeSavedSearch(write);
-        }
-    }
+    @Test
+    public void testNormalSearchWithSubmit() {
+        String suffix = "_submitForNormalSearch";
 
-    private void testConsumeNormal(Consumer<String> write) {
-        write.accept("_normal");
+        write(suffix, ProducerType.SUBMIT, 0);
 
-        //        try {
-        //            Thread.sleep(10000);
-        //        } catch (InterruptedException e) {
-        //            e.printStackTrace();
-        //        }
-
-        Awaitility.await().pollInterval(50, TimeUnit.MILLISECONDS).atMost(60, TimeUnit.SECONDS)
-                .<Boolean> until(
-                        () -> {
-                            List l = RestAssured.given()
-                                    .get("/splunk/consume/")
-                                    .then()
-                                    //                                .statusCode(200)
-                                    .extract().body().as(List.class);
-                            return false;
-                        });
-
-        //        List<Map<String, String>> result = RestAssured.given()
-        //                .get("/splunk/consume/")
-        //                .then()
-        //                .statusCode(200)
-        //                .extract().as(new TypeRef<>() {
-        //                });
-        //
-        //
-        //        List<Map<String, String>> result = RestAssured.given()
-        //                .contentType(ContentType.TEXT)
-        //                .body(String.format(
-        //                        "search index=* | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
-        ////                        "search index=%s sourcetype=%s | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
-        //                        SplunkTestResource.TEST_INDEX, SplunkResource.SOURCE_TYPE))
-        //                .post("/splunk/normal")
-        //                .then()
-        //                .statusCode(200)
-        //                .extract().as(new TypeRef<>() {
-        //                });
-
-        //        Assertions.assertEquals(3, result.size());
-        //        Assertions.assertEquals("Irma_normal", result.get(0).get("name"));
-        //        Assertions.assertEquals("Earth\"", result.get(0).get("from"));
-        //        Assertions.assertEquals("Leonard_normal", result.get(1).get("name"));
-        //        Assertions.assertEquals("Earth 2.0\"", result.get(1).get("from"));
-        //        Assertions.assertEquals("Sheldon_normal", result.get(2).get("name"));
-        //        Assertions.assertEquals("Alpha Centauri\"", result.get(2).get("from"));
-    }
-
-    private void testConsumeRealtime(Consumer<String> write) throws InterruptedException, ExecutionException {
-
-        RestAssured.given()
+        List<Map<String, String>> result = RestAssured.given()
+                .contentType(ContentType.TEXT)
                 .body(String.format(
-                        "search index=%s sourcetype=%s | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
-                        SplunkTestResource.TEST_INDEX, SplunkResource.SOURCE_TYPE))
-                .post("/splunk/startRealtimePolling");
-
-        //wait some time to start polling
-        TimeUnit.SECONDS.sleep(3);
-        write.accept("_realtime1");
-        TimeUnit.SECONDS.sleep(1);
-        write.accept("realtime2");
-        TimeUnit.SECONDS.sleep(1);
-        write.accept("_realtime3");
-        //wait some time to gather the pulls from splunk server
-        TimeUnit.SECONDS.sleep(3);
-        //there should be some data from realtime search in direct (concrete values depends on the speed of writing into index)
-        //test is asserting that there are some
-        RestAssured.get("/splunk/directRealtimePolling")
+                        "search index=* | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
+                        SplunkTestResource.TEST_INDEX, ProducerType.SUBMIT.name()))
+                .post("/splunk/normal")
                 .then()
                 .statusCode(200)
-                .body(containsString("_realtime"));
+                .extract().as(new TypeRef<>() {
+            });
+
+        Assertions.assertEquals(3, result.size());
+        Assertions.assertEquals("Irma" + suffix, result.get(0).get("name"));
+        Assertions.assertEquals("Earth\"", result.get(0).get("from"));
+        Assertions.assertEquals("Leonard" + suffix, result.get(1).get("name"));
+        Assertions.assertEquals("Earth 2.0\"", result.get(1).get("from"));
+        Assertions.assertEquals("Sheldon" + suffix, result.get(2).get("name"));
+        Assertions.assertEquals("Alpha Centauri\"", result.get(2).get("from"));
     }
 
-    private void testConsumeSavedSearch(Consumer<String> write) throws InterruptedException {
-        //ue suffix _foSsavedSearch
-        String suffix = "_foSsavedSearch";
+    @Test
+    public void testConsumeRealtime() throws InterruptedException, ExecutionException {
+        String suffix = "_streamForRealtime";
+        //there is a buffer for stream writing, therefore about 1MB of data has to be written into Splunk
+
+        //data are are written in separated thread
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        //execute component server to wait for the result
+        Future futureResult = executor.submit(
+                () -> {
+                    for(int i = 0; i < 5000; i++) {
+                        write(suffix + i, ProducerType.STREAM, 100);
+                    }
+                }
+                );
+
+        Awaitility.await().pollInterval(1000, TimeUnit.MILLISECONDS).atMost(60, TimeUnit.SECONDS).until(
+                () -> {
+                    String result = RestAssured.get("/splunk/directRealtimePolling")
+                            .then()
+                            .statusCode(200)
+                            .extract().asString();
+
+                    return result.contains(suffix);
+                }
+        );
+
+        futureResult.cancel(true);
+    }
+
+    @Test
+    public void testSavedSearchWithTcp() throws InterruptedException {
+        String suffix = "_tcpFoSavedSearch";
         //create saved search
         RestAssured.given()
                 .baseUri("http://localhost")
@@ -160,40 +126,25 @@ class SplunkTest {
                 .then()
                 .statusCode(anyOf(is(201), is(409)));
 
-//        //start route
-//        Awaitility.await().pollInterval(50, TimeUnit.MILLISECONDS).atMost(60, TimeUnit.SECONDS)
-//                .until(
-//                        () -> RestAssured.given()
-//                                .get("/splunk/start/route/savedSearchRoute/")
-//                                .then()
-//                                .statusCode(200)
-//                                .extract().body().as(Boolean.class));
+        //write data via tcp
+        write(suffix, ProducerType.TCP, 0);
+
+        Awaitility.await().pollInterval(50, TimeUnit.MILLISECONDS).atMost(60, TimeUnit.SECONDS).until(
+                        () -> {
+                            String result = RestAssured.given()
+                                    .contentType(ContentType.TEXT)
+                                    .body(SplunkResource.SAVED_SEARCH_NAME)
+                                    .post("/splunk/savedSearch")
+                                    .then()
+                                    .statusCode(200)
+                                    .extract().asString();
 
 
-        write.accept(suffix);
-
-        RestAssured.given()
-                .contentType(ContentType.TEXT)
-                .body(SplunkResource.SAVED_SEARCH_NAME)
-                .post("/splunk/savedSearch")
-                .then()
-                .statusCode(200)
-                .body(containsString("Name: Sheldon" + suffix))
-                .body(containsString("Name: Leonard" + suffix))
-                .body(containsString("Name: Irma" + suffix));
-
-
-//        Awaitility.await().pollInterval(50, TimeUnit.MILLISECONDS).atMost(60, TimeUnit.SECONDS)
-//                .<Boolean> until(
-//                        () -> {
-//                            List l = RestAssured.given()
-//                                    .get("/splunk/consume/")
-//                                    .then()
-//                                    //                                .statusCode(200)
-//                                    .extract().body().as(List.class);
-//                            return false;
-//                        });
-
+                             return result.contains("Name: Sheldon" + suffix)
+                                     && result.contains("Name: Leonard" + suffix)
+                                     && result.contains("Name: Irma" + suffix);
+                        }
+                );
 
         //remove saved search TODO move to onComplete()
         RestAssured.given()
@@ -203,18 +154,10 @@ class SplunkTest {
                 .delete("/services/saved/searches/" + SplunkResource.SAVED_SEARCH_NAME)
                 .then()
                 .statusCode(200);
-
-        //
-        //        RestAssured.given()
-        //                .contentType(ContentType.TEXT)
-        //                .body(SplunkTestResource.SAVED_SEARCH_NAME)
-        //                .post("/splunk/savedSearch")
-        //                .then()
-        //                .statusCode(200)
-
     }
 
-    private void write(String suffix, ProducerType producerType) {
+    private void write(String suffix, ProducerType producerType, int lengthOfRandomString) {
+        Random random = new Random();
         Consumer<Map> write = data -> RestAssured.given()
                 .contentType(ContentType.JSON)
                 .queryParam("index", SplunkTestResource.TEST_INDEX)
@@ -223,17 +166,8 @@ class SplunkTest {
                 .then()
                 .statusCode(201);
 
-//        String suffix = "_" + producerType.name().toLowerCase();
-
-        write.accept(CollectionHelper.mapOf("entity", "Name: Sheldon" + suffix + " From: Alpha Centauri"));
-        write.accept(CollectionHelper.mapOf("entity", "Name: Leonard" + suffix + " From: Earth 2.0"));
-        write.accept(CollectionHelper.mapOf("entity", "Name: Irma" + suffix + " From: Earth"));
+        write.accept(CollectionHelper.mapOf("entity", "Name: Sheldon" + suffix + " From: Alpha Centauri", "data", RandomStringUtils.randomAlphanumeric(lengthOfRandomString)));
+        write.accept(CollectionHelper.mapOf("entity", "Name: Leonard" + suffix + " From: Earth 2.0", "data", RandomStringUtils.randomAlphanumeric(lengthOfRandomString)));
+        write.accept(CollectionHelper.mapOf("entity", "Name: Irma" + suffix + " From: Earth", "data", RandomStringUtils.randomAlphanumeric(lengthOfRandomString)));
     }
-
-    //    private String expectedResult(Map<String, String> data) {
-    //        String expectedResult = data.entrySet().stream()
-    //                .map(e -> e.getKey() + "=\"" + e.getValue() + "\"")
-    //                .collect(Collectors.joining(" "));
-    //        return expectedResult;
-
 }
