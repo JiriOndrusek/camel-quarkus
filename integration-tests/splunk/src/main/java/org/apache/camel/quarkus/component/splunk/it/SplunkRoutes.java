@@ -45,26 +45,27 @@ public class SplunkRoutes extends RouteBuilder {
     @Override
     public void configure() throws SQLException, IOException {
         //ConsumerType.REALTIME
-        from(String.format("splunk://realtime?username=admin&password=changeit&scheme=http&port=%d&delay=3000&initEarliestTime=rt-10s&latestTime=RAW(rt+40s)&search=" +
+        from(String.format(
+                "splunk://realtime?username=admin&password=changeit&scheme=http&port=%d&delay=3000&initEarliestTime=rt-10s&latestTime=RAW(rt+40s)&search="
+                        +
                         "search sourcetype=\"STREAM\" | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
                 port, ProducerType.STREAM.name()))
-            .process(e -> results.get("realtimeSearch").add(e.getMessage().getBody(SplunkEvent.class))
-            );
+                .process(e -> results.get("realtimeSearch").add(e.getMessage().getBody(SplunkEvent.class)));
 
         //ConsumerType.SAVEDSEARCH
         from(String.format(
                 "splunk://savedsearch?username=admin&password=changeit&scheme=http&port=%d&delay=100&initEarliestTime=-1m&savedsearch=%s",
                 port, SplunkResource.SAVED_SEARCH_NAME))
-                .process(e -> results.get("savedSearch").add(e.getMessage().getBody(SplunkEvent.class))
-                ).routeId("savedSearchRoute").autoStartup(false);
+                .process(e -> results.get("savedSearch").add(e.getMessage().getBody(SplunkEvent.class)))
+                .routeId("savedSearchRoute").autoStartup(false);
 
         //ConsumerType.NORMAL
         from(String.format(
-                "splunk://normal?username=admin&password=changeit&scheme=http&port=%d&delay=5000&initEarliestTime=-10s&search=" +
+                "splunk://normal?username=admin&password=changeit&scheme=http&port=%d&delay=5000&initEarliestTime=-10s&search="
+                        +
                         "search sourcetype=\"SUBMIT\" | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
                 port))
-                .process(e -> results.get("normalSearch").add(e.getMessage().getBody(SplunkEvent.class))
-                );
+                .process(e -> results.get("normalSearch").add(e.getMessage().getBody(SplunkEvent.class)));
     }
 
     @Produces

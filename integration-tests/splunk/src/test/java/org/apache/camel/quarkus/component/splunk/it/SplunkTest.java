@@ -42,12 +42,11 @@ import static org.hamcrest.Matchers.is;
 @QuarkusTestResource(SplunkTestResource.class)
 class SplunkTest {
 
-
     @Test
-    public void testNormalSearchWithSubmit() {
+    public void testNormalSearchWithSubmitWithRawData() {
         String suffix = "_normalSearchOfSubmit";
 
-        write(suffix, ProducerType.SUBMIT, 0);
+        write(suffix, ProducerType.SUBMIT, 0, true);
 
         Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS).atMost(10, TimeUnit.SECONDS).until(
                 () -> {
@@ -57,12 +56,10 @@ class SplunkTest {
                             .statusCode(200)
                             .extract().asString();
 
-
                     return result.contains("Name: Sheldon" + suffix)
                             && result.contains("Name: Leonard" + suffix)
                             && result.contains("Name: Irma" + suffix);
-                }
-        );
+                });
     }
 
     @Test
@@ -75,11 +72,10 @@ class SplunkTest {
         //execute component server to wait for the result
         Future futureResult = executor.submit(
                 () -> {
-                    for(int i = 0; i < 5000; i++) {
-                        write(suffix + i, ProducerType.STREAM, 100);
+                    for (int i = 0; i < 5000; i++) {
+                        write(suffix + i, ProducerType.STREAM, 100, false);
                     }
-                }
-                );
+                });
 
         try {
             Awaitility.await().pollInterval(1000, TimeUnit.MILLISECONDS).atMost(60, TimeUnit.SECONDS).until(
@@ -90,8 +86,7 @@ class SplunkTest {
                                 .extract().asString();
 
                         return result.contains(suffix);
-                    }
-            );
+                    });
         } finally {
             futureResult.cancel(true);
         }
@@ -107,9 +102,9 @@ class SplunkTest {
                 .contentType(ContentType.JSON)
                 .param("name", SplunkResource.SAVED_SEARCH_NAME)
                 .param("disabled", "0")
-                .param("description", "descritionText")
+                .param("description", "descriptionText")
                 .param("search",
-                        "search index=* sourcetype=\"TCP\" | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"")
+                        "search *")
                 .post("/services/saved/searches")
                 .then()
                 .statusCode(anyOf(is(201), is(409)));
@@ -123,36 +118,24 @@ class SplunkTest {
                                 .statusCode(200)
                                 .extract().body().as(Boolean.class));
 
-
         //write data via tcp
-        write(suffix, ProducerType.TCP, 0);
+        write(suffix, ProducerType.TCP, 0, false);
 
         Awaitility.await().pollInterval(200, TimeUnit.MILLISECONDS).atMost(60, TimeUnit.SECONDS).until(
-                        () -> {
-                            String result = RestAssured.given()
-                                    .get("/splunk/results/savedSearch")
-                                    .then()
-                                    .statusCode(200)
-                                    .extract().asString();
+                () -> {
+                    String result = RestAssured.given()
+                            .get("/splunk/results/savedSearch")
+                            .then()
+                            .statusCode(200)
+                            .extract().asString();
 
-
-                             return result.contains("Name: Sheldon" + suffix)
-                                     && result.contains("Name: Leonard" + suffix)
-                                     && result.contains("Name: Irma" + suffix);
-                        }
-                );
-
-//        //remove saved search TODO move to onComplete()
-//        RestAssured.given()
-//                .baseUri("http://localhost")
-//                .port(ConfigProvider.getConfig().getValue(SplunkResource.PARAM_REMOTE_PORT, Integer.class))
-//                .contentType(ContentType.JSON)
-//                .delete("/services/saved/searches/" + SplunkResource.SAVED_SEARCH_NAME)
-//                .then()
-//                .statusCode(200);
+                    return result.contains("Name: Sheldon" + suffix)
+                            && result.contains("Name: Leonard" + suffix)
+                            && result.contains("Name: Irma" + suffix);
+                });
     }
 
-    private void write(String suffix, ProducerType producerType, int lengthOfRandomString) {
+    private void write(String suffix, ProducerType producerType, int lengthOfRandomString, boolean raw) {
         Consumer<Map> write = data -> RestAssured.given()
                 .contentType(ContentType.JSON)
                 .queryParam("index", SplunkTestResource.TEST_INDEX)
@@ -161,8 +144,25 @@ class SplunkTest {
                 .then()
                 .statusCode(201);
 
-        write.accept(CollectionHelper.mapOf("entity", "Name: Sheldon" + suffix + " From: Alpha Centauri", "data", RandomStringUtils.randomAlphanumeric(lengthOfRandomString)));
-        write.accept(CollectionHelper.mapOf("entity", "Name: Leonard" + suffix + " From: Earth 2.0", "data", RandomStringUtils.randomAlphanumeric(lengthOfRandomString)));
-        write.accept(CollectionHelper.mapOf("entity", "Name: Irma" + suffix + " From: Earth", "data", RandomStringUtils.randomAlphanumeric(lengthOfRandomString)));
+        Map data[] = new Map[3];
+        if (raw) {
+            data[0] = CollectionHelper.mapOf("_rawData", "Name: Sheldon" + suffix + " From: Alpha Centauri", "data",
+                    RandomStringUtils.randomAlphanumeric(lengthOfRandomString));
+            data[1] = CollectionHelper.mapOf("_rawData", "Name: Leonard" + suffix + " From: Earth 2.0", "data",
+                    RandomStringUtils.randomAlphanumeric(lengthOfRandomString));
+            data[2] = CollectionHelper.mapOf("_rawData", "Name: Irma" + suffix + " From: Earth", "data",
+                    RandomStringUtils.randomAlphanumeric(lengthOfRandomString));
+        } else {
+            data[0] = CollectionHelper.mapOf("entity", "Name: Sheldon" + suffix + " From: Alpha Centauri", "data",
+                    RandomStringUtils.randomAlphanumeric(lengthOfRandomString));
+            data[1] = CollectionHelper.mapOf("entity", "Name: Leonard" + suffix + " From: Earth 2.0", "data",
+                    RandomStringUtils.randomAlphanumeric(lengthOfRandomString));
+            data[2] = CollectionHelper.mapOf("entity", "Name: Irma" + suffix + " From: Earth", "data",
+                    RandomStringUtils.randomAlphanumeric(lengthOfRandomString));
+        }
+
+        write.accept(data[0]);
+        write.accept(data[1]);
+        write.accept(data[2]);
     }
 }

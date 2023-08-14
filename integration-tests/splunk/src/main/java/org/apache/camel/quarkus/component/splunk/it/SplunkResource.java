@@ -19,10 +19,8 @@ package org.apache.camel.quarkus.component.splunk.it;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -83,22 +81,22 @@ public class SplunkResource {
         return component;
     }
 
-//    @Path("/consume")
-//    @GET
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public List consume(String consumerType) throws Exception {
-//
-//        List result = results.get("normalSearch").stream()
-//                .map(m -> m.getEventData().entrySet().stream()
-//                        .filter(e -> !e.getKey().startsWith("_") || "_raw".equals(e.getKey()))
-//                        .collect(Collectors.toMap(
-//                                Map.Entry::getKey,
-//                                Map.Entry::getValue,
-//                                (v1, v2) -> v1)))
-//                .collect(Collectors.toList());
-//
-//        return result;
-//    }
+    //    @Path("/consume")
+    //    @GET
+    //    @Produces(MediaType.APPLICATION_JSON)
+    //    public List consume(String consumerType) throws Exception {
+    //
+    //        List result = results.get("normalSearch").stream()
+    //                .map(m -> m.getEventData().entrySet().stream()
+    //                        .filter(e -> !e.getKey().startsWith("_") || "_raw".equals(e.getKey()))
+    //                        .collect(Collectors.toMap(
+    //                                Map.Entry::getKey,
+    //                                Map.Entry::getValue,
+    //                                (v1, v2) -> v1)))
+    //                .collect(Collectors.toList());
+    //
+    //        return result;
+    //    }
 
     @Path("/start/route/{routeId}")
     @GET
@@ -175,23 +173,34 @@ public class SplunkResource {
     public Response write(Map<String, String> message,
             @PathParam("producerType") String producerType,
             @QueryParam("index") String index) throws URISyntaxException {
+        if (message.containsKey("_rawData")) {
+            return writeRaw(message.get("_rawData"), producerType, index);
+        }
+
         SplunkEvent se = new SplunkEvent();
         for (Map.Entry<String, String> e : message.entrySet()) {
             se.addPair(e.getKey(), e.getValue());
         }
 
+        return writeRaw(se, producerType, index);
+    }
+
+    private Response writeRaw(Object message,
+            String producerType,
+            String index) throws URISyntaxException {
         String url;
         if (ProducerType.TCP == ProducerType.valueOf(producerType)) {
             url = String.format(
-                    "splunk:%s?username=admin&password=changeit&scheme=http&port=%d&index=%s&sourceType=%s&source=%s&tcpReceiverLocalPort=%d&tcpReceiverPort=%d",
-                    producerType.toLowerCase(), port, index, producerType, SOURCE, LOCAL_TCP_PORT, tcpPort);
+                    "splunk:%s?raw=%b&username=admin&password=changeit&scheme=http&port=%d&index=%s&sourceType=%s&source=%s&tcpReceiverLocalPort=%d&tcpReceiverPort=%d",
+                    producerType.toLowerCase(), !(message instanceof SplunkEvent), port, index, producerType, SOURCE,
+                    LOCAL_TCP_PORT, tcpPort);
 
         } else {
             url = String.format(
-                    "splunk:%s?scheme=http&port=%d&index=%s&sourceType=%s&source=%s",
-                    producerType.toLowerCase(), port, index, producerType, SOURCE);
+                    "splunk:%s?raw=%b&scheme=http&port=%d&index=%s&sourceType=%s&source=%s",
+                    producerType.toLowerCase(), !(message instanceof SplunkEvent), port, index, producerType, SOURCE);
         }
-        final String response = producerTemplate.requestBody(url, se, String.class);
+        final String response = producerTemplate.requestBody(url, message, String.class);
         return Response
                 .created(new URI("https://camel.apache.org/"))
                 .entity(response)
