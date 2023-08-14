@@ -161,39 +161,11 @@ public class SplunkResource {
         return result.toString();
     }
 
-    @Path("/directRealtimePolling")
+    @Path("/results/{mapName}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List directRealtimePolling() throws Exception {
-//        final SplunkEvent m1 = consumerTemplate.receiveBody("direct:realtimePolling", 3000, SplunkEvent.class);
-//
-//        if (m1 == null) {
-//            return Collections.emptyMap();
-//        }
-//
-//        Map result = m1.getEventData().entrySet().stream()
-//                .filter(e -> !e.getKey().startsWith("_"))
-//                .collect(Collectors.toMap(
-//                        Map.Entry::getKey,
-//                        Map.Entry::getValue,
-//                        (v1, v2) -> v1));
-
-        return results.get("realtimeSearch");
-    }
-
-    @Path("/startRealtimePolling")
-    @POST
-    public void startPolling(String search) {
-        // use another thread for polling consumer to demonstrate that we can wait before
-        // the message is sent to the queue
-        Executors.newSingleThreadExecutor().execute(() -> {
-            String url = String.format(
-                    "splunk://realtime?username=admin&password=changeit&scheme=http&port=%d&delay=3000&initEarliestTime=rt-10s&latestTime=RAW(rt+40s)&search="
-                            + search,
-                    port);
-            SplunkEvent body = consumerTemplate.receiveBody(url, SplunkEvent.class);
-            producerTemplate.sendBody("direct:realtimePolling", body);
-        });
+    public List results(@PathParam("mapName") String mapName) throws Exception {
+        return results.get(mapName);
     }
 
     @Path("/write/{producerType}")
