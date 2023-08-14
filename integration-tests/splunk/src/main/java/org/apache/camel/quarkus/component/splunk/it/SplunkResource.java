@@ -19,6 +19,7 @@ package org.apache.camel.quarkus.component.splunk.it;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -70,10 +71,6 @@ public class SplunkResource {
     @Inject
     CamelContext camelContext;
 
-    @Inject
-    @Named("results")
-    Map<String, List<SplunkEvent>> results;
-
     @Named
     SplunkComponent splunk() {
         SplunkComponent component = new SplunkComponent();
@@ -98,56 +95,81 @@ public class SplunkResource {
     //        return result;
     //    }
 
-    @Path("/start/route/{routeId}")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public boolean start(@PathParam("routeId") String routeId) throws Exception {
+//    @Path("/start/route/{routeId}")
+//    @GET
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public boolean start(@PathParam("routeId") String routeId) throws Exception {
+//
+//        if (camelContext.getRouteController().getRouteStatus(routeId) == ServiceStatus.Stopped) {
+//            camelContext.getRouteController().startRoute(routeId);
+//        }
+//
+//        return camelContext.getRouteController().getRouteStatus(routeId).isStarted();
+//
+//    }
+//
+//    @Path("/normal")
+//    @POST
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public List normal(String search) throws Exception {
+//        String url = String.format(
+//                "splunk://normal?username=admin&password=changeit&scheme=http&port=%d&delay=5000&initEarliestTime=-10s&search="
+//                        + search,
+//                port);
+//
+//        final SplunkEvent m1 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
+//        final SplunkEvent m2 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
+//        final SplunkEvent m3 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
+//
+//        List result = Arrays.stream(new SplunkEvent[] { m1, m2, m3 })
+//                .map(m -> m.getEventData().entrySet().stream()
+//                        .filter(e -> !e.getKey().startsWith("_"))
+//                        .collect(Collectors.toMap(
+//                                Map.Entry::getKey,
+//                                Map.Entry::getValue,
+//                                (v1, v2) -> v1)))
+//                .collect(Collectors.toList());
+//
+//        return result;
+//    }
 
-        if (camelContext.getRouteController().getRouteStatus(routeId) == ServiceStatus.Stopped) {
-            camelContext.getRouteController().startRoute(routeId);
+    @Path("/results2/{mapName}")
+    @POST
+    public String results2(@PathParam("mapName") String mapName) throws Exception {
+        String url;
+        int count = 3;
+
+        if ("savedSearch".equals(mapName)) {
+            url = String.format(
+                    "splunk://savedsearch?username=admin&password=changeit&scheme=http&port=%d&delay=500&initEarliestTime=-1m&savedsearch=%s",
+                    port, SAVED_SEARCH_NAME);
+            //todo why??
+            count = 5;
+        } else if ("normalSearch".equals(mapName)) {
+            url = String.format(
+                    "splunk://normal?username=admin&password=changeit&scheme=http&port=%d&delay=5000&initEarliestTime=-10s&search="
+                            + "search sourcetype=\"SUBMIT\" | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
+                    port);
+        } else {
+            url = String.format(
+                    "splunk://realtime?username=admin&password=changeit&scheme=http&port=%d&delay=3000&initEarliestTime=rt-10s&latestTime=RAW(rt+40s)&search="
+                            + "search sourcetype=\"STREAM\" | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
+                    port, ProducerType.STREAM.name());
         }
 
-        return camelContext.getRouteController().getRouteStatus(routeId).isStarted();
-
-    }
-
-    @Path("/normal")
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    public List normal(String search) throws Exception {
-        String url = String.format(
-                "splunk://normal?username=admin&password=changeit&scheme=http&port=%d&delay=5000&initEarliestTime=-10s&search="
-                        + search,
-                port);
-
-        final SplunkEvent m1 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
-        final SplunkEvent m2 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
-        final SplunkEvent m3 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
-
-        List result = Arrays.stream(new SplunkEvent[] { m1, m2, m3 })
-                .map(m -> m.getEventData().entrySet().stream()
-                        .filter(e -> !e.getKey().startsWith("_"))
-                        .collect(Collectors.toMap(
-                                Map.Entry::getKey,
-                                Map.Entry::getValue,
-                                (v1, v2) -> v1)))
-                .collect(Collectors.toList());
-
-        return result;
-    }
-
-    @Path("/savedSearch")
-    @POST
-    public String savedSearch(String name) throws Exception {
-        String url = String.format(
-                "splunk://savedsearch?username=admin&password=changeit&scheme=http&port=%d&delay=100&initEarliestTime=-1m&savedsearch=%s",
-                port, name);
-
-        final SplunkEvent m1 = consumerTemplate.receiveBody(url, 5000, SplunkEvent.class);
-        final SplunkEvent m2 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
-        final SplunkEvent m3 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
-
-        List result = Arrays.stream(new SplunkEvent[] { m1, m2, m3 })
+        List<SplunkEvent> events = events = new LinkedList<>();
+        for (int i = 0; i < count; i++) {
+            SplunkEvent se = consumerTemplate.receiveBody(url, 5000, SplunkEvent.class);
+            if (se == null) {
+                break;
+            }
+            events.add(se);
+        }
+        //        final SplunkEvent m1 = consumerTemplate.receiveBody(url, 5000, SplunkEvent.class);
+        //        final SplunkEvent m2 = consumerTemplate.receiveBody(url, 5000, SplunkEvent.class);
+        //        final SplunkEvent m3 = consumerTemplate.receiveBody(url, 5000, SplunkEvent.class);
+        //        List result = Arrays.stream(new SplunkEvent[] { m1, m2, m3 })
+        List result = events.stream()
                 .map(m -> {
                     if (m == null) {
                         return "null";
@@ -155,16 +177,15 @@ public class SplunkResource {
                     return m.getEventData().get("_raw");
                 })
                 .collect(Collectors.toList());
-
         return result.toString();
     }
 
-    @Path("/results/{mapName}")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public List results(@PathParam("mapName") String mapName) throws Exception {
-        return results.get(mapName);
-    }
+    //    @Path("/results/{mapName}")
+    //    @GET
+    //    @Produces(MediaType.APPLICATION_JSON)
+    //    public List results(@PathParam("mapName") String mapName) throws Exception {
+    //        return results.get(mapName);
+    //    }
 
     @Path("/write/{producerType}")
     @POST
