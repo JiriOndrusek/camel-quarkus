@@ -1,0 +1,10 @@
+to see splunk data in docker container.
+Expose port 8000 and access http://127.0.0.1:${exposed_8000)/ in browser.
+http://127.0.0.1:32829/en-US/app/search/search
+
+example search: index=testindex sourcetype=testSource | rex field=_raw "Name: (?<name>.*) From: (?<from>.*)"
+
+all indexes: index=* sourcetype=testSource | rex field=_raw "Name: (?<name>.*) From: (?<from>.*)"
+
+TCP events returned with search *, probably because the event contains _raw instead of name
+-> first event is ignored?? try use route and map with results as is usuall approach

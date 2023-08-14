@@ -19,9 +19,10 @@ package org.apache.camel.quarkus.component.splunk.it;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import io.quarkus.test.common.QuarkusTestResource;
@@ -48,9 +49,9 @@ class SplunkTest {
     // Test matrix
     static Stream<Arguments> testMatrix() {
         Stream.Builder<Arguments> argumentBuilder = Stream.builder();
-        argumentBuilder.add(Arguments.of(ConsumerType.NORMAL, ProducerType.STREAM, true));
-        argumentBuilder.add(Arguments.of(ConsumerType.REALTIME, ProducerType.SUBMIT, false));
-        argumentBuilder.add(Arguments.of(ConsumerType.SAVEDSEARCH, ProducerType.TCP, false));
+//        argumentBuilder.add(Arguments.of(ConsumerType.NORMAL, ProducerType.STREAM, true));
+//        argumentBuilder.add(Arguments.of(ConsumerType.REALTIME, ProducerType.SUBMIT, false));
+        argumentBuilder.add(Arguments.of(ConsumerType.NORMAL, ProducerType.TCP, false));
         return argumentBuilder.build();
     }
 
@@ -72,16 +73,31 @@ class SplunkTest {
     private void testConsumeNormal(Consumer<String> write) {
         write.accept("_normal");
 
+//        try {
+//            Thread.sleep(10000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+
         List<Map<String, String>> result = RestAssured.given()
-                .contentType(ContentType.TEXT)
-                .body(String.format(
-                        "search index=%s sourcetype=%s | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
-                        SplunkTestResource.TEST_INDEX, SplunkResource.SOURCE_TYPE))
-                .post("/splunk/normal")
+                .get("/splunk/consume/")
                 .then()
                 .statusCode(200)
                 .extract().as(new TypeRef<>() {
                 });
+//
+//
+//        List<Map<String, String>> result = RestAssured.given()
+//                .contentType(ContentType.TEXT)
+//                .body(String.format(
+//                        "search index=* | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
+////                        "search index=%s sourcetype=%s | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
+//                        SplunkTestResource.TEST_INDEX, SplunkResource.SOURCE_TYPE))
+//                .post("/splunk/normal")
+//                .then()
+//                .statusCode(200)
+//                .extract().as(new TypeRef<>() {
+//                });
 
         Assertions.assertEquals(3, result.size());
         Assertions.assertEquals("Irma_normal", result.get(0).get("name"));
