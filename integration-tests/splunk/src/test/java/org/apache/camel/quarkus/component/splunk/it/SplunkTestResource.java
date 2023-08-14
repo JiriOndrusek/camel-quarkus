@@ -29,7 +29,6 @@ import org.testcontainers.containers.wait.strategy.Wait;
 public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
 
     public static String TEST_INDEX = "testindex";
-    public static String SAVED_SEARCH_NAME = "savedSearchForTest";
     private static final String SPLUNK_IMAGE_NAME = ConfigProvider.getConfig().getValue("splunk.container.image", String.class);
     private static final int REMOTE_PORT = 8089;
 
@@ -49,31 +48,30 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
                             Wait.forLogMessage(".*Ansible playbook complete.*\\n", 1)
                                     .withStartupTimeout(Duration.ofMinutes(5)));
 
-//            container.start();
-//
-//            container.execInContainer("sudo", "sed", "-i", "s/allowRemoteLogin=requireSetPassword/allowRemoteLogin=always/",
-//                    "/opt/splunk/etc/system/default/server.conf");
-//            container.execInContainer("sudo", "sed", "-i", "s/enableSplunkdSSL = true/enableSplunkdSSL = false/",
-//                    "/opt/splunk/etc/system/default/server.conf");
-//            container.execInContainer("sudo", "sed", "-i", "s/minFreeSpace = 5000/minFreeSpace = 100/",
-//                    "/opt/splunk/etc/system/default/server.conf");
-//
-//            container.execInContainer("sudo", "microdnf", "--nodocs", "update", "tzdata");//install tzdata package so we can specify tz other than UTC
-//
-//            container.execInContainer("sudo", "./bin/splunk", "restart");
-//            container.execInContainer("sudo", "./bin/splunk", "add", "index", TEST_INDEX);
-//            container.execInContainer("sudo", "./bin/splunk", "add", "tcp", String.valueOf(SplunkResource.LOCAL_TCP_PORT),
-//                    "-sourcetype",
-//                    SplunkResource.SOURCE_TYPE);
+            //            container.start();
+            //
+            //            container.execInContainer("sudo", "sed", "-i", "s/allowRemoteLogin=requireSetPassword/allowRemoteLogin=always/",
+            //                    "/opt/splunk/etc/system/default/server.conf");
+            //            container.execInContainer("sudo", "sed", "-i", "s/enableSplunkdSSL = true/enableSplunkdSSL = false/",
+            //                    "/opt/splunk/etc/system/default/server.conf");
+            //            container.execInContainer("sudo", "sed", "-i", "s/minFreeSpace = 5000/minFreeSpace = 100/",
+            //                    "/opt/splunk/etc/system/default/server.conf");
+            //
+            //            container.execInContainer("sudo", "microdnf", "--nodocs", "update", "tzdata");//install tzdata package so we can specify tz other than UTC
+            //
+            //            container.execInContainer("sudo", "./bin/splunk", "restart");
+            //            container.execInContainer("sudo", "./bin/splunk", "add", "index", TEST_INDEX);
+            //            container.execInContainer("sudo", "./bin/splunk", "add", "tcp", String.valueOf(SplunkResource.LOCAL_TCP_PORT),
+            //                    "-sourcetype",
+            //                    SplunkResource.SOURCE_TYPE);
 
-//            Map<String, String> map = CollectionHelper.mapOf(
-//                    SplunkResource.PARAM_REMOTE_PORT, container.getMappedPort(REMOTE_PORT).toString(),
-//                    SplunkResource.PARAM_TCP_PORT, container.getMappedPort(SplunkResource.LOCAL_TCP_PORT).toString());
-
+            //            Map<String, String> map = CollectionHelper.mapOf(
+            //                    SplunkResource.PARAM_REMOTE_PORT, container.getMappedPort(REMOTE_PORT).toString(),
+            //                    SplunkResource.PARAM_TCP_PORT, container.getMappedPort(SplunkResource.LOCAL_TCP_PORT).toString());
 
             Map<String, String> map = CollectionHelper.mapOf(
-                    SplunkResource.PARAM_REMOTE_PORT, "32837",
-                    SplunkResource.PARAM_TCP_PORT, "32836");
+                    SplunkResource.PARAM_REMOTE_PORT, "32774",
+                    SplunkResource.PARAM_TCP_PORT, "32773");
 
             System.out.println("*****************************************************");
             System.out.println(map);

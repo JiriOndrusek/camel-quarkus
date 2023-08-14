@@ -40,7 +40,7 @@ import jakarta.ws.rs.core.Response;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.component.splunk.ConsumerType;
+import org.apache.camel.ServiceStatus;
 import org.apache.camel.component.splunk.ProducerType;
 import org.apache.camel.component.splunk.SplunkComponent;
 import org.apache.camel.component.splunk.SplunkConfiguration;
@@ -51,6 +51,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 @ApplicationScoped
 public class SplunkResource {
 
+    public static String SAVED_SEARCH_NAME = "savedSearchForTest";
     public static final String PARAM_REMOTE_PORT = "org.apache.camel.quarkus.component.splunk.it.SplunkResource_remotePort";
     public static final String PARAM_TCP_PORT = "org.apache.camel.quarkus.component.splunk.it.SplunkResource_tcpPort";
     public static final String SOURCE = "test";
@@ -70,8 +71,11 @@ public class SplunkResource {
     Integer tcpPort;
 
     @Inject
+    CamelContext camelContext;
+
+    @Inject
     @Named("results")
-    Map<String, List<Object>> results;
+    Map<String, List<SplunkEvent>> results;
 
     @Named
     SplunkComponent splunk() {
@@ -84,27 +88,30 @@ public class SplunkResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List consume(String consumerType) throws Exception {
-        return null;
 
-//        String url = String.format(
-//                "splunk://normal?username=admin&password=changeit&scheme=http&port=%d&delay=5000&initEarliestTime=-10s&search="
-//                        + search,
-//                port);
-//
-//        final SplunkEvent m1 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
-//        final SplunkEvent m2 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
-//        final SplunkEvent m3 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
-//
-//        List result = Arrays.stream(new SplunkEvent[] { m1, m2, m3 })
-//                .map(m -> m.getEventData().entrySet().stream()
-//                        .filter(e -> !e.getKey().startsWith("_"))
-//                        .collect(Collectors.toMap(
-//                                Map.Entry::getKey,
-//                                Map.Entry::getValue,
-//                                (v1, v2) -> v1)))
-//                .collect(Collectors.toList());
+        List result = results.get("normalSearch").stream()
+                .map(m -> m.getEventData().entrySet().stream()
+                        .filter(e -> !e.getKey().startsWith("_") || "_raw".equals(e.getKey()))
+                        .collect(Collectors.toMap(
+                                Map.Entry::getKey,
+                                Map.Entry::getValue,
+                                (v1, v2) -> v1)))
+                .collect(Collectors.toList());
 
-//        return result;
+        return result;
+    }
+
+    @Path("/start/route/{routeId}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public boolean start(@PathParam("routeId") String routeId) throws Exception {
+
+        if (camelContext.getRouteController().getRouteStatus(routeId) == ServiceStatus.Stopped) {
+            camelContext.getRouteController().startRoute(routeId);
+        }
+
+        return camelContext.getRouteController().getRouteStatus(routeId).isStarted();
+
     }
 
     @Path("/normal")
@@ -195,8 +202,8 @@ public class SplunkResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
     public Response write(Map<String, String> message,
-                          @PathParam("producerType") String producerType,
-                          @QueryParam("index") String index) throws URISyntaxException {
+            @PathParam("producerType") String producerType,
+            @QueryParam("index") String index) throws URISyntaxException {
         SplunkEvent se = new SplunkEvent();
         for (Map.Entry<String, String> e : message.entrySet()) {
             se.addPair(e.getKey(), e.getValue());

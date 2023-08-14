@@ -28,6 +28,7 @@ import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.splunk.event.SplunkEvent;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
@@ -35,7 +36,7 @@ public class SplunkRoutes extends RouteBuilder {
 
     @Inject
     @Named("results")
-    Map<String, List<Object>> results;
+    Map<String, List<SplunkEvent>> results;
 
     @ConfigProperty(name = SplunkResource.PARAM_REMOTE_PORT)
     Integer port;
@@ -43,18 +44,32 @@ public class SplunkRoutes extends RouteBuilder {
     @Override
     public void configure() throws SQLException, IOException {
         //ConsumerType.NORMAL
-        from(String.format("splunk://normal?username=admin&password=changeit&scheme=http&port=%d&delay=5000&initEarliestTime=-10s" +
-                "&search=search *",
-                port, SplunkResource.SOURCE_TYPE))
-            .process(e -> results.get("normalResults").add(e.getMessage().getBody(Map.class)));
+        //        from(String.format("splunk://normal?username=admin&password=changeit&scheme=http&port=%d&delay=5000&initEarliestTime=-10s" +
+        //                "&search=search *",
+        //                port, SplunkResource.SOURCE_TYPE))
+        //            .process(e -> {
+        //
+        //                results.get("normalSearch").add(e.getMessage().getBody(SplunkEvent.class));
+        //            });
+
+//        from(String.format(
+//                "splunk://savedsearch?username=admin&password=changeit&scheme=http&port=%d&delay=500&initEarliestTime=-1m&savedsearch=%s"
+//                        +
+//                        "&search=search *",
+//                port, SplunkResource.SAVED_SEARCH_NAME))
+//                .process(e -> {
+//
+//                    results.get("savedSearch").add(e.getMessage().getBody(SplunkEvent.class));
+//                }).routeId("savedSearchRoute").autoStartup(false);
     }
 
     @Produces
     @ApplicationScoped
     @Named("results")
-    Map<String, List<Object>> results() {
-        Map<String, List<Object>> result = new HashMap<>();
-        result.put("normalResults", new CopyOnWriteArrayList<>());
+    Map<String, List<SplunkEvent>> results() {
+        Map<String, List<SplunkEvent>> result = new HashMap<>();
+        result.put("normalSearch", new CopyOnWriteArrayList<>());
+        result.put("savedSearch", new CopyOnWriteArrayList<>());
         return result;
     }
 

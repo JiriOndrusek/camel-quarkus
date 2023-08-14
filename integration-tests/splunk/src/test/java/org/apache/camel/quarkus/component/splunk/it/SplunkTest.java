@@ -19,8 +19,6 @@ package org.apache.camel.quarkus.component.splunk.it;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -28,16 +26,15 @@ import java.util.stream.Stream;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
-import io.restassured.common.mapper.TypeRef;
 import io.restassured.http.ContentType;
 import org.apache.camel.component.splunk.ConsumerType;
 import org.apache.camel.component.splunk.ProducerType;
 import org.apache.camel.util.CollectionHelper;
 import org.eclipse.microprofile.config.ConfigProvider;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsString;
@@ -49,63 +46,76 @@ class SplunkTest {
     // Test matrix
     static Stream<Arguments> testMatrix() {
         Stream.Builder<Arguments> argumentBuilder = Stream.builder();
-//        argumentBuilder.add(Arguments.of(ConsumerType.NORMAL, ProducerType.STREAM, true));
-//        argumentBuilder.add(Arguments.of(ConsumerType.REALTIME, ProducerType.SUBMIT, false));
-        argumentBuilder.add(Arguments.of(ConsumerType.NORMAL, ProducerType.TCP, false));
+        //        argumentBuilder.add(Arguments.of(ConsumerType.NORMAL, ProducerType.STREAM, true));
+        //        argumentBuilder.add(Arguments.of(ConsumerType.REALTIME, ProducerType.SUBMIT, false));
+//        argumentBuilder.add(Arguments.of(ConsumerType.SAVEDSEARCH, ProducerType.SUBMIT, false));
+        argumentBuilder.add(Arguments.of(ConsumerType.NORMAL, ProducerType.SUBMIT, false));
         return argumentBuilder.build();
     }
 
     //todo raw
     @ParameterizedTest
     @MethodSource("testMatrix")
-    void testConsumerAndProducer(ConsumerType consumerType, ProducerType producerType, boolean rawData) throws InterruptedException, ExecutionException {
+    void testConsumerAndProducer(ConsumerType consumerType, ProducerType producerType, boolean rawData)
+            throws InterruptedException, ExecutionException {
         //write method depends on producerType
-        Consumer<String> write = suffix ->  write(suffix, producerType);
+        Consumer<String> write = suffix -> write(suffix, producerType);
 
         //read depends on consumer type
         switch (consumerType) {
-            case NORMAL -> testConsumeNormal(write);
-            case REALTIME -> testConsumeRealtime(write);
-            case SAVEDSEARCH -> testConsumeSavedSearch(write);
+        case NORMAL -> testConsumeNormal(write);
+        case REALTIME -> testConsumeRealtime(write);
+        case SAVEDSEARCH -> testConsumeSavedSearch(write);
         }
     }
 
     private void testConsumeNormal(Consumer<String> write) {
         write.accept("_normal");
 
-//        try {
-//            Thread.sleep(10000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
+        //        try {
+        //            Thread.sleep(10000);
+        //        } catch (InterruptedException e) {
+        //            e.printStackTrace();
+        //        }
 
-        List<Map<String, String>> result = RestAssured.given()
-                .get("/splunk/consume/")
-                .then()
-                .statusCode(200)
-                .extract().as(new TypeRef<>() {
-                });
-//
-//
-//        List<Map<String, String>> result = RestAssured.given()
-//                .contentType(ContentType.TEXT)
-//                .body(String.format(
-//                        "search index=* | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
-////                        "search index=%s sourcetype=%s | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
-//                        SplunkTestResource.TEST_INDEX, SplunkResource.SOURCE_TYPE))
-//                .post("/splunk/normal")
-//                .then()
-//                .statusCode(200)
-//                .extract().as(new TypeRef<>() {
-//                });
+        Awaitility.await().pollInterval(50, TimeUnit.MILLISECONDS).atMost(60, TimeUnit.SECONDS)
+                .<Boolean> until(
+                        () -> {
+                            List l = RestAssured.given()
+                                    .get("/splunk/consume/")
+                                    .then()
+                                    //                                .statusCode(200)
+                                    .extract().body().as(List.class);
+                            return false;
+                        });
 
-        Assertions.assertEquals(3, result.size());
-        Assertions.assertEquals("Irma_normal", result.get(0).get("name"));
-        Assertions.assertEquals("Earth\"", result.get(0).get("from"));
-        Assertions.assertEquals("Leonard_normal", result.get(1).get("name"));
-        Assertions.assertEquals("Earth 2.0\"", result.get(1).get("from"));
-        Assertions.assertEquals("Sheldon_normal", result.get(2).get("name"));
-        Assertions.assertEquals("Alpha Centauri\"", result.get(2).get("from"));
+        //        List<Map<String, String>> result = RestAssured.given()
+        //                .get("/splunk/consume/")
+        //                .then()
+        //                .statusCode(200)
+        //                .extract().as(new TypeRef<>() {
+        //                });
+        //
+        //
+        //        List<Map<String, String>> result = RestAssured.given()
+        //                .contentType(ContentType.TEXT)
+        //                .body(String.format(
+        //                        "search index=* | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
+        ////                        "search index=%s sourcetype=%s | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
+        //                        SplunkTestResource.TEST_INDEX, SplunkResource.SOURCE_TYPE))
+        //                .post("/splunk/normal")
+        //                .then()
+        //                .statusCode(200)
+        //                .extract().as(new TypeRef<>() {
+        //                });
+
+        //        Assertions.assertEquals(3, result.size());
+        //        Assertions.assertEquals("Irma_normal", result.get(0).get("name"));
+        //        Assertions.assertEquals("Earth\"", result.get(0).get("from"));
+        //        Assertions.assertEquals("Leonard_normal", result.get(1).get("name"));
+        //        Assertions.assertEquals("Earth 2.0\"", result.get(1).get("from"));
+        //        Assertions.assertEquals("Sheldon_normal", result.get(2).get("name"));
+        //        Assertions.assertEquals("Alpha Centauri\"", result.get(2).get("from"));
     }
 
     private void testConsumeRealtime(Consumer<String> write) throws InterruptedException, ExecutionException {
@@ -133,36 +143,79 @@ class SplunkTest {
                 .body(containsString("_realtime"));
     }
 
-   private void testConsumeSavedSearch(Consumer<String> write) {
+    private void testConsumeSavedSearch(Consumer<String> write) throws InterruptedException {
+        //ue suffix _foSsavedSearch
+        String suffix = "_foSsavedSearch";
         //create saved search
         RestAssured.given()
                 .baseUri("http://localhost")
                 .port(ConfigProvider.getConfig().getValue(SplunkResource.PARAM_REMOTE_PORT, Integer.class))
                 .contentType(ContentType.JSON)
-                .param("name", SplunkTestResource.SAVED_SEARCH_NAME)
+                .param("name", SplunkResource.SAVED_SEARCH_NAME)
                 .param("disabled", "0")
                 .param("description", "descritionText")
                 .param("search",
-                        "index=" + SplunkTestResource.TEST_INDEX + " sourcetype=" + SplunkResource.SOURCE_TYPE)
+                        "*")
                 .post("/services/saved/searches")
                 .then()
                 .statusCode(anyOf(is(201), is(409)));
 
-        write.accept("_savedSearch");
+//        //start route
+//        Awaitility.await().pollInterval(50, TimeUnit.MILLISECONDS).atMost(60, TimeUnit.SECONDS)
+//                .until(
+//                        () -> RestAssured.given()
+//                                .get("/splunk/start/route/savedSearchRoute/")
+//                                .then()
+//                                .statusCode(200)
+//                                .extract().body().as(Boolean.class));
+
+
+        write.accept(suffix);
 
         RestAssured.given()
                 .contentType(ContentType.TEXT)
-                .body(SplunkTestResource.SAVED_SEARCH_NAME)
+                .body(SplunkResource.SAVED_SEARCH_NAME)
                 .post("/splunk/savedSearch")
                 .then()
                 .statusCode(200)
-                .body(containsString("Name: Sheldon_savedSearch"))
-                .body(containsString("Name: Leonard_savedSearch"))
-                .body(containsString("Name: Irma_savedSearch"));
+                .body(containsString("Name: Sheldon" + suffix))
+                .body(containsString("Name: Leonard" + suffix))
+                .body(containsString("Name: Irma" + suffix));
+
+
+//        Awaitility.await().pollInterval(50, TimeUnit.MILLISECONDS).atMost(60, TimeUnit.SECONDS)
+//                .<Boolean> until(
+//                        () -> {
+//                            List l = RestAssured.given()
+//                                    .get("/splunk/consume/")
+//                                    .then()
+//                                    //                                .statusCode(200)
+//                                    .extract().body().as(List.class);
+//                            return false;
+//                        });
+
+
+        //remove saved search TODO move to onComplete()
+        RestAssured.given()
+                .baseUri("http://localhost")
+                .port(ConfigProvider.getConfig().getValue(SplunkResource.PARAM_REMOTE_PORT, Integer.class))
+                .contentType(ContentType.JSON)
+                .delete("/services/saved/searches/" + SplunkResource.SAVED_SEARCH_NAME)
+                .then()
+                .statusCode(200);
+
+        //
+        //        RestAssured.given()
+        //                .contentType(ContentType.TEXT)
+        //                .body(SplunkTestResource.SAVED_SEARCH_NAME)
+        //                .post("/splunk/savedSearch")
+        //                .then()
+        //                .statusCode(200)
+
     }
 
     private void write(String suffix, ProducerType producerType) {
-        Consumer<Map> write =  data -> RestAssured.given()
+        Consumer<Map> write = data -> RestAssured.given()
                 .contentType(ContentType.JSON)
                 .queryParam("index", SplunkTestResource.TEST_INDEX)
                 .body(data)
@@ -170,15 +223,17 @@ class SplunkTest {
                 .then()
                 .statusCode(201);
 
-       write.accept(CollectionHelper.mapOf("entity", "Name: Sheldon" + suffix + " From: Alpha Centauri"));
-       write.accept(CollectionHelper.mapOf("entity", "Name: Leonard" + suffix + " From: Earth 2.0"));
-       write.accept(CollectionHelper.mapOf("entity", "Name: Irma" + suffix + " From: Earth"));
+//        String suffix = "_" + producerType.name().toLowerCase();
+
+        write.accept(CollectionHelper.mapOf("entity", "Name: Sheldon" + suffix + " From: Alpha Centauri"));
+        write.accept(CollectionHelper.mapOf("entity", "Name: Leonard" + suffix + " From: Earth 2.0"));
+        write.accept(CollectionHelper.mapOf("entity", "Name: Irma" + suffix + " From: Earth"));
     }
 
-//    private String expectedResult(Map<String, String> data) {
-//        String expectedResult = data.entrySet().stream()
-//                .map(e -> e.getKey() + "=\"" + e.getValue() + "\"")
-//                .collect(Collectors.joining(" "));
-//        return expectedResult;
+    //    private String expectedResult(Map<String, String> data) {
+    //        String expectedResult = data.entrySet().stream()
+    //                .map(e -> e.getKey() + "=\"" + e.getValue() + "\"")
+    //                .collect(Collectors.joining(" "));
+    //        return expectedResult;
 
 }
