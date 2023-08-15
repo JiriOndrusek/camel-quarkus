@@ -67,9 +67,10 @@ class SplunkProcessor {
 
     @BuildStep
     List<ReflectiveClassBuildItem> reflectiveClasses() {
-        return Arrays.asList(ReflectiveClassBuildItem.builder("com.splunk.Index").build(),
-                ReflectiveClassBuildItem.builder("com.splunk.SavedSearch").build(),
-                ReflectiveClassBuildItem.builder("com.splunk.Service").build());
+        return Arrays.asList(ReflectiveClassBuildItem.builder("com.splunk.Index").constructors().build(),
+                ReflectiveClassBuildItem.builder("com.splunk.SavedSearch").constructors().build(),
+                ReflectiveClassBuildItem.builder("com.splunk.Input").constructors().build(),
+                ReflectiveClassBuildItem.builder("com.splunk.Service").constructors().build());
     }
 
     @BuildStep

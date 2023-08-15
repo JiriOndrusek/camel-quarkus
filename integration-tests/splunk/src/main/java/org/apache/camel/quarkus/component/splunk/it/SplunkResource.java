@@ -18,7 +18,6 @@ package org.apache.camel.quarkus.component.splunk.it;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +27,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -36,10 +34,8 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.ServiceStatus;
 import org.apache.camel.component.splunk.ProducerType;
 import org.apache.camel.component.splunk.SplunkComponent;
 import org.apache.camel.component.splunk.SplunkConfiguration;
@@ -68,9 +64,6 @@ public class SplunkResource {
     @ConfigProperty(name = PARAM_TCP_PORT)
     Integer tcpPort;
 
-    @Inject
-    CamelContext camelContext;
-
     @Named
     SplunkComponent splunk() {
         SplunkComponent component = new SplunkComponent();
@@ -78,73 +71,16 @@ public class SplunkResource {
         return component;
     }
 
-    //    @Path("/consume")
-    //    @GET
-    //    @Produces(MediaType.APPLICATION_JSON)
-    //    public List consume(String consumerType) throws Exception {
-    //
-    //        List result = results.get("normalSearch").stream()
-    //                .map(m -> m.getEventData().entrySet().stream()
-    //                        .filter(e -> !e.getKey().startsWith("_") || "_raw".equals(e.getKey()))
-    //                        .collect(Collectors.toMap(
-    //                                Map.Entry::getKey,
-    //                                Map.Entry::getValue,
-    //                                (v1, v2) -> v1)))
-    //                .collect(Collectors.toList());
-    //
-    //        return result;
-    //    }
-
-//    @Path("/start/route/{routeId}")
-//    @GET
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public boolean start(@PathParam("routeId") String routeId) throws Exception {
-//
-//        if (camelContext.getRouteController().getRouteStatus(routeId) == ServiceStatus.Stopped) {
-//            camelContext.getRouteController().startRoute(routeId);
-//        }
-//
-//        return camelContext.getRouteController().getRouteStatus(routeId).isStarted();
-//
-//    }
-//
-//    @Path("/normal")
-//    @POST
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public List normal(String search) throws Exception {
-//        String url = String.format(
-//                "splunk://normal?username=admin&password=changeit&scheme=http&port=%d&delay=5000&initEarliestTime=-10s&search="
-//                        + search,
-//                port);
-//
-//        final SplunkEvent m1 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
-//        final SplunkEvent m2 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
-//        final SplunkEvent m3 = consumerTemplate.receiveBody(url, 1000, SplunkEvent.class);
-//
-//        List result = Arrays.stream(new SplunkEvent[] { m1, m2, m3 })
-//                .map(m -> m.getEventData().entrySet().stream()
-//                        .filter(e -> !e.getKey().startsWith("_"))
-//                        .collect(Collectors.toMap(
-//                                Map.Entry::getKey,
-//                                Map.Entry::getValue,
-//                                (v1, v2) -> v1)))
-//                .collect(Collectors.toList());
-//
-//        return result;
-//    }
-
-    @Path("/results2/{mapName}")
+    @Path("/results/{name}")
     @POST
-    public String results2(@PathParam("mapName") String mapName) throws Exception {
+    public String results(@PathParam("name") String mapName) throws Exception {
         String url;
         int count = 3;
 
         if ("savedSearch".equals(mapName)) {
             url = String.format(
-                    "splunk://savedsearch?username=admin&password=changeit&scheme=http&port=%d&delay=500&initEarliestTime=-1m&savedsearch=%s",
+                    "splunk://savedsearch?username=admin&password=changeit&scheme=http&port=%d&delay=500&initEarliestTime=-10m&savedsearch=%s",
                     port, SAVED_SEARCH_NAME);
-            //todo why??
-            count = 5;
         } else if ("normalSearch".equals(mapName)) {
             url = String.format(
                     "splunk://normal?username=admin&password=changeit&scheme=http&port=%d&delay=5000&initEarliestTime=-10s&search="
@@ -165,10 +101,6 @@ public class SplunkResource {
             }
             events.add(se);
         }
-        //        final SplunkEvent m1 = consumerTemplate.receiveBody(url, 5000, SplunkEvent.class);
-        //        final SplunkEvent m2 = consumerTemplate.receiveBody(url, 5000, SplunkEvent.class);
-        //        final SplunkEvent m3 = consumerTemplate.receiveBody(url, 5000, SplunkEvent.class);
-        //        List result = Arrays.stream(new SplunkEvent[] { m1, m2, m3 })
         List result = events.stream()
                 .map(m -> {
                     if (m == null) {
@@ -179,13 +111,6 @@ public class SplunkResource {
                 .collect(Collectors.toList());
         return result.toString();
     }
-
-    //    @Path("/results/{mapName}")
-    //    @GET
-    //    @Produces(MediaType.APPLICATION_JSON)
-    //    public List results(@PathParam("mapName") String mapName) throws Exception {
-    //        return results.get(mapName);
-    //    }
 
     @Path("/write/{producerType}")
     @POST

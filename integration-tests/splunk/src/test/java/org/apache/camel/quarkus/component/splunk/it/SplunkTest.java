@@ -31,7 +31,6 @@ import io.restassured.http.ContentType;
 import org.apache.camel.component.splunk.ProducerType;
 import org.apache.camel.util.CollectionHelper;
 import org.eclipse.microprofile.config.ConfigProvider;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.org.apache.commons.lang3.RandomStringUtils;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
@@ -49,15 +48,20 @@ class SplunkTest {
 
         write(suffix, ProducerType.SUBMIT, 0, true);
 
-        RestAssured.given()
-                .contentType(ContentType.TEXT)
-                .body(SplunkResource.SAVED_SEARCH_NAME)
-                .post("/splunk/results2/normalSearch")
-                .then()
-                .statusCode(200)
-                .body(Matchers.containsString("Name: Sheldon" + suffix))
-                .body(Matchers.containsString("Name: Leonard" + suffix))
-                .body(Matchers.containsString("Name: Irma" + suffix));
+        Awaitility.await().pollInterval(1000, TimeUnit.MILLISECONDS).atMost(60, TimeUnit.SECONDS).until(
+                () -> {
+
+                    String result = RestAssured.given()
+                            .contentType(ContentType.TEXT)
+                            .post("/splunk/results/normalSearch")
+                            .then()
+                            .statusCode(200)
+                            .extract().asString();
+
+                    return result.contains("Name: Sheldon" + suffix)
+                            && result.contains("Name: Leonard" + suffix)
+                            && result.contains("Name: Irma" + suffix);
+                });
     }
 
     @Test
@@ -77,29 +81,23 @@ class SplunkTest {
                 .then()
                 .statusCode(anyOf(is(201), is(409)));
 
-        //        //start route
-        //        Awaitility.await().pollInterval(50, TimeUnit.MILLISECONDS).atMost(60, TimeUnit.SECONDS)
-        //                .until(
-        //                        () -> RestAssured.given()
-        //                                .get("/splunk/start/route/savedSearchRoute/")
-        //                                .then()
-        //                                .statusCode(200)
-        //                                .extract().body().as(Boolean.class));
-
         //write data via tcp
         write(suffix, ProducerType.TCP, 0, false);
 
-        //todo test
-        Thread.sleep(5000);
-        RestAssured.given()
-                .contentType(ContentType.TEXT)
-                .body(SplunkResource.SAVED_SEARCH_NAME)
-                .post("/splunk/results2/savedSearch")
-                .then()
-                .statusCode(200)
-                .body(Matchers.containsString("Name: Sheldon" + suffix))
-                .body(Matchers.containsString("Name: Leonard" + suffix))
-                .body(Matchers.containsString("Name: Irma" + suffix));
+        //there might by delay in receiving the data
+        Awaitility.await().pollInterval(1000, TimeUnit.MILLISECONDS).atMost(60, TimeUnit.SECONDS).until(
+                () -> {
+                    String result = RestAssured.given()
+                            .contentType(ContentType.TEXT)
+                            .post("/splunk/results/savedSearch")
+                            .then()
+                            .statusCode(200)
+                            .extract().asString();
+
+                    return result.contains("Name: Sheldon" + suffix)
+                            && result.contains("Name: Leonard" + suffix)
+                            && result.contains("Name: Irma" + suffix);
+                });
     }
 
     @Test
@@ -123,7 +121,7 @@ class SplunkTest {
 
                         String result = RestAssured.given()
                                 .contentType(ContentType.TEXT)
-                                .post("/splunk/results2/realtimeSearch")
+                                .post("/splunk/results/realtimeSearch")
                                 .then()
                                 .statusCode(200)
                                 .extract().asString();
@@ -138,8 +136,6 @@ class SplunkTest {
     }
 
     private void write(String suffix, ProducerType producerType, int lengthOfRandomString, boolean raw) {
-        System.out.println("************************ Writing: " + suffix);
-
         Consumer<Map> write = data -> RestAssured.given()
                 .contentType(ContentType.JSON)
                 .queryParam("index", SplunkTestResource.TEST_INDEX)
@@ -166,10 +162,7 @@ class SplunkTest {
         }
 
         write.accept(data[0]);
-        System.out.println("Witten: " + data[0]);
         write.accept(data[1]);
-        System.out.println("Witten: " + data[1]);
         write.accept(data[2]);
-        System.out.println("Witten: " + data[2]);
     }
 }
