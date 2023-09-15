@@ -16,6 +16,8 @@
  */
 package org.apache.camel.quarkus.component.kamelet.it;
 
+import java.io.InputStream;
+
 import jakarta.inject.Inject;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
@@ -32,6 +34,8 @@ import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.FluentProducerTemplate;
 import org.apache.camel.model.Model;
 import org.apache.camel.model.OptionalIdentifiedDefinition;
+import org.apache.camel.spi.Resource;
+import org.apache.camel.util.IOHelper;
 
 @Path("/kamelet")
 public class KameletResource {
@@ -101,6 +105,21 @@ public class KameletResource {
     @Produces(MediaType.TEXT_PLAIN)
     public String kameletLocationAtRuntime(@PathParam("name") String name) {
         return fluentProducerTemplate.to("direct:kamelet-location-at-runtime").withBody(name).request(String.class);
+    }
+
+    @Path("/loadResource/{name}")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String loadResource(@PathParam("name") String name) throws Exception {
+
+        Resource resource = camelContext.getCamelContextExtension().getContextPlugin(Model.class)
+                .getRouteTemplateDefinition(name).getResource();
+        if (resource == null) {
+            return "Resource is null";
+        }
+        try (InputStream is = resource.getInputStream()) {
+            return IOHelper.loadText(is);
+        }
     }
 
 }

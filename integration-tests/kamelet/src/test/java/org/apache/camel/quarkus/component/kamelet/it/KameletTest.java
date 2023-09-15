@@ -25,6 +25,7 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -110,5 +111,14 @@ class KameletTest {
                 .then()
                 .statusCode(200)
                 .body(is("HELLO"));
+    }
+
+    @Test
+    public void testResourceExistence() {
+        RestAssured.given()
+                .get("/kamelet/loadResource/injector")
+                .then()
+                .statusCode(200)
+                .body(containsString("name: injector"));
     }
 }
