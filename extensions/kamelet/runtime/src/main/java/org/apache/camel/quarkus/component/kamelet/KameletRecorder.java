@@ -25,6 +25,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.model.Model;
 import org.apache.camel.model.RouteTemplateDefinition;
 import org.apache.camel.spi.CamelContextCustomizer;
+import org.apache.camel.support.PluginHelper;
 
 @Recorder
 public class KameletRecorder {
@@ -35,6 +36,15 @@ public class KameletRecorder {
             @Override
             public void configure(CamelContext context) {
                 try {
+                    //load definitions
+                    for (RouteTemplateDefinition rdf : definitions) {
+                        if (rdf.getResource() instanceof DefaultResourceConfiguration) {
+                            DefaultResourceConfiguration drc = (DefaultResourceConfiguration) rdf.getResource();
+                            rdf.setResource(PluginHelper.getResourceLoader(context)
+                                    .resolveResource(drc.getLocation()));
+                        }
+                    }
+
                     context.getCamelContextExtension().getContextPlugin(Model.class).addRouteTemplateDefinitions(definitions);
                 } catch (Exception e) {
                     throw new RuntimeException(e);

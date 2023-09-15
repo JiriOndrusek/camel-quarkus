@@ -16,6 +16,7 @@
  */
 package org.apache.camel.quarkus.component.kamelet.deployment;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,6 +36,7 @@ import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.model.RouteTemplateDefinition;
+import org.apache.camel.quarkus.component.kamelet.DefaultResourceConfiguration;
 import org.apache.camel.quarkus.component.kamelet.KameletConfiguration;
 import org.apache.camel.quarkus.component.kamelet.KameletRecorder;
 import org.apache.camel.quarkus.core.deployment.spi.CamelContextCustomizerBuildItem;
@@ -51,13 +53,7 @@ class KameletProcessor {
 
     @BuildStep
     KameletResolverBuildItem defaultResolver() {
-        return new KameletResolverBuildItem(new KameletResolver() {
-            @Override
-            public Optional<Resource> resolve(String id, CamelContext context) throws Exception {
-                return Optional.ofNullable(
-                        PluginHelper.getResourceLoader(context).resolveResource("/kamelets/" + id + ".kamelet.yaml"));
-            }
-        });
+        return new KameletResolverBuildItem(new DefaultKameletResolver());
     }
 
     @Record(ExecutionTime.STATIC_INIT)
@@ -99,14 +95,21 @@ class KameletProcessor {
                                         + ")");
                     }
 
-                    definitions.add(routeBuilder.getRouteTemplateCollection().getRouteTemplates().get(0));
+                    RouteTemplateDefinition rtd = routeBuilder.getRouteTemplateCollection().getRouteTemplates().get(0);
+
+                    //resources from default resolvers has to by serialized to be handed over to the recorder, custom resources are kept only if are serializable
+                    //see https://github.com/apache/camel-quarkus/issues/5230
+                    if (resolver instanceof DefaultKameletResolver) {
+                        rtd.setResource(new DefaultResourceConfiguration()
+                                .setLocation(DefaultKameletResolver.idToLocation(rtd.getId())));
+                    } else if (!(rtd.getResource() instanceof Serializable)) {
+                        rtd.setResource(null);
+                    }
+
+                    definitions.add(rtd);
                 }
             }
         }
-
-        //quick workaround for #5230
-        //remove references to Resources, because the list is serialized; resources are loaded later in the recorder
-        definitions.stream().forEach(rd -> rd.setResource(null));
 
         return new CamelContextCustomizerBuildItem(
                 recorder.createTemplateLoaderCustomizer(definitions));
