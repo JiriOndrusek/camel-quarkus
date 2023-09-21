@@ -94,7 +94,7 @@ public class ConverterResource {
     @POST
     @Produces(MediaType.TEXT_PLAIN)
     public void cnverterSetStatisticsEnabled(boolean value) {
-        context.getTypeConverterRegistry().getStatistics().setStatisticsEnabled(value);
+        context.setTypeConverterStatisticsEnabled(value);
         if (value) {
             context.getTypeConverterRegistry().getStatistics().reset();
         }
