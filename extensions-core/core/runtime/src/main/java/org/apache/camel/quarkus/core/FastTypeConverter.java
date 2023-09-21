@@ -24,8 +24,8 @@ import org.slf4j.LoggerFactory;
 public class FastTypeConverter extends DefaultTypeConverter {
     private static final Logger LOG = LoggerFactory.getLogger(FastTypeConverter.class);
 
-    public FastTypeConverter() {
-        super(null, null, null, false, false);
+    public FastTypeConverter(boolean typeConvertersatisticsEnabled) {
+        super(null, null, null, true, typeConvertersatisticsEnabled);
     }
 
     @Override
