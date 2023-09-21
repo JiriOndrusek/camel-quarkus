@@ -42,24 +42,20 @@ public class ConverterTest {
 
     @Test
     void testConverterToNull() {
-        enableStatistics(true);
+        resetStatistics();
 
         testConverterReturningNull("/converter/myNullablePair", "null");
 
         RestAssured.when().get("/converter/getStatisticsHit").then().body("hit", is(1), "miss", is(0));
-
-        enableStatistics(false);
     }
 
     @Test
     void testNotRegisteredConverter() {
-        enableStatistics(true);
+        resetStatistics();
 
         testConverterReturningNull("/converter/myNotRegisteredPair", "a:b");
 
         RestAssured.when().get("/converter/getStatisticsHit").then().body("hit", is(0), "miss", is(1));
-
-        enableStatistics(false);
     }
 
     @Test
@@ -87,22 +83,12 @@ public class ConverterTest {
 
     @Test
     void testConverterGetStatistics() {
-        enableStatistics(true);
+        resetStatistics();
 
         //cause 1 hit
         testConverterFromAnnotation();
 
         RestAssured.when().get("/converter/getStatisticsHit").then().body("hit", is(1), "miss", is(0));
-
-        enableStatistics(false);
-    }
-
-    private void enableStatistics(boolean b) {
-        RestAssured.given()
-                .contentType(ContentType.TEXT).body(b)
-                .post("/converter/setStatisticsEnabled")
-                .then()
-                .statusCode(204);
     }
 
     private void testConverterReturningNull(String url, String body) {
@@ -124,5 +110,14 @@ public class ConverterTest {
         if (expectedKey != null) {
             response.body("key", is(expectedKey), "val", is(expectedValue));
         }
+    }
+
+    private void resetStatistics() {
+        //reset statistics
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .post("/converter/resetStatistics")
+                .then()
+                .statusCode(204);
     }
 }
