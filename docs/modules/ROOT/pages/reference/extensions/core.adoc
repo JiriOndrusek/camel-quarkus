@@ -123,18 +123,6 @@ camel.beans.customBeanWithSetterInjection.counter = 123
 
 As such, the class `PropertiesCustomBeanWithSetterInjection` needs to be link:https://quarkus.io/guides/writing-native-applications-tips#registering-for-reflection[registered for reflection], note that field access could be omitted in this case.
 
-[id="extensions-core-configuration-enabling-type-converter-statistics"]
-==== Enabling type converter statistics
-
-Set configuration property `camel.main.typeConverterStatisticsEnabled` to `true` in order to enable type converter statistics.
-[source,properties]
----
-camel.main.typeConverterStatisticsEnabled = true
----
-
-Suggested configuration from Camel `org.apache.camel.CamelContext#setTypeConverterStatisticsEnabled(Boolean)` does not have any effect on camel-quarkus.
-
-
 
 [width="100%",cols="80,5,15",options="header"]
 |===

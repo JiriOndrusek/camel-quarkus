@@ -234,9 +234,7 @@ class CamelProcessor {
 
         IndexView index = combinedIndex.getIndex();
 
-        Boolean val = CamelSupport.getOptionalConfigValue("camel.main.typeConverterStatisticsEnabled", Boolean.class, false);
-
-        RuntimeValue<TypeConverterRegistry> typeConverterRegistry = recorder.createTypeConverterRegistry(val);
+        RuntimeValue<TypeConverterRegistry> typeConverterRegistry = recorder.createTypeConverterRegistry();
 
         //
         // This should be simplified by searching for classes implementing TypeConverterLoader but that
