@@ -48,10 +48,10 @@
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-support-xalan</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.quarkiverse.tika</groupId>
-            <artifactId>quarkus-tika</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>io.quarkiverse.tika</groupId>-->
+<!--            <artifactId>quarkus-tika</artifactId>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>

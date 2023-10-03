@@ -16,17 +16,12 @@
  */
 package org.apache.camel.quarkus.component.tika.deployment;
 
-import io.quarkus.arc.deployment.BeanContainerBuildItem;
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.annotations.ExecutionTime;
-import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceDirectoryBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
-import org.apache.camel.component.tika.TikaComponent;
-import org.apache.camel.quarkus.component.tika.TikaRecorder;
-import org.apache.camel.quarkus.core.deployment.spi.CamelRuntimeBeanBuildItem;
-import org.apache.camel.quarkus.core.deployment.spi.CamelServiceFilter;
-import org.apache.camel.quarkus.core.deployment.spi.CamelServiceFilterBuildItem;
 import org.jboss.logging.Logger;
 
 class TikaProcessor {
@@ -39,26 +34,53 @@ class TikaProcessor {
         return new FeatureBuildItem(FEATURE);
     }
 
-    /*
-     * The tika component is programmatically configured by the extension thus
-     * we can safely prevent camel to instantiate a default instance.
-     */
-    @BuildStep
-    CamelServiceFilterBuildItem serviceFilter() {
-        return new CamelServiceFilterBuildItem(CamelServiceFilter.forComponent("tika"));
-    }
+    //    /*
+    //     * The tika component is programmatically configured by the extension thus
+    //     * we can safely prevent camel to instantiate a default instance.
+    //     */
+    //    @BuildStep
+    //    CamelServiceFilterBuildItem serviceFilter() {
+    //        return new CamelServiceFilterBuildItem(CamelServiceFilter.forComponent("tika"));
+    //    }
 
-    @Record(ExecutionTime.STATIC_INIT)
-    @BuildStep
-    CamelRuntimeBeanBuildItem tikaComponent(BeanContainerBuildItem beanContainer, TikaRecorder recorder) {
-        return new CamelRuntimeBeanBuildItem(
-                "tika",
-                TikaComponent.class.getName(),
-                recorder.createTikaComponent(beanContainer.getValue()));
-    }
+    //    @Record(ExecutionTime.STATIC_INIT)
+    //    @BuildStep
+    //    CamelRuntimeBeanBuildItem tikaComponent(BeanContainerBuildItem beanContainer, TikaRecorder recorder) {
+    //        return new CamelRuntimeBeanBuildItem(
+    //                "tika",
+    //                TikaComponent.class.getName(),
+    //                recorder.createTikaComponent(beanContainer.getValue()));
+    //    }
 
     @BuildStep
     RuntimeInitializedClassBuildItem runtimeInitializedClasses() {
         return new RuntimeInitializedClassBuildItem("org.apache.pdfbox.text.LegacyPDFStreamEngine");
     }
+
+    @BuildStep
+    public void registerRuntimeInitializedClasses(BuildProducer<RuntimeInitializedClassBuildItem> resource) {
+        //org.apache.tika.parser.pdf.PDFParser (https://issues.apache.org/jira/browse/PDFBOX-4548)
+        resource.produce(new RuntimeInitializedClassBuildItem("org.apache.pdfbox.pdmodel.font.PDType1Font"));
+        resource.produce(new RuntimeInitializedClassBuildItem("org.apache.pdfbox.text.LegacyPDFStreamEngine"));
+    }
+
+    @BuildStep
+    public void registerTikaCoreResources(BuildProducer<NativeImageResourceBuildItem> resource) {
+        resource.produce(new NativeImageResourceBuildItem("org/apache/tika/mime/tika-mimetypes.xml"));
+        resource.produce(new NativeImageResourceBuildItem("org/apache/tika/parser/external/tika-external-parsers.xml"));
+    }
+
+    @BuildStep
+    public void registerTikaParsersResources(BuildProducer<NativeImageResourceBuildItem> resource) {
+        resource.produce(new NativeImageResourceBuildItem("org/apache/tika/parser/pdf/PDFParser.properties"));
+    }
+
+    @BuildStep
+    public void registerPdfBoxResources(BuildProducer<NativeImageResourceDirectoryBuildItem> resource) {
+        resource.produce(new NativeImageResourceDirectoryBuildItem("org/apache/pdfbox/resources/afm"));
+        resource.produce(new NativeImageResourceDirectoryBuildItem("org/apache/pdfbox/resources/glyphlist"));
+        resource.produce(new NativeImageResourceDirectoryBuildItem("org/apache/fontbox/cmap"));
+        resource.produce(new NativeImageResourceDirectoryBuildItem("org/apache/fontbox/unicode"));
+    }
+
 }
