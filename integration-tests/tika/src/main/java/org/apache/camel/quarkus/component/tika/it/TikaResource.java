@@ -20,7 +20,6 @@ import java.net.URI;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.inject.Named;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -28,7 +27,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.camel.ProducerTemplate;
-import org.apache.tika.config.TikaConfig;
 import org.jboss.logging.Logger;
 
 @Path("/tika")
@@ -36,13 +34,6 @@ import org.jboss.logging.Logger;
 public class TikaResource {
 
     private static final Logger LOG = Logger.getLogger(TikaResource.class);
-
-    @Produces
-    @ApplicationScoped
-    @Named("tikaConfig")
-    TikaConfig tikaConfig() throws Exception {
-        return new TikaConfig(getClass().getClassLoader().getResourceAsStream("tika-config.xml"));
-    }
 
     @Inject
     ProducerTemplate producerTemplate;
@@ -52,7 +43,7 @@ public class TikaResource {
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.TEXT_PLAIN)
     public Response parse(byte[] message) throws Exception {
-        final String response = producerTemplate.requestBody("tika:parse?tikaConfig=#tikaConfig", message, String.class);
+        final String response = producerTemplate.requestBody("tika:parse", message, String.class);
         return Response
                 .created(new URI("https://camel.apache.org/"))
                 .entity(response)
