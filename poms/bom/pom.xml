@@ -6561,6 +6561,21 @@
                 <version>${snakeyaml-engine-version}</version>
             </dependency>
             <dependency>
+                <groupId>org.apache.tika</groupId>
+                <artifactId>tika-core</artifactId>
+                <version>${tika-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tika</groupId>
+                <artifactId>tika-parser-html-commons</artifactId>
+                <version>${tika-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tika</groupId>
+                <artifactId>tika-parser-text-module</artifactId>
+                <version>${tika-version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.xmlgraphics</groupId>
                 <artifactId>xmlgraphics-commons</artifactId>
                 <version>${xmlgraphics-commons.version}</version>

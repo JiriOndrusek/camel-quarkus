@@ -16,13 +16,10 @@
  */
 package org.apache.camel.quarkus.component.tika.it;
 
-import java.io.File;
 import java.net.URI;
-import java.nio.file.Files;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.inject.Named;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -30,7 +27,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.camel.ProducerTemplate;
-import org.apache.tika.config.TikaConfig;
 import org.jboss.logging.Logger;
 
 @Path("/tika")
@@ -39,14 +35,12 @@ public class TikaResource {
 
     private static final Logger LOG = Logger.getLogger(TikaResource.class);
 
-    @Produces
-    @ApplicationScoped
-    @Named("tikaConfig")
-    TikaConfig tikaConfig() throws Exception{
-                String s = Files.readString(java.nio.file.Path.of(TikaResource.class.getClassLoader().getResource("tika-config.xml").getPath()));
-        TikaConfig tc = new TikaConfig(TikaResource.class.getClassLoader().getResource("tika-config.xml").getPath());
-        return  tc;
-    }
+    //    @Produces
+    //    @ApplicationScoped
+    //    @Named("tikaConfig")
+    //    TikaConfig tikaConfig() throws Exception {
+    //        return new TikaConfig(getClass().getClassLoader().getResourceAsStream("tika-config.xml"));
+    //    }
 
     @Inject
     ProducerTemplate producerTemplate;
@@ -57,7 +51,6 @@ public class TikaResource {
     @Produces(MediaType.TEXT_PLAIN)
     public Response parse(byte[] message) throws Exception {
         final String response = producerTemplate.requestBody("tika:parse?tikaConfig=#tikaConfig", message, String.class);
-//        final String response = producerTemplate.requestBody("tika:parse?tikaConfig=#tikaConfig&tikaConfigUri=" + TikaResource.class.getClassLoader().getResource("tika-config.xml").getPath(), message, String.class);
         return Response
                 .created(new URI("https://camel.apache.org/"))
                 .entity(response)
