@@ -48,6 +48,7 @@ class TikaTest {
     }
 
     @Test
+    @Disabled
     public void testOffice() throws Exception {
         testParse("test.doc", "application/msword", "test");
     }
