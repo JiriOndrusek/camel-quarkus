@@ -16,7 +16,6 @@
  */
 package org.apache.camel.quarkus.component.kamelet;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
@@ -24,14 +23,14 @@ import java.util.Objects;
 import org.apache.camel.spi.Resource;
 
 /**
- * Mutable & Quarkus recorder serialization friendly implementation for Kamelet classpath resources
+ * TODO: Improve / remove this https://github.com/apache/camel-quarkus/issues/5230
+ * Quarkus build time & serialization friendly implementation for Kamelet resources. This gets replaced at runtime
+ * when the resource is reevaluated.
  */
-public class KameletClasspathResource implements Resource {
+public final class EmptyKameletResource implements Resource {
     private String scheme;
     private String location;
     private boolean exists;
-    private byte[] data;
-    private InputStream inputStream;
 
     @Override
     public String getScheme() {
@@ -60,24 +59,9 @@ public class KameletClasspathResource implements Resource {
         this.exists = exists;
     }
 
-    public byte[] getData() {
-        return this.data;
-    }
-
-    public void setData(byte[] data) {
-        this.inputStream = null;
-        this.data = data;
-    }
-
     @Override
     public InputStream getInputStream() throws IOException {
-        if (this.data == null) {
-            throw new IOException("No resource content was defined");
-        }
-        if (this.inputStream == null) {
-            this.inputStream = new ByteArrayInputStream(this.data);
-        }
-        return inputStream;
+        return InputStream.nullInputStream();
     }
 
     @Override
