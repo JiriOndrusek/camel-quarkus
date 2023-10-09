@@ -18,7 +18,6 @@ package org.apache.camel.quarkus.component.tika.deployment;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -31,8 +30,6 @@ import java.util.stream.Collectors;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.annotations.ExecutionTime;
-import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
@@ -60,7 +57,8 @@ class TikaProcessor {
 
     private static final Map<String, String> PARSER_ABBREVIATIONS = Map.of(
             "pdf", "org.apache.tika.parser.pdf.PDFParser",
-            "odf", "org.apache.tika.parser.odf.OpenDocumentParser");
+            "odf", "org.apache.tika.parser.odf.OpenDocumentParser",
+            "img", "org.apache.tika.parser.image.ImageParserr");
 
     @BuildStep
     FeatureBuildItem feature() {
@@ -68,20 +66,20 @@ class TikaProcessor {
     }
 
     @BuildStep
-    @Record(ExecutionTime.STATIC_INIT)
     void initializeTikaParser(BeanContainerBuildItem beanContainer,
             BuildProducer<ServiceProviderBuildItem> serviceProvider)
             throws Exception {
-        Map<String, List<TikaParserParameter>> parsers = getSupportedParserConfig(null,
-                Optional.empty(),
-                null, null);
+        //        Map<String, List<TikaParserParameter>> parsers = getSupportedParserConfig(null,
+        //                Optional.empty(),
+        //                null, null);
         //        String tikaXmlConfiguration = generateTikaXmlConfiguration(parsers);
-        serviceProvider.produce(new ServiceProviderBuildItem(Parser.class.getName(), parsers.keySet()));
+        //        serviceProvider.produce(new ServiceProviderBuildItem(Parser.class.getName(), parsers.keySet()));
     }
 
     @BuildStep
     void reflectiveParsers(BuildProducer<ReflectiveClassBuildItem> runtimeInitializedClasses,
-            CombinedIndexBuildItem combinedIndex) throws Exception {
+            CombinedIndexBuildItem combinedIndex, BeanContainerBuildItem beanContainer,
+            BuildProducer<ServiceProviderBuildItem> serviceProvider) throws Exception {
         IndexView index = combinedIndex.getIndex();
 
         Set<String> names = getProviderNames(Parser.class.getName());
@@ -96,6 +94,12 @@ class TikaProcessor {
                 .map(c -> ReflectiveClassBuildItem.builder(c).build())
                 .forEach(runtimeInitializedClasses::produce);
 
+        //        Map<String, List<TikaParserParameter>> parsers = getSupportedParserConfig(null,
+        //                Optional.empty(),
+        //                null, null);
+
+        serviceProvider.produce(new ServiceProviderBuildItem(Parser.class.getName(), names));
+
     }
 
     public static Map<String, List<TikaParserParameter>> getSupportedParserConfig(Optional<String> tikaConfigPath,
@@ -104,18 +108,18 @@ class TikaProcessor {
             Map<String, String> parserAbbreviations) throws Exception {
         Predicate<String> pred = p -> !NOT_NATIVE_READY_PARSERS.contains(p);
         Set<String> providerNames = getProviderNames(Parser.class.getName());
-        if (tikaConfigPath.isPresent() || requiredParsers.isEmpty()) {
-            return providerNames.stream().filter(pred).collect(Collectors.toMap(Function.identity(),
-                    p -> Collections.<TikaParserParameter> emptyList()));
-        } else {
-            List<String> abbreviations = Arrays.stream(requiredParsers.get().split(",")).map(String::trim)
-                    .collect(Collectors.toList());
-            Map<String, String> fullNamesAndAbbreviations = abbreviations.stream()
-                    .collect(Collectors.toMap(p -> getParserNameFromConfig(p, parserAbbreviations), Function.identity()));
-            return providerNames.stream().filter(pred).filter(fullNamesAndAbbreviations::containsKey)
-                    .collect(Collectors.toMap(Function.identity(),
-                            p -> getParserConfig(p, parserParamMaps.get(fullNamesAndAbbreviations.get(p)))));
-        }
+        //        if (tikaConfigPath.isPresent() || requiredParsers.isEmpty()) {
+        //            return providerNames.stream().filter(pred).collect(Collectors.toMap(Function.identity(),
+        //                    p -> Collections.<TikaParserParameter> emptyList()));
+        //        } else {
+        List<String> abbreviations = Arrays.stream(requiredParsers.orElse("img").split(",")).map(String::trim)
+                .collect(Collectors.toList());
+        Map<String, String> fullNamesAndAbbreviations = abbreviations.stream()
+                .collect(Collectors.toMap(p -> getParserNameFromConfig(p, parserAbbreviations), Function.identity()));
+        return providerNames.stream().filter(pred).filter(fullNamesAndAbbreviations::containsKey)
+                .collect(Collectors.toMap(Function.identity(),
+                        p -> getParserConfig(p, parserParamMaps.get(fullNamesAndAbbreviations.get(p)))));
+        //        }
     }
 
     private static List<TikaParserParameter> getParserConfig(String parserName, Map<String, String> parserParamMap) {
@@ -135,7 +139,7 @@ class TikaProcessor {
             return PARSER_ABBREVIATIONS.get(abbreviation);
         }
 
-        if (parserAbbreviations.containsKey(abbreviation)) {
+        if (parserAbbreviations != null && parserAbbreviations.containsKey(abbreviation)) {
             return parserAbbreviations.get(abbreviation);
         }
 
