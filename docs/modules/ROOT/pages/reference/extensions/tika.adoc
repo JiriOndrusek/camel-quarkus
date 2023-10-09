@@ -78,3 +78,28 @@ For more information about selecting parsers see the https://quarkiverse.github.
 You may need to add the `quarkus-awt` extension to build the native image. For more information, see https://quarkiverse.github.io/quarkiverse-docs/quarkus-tika/dev/index.html[Quarkus Tika guide].
 
 
+
+[id="extensions-tika-additional-camel-quarkus-configuration"]
+== Additional Camel Quarkus configuration
+
+[width="100%",cols="80,5,15",options="header"]
+|===
+| Configuration property | Type | Default
+
+
+|icon:lock[title=Fixed at build time] [[quarkus.camel.tika.include]]`link:#quarkus.camel.tika.include[quarkus.camel.tika.include]`
+
+todo use set of regxps
+| `string`
+| 
+
+|icon:lock[title=Fixed at build time] [[quarkus.camel.tika.exclude]]`link:#quarkus.camel.tika.exclude[quarkus.camel.tika.exclude]`
+
+todo
+| `string`
+| 
+|===
+
+[.configuration-legend]
+{doc-link-icon-lock}[title=Fixed at build time] Configuration property fixed at build time. All other configuration properties are overridable at runtime.
+
