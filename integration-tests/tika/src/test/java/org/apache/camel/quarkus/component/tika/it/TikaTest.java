@@ -48,7 +48,6 @@ class TikaTest {
     }
 
     @Test
-    @Disabled
     public void testOffice() throws Exception {
         testParse("test.doc", "application/msword", "test");
     }
@@ -59,31 +58,26 @@ class TikaTest {
     }
 
     @Test
-    @Disabled
     public void testXml() throws Exception {
         testParse("quarkus.xml", "application/xml", "Hello Quarkus");
     }
 
     @Test
-    @Disabled
     public void testParseAsText() throws Exception {
         testParseAsText("test.doc", "test");
     }
 
     @Test
-    @Disabled
     public void testDetectDoc() throws Exception {
         testDetect("test.doc", "application/x-tika-msoffice");
     }
 
     @Test
-    @Disabled
     public void testDetectImagePng() throws Exception {
         testDetect("black.png", "image/png");
     }
 
     @Test
-    @Disabled
     public void testDetectPdf() throws Exception {
         testDetect("quarkus.pdf", "application/pdf");
     }
