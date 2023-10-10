@@ -27,9 +27,6 @@ import org.xml.sax.SAXException;
 import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.annotations.Recorder;
-import io.quarkus.tika.TikaContent;
-import io.quarkus.tika.TikaMetadata;
-import io.quarkus.tika.TikaParser;
 import io.quarkus.tika.runtime.TikaParserProducer;
 import org.apache.camel.Component;
 import org.apache.camel.Producer;
@@ -77,7 +74,7 @@ public class TikaRecorder {
 
         @Override
         public Producer createProducer() throws Exception {
-            TikaParser tikaParser = tikaParserProducer.tikaParser();
+            Parser tikaParser = tikaParserProducer.tikaParser();
             return new TikaProducer(this, new Parser() {
                 @Override
                 public Set<MediaType> getSupportedTypes(ParseContext parseContext) {
@@ -87,13 +84,14 @@ public class TikaRecorder {
                 @Override
                 public void parse(InputStream inputStream, ContentHandler contentHandler, Metadata metadata,
                         ParseContext parseContext) throws IOException, SAXException, TikaException {
-                    TikaContent tc = tikaParser.parse(inputStream, contentHandler);
-                    TikaMetadata tm = tc.getMetadata();
-                    if (tm != null) {
-                        for (String name : tm.getNames()) {
-                            tm.getValues(name).stream().forEach((v) -> metadata.add(name, v));
-                        }
-                    }
+                    tikaParser.parse(inputStream, contentHandler, metadata, parseContext);
+                    //                    TikaContent tc = tikaParser.parse(inputStream, contentHandler);
+                    //                    TikaMetadata tm = tc.getMetadata();
+                    //                    if (tm != null) {
+                    //                        for (String name : tm.getNames()) {
+                    //                            tm.getValues(name).stream().forEach((v) -> metadata.add(name, v));
+                    //                        }
+                    //                    }
                 }
             });
         }
