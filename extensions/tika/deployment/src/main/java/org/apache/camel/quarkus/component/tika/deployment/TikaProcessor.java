@@ -102,7 +102,7 @@ class TikaProcessor {
         //org.apache.tika.parser.pdf.PDFParser (https://issues.apache.org/jira/browse/PDFBOX-4548)
         //        resource.produce(new RuntimeInitializedClassBuildItem("org.apache.pdfbox.pdmodel.font.PDType1Font"));
         //        resource.produce(new RuntimeInitializedClassBuildItem("org.apache.pdfbox.text.LegacyPDFStreamEngine"));
-        resource.produce(new RuntimeInitializedClassBuildItem("org.apache.poi.poifs.crypt.temp.EncryptedTempData"));
+        //        resource.produce(new RuntimeInitializedClassBuildItem("org.apache.poi.poifs.crypt.temp.EncryptedTempData"));
     }
 
     @BuildStep
@@ -117,21 +117,29 @@ class TikaProcessor {
     //    }
 
     //    @BuildStep
-    //    public void registerPdfBoxResources(BuildProducer<NativeImageResourceDirectoryBuildItem> resource) {
-    //        resource.produce(new NativeImageResourceDirectoryBuildItem("org/apache/pdfbox/resources/afm"));
-    //        resource.produce(new NativeImageResourceDirectoryBuildItem("org/apache/pdfbox/resources/glyphlist"));
-    //        resource.produce(new NativeImageResourceDirectoryBuildItem("org/apache/fontbox/cmap"));
-    //        resource.produce(new NativeImageResourceDirectoryBuildItem("org/apache/fontbox/unicode"));
-    //    }
+    //        public void registerPdfBoxResources(BuildProducer<NativeImageResourceDirectoryBuildItem> resource) {
+    //            resource.produce(new NativeImageResourceDirectoryBuildItem("org/apache/pdfbox/resources/afm"));
+    //            resource.produce(new NativeImageResourceDirectoryBuildItem("org/apache/pdfbox/resources/glyphlist"));
+    //            resource.produce(new NativeImageResourceDirectoryBuildItem("org/apache/fontbox/cmap"));
+    //            resource.produce(new NativeImageResourceDirectoryBuildItem("org/apache/fontbox/unicode"));
+    //        }
 
     @BuildStep
     @Record(ExecutionTime.STATIC_INIT)
-    CamelRuntimeBeanBuildItem tikaComponent(BeanContainerBuildItem beanContainer, TikaRecorder recorder,
-            BuildProducer<ServiceProviderBuildItem> serviceProvider, TikaConfiguration configuration)
+    CamelRuntimeBeanBuildItem tikaComponent(BeanContainerBuildItem beanContainer,
+            TikaRecorder recorder,
+            BuildProducer<ServiceProviderBuildItem> serviceProvider,
+            BuildProducer<RuntimeInitializedClassBuildItem> runtimeClasses,
+            TikaConfiguration configuration)
             throws Exception {
         Map<String, List<TikaParserParameter>> parsers = getSupportedParserConfig(configuration.tikaConfigPath,
                 configuration.parsers,
                 configuration.parserOptions, configuration.parser);
+        //parser are runtime initialized
+        parsers.keySet().forEach(p -> {
+            runtimeClasses.produce(new RuntimeInitializedClassBuildItem(p));
+        });
+
         String tikaXmlConfiguration = generateTikaXmlConfiguration(parsers);
         serviceProvider.produce(new ServiceProviderBuildItem(Parser.class.getName(), parsers.keySet()));
         serviceProvider

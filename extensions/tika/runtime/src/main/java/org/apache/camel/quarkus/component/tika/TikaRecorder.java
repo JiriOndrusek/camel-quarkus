@@ -16,10 +16,8 @@
  */
 package org.apache.camel.quarkus.component.tika;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Set;
 
@@ -35,26 +33,18 @@ import org.apache.camel.component.tika.TikaComponent;
 import org.apache.camel.component.tika.TikaConfiguration;
 import org.apache.camel.component.tika.TikaEndpoint;
 import org.apache.camel.component.tika.TikaProducer;
-import org.apache.tika.config.TikaConfig;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
-import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 
 @Recorder
 public class TikaRecorder {
 
-    public RuntimeValue<TikaComponent> createTikaComponent(BeanContainer container, String tikaXmlConfiguration)
-            throws TikaException, IOException, SAXException {
-        TikaConfig tikaConfig;
-        try (InputStream stream = new ByteArrayInputStream(tikaXmlConfiguration.getBytes(StandardCharsets.UTF_8))) {
-            tikaConfig = new TikaConfig(stream);
-        }
-        Parser parser = new AutoDetectParser(tikaConfig);
+    public RuntimeValue<TikaComponent> createTikaComponent(BeanContainer container, String tikaXmlConfiguration) {
         TikaParserProducer producer = container.beanInstance(TikaParserProducer.class);
-        producer.initialize(parser);
+        producer.initialize(tikaXmlConfiguration);
 
         return new RuntimeValue<>(new QuarkusTikaComponent(producer));
     }
@@ -86,8 +76,10 @@ public class TikaRecorder {
 
         @Override
         public Producer createProducer() throws Exception {
-            Parser tikaParser = tikaParserProducer.tikaParser();
+            Parser parser = tikaParserProducer.tikaParser().get();
+
             return new TikaProducer(this, new Parser() {
+
                 @Override
                 public Set<MediaType> getSupportedTypes(ParseContext parseContext) {
                     return Collections.emptySet();
@@ -96,10 +88,9 @@ public class TikaRecorder {
                 @Override
                 public void parse(InputStream inputStream, ContentHandler contentHandler, Metadata metadata,
                         ParseContext parseContext) throws IOException, SAXException, TikaException {
-                    tikaParser.parse(inputStream, contentHandler, metadata, parseContext);
+                    parser.parse(inputStream, contentHandler, metadata, parseContext);
                 }
             });
         }
     }
-
 }
