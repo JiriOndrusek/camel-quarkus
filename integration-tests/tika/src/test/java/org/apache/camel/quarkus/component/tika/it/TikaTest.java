@@ -53,19 +53,16 @@ class TikaTest {
     }
 
     @Test
-    @Disabled
     public void testImagePng() throws Exception {
         testParse("black.png", "image/png", null);
     }
 
     @Test
-    @Disabled
     public void testXml() throws Exception {
         testParse("quarkus.xml", "application/xml", "Hello Quarkus");
     }
 
     @Test
-    @Disabled
     public void testParseAsText() throws Exception {
         testParseAsText("test.doc", "test");
     }

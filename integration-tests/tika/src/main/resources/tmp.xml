@@ -1,0 +1,36 @@
+<properties>
+    <parsers>
+        <parser class="org.apache.tika.parser.microsoft.xml.WordMLParser"></parser>
+        <parser class="org.apache.tika.parser.image.WebPParser"></parser>
+        <parser class="org.apache.tika.parser.image.ICNSParser"></parser>
+        <parser class="org.apache.tika.parser.microsoft.rtf.RTFParser"></parser>
+        <parser class="org.apache.tika.parser.microsoft.MSOwnerFileParser"></parser>
+        <parser class="org.apache.tika.parser.xml.DcXMLParser"></parser>
+        <parser class="org.apache.tika.parser.image.JXLParser"></parser>
+        <parser class="org.apache.tika.parser.microsoft.ooxml.OOXMLParser"></parser>
+        <parser class="org.apache.tika.parser.csv.TextAndCSVParser"></parser>
+        <parser class="org.apache.tika.parser.microsoft.activemime.ActiveMimeParser"></parser>
+        <parser class="org.apache.tika.parser.xliff.XLIFF12Parser"></parser>
+        <parser class="org.apache.tika.parser.html.HtmlParser"></parser>
+        <parser class="org.apache.tika.parser.microsoft.TNEFParser"></parser>
+        <parser class="org.apache.tika.parser.microsoft.WMFParser"></parser>
+        <parser class="org.apache.tika.parser.image.BPGParser"></parser>
+        <parser class="org.apache.tika.parser.microsoft.ooxml.xwpf.ml2006.Word2006MLParser"></parser>
+        <parser class="org.apache.tika.parser.microsoft.pst.OutlookPSTParser"></parser>
+        <parser class="org.apache.tika.parser.xliff.XLZParser"></parser>
+        <parser class="org.apache.tika.parser.image.HeifParser"></parser>
+        <parser class="org.apache.tika.parser.image.TiffParser"></parser>
+        <parser class="org.apache.tika.parser.microsoft.OfficeParser"></parser>
+        <parser class="org.apache.tika.parser.tmx.TMXParser"></parser>
+        <parser class="org.apache.tika.parser.microsoft.OldExcelParser"></parser>
+        <parser class="org.apache.tika.parser.microsoft.onenote.OneNoteParser"></parser>
+        <parser class="org.apache.tika.parser.microsoft.xml.SpreadsheetMLParser"></parser>
+        <parser class="org.apache.tika.parser.microsoft.chm.ChmParser"></parser>
+        <parser class="org.apache.tika.parser.image.JpegParser"></parser>
+        <parser class="org.apache.tika.parser.image.PSDParser"></parser>
+        <parser class="org.apache.tika.parser.xml.FictionBookParser"></parser>
+        <parser class="org.apache.tika.parser.microsoft.EMFParser"></parser>
+        <parser class="org.apache.tika.parser.image.ImageParser"></parser>
+        <parser class="org.apache.tika.parser.microsoft.JackcessParser"></parser>
+    </parsers>
+</properties>
