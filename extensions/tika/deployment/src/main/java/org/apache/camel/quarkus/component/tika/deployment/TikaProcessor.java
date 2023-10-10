@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.xml.sax.SAXException;
+
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
@@ -34,6 +36,7 @@ import org.apache.camel.component.tika.TikaComponent;
 import org.apache.camel.quarkus.component.tika.TikaConfig;
 import org.apache.camel.quarkus.component.tika.TikaRecorder;
 import org.apache.camel.quarkus.core.deployment.spi.CamelRuntimeBeanBuildItem;
+import org.apache.tika.exception.TikaException;
 import org.apache.tika.parser.Parser;
 import org.jboss.logging.Logger;
 
@@ -93,11 +96,28 @@ class TikaProcessor {
 
     @Record(ExecutionTime.STATIC_INIT)
     @BuildStep
-    CamelRuntimeBeanBuildItem tikaComponent(TikaRecorder recorder, TikaConfig tikaConfig) throws IOException {
+    CamelRuntimeBeanBuildItem tikaComponent(TikaRecorder recorder, TikaConfig tikaConfig)
+            throws IOException, TikaException, SAXException {
         return new CamelRuntimeBeanBuildItem(
                 "tika",
                 TikaComponent.class.getName(),
-                recorder.createTikaComponent(getAlowedParsers(tikaConfig)));
+                recorder.createTikaComponent(generateTikaXmlConfiguration(tikaConfig.include.get())));
+    }
+
+    private static String generateTikaXmlConfiguration(Set<String> parserConfig) {
+        StringBuilder tikaXmlConfigurationBuilder = new StringBuilder();
+        tikaXmlConfigurationBuilder.append("<properties>");
+        tikaXmlConfigurationBuilder.append("<parsers>");
+        for (String parser : parserConfig) {
+            tikaXmlConfigurationBuilder.append("<parser class=\"").append(parser).append("\">");
+            //            if (!parserEntry.getValue().isEmpty()) {
+            //                appendParserParameters(tikaXmlConfigurationBuilder, parserEntry.getValue());
+            //            }
+            tikaXmlConfigurationBuilder.append("</parser>");
+        }
+        tikaXmlConfigurationBuilder.append("</parsers>");
+        tikaXmlConfigurationBuilder.append("</properties>");
+        return tikaXmlConfigurationBuilder.toString();
     }
 
 }
