@@ -14,6 +14,12 @@ import io.quarkus.runtime.annotations.ConfigRoot;
 public class TikaConfig {
 
     /**
+     * The resource path within the application artifact to the {@code tika-config.xml} file.
+     */
+    @ConfigItem
+    public Optional<String> tikaConfigPath;
+
+    /**
      *
      * todo use set of regxps
      */
@@ -24,4 +30,13 @@ public class TikaConfig {
      */
     @ConfigItem
     public Optional<Set<String>> exclude;
+
+    /**
+     * Controls how the content of the embedded documents is parsed.
+     * By default it is appended to the main document content.
+     * Setting this property to false makes the content of each of the embedded documents
+     * available separately.
+     */
+    @ConfigItem(defaultValue = "true")
+    public boolean appendEmbeddedContent;
 }

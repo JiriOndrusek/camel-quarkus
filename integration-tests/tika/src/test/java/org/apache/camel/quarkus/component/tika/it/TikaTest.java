@@ -48,12 +48,12 @@ class TikaTest {
     }
 
     @Test
-    @Disabled
     public void testOffice() throws Exception {
         testParse("test.doc", "application/msword", "test");
     }
 
     @Test
+    @Disabled
     public void testImagePng() throws Exception {
         testParse("black.png", "image/png", null);
     }

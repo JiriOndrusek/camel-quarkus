@@ -1,18 +1,21 @@
 package org.apache.camel.quarkus.component.tika;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import org.apache.tika.config.TikaConfig;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Singleton;
 
 @ApplicationScoped
 public class TikaParserProducer {
 
-    private volatile org.apache.tika.config.TikaConfig config;
+    private volatile TikaParser parser;
 
-    public TikaParserProducer(TikaConfig config) {
-        this.config = config;
+    void initialize(TikaParser parser) {
+        this.parser = parser;
     }
 
-    public org.apache.tika.config.TikaConfig getConfig() {
-        return config;
+    @Singleton
+    @Produces
+    public TikaParser tikaParser() {
+        return parser;
     }
 }

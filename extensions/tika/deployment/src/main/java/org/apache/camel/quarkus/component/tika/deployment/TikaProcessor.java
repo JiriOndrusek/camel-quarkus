@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 
 import org.xml.sax.SAXException;
 
+import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
+import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
@@ -34,6 +36,7 @@ import io.quarkus.deployment.builditem.nativeimage.ServiceProviderBuildItem;
 import io.quarkus.deployment.util.ServiceUtil;
 import org.apache.camel.component.tika.TikaComponent;
 import org.apache.camel.quarkus.component.tika.TikaConfig;
+import org.apache.camel.quarkus.component.tika.TikaParserProducer;
 import org.apache.camel.quarkus.component.tika.TikaRecorder;
 import org.apache.camel.quarkus.core.deployment.spi.CamelRuntimeBeanBuildItem;
 import org.apache.tika.exception.TikaException;
@@ -58,6 +61,11 @@ class TikaProcessor {
     @BuildStep
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
+    }
+
+    @BuildStep
+    AdditionalBeanBuildItem beans() {
+        return AdditionalBeanBuildItem.unremovableOf(TikaParserProducer.class);
     }
 
     @BuildStep
@@ -96,12 +104,13 @@ class TikaProcessor {
 
     @Record(ExecutionTime.STATIC_INIT)
     @BuildStep
-    CamelRuntimeBeanBuildItem tikaComponent(TikaRecorder recorder, TikaConfig tikaConfig)
+    CamelRuntimeBeanBuildItem tikaComponent(BeanContainerBuildItem beanContainer, TikaRecorder recorder, TikaConfig tikaConfig)
             throws IOException, TikaException, SAXException {
         return new CamelRuntimeBeanBuildItem(
                 "tika",
                 TikaComponent.class.getName(),
-                recorder.createTikaComponent(generateTikaXmlConfiguration(tikaConfig.include.get())));
+                recorder.createTikaComponent(beanContainer.getValue(), generateTikaXmlConfiguration(tikaConfig.include.get()),
+                        tikaConfig));
     }
 
     private static String generateTikaXmlConfiguration(Set<String> parserConfig) {

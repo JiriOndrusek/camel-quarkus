@@ -87,6 +87,12 @@ You may need to add the `quarkus-awt` extension to build the native image. For m
 | Configuration property | Type | Default
 
 
+|icon:lock[title=Fixed at build time] [[quarkus.camel.tika.tika-config-path]]`link:#quarkus.camel.tika.tika-config-path[quarkus.camel.tika.tika-config-path]`
+
+The resource path within the application artifact to the `tika-config.xml` file.
+| `string`
+| 
+
 |icon:lock[title=Fixed at build time] [[quarkus.camel.tika.include]]`link:#quarkus.camel.tika.include[quarkus.camel.tika.include]`
 
 todo use set of regxps
@@ -98,6 +104,12 @@ todo use set of regxps
 todo
 | `string`
 | 
+
+|icon:lock[title=Fixed at build time] [[quarkus.camel.tika.append-embedded-content]]`link:#quarkus.camel.tika.append-embedded-content[quarkus.camel.tika.append-embedded-content]`
+
+Controls how the content of the embedded documents is parsed. By default it is appended to the main document content. Setting this property to false makes the content of each of the embedded documents available separately.
+| `boolean`
+| `true`
 |===
 
 [.configuration-legend]
