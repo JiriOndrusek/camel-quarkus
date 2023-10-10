@@ -6439,7 +6439,23 @@
       </dependency>
       <dependency>
         <groupId>org.apache.tika</groupId>
+        <artifactId>tika-parser-xml-module</artifactId>
+        <version>2.9.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.tika</groupId>
         <artifactId>tika-parser-image-module</artifactId>
+        <version>2.9.0</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.tika</groupId>
+        <artifactId>tika-parser-microsoft-module</artifactId>
         <version>2.9.0</version>
         <exclusions>
           <exclusion>
