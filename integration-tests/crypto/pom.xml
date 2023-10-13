@@ -34,12 +34,6 @@
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-crypto</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>camel-quarkus-support-bouncycastle</artifactId>
-                    <groupId>org.apache.camel.quarkus</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
