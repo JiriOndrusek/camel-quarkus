@@ -52,10 +52,6 @@
                     <artifactId>bcprov-jdk18on</artifactId>
                     <groupId>org.bouncycastle</groupId>
                 </exclusion>
-                <exclusion>
-                    <artifactId>bcpg-jdk18on</artifactId>
-                    <groupId>org.bouncycastle</groupId>
-                </exclusion>
             </exclusions>
         </dependency>
     </dependencies>
