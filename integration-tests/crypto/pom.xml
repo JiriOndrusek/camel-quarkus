@@ -34,6 +34,12 @@
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-crypto</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>camel-quarkus-support-bouncycastle</artifactId>
+                    <groupId>org.apache.camel.quarkus</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
@@ -54,6 +60,11 @@
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bc-fips</artifactId>
         </dependency>
     </dependencies>
 
