@@ -34,10 +34,10 @@ import org.jboss.jandex.IndexView;
 
 public class BouncyCastleSupportProcessor {
 
-    @BuildStep
-    void produceBouncyCastleProvider(BuildProducer<BouncyCastleProviderBuildItem> bouncyCastleProvider) {
-        bouncyCastleProvider.produce(new BouncyCastleProviderBuildItem(true));
-    }
+//    @BuildStep
+//    void produceBouncyCastleProvider(BuildProducer<BouncyCastleProviderBuildItem> bouncyCastleProvider) {
+//        bouncyCastleProvider.produce(new BouncyCastleProviderBuildItem(true));
+//    }
 
     @BuildStep
     ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
