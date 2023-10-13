@@ -64,13 +64,13 @@ public class BouncyCastleSupportProcessor {
         reinitialized.produce(new RuntimeReinitializedClassBuildItem("java.security.SecureRandom"));
     }
 
-//    @BuildStep
-//    @Record(ExecutionTime.STATIC_INIT)
-//    public void registerBouncyCastleProvider(List<CipherTransformationBuildItem> cipherTransformations,
-//            BouncyCastleRecorder recorder,
-//            ShutdownContextBuildItem shutdownContextBuildItem) {
-//        List<String> allCipherTransformations = cipherTransformations.stream()
-//                .flatMap(c -> c.getCipherTransformations().stream()).collect(Collectors.toList());
-//        recorder.registerBouncyCastleProvider(allCipherTransformations, shutdownContextBuildItem);
-//    }
+    @BuildStep
+    @Record(ExecutionTime.STATIC_INIT)
+    public void registerBouncyCastleProvider(List<CipherTransformationBuildItem> cipherTransformations,
+            BouncyCastleRecorder recorder,
+            ShutdownContextBuildItem shutdownContextBuildItem) {
+        List<String> allCipherTransformations = cipherTransformations.stream()
+                .flatMap(c -> c.getCipherTransformations().stream()).collect(Collectors.toList());
+        recorder.registerBouncyCastleProvider(allCipherTransformations, shutdownContextBuildItem);
+    }
 }

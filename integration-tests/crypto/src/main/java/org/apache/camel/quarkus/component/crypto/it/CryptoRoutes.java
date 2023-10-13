@@ -43,10 +43,10 @@ public class CryptoRoutes extends RouteBuilder {
 
         // Crypto component using keys from a keystore
         from("direct:sign")
-                .to("crypto:sign:basic?privateKey=#myPrivateKey&algorithm=SHA256withDSA&provider=BCFIPS&secureRandom=#customSecureRandom");
+                .to("crypto:sign:basic?privateKey=#myPrivateKey&algorithm=SHA256withDSA&provider=SUN&secureRandom=#customSecureRandom");
 
         from("direct:verify")
-                .to("crypto:verify:basic?publicKey=#myPublicKey&algorithm=SHA256withDSA&provider=BCFIPS&secureRandom=#customSecureRandom");
+                .to("crypto:verify:basic?publicKey=#myPublicKey&algorithm=SHA256withDSA&provider=SUN&secureRandom=#customSecureRandom");
 
         // Crypto data format
         CryptoDataFormat cryptoDataFormat = getCryptoDataFormat();
