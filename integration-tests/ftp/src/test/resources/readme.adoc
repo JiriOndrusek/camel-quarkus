@@ -1,0 +1,3 @@
+=== How to generate hostkey.pem
+
+openssl genrsa -out hostkey.pem 2048
