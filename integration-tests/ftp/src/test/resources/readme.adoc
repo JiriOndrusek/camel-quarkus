@@ -24,3 +24,15 @@ openssl x509 -req -in test.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out tes
 openssl pkcs12 -export -in test.crt -inkey test.key -certfile ca.crt -name "serverftp" -out keystore.p12 -passout pass:password
 
 
+
+
+
+keytool -genkey -alias ftpserver -validity 365 -keyalg rsa -keysize 2048 -storetype PKCS12 -keystore keystore.p12
+
+keytool -export -alias ftpserver -file server.crt -storetype PKCS12 -keystore keystore.p12
+
+keytool -importcert -alias ftpserver -file server.crt -trustcacerts -keystore truststore.p12
+
+keytool -certreq -alias ftpserver -file server.csr -keystore keystore.p12
+
+
