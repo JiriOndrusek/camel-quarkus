@@ -4,7 +4,7 @@
 [source]
 openssl genrsa -out test.key 2048
 
-=== How to generate server.jks
+=== How to generate keystore.p12
 
 [start=2]
 . Generate certificate signing request
@@ -22,7 +22,5 @@ openssl x509 -req -in test.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out tes
 . Create a kyestore
 [source]
 openssl pkcs12 -export -in test.crt -inkey test.key -certfile ca.crt -name "serverftp" -out keystore.p12 -passout pass:password
-. Create a jks keystore for the test (use password 'password')
-[source]
-keytool -importkeystore -srckeystore keystore.p12 -srcstoretype pkcs12 -destkeystore server.jks -deststoretype JKS -storepass password
+
 
