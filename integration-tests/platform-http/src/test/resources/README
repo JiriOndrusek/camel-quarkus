@@ -1,0 +1,7 @@
+The test credentials have been generated according to GRPC module -> https://github.com/apache/camel/blob/main/components/camel-grpc/src/test/resources/certs/README
+
+(server.pem renamed to server-cert.pem and server.key renamed to server-key.pem)
+
+The truststore:
+---------------
+$ keytool -import -file server-cert.pem -alias server -keystore truststore.p12
