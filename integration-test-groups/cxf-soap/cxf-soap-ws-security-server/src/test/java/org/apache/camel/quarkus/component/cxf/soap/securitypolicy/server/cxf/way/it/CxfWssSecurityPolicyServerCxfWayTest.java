@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.component.cxf.soap.securitypolicy.server.cxf.way.it;
 
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.Map;
 
 import io.quarkiverse.cxf.test.QuarkusCxfClientTestUtil;
@@ -29,6 +30,18 @@ import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 public class CxfWssSecurityPolicyServerCxfWayTest {
+
+    static {
+        SecureRandom sr = new java.security.SecureRandom();
+        System.out.println("****************************************************");
+        System.out.println("****************************************************");
+        System.out.println(sr.getProvider().getName());
+        System.out.println(sr.getProvider().getInfo());
+        System.out.println(sr.getProvider().getVersionStr());
+        System.out.println("****************************************************");
+        System.out.println("****************************************************");
+
+    }
 
     @Test
     void encrypetdSigned() throws IOException {
