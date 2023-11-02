@@ -37,10 +37,10 @@ public class CxfWssSecurityPolicyServerCxfWayTest {
         SecureRandom sr = new java.security.SecureRandom();
         System.out.println("****************************************************");
         System.out.println("****************************************************");
-        for (Provider provider: Security.getProviders()) {
+        for (Provider provider : Security.getProviders()) {
             System.out.println(provider.getName());
-//            for (String key: provider.stringPropertyNames())
-//                System.out.println("\t" + key + "\t" + provider.getProperty(key));
+            //            for (String key: provider.stringPropertyNames())
+            //                System.out.println("\t" + key + "\t" + provider.getProperty(key));
         }
         System.out.println("****************************************************");
         System.out.println("****************************************************");
