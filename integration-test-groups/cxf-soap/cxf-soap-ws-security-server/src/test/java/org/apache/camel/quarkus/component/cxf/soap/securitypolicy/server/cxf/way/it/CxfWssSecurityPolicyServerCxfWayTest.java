@@ -17,7 +17,9 @@
 package org.apache.camel.quarkus.component.cxf.soap.securitypolicy.server.cxf.way.it;
 
 import java.io.IOException;
+import java.security.Provider;
 import java.security.SecureRandom;
+import java.security.Security;
 import java.util.Map;
 
 import io.quarkiverse.cxf.test.QuarkusCxfClientTestUtil;
@@ -35,9 +37,11 @@ public class CxfWssSecurityPolicyServerCxfWayTest {
         SecureRandom sr = new java.security.SecureRandom();
         System.out.println("****************************************************");
         System.out.println("****************************************************");
-        System.out.println(sr.getProvider().getName());
-        System.out.println(sr.getProvider().getInfo());
-        System.out.println(sr.getProvider().getVersionStr());
+        for (Provider provider: Security.getProviders()) {
+            System.out.println(provider.getName());
+            for (String key: provider.stringPropertyNames())
+                System.out.println("\t" + key + "\t" + provider.getProperty(key));
+        }
         System.out.println("****************************************************");
         System.out.println("****************************************************");
 
