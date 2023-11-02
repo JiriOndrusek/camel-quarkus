@@ -29,7 +29,7 @@
                         <wsp:Policy>
                             <sp:X509Token sp:IncludeToken="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702/IncludeToken/AlwaysToRecipient">
                                 <wsp:Policy>
-                                    <sp:WssX509V1Token11/>
+                                    <sp:WssX509Pkcs7Token11/>
                                 </wsp:Policy>
                             </sp:X509Token>
                         </wsp:Policy>
@@ -38,14 +38,14 @@
                         <wsp:Policy>
                             <sp:X509Token sp:IncludeToken="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702/IncludeToken/Never">
                                 <wsp:Policy>
-                                    <sp:WssX509V1Token11/>
+                                    <sp:WssX509Pkcs7Token11/>
                                 </wsp:Policy>
                             </sp:X509Token>
                         </wsp:Policy>
                     </sp:RecipientToken>
                     <sp:AlgorithmSuite>
                         <wsp:Policy>
-                            <sp:Basic256Sha256/>
+                            <sp:Basic256/>
                         </wsp:Policy>
                     </sp:AlgorithmSuite>
                     <sp:Layout>
