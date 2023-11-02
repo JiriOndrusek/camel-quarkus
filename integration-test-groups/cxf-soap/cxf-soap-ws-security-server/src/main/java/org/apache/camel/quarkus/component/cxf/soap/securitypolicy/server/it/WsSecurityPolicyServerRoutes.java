@@ -16,6 +16,9 @@
  */
 package org.apache.camel.quarkus.component.cxf.soap.securitypolicy.server.it;
 
+import java.security.Provider;
+import java.security.Security;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Named;
@@ -31,6 +34,12 @@ public class WsSecurityPolicyServerRoutes extends RouteBuilder {
 
     @Override
     public void configure() {
+
+        System.out.println("*************************");
+        Provider p[] = Security.getProviders();
+        for (int i = 0; i < p.length; i++) {
+            System.out.println(p[i].getName());
+        }
 
         from("cxf:bean:wsSecurityPolicyHelloService?dataFormat=POJO").process(new Processor() {
             public void process(final Exchange exchange) throws Exception {
