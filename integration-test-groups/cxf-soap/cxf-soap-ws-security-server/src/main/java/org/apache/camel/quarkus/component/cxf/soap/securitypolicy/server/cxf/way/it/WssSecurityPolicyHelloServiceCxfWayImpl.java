@@ -24,7 +24,7 @@ import org.apache.cxf.annotations.EndpointProperty;
 import org.apache.cxf.annotations.Policy;
 
 @WebService(portName = "EncryptSecurityServicePort", serviceName = "WssSecurityPolicyHelloServiceCxfWay", targetNamespace = "https://quarkiverse.github.io/quarkiverse-docs/quarkus-cxf/ws-securitypolicy", endpointInterface = "org.apache.camel.quarkus.component.cxf.soap.securitypolicy.server.cxf.way.it.WssSecurityPolicyHelloServiceCxfWay")
-@Policy(placement = Policy.Placement.BINDING, uri = "encrypt-sign-policy.xml")
+//@Policy(placement = Policy.Placement.BINDING, uri = "encrypt-sign-policy.xml")
 @EndpointProperties(value = {
         @EndpointProperty(key = "ws-security.signature.properties", value = "bob.properties"),
         @EndpointProperty(key = "ws-security.encryption.properties", value = "bob.properties"),
