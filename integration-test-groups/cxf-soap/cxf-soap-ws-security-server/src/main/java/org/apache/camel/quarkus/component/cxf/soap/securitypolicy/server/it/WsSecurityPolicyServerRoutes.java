@@ -31,7 +31,6 @@ public class WsSecurityPolicyServerRoutes extends RouteBuilder {
 
     @Override
     public void configure() {
-
         from("cxf:bean:wsSecurityPolicyHelloService?dataFormat=POJO").process(new Processor() {
             public void process(final Exchange exchange) throws Exception {
                 exchange.getIn().removeHeader(Header.HEADER_LIST);
