@@ -47,10 +47,6 @@
                     <artifactId>bcprov-jdk18on</artifactId>
                     <groupId>org.bouncycastle</groupId>
                 </exclusion>
-                <exclusion>
-                    <artifactId>bcpkix-jdk18on</artifactId>
-                    <groupId>org.bouncycastle</groupId>
-                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -88,6 +84,18 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>application.properties</include>
+                </includes>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
 
     <profiles>
         <profile>
@@ -396,6 +404,39 @@
             <properties>
                 <skipTests>true</skipTests>
             </properties>
+        </profile>
+        <profile>
+            <id>fips</id>
+            <activation>
+                <property>
+                    <name>fips</name>
+                </property>
+            </activation>
+            <properties>
+                <security.procide>quarkus.security.security-providers=BCFIPS</security.procide>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>io.quarkiverse.cxf</groupId>
+                    <artifactId>quarkus-cxf-rt-ws-security</artifactId>
+                    <exclusions>
+                        <!-- BC-FIPS is used instead of BC-->
+                        <exclusion>
+                            <artifactId>bcprov-jdk18on</artifactId>
+                            <groupId>org.bouncycastle</groupId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+                <dependency>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bc-fips</artifactId>
+                </dependency>
+                <!--Required for registration of BCFIPS -->
+                <dependency>
+                    <groupId>io.quarkus</groupId>
+                    <artifactId>quarkus-security</artifactId>
+                </dependency>
+            </dependencies>
         </profile>
     </profiles>
 
