@@ -6017,6 +6017,17 @@
         <version>2.24.0</version>
       </dependency>
       <dependency>
+        <groupId>com.box</groupId>
+        <artifactId>box-java-sdk</artifactId>
+        <version>4.6.0</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.bitbucket.b_c</groupId>
+            <artifactId>jose4j</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
         <groupId>com.github.java-json-tools</groupId>
         <artifactId>json-patch</artifactId>
         <version>1.13</version>
@@ -6045,12 +6056,12 @@
       <dependency>
         <groupId>com.google.auth</groupId>
         <artifactId>google-auth-library-credentials</artifactId>
-        <version>1.19.0</version>
+        <version>1.20.0</version>
       </dependency>
       <dependency>
         <groupId>com.google.auth</groupId>
         <artifactId>google-auth-library-oauth2-http</artifactId>
-        <version>1.19.0</version>
+        <version>1.20.0</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.code.findbugs</groupId>
@@ -6061,7 +6072,7 @@
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>google-cloud-pubsub</artifactId>
-        <version>1.125.6</version>
+        <version>1.125.8</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.android</groupId>
@@ -6231,7 +6242,7 @@
       <dependency>
         <groupId>io.projectreactor</groupId>
         <artifactId>reactor-core</artifactId>
-        <version>3.4.31</version>
+        <version>3.4.33</version>
       </dependency>
       <dependency>
         <groupId>io.projectreactor.netty</groupId>
@@ -7501,22 +7512,22 @@
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-core</artifactId>
-        <version>1.43.0</version>
+        <version>1.44.1</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-core-amqp</artifactId>
-        <version>2.8.9</version>
+        <version>2.8.11</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-cosmos</artifactId>
-        <version>4.50.0</version>
+        <version>4.52.0</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-identity</artifactId>
-        <version>1.10.1</version>
+        <version>1.10.4</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
@@ -7526,47 +7537,47 @@
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-messaging-eventhubs</artifactId>
-        <version>5.16.0</version>
+        <version>5.16.1</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-messaging-eventhubs-checkpointstore-blob</artifactId>
-        <version>1.17.0</version>
+        <version>1.17.1</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-messaging-servicebus</artifactId>
-        <version>7.14.4</version>
+        <version>7.14.5</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-security-keyvault-secrets</artifactId>
-        <version>4.7.0</version>
+        <version>4.7.1</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-storage-blob</artifactId>
-        <version>12.24.0</version>
+        <version>12.24.1</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-storage-common</artifactId>
-        <version>12.23.0</version>
+        <version>12.23.1</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-storage-file-datalake</artifactId>
-        <version>12.17.0</version>
+        <version>12.17.1</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-storage-internal-avro</artifactId>
-        <version>12.9.0</version>
+        <version>12.9.1</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-storage-queue</artifactId>
-        <version>12.19.0</version>
+        <version>12.19.1</version>
       </dependency>
       <dependency>
         <groupId>com.datastax.oss</groupId>
