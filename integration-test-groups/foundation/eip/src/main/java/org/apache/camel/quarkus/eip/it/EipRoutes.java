@@ -28,7 +28,7 @@ import org.apache.camel.processor.loadbalancer.RoundRobinLoadBalancer;
 @ApplicationScoped
 public class EipRoutes extends RouteBuilder {
 
-    public static final int THROTTLE_TIMEOUT = 10000;
+    public static final int THROTTLE_TIMEOUT = 5000;
     public static final int THROTTLE_MAXIMUM_REQUEST_COUNT = 2;
     public static final int WEIGHTED_1 = 2;
     public static final int WEIGHTED_2 = 1;
@@ -125,6 +125,7 @@ public class EipRoutes extends RouteBuilder {
 
         from("direct:throttle")
                 .throttle(THROTTLE_MAXIMUM_REQUEST_COUNT).rejectExecution(true).delay(THROTTLE_TIMEOUT)
+                .log("Sending '${body}' to mock throttle.")
                 .to("mock:throttle");
 
         from("direct:tryCatchFinally")

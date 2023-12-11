@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
@@ -28,6 +29,8 @@ import org.assertj.core.api.Assertions;
 import org.hamcrest.Matchers;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Test;
+
+import static org.awaitility.Awaitility.await;
 
 @QuarkusTest
 class EipTest {
@@ -480,15 +483,17 @@ class EipTest {
                     .then()
                     .extract().statusCode();
         }
-        String[] samples = RestAssured.get("/eip/mock/throttle/2/5000/body")
-                .then()
-                .statusCode(200)
-                .extract()
-                .body().asString().split(",");
-        LOG.infof("%d messages passed the route", samples.length);
-        Assertions.assertThat(samples.length).isEqualTo(EipRoutes.THROTTLE_MAXIMUM_REQUEST_COUNT);
-        Assertions.assertThat("message-0").isIn(samples);
-        Assertions.assertThat("message-1").isIn(samples);
+
+        await().atMost(EipRoutes.THROTTLE_TIMEOUT + 5000, TimeUnit.MILLISECONDS)
+                .pollDelay(EipRoutes.THROTTLE_TIMEOUT, TimeUnit.MILLISECONDS).until(() -> {
+                    String samples = RestAssured.get("/eip/mock/throttle/2/5000/body")
+                            .then()
+                            .statusCode(200)
+                            .extract()
+                            .body().asString();
+
+                    return samples.split(",").length == 2 && samples.contains("message-0") && samples.contains("message-1");
+                });
     }
 
     @Test
