@@ -658,6 +658,12 @@
                 <groupId>org.apache.camel</groupId>
                 <artifactId>camel-consul</artifactId>
                 <version>${camel.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.checkerframework</groupId>
+                        <artifactId>checker-qual</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.camel</groupId>
@@ -6742,6 +6748,21 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>org.kiwiproject</groupId>
+                <artifactId>consul-client</artifactId>
+                <version>${consul-client.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.google.code.findbugs</groupId>
+                        <artifactId>jsr305</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.checkerframework</groupId>
+                        <artifactId>checker-qual</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
                 <groupId>org.mapstruct</groupId>
                 <artifactId>mapstruct-processor</artifactId>
                 <version>${mapstruct.version}</version>
@@ -6755,6 +6776,11 @@
                 <groupId>org.mybatis</groupId>
                 <artifactId>mybatis</artifactId>
                 <version>${mybatis.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mvnpm.at.lit-labs</groupId>
+                <artifactId>ssr-dom-shim</artifactId>
+                <version>${ssr-dom-shim.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.optaplanner</groupId>
