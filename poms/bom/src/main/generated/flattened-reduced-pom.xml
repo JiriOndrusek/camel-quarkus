@@ -53,32 +53,32 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-activemq</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-amqp</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-api</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-arangodb</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-as2</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-as2-api</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -93,12 +93,12 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-asn1</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-asterisk</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.checkerframework</groupId>
@@ -109,7 +109,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-atom</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -120,17 +120,17 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-attachments</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-avro</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-aws-secrets-manager</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -141,7 +141,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-aws-xray</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -152,7 +152,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-aws2-athena</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -163,7 +163,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-aws2-cw</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -174,7 +174,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-aws2-ddb</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -185,7 +185,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-aws2-ec2</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -196,7 +196,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-aws2-ecs</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -207,7 +207,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-aws2-eks</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -218,7 +218,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-aws2-eventbridge</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -229,7 +229,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-aws2-iam</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -240,7 +240,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-aws2-kinesis</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -251,7 +251,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-aws2-kms</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -262,7 +262,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-aws2-lambda</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -273,7 +273,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-aws2-mq</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -284,7 +284,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-aws2-msk</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -295,7 +295,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-aws2-s3</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -306,7 +306,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-aws2-ses</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -317,7 +317,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-aws2-sns</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -328,7 +328,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-aws2-sqs</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -339,7 +339,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-aws2-sts</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -350,7 +350,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-aws2-translate</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -361,7 +361,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-azure-cosmosdb</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.azure</groupId>
@@ -372,7 +372,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-azure-eventhubs</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.azure</groupId>
@@ -383,7 +383,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-azure-key-vault</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.azure</groupId>
@@ -394,7 +394,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-azure-servicebus</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.azure</groupId>
@@ -405,7 +405,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-azure-storage-blob</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.azure</groupId>
@@ -416,7 +416,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-azure-storage-datalake</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.azure</groupId>
@@ -427,7 +427,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-azure-storage-queue</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.azure</groupId>
@@ -438,47 +438,47 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-barcode</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-base</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-base-engine</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-base64</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-bean</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-bean-validator</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-bindy</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-bonita</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-box</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -489,27 +489,27 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-box-api</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-braintree</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-browse</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-caffeine</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-cassandraql</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.github.spotbugs</groupId>
@@ -524,47 +524,47 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-catalog</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-cbor</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-chatscript</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-chunk</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-cli-connector</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-cloud</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-cloudevents</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-cluster</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-cm-sms</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -575,72 +575,78 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-coap</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-cometd</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-componentdsl</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-console</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-consul</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker-qual</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-controlbus</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-core-catalog</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-core-engine</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-core-languages</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-core-model</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-core-processor</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-core-reifier</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-couchbase</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-couchdb</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -651,47 +657,47 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-cron</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-crypto</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-csv</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-cxf-common</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-cxf-soap</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-cxf-transport</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-dataformat</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-dataset</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-datasonnet</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>jakarta.activation</groupId>
@@ -718,7 +724,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-debezium-common</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>javax.ws.rs</groupId>
@@ -729,32 +735,32 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-debezium-mongodb</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-debezium-mysql</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-debezium-postgres</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-debezium-sqlserver</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-debug</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-digitalocean</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -765,27 +771,27 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-direct</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-disruptor</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-djl</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-dns</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-drill</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.checkerframework</groupId>
@@ -800,27 +806,27 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-dropbox</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-dsl-modeline</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-dsl-support</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-ehcache</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-elasticsearch</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.code.findbugs</groupId>
@@ -835,7 +841,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-endpointdsl</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.sun.mail</groupId>
@@ -846,12 +852,12 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-endpointdsl-support</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-etcd3</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.android</groupId>
@@ -874,42 +880,42 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-exec</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-fastjson</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-fhir</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-fhir-api</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-file</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-file-watch</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-flatpack</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-flink</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.code.findbugs</groupId>
@@ -920,7 +926,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-fop</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -935,17 +941,17 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-freemarker</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-ftp</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-geocoder</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -956,17 +962,17 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-git</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-github</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-google-bigquery</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.android</groupId>
@@ -989,7 +995,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-google-calendar</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -1004,7 +1010,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-google-drive</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -1019,7 +1025,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-google-functions</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.android</groupId>
@@ -1042,7 +1048,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-google-mail</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -1057,7 +1063,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-google-pubsub</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.android</groupId>
@@ -1084,7 +1090,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-google-secret-manager</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.android</groupId>
@@ -1111,7 +1117,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-google-sheets</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -1126,7 +1132,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-google-storage</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.android</groupId>
@@ -1145,7 +1151,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-graphql</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -1156,27 +1162,27 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-grok</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-groovy</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-groovy-dsl</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-groovy-dsl-common</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-grpc</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.android</groupId>
@@ -1207,12 +1213,12 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-gson</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-guava-eventbus</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.checkerframework</groupId>
@@ -1223,7 +1229,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-hashicorp-vault</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -1246,12 +1252,47 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-hazelcast</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.camel</groupId>
+        <artifactId>camel-hdfs</artifactId>
+        <version>4.4.0-SNAPSHOT</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.github.stephenc.jcip</groupId>
+            <artifactId>jcip-annotations</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker-qual</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-headersmap</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>ch.qos.logback</groupId>
@@ -1262,17 +1303,17 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-health</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-hl7</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-http</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -1283,27 +1324,27 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-http-base</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-http-common</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-huaweicloud-common</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-huaweicloud-smn</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-ical</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -1314,7 +1355,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-iec60870</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.checkerframework</groupId>
@@ -1325,12 +1366,12 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-ignite</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-infinispan</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.slf4j</groupId>
@@ -1341,62 +1382,62 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-infinispan-common</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-influxdb</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-irc</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jackson</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jackson-avro</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jackson-protobuf</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jacksonxml</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jasypt</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-java-joor-dsl</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jaxb</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jcache</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jcr</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.slf4j</groupId>
@@ -1407,27 +1448,27 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jdbc</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jfr</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jgroups</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jgroups-raft</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jira</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -1446,7 +1487,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jms</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.apache.camel</groupId>
@@ -1465,12 +1506,12 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jolt</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jooq</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -1481,12 +1522,12 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-joor</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jpa</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.apache.camel</groupId>
@@ -1501,7 +1542,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jq</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>net.thisptr</groupId>
@@ -1516,97 +1557,97 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-js-dsl</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jsch</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jsh-dsl</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jslt</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-json-patch</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-json-validator</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jsonapi</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jsonata</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jsonb</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jsonpath</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jt400</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-jta</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-kafka</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-kamelet</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-knative</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-knative-api</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-knative-http</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-kotlin-dsl</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-kubernetes</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>io.fabric8</groupId>
@@ -1629,27 +1670,27 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-kudu</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-language</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-ldap</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-ldif</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-leveldb</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.checkerframework</groupId>
@@ -1660,77 +1701,77 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-log</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-lra</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-lucene</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-lumberjack</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-lzf</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-mail</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-main</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-management</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-management-api</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-mapstruct</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-master</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-micrometer</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-microprofile-config</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-microprofile-fault-tolerance</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-microprofile-health</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.eclipse.parsson</groupId>
@@ -1745,62 +1786,62 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-minio</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-mllp</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-mock</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-mongodb</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-mongodb-gridfs</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-mustache</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-mvel</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-mybatis</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-nats</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-netty</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-netty-http</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-nitrite</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>javax.validation</groupId>
@@ -1811,7 +1852,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-oaipmh</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -1822,12 +1863,12 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-ognl</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-olingo4</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -1838,7 +1879,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-olingo4-api</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -1849,7 +1890,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-openapi-java</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.code.findbugs</groupId>
@@ -1864,7 +1905,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-openstack</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.github.fge</groupId>
@@ -1879,7 +1920,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-opentelemetry</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>io.grpc</groupId>
@@ -1890,7 +1931,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-optaplanner</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.optaplanner</groupId>
@@ -1909,17 +1950,17 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-paho</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-paho-mqtt5</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-pdf</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -1930,12 +1971,12 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-pg-replication-slot</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-pgevent</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.testcontainers</groupId>
@@ -1946,22 +1987,22 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-platform-http</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-platform-http-vertx</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-printer</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-protobuf</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.code.findbugs</groupId>
@@ -1972,12 +2013,12 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-pubnub</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-pulsar</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.sun.activation</groupId>
@@ -2012,7 +2053,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-quartz</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>jakarta.activation</groupId>
@@ -2035,37 +2076,37 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-quickfix</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-reactive-executor-vertx</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-reactive-streams</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-redis</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-ref</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-rest</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-rest-openapi</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.code.findbugs</groupId>
@@ -2080,22 +2121,22 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-robotframework</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-rss</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-saga</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-salesforce</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.android</groupId>
@@ -2118,12 +2159,12 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-sap-netweaver</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-saxon</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>xml-apis</groupId>
@@ -2134,12 +2175,12 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-scheduler</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-schematron</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>xml-apis</groupId>
@@ -2150,37 +2191,37 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-seda</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-servicenow</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-servlet</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-shiro</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-sjms</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-sjms2</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-slack</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
@@ -2196,32 +2237,32 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-smpp</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-snakeyaml</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-snmp</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-soap</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-splunk</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-splunk-hec</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -2232,7 +2273,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-spring-rabbitmq</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -2247,7 +2288,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-spring-redis</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework.data</groupId>
@@ -2258,12 +2299,12 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-sql</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-ssh</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.slf4j</groupId>
@@ -2274,62 +2315,62 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-stax</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-stitch</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-stomp</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-stream</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-stringtemplate</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-stub</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-support</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-swift</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-syslog</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-tarfile</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-telegram</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-test-junit5</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.apache.camel</groupId>
@@ -2340,17 +2381,17 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-threadpoolfactory-vertx</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-thrift</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-tika</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.apache.tika</groupId>
@@ -2361,27 +2402,27 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-timer</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-tooling-model</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-tooling-util</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-tracing</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-twilio</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -2400,57 +2441,57 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-twitter</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-univocity-parsers</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-util</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-util-json</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-validator</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-velocity</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-vertx</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-vertx-common</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-vertx-http</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-vertx-websocket</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-weather</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -2461,17 +2502,17 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-web3j</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-webhook</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-wordpress</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.checkerframework</groupId>
@@ -2482,7 +2523,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-workday</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -2493,7 +2534,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-xchange</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.checkerframework</groupId>
@@ -2504,62 +2545,62 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-xj</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-xml-io</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-xml-io-dsl</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-xml-io-util</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-xml-jaxb</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-xml-jaxp</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-xml-jaxp-util</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-xmlsecurity</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-xmpp</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-xpath</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-xslt</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-xslt-saxon</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>xml-apis</groupId>
@@ -2570,42 +2611,42 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-yaml-dsl</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-yaml-dsl-common</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-yaml-dsl-deserializers</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-yaml-io</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-zendesk</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-zip-deflater</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-zipfile</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-zookeeper</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.checkerframework</groupId>
@@ -2616,7 +2657,7 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-zookeeper-master</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.checkerframework</groupId>
@@ -3823,6 +3864,16 @@
         <groupId>org.apache.camel.quarkus</groupId>
         <artifactId>camel-quarkus-hazelcast-deployment</artifactId>
         <version>3.8.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.camel.quarkus</groupId>
+        <artifactId>camel-quarkus-hdfs</artifactId>
+        <version>3.7.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.camel.quarkus</groupId>
+        <artifactId>camel-quarkus-hdfs-deployment</artifactId>
+        <version>3.7.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.camel.quarkus</groupId>
@@ -5912,7 +5963,7 @@
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId>
         <artifactId>hapi-fhir-base</artifactId>
-        <version>6.10.0</version>
+        <version>6.10.2</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.code.findbugs</groupId>
@@ -5931,12 +5982,12 @@
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId>
         <artifactId>hapi-fhir-client</artifactId>
-        <version>6.10.0</version>
+        <version>6.10.2</version>
       </dependency>
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId>
         <artifactId>hapi-fhir-structures-dstu2.1</artifactId>
-        <version>6.10.0</version>
+        <version>6.10.2</version>
         <exclusions>
           <exclusion>
             <groupId>junit</groupId>
@@ -5951,22 +6002,22 @@
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId>
         <artifactId>hapi-fhir-structures-dstu3</artifactId>
-        <version>6.10.0</version>
+        <version>6.10.2</version>
       </dependency>
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId>
         <artifactId>hapi-fhir-structures-hl7org-dstu2</artifactId>
-        <version>6.10.0</version>
+        <version>6.10.2</version>
       </dependency>
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId>
         <artifactId>hapi-fhir-structures-r4</artifactId>
-        <version>6.10.0</version>
+        <version>6.10.2</version>
       </dependency>
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId>
         <artifactId>hapi-fhir-structures-r5</artifactId>
-        <version>6.10.0</version>
+        <version>6.10.2</version>
       </dependency>
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId>
@@ -6106,7 +6157,7 @@
       <dependency>
         <groupId>com.ibm.icu</groupId>
         <artifactId>icu4j</artifactId>
-        <version>73.2</version>
+        <version>74.2</version>
       </dependency>
       <dependency>
         <groupId>com.ibm.mq</groupId>
@@ -6137,7 +6188,7 @@
       <dependency>
         <groupId>com.orbitz.consul</groupId>
         <artifactId>consul-client</artifactId>
-        <version>1.5.3</version>
+        <version>1.2.0</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.code.findbugs</groupId>
@@ -6181,6 +6232,11 @@
         <version>1.4</version>
       </dependency>
       <dependency>
+        <groupId>commons-lang</groupId>
+        <artifactId>commons-lang</artifactId>
+        <version>2.6</version>
+      </dependency>
+      <dependency>
         <groupId>io.minio</groupId>
         <artifactId>minio</artifactId>
         <version>8.2.2</version>
@@ -6220,7 +6276,7 @@
       <dependency>
         <groupId>io.projectreactor.netty</groupId>
         <artifactId>reactor-netty</artifactId>
-        <version>1.1.13</version>
+        <version>1.1.14</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.freemarker</groupId>
@@ -6331,12 +6387,12 @@
       <dependency>
         <groupId>io.swagger.core.v3</groupId>
         <artifactId>swagger-models</artifactId>
-        <version>2.2.19</version>
+        <version>2.2.20</version>
       </dependency>
       <dependency>
         <groupId>io.swagger.parser.v3</groupId>
         <artifactId>swagger-parser</artifactId>
-        <version>2.1.16</version>
+        <version>2.1.19</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.code.findbugs</groupId>
@@ -6439,7 +6495,7 @@
       <dependency>
         <groupId>org.apache.pdfbox</groupId>
         <artifactId>fontbox</artifactId>
-        <version>3.0.0</version>
+        <version>3.0.1</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -6461,7 +6517,7 @@
       <dependency>
         <groupId>org.apache.yetus</groupId>
         <artifactId>audience-annotations</artifactId>
-        <version>0.14.1</version>
+        <version>0.15.0</version>
       </dependency>
       <dependency>
         <groupId>org.apache.zookeeper</groupId>
@@ -6532,12 +6588,12 @@
       <dependency>
         <groupId>org.influxdb</groupId>
         <artifactId>influxdb-java</artifactId>
-        <version>2.23</version>
+        <version>2.24</version>
       </dependency>
       <dependency>
         <groupId>org.javassist</groupId>
         <artifactId>javassist</artifactId>
-        <version>3.29.2-GA</version>
+        <version>3.30.2-GA</version>
       </dependency>
       <dependency>
         <groupId>org.jetbrains.kotlin</groupId>
@@ -6592,7 +6648,7 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-aop</artifactId>
-        <version>6.1.1</version>
+        <version>6.1.2</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -6607,7 +6663,7 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-expression</artifactId>
-        <version>6.1.1</version>
+        <version>6.1.2</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -6618,7 +6674,7 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-jdbc</artifactId>
-        <version>6.1.1</version>
+        <version>6.1.2</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -6633,7 +6689,7 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-jms</artifactId>
-        <version>6.1.1</version>
+        <version>6.1.2</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -6648,7 +6704,7 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-messaging</artifactId>
-        <version>6.1.1</version>
+        <version>6.1.2</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -6663,7 +6719,7 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-tx</artifactId>
-        <version>6.1.1</version>
+        <version>6.1.2</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -6678,7 +6734,7 @@
       <dependency>
         <groupId>org.springframework.data</groupId>
         <artifactId>spring-data-redis</artifactId>
-        <version>3.2.0</version>
+        <version>3.2.1</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -6734,7 +6790,7 @@
       <dependency>
         <groupId>redis.clients</groupId>
         <artifactId>jedis</artifactId>
-        <version>5.0.2</version>
+        <version>5.1.0</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
@@ -6884,128 +6940,112 @@
       <dependency>
         <groupId>io.quarkiverse.cxf</groupId>
         <artifactId>quarkus-cxf</artifactId>
-        <version>2.7.0</version>
+        <version>2.6.1</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.cxf</groupId>
         <artifactId>quarkus-cxf-axiom-api-stub</artifactId>
-        <version>2.7.0</version>
+        <version>2.6.1</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.cxf</groupId>
         <artifactId>quarkus-cxf-deployment</artifactId>
-        <version>2.7.0</version>
-      </dependency>
-      <dependency>
-        <groupId>io.quarkiverse.cxf</groupId>
-        <artifactId>quarkus-cxf-integration-tracing-opentelemetry</artifactId>
-        <version>2.7.0</version>
-        <exclusions>
-          <exclusion>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>io.quarkiverse.cxf</groupId>
-        <artifactId>quarkus-cxf-integration-tracing-opentelemetry-deployment</artifactId>
-        <version>2.7.0</version>
+        <version>2.6.1</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.cxf</groupId>
         <artifactId>quarkus-cxf-rt-features-logging</artifactId>
-        <version>2.7.0</version>
+        <version>2.6.1</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.cxf</groupId>
         <artifactId>quarkus-cxf-rt-features-logging-deployment</artifactId>
-        <version>2.7.0</version>
+        <version>2.6.1</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.cxf</groupId>
         <artifactId>quarkus-cxf-rt-features-metrics</artifactId>
-        <version>2.7.0</version>
+        <version>2.6.1</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.cxf</groupId>
         <artifactId>quarkus-cxf-rt-features-metrics-deployment</artifactId>
-        <version>2.7.0</version>
+        <version>2.6.1</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.cxf</groupId>
         <artifactId>quarkus-cxf-rt-transports-http-hc5</artifactId>
-        <version>2.7.0</version>
+        <version>2.6.1</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.cxf</groupId>
         <artifactId>quarkus-cxf-rt-transports-http-hc5-deployment</artifactId>
-        <version>2.7.0</version>
+        <version>2.6.1</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.cxf</groupId>
         <artifactId>quarkus-cxf-rt-ws-security</artifactId>
-        <version>2.7.0</version>
+        <version>2.6.1</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.cxf</groupId>
         <artifactId>quarkus-cxf-rt-ws-security-deployment</artifactId>
-        <version>2.7.0</version>
+        <version>2.6.1</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.cxf</groupId>
         <artifactId>quarkus-cxf-rt-ws-rm</artifactId>
-        <version>2.7.0</version>
+        <version>2.6.1</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.cxf</groupId>
         <artifactId>quarkus-cxf-rt-ws-rm-deployment</artifactId>
-        <version>2.7.0</version>
+        <version>2.6.1</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.cxf</groupId>
         <artifactId>quarkus-cxf-saaj</artifactId>
-        <version>2.7.0</version>
+        <version>2.6.1</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.cxf</groupId>
         <artifactId>quarkus-cxf-saaj-deployment</artifactId>
-        <version>2.7.0</version>
+        <version>2.6.1</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.cxf</groupId>
         <artifactId>quarkus-cxf-services-sts</artifactId>
-        <version>2.7.0</version>
+        <version>2.6.1</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.cxf</groupId>
         <artifactId>quarkus-cxf-services-sts-deployment</artifactId>
-        <version>2.7.0</version>
+        <version>2.6.1</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.cxf</groupId>
         <artifactId>quarkus-cxf-woodstox</artifactId>
-        <version>2.7.0</version>
+        <version>2.6.1</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.cxf</groupId>
         <artifactId>quarkus-cxf-woodstox-deployment</artifactId>
-        <version>2.7.0</version>
+        <version>2.6.1</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.cxf</groupId>
         <artifactId>quarkus-cxf-xjc-plugins</artifactId>
-        <version>2.7.0</version>
+        <version>2.6.1</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.cxf</groupId>
         <artifactId>quarkus-cxf-xjc-plugins-deployment</artifactId>
-        <version>2.7.0</version>
+        <version>2.6.1</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.woodstox</groupId>
         <artifactId>woodstox-core</artifactId>
-        <version>6.6.0</version>
+        <version>6.5.1</version>
       </dependency>
       <dependency>
         <groupId>com.sun.xml.messaging.saaj</groupId>
@@ -7056,7 +7096,7 @@
       <dependency>
         <groupId>org.codehaus.woodstox</groupId>
         <artifactId>stax2-api</artifactId>
-        <version>4.2.2</version>
+        <version>4.2.1</version>
       </dependency>
       <dependency>
         <groupId>org.ehcache</groupId>
@@ -7125,11 +7165,6 @@
             <artifactId>asm</artifactId>
           </exclusion>
         </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.cxf</groupId>
-        <artifactId>cxf-integration-tracing-opentelemetry</artifactId>
-        <version>4.0.3</version>
       </dependency>
       <dependency>
         <groupId>org.apache.cxf</groupId>
@@ -7229,107 +7264,107 @@
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>annotations</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>arns</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>json-utils</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>third-party-jackson-core</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>third-party-jackson-dataformat-cbor</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>auth</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>aws-core</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>profiles</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>aws-cbor-protocol</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>aws-json-protocol</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>aws-query-protocol</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>aws-xml-protocol</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>protocol-core</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>regions</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>checksums-spi</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>checksums</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>http-auth-spi</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>http-auth</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>identity-spi</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>http-client-spi</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>apache-client</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -7340,127 +7375,127 @@
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>netty-nio-client</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>utils</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>athena</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>cloudtrail</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>cloudwatch</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>dynamodb</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>ec2</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>ecs</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>eks</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>firehose</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>iam</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>kafka</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>kinesis</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>kms</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>lambda</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>mq</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>s3</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>secretsmanager</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>ses</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>sns</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>sqs</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>sts</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>translate</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>eventbridge</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>metrics-spi</artifactId>
-        <version>2.23.0</version>
+        <version>2.22.1</version>
       </dependency>
       <dependency>
         <groupId>org.apache.qpid</groupId>
@@ -7480,72 +7515,72 @@
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-alpn-client</artifactId>
-        <version>12.0.4</version>
+        <version>12.0.5</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-client</artifactId>
-        <version>12.0.4</version>
+        <version>12.0.5</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-http</artifactId>
-        <version>12.0.4</version>
+        <version>12.0.5</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-io</artifactId>
-        <version>12.0.4</version>
+        <version>12.0.5</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-security</artifactId>
-        <version>12.0.4</version>
+        <version>12.0.5</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-server</artifactId>
-        <version>12.0.4</version>
+        <version>12.0.5</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-session</artifactId>
-        <version>12.0.4</version>
+        <version>12.0.5</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-util</artifactId>
-        <version>12.0.4</version>
+        <version>12.0.5</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-util-ajax</artifactId>
-        <version>12.0.4</version>
+        <version>12.0.5</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty.websocket</groupId>
         <artifactId>jetty-websocket-core-common</artifactId>
-        <version>12.0.4</version>
+        <version>12.0.5</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty.websocket</groupId>
         <artifactId>jetty-websocket-core-server</artifactId>
-        <version>12.0.4</version>
+        <version>12.0.5</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty.websocket</groupId>
         <artifactId>jetty-websocket-jetty-api</artifactId>
-        <version>12.0.4</version>
+        <version>12.0.5</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty.websocket</groupId>
         <artifactId>jetty-websocket-jetty-common</artifactId>
-        <version>12.0.4</version>
+        <version>12.0.5</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty.websocket</groupId>
         <artifactId>jetty-websocket-jetty-server</artifactId>
-        <version>12.0.4</version>
+        <version>12.0.5</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
