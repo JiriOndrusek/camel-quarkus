@@ -7566,12 +7566,12 @@
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-core-amqp</artifactId>
-        <version>2.8.14</version>
+        <version>2.9.0</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-cosmos</artifactId>
-        <version>4.53.1</version>
+        <version>4.54.0</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
@@ -7586,17 +7586,17 @@
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-messaging-eventhubs</artifactId>
-        <version>5.17.1</version>
+        <version>5.18.0</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-messaging-eventhubs-checkpointstore-blob</artifactId>
-        <version>1.18.1</version>
+        <version>1.19.0</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-messaging-servicebus</artifactId>
-        <version>7.14.7</version>
+        <version>7.15.0</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
