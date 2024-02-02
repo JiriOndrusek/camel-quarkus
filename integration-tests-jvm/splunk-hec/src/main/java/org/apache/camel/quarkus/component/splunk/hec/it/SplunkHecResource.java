@@ -19,22 +19,48 @@ package org.apache.camel.quarkus.component.splunk.hec.it;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.camel.CamelContext;
+import org.apache.camel.ProducerTemplate;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 @Path("/splunk-hec")
 @ApplicationScoped
 public class SplunkHecResource {
+    public static final String PARAM_REMOTE_HOST = "org.apache.camel.quarkus.component.splunk.hec.it.SplunkHecResource_host";
+    public static final String PARAM_HEC_PORT = "org.apache.camel.quarkus.component.splunk.hec.it.SplunkHecResource_hecPort";
+    public static final String PARAM_HEC_TOKEN = "org.apache.camel.quarkus.component.splunk.hec.it.SplunkHecResource_hecToken";
+    public static final String PARAM_REMOTE_PORT = "org.apache.camel.quarkus.component.splunk.hec.it.SplunkHecResource_remotePort";
 
     private static final Logger LOG = Logger.getLogger(SplunkHecResource.class);
 
     private static final String COMPONENT_SPLUNK_HEC = "splunk-hec";
+
     @Inject
     CamelContext context;
+
+    @Inject
+    ProducerTemplate producer;
+
+    @ConfigProperty(name = PARAM_REMOTE_PORT)
+    Integer remotePort;
+
+    @ConfigProperty(name = PARAM_HEC_PORT)
+    Integer hecPort;
+    //    Integer hecPort = 8088;
+
+    @ConfigProperty(name = PARAM_REMOTE_HOST)
+    String host;
+    //    String host = "localhost";
+
+    @ConfigProperty(name = PARAM_HEC_TOKEN)
+    String token;
+    //    String token = "4b35e71f-6a0f-4bab-94ce-f591ff45eecd";
 
     @Path("/load/component/splunk-hec")
     @GET
@@ -46,5 +72,15 @@ public class SplunkHecResource {
         }
         LOG.warnf("Could not load [%s] from the Camel context", COMPONENT_SPLUNK_HEC);
         return Response.status(500, COMPONENT_SPLUNK_HEC + " could not be loaded from the Camel context").build();
+    }
+
+    @Path("/send")
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    public String send(String data) throws Exception {
+        String url = String.format("splunk-hec:%s:%s/%s?skipTlsVerify=true&index=testindex", host, hecPort, token);
+        String ret = producer.requestBodyAndHeader(url, data, "foo", "bar", String.class);
+
+        return ret;
     }
 }
