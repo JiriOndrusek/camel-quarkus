@@ -19,13 +19,13 @@ package org.apache.camel.quarkus.component.splunk.hec.it;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
 import org.eclipse.microprofile.config.ConfigProvider;
-import org.hamcrest.Matchers;
+import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.shaded.org.hamcrest.Matchers;
 
 @QuarkusTest
-@QuarkusTestResource(SplunkHecTestResource.class)
+//@QuarkusTestResource(SplunkHecTestResource.class)
 class SplunkHecTest {
 
     @Test
@@ -34,29 +34,32 @@ class SplunkHecTest {
         //sleep 2h for testing
 //        Thread.sleep(60 * 60 * 1000);
 
-        String url = String.format("http://%s:%d",
-                getConfigValue(SplunkHecResource.PARAM_REMOTE_HOST, String.class),
-                getConfigValue(SplunkHecResource.PARAM_REMOTE_PORT, Integer.class));
+//        String url = String.format("http://%s:%d",
+//                getConfigValue(SplunkHecResource.PARAM_REMOTE_HOST, String.class),
+//                getConfigValue(SplunkHecResource.PARAM_REMOTE_PORT, Integer.class));
 
-//        String url = "https://localhost:8089";
+                String url = "http://localhost:32801";
 
-        RestAssured.given()
-            .body("Hello Sheldon")
-            .post("/splunk-hec/send")
-            .then()
-            .statusCode(200);
+//        RestAssured.given()
+//                .body("Hello Sheldon")
+//                .post("/splunk-hec/send")
+//                .then()
+//                .statusCode(200);
 
+        System.out.println("Msg sent !!!!!!!!!!!!!");
 
         RestAssured.given()
                 .request()
-                .formParam("search", "search \"hello Sheldon\"")
+                .formParam("search", "search index=\"testindex\"")
                 .formParam("exec_mode", "oneshot")
                 //.formParam("output_mode", "json")
                 .relaxedHTTPSValidation()
                 .auth().basic("admin", "password")
                 .post(url + "/services/search/jobs")
                 .then().statusCode(200)
-                .body(Matchers.containsString("Hello Sheldon"));
+//                .extract().asString();
+                        .body(org.hamcrest.Matchers.containsString("hello 22"));
+
     }
 
     private <T> T getConfigValue(String key, Class<T> type) {
