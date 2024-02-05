@@ -53,7 +53,7 @@ class SplunkHecTest {
 
         //assert response via rest
         RestAssured.given().relaxedHTTPSValidation().auth().preemptive().basic("admin", "password")
-                .get(url + "/services/search/jobs/" + sid + "/results")
+                .get(url + "/services/search/jobs/" + sid)
                 .then()
                 .body(Matchers.containsString("Hello Sheldon!"));
     }
