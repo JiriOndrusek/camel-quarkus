@@ -186,12 +186,6 @@ class JoorProcessor {
             final RuntimeValue<JavaLanguage> language = recorder.languageNewInstance(config, expressionCompilerBuilder,
                     expressionScriptingCompilerBuilder);
 
-            if (config.resultType.isPresent()) {
-                recorder.setResultType(
-                        language,
-                        config.resultType.get());
-            }
-
             return new CamelBeanBuildItem("java", JavaLanguage.class.getName(), language);
         }
         return null;

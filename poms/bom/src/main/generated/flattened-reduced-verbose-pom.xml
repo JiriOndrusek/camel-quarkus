@@ -5918,7 +5918,7 @@
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>hapi-fhir-base</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>6.10.3</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>6.10.4</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <exclusions>
           <exclusion>
             <groupId>com.google.code.findbugs</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
@@ -5937,12 +5937,12 @@
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>hapi-fhir-client</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>6.10.3</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>6.10.4</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
       </dependency>
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>hapi-fhir-structures-dstu2.1</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>6.10.3</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>6.10.4</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <exclusions>
           <exclusion>
             <groupId>junit</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
@@ -5957,22 +5957,22 @@
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>hapi-fhir-structures-dstu3</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>6.10.3</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>6.10.4</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
       </dependency>
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>hapi-fhir-structures-hl7org-dstu2</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>6.10.3</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>6.10.4</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
       </dependency>
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>hapi-fhir-structures-r4</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>6.10.3</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>6.10.4</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
       </dependency>
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>hapi-fhir-structures-r5</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>6.10.3</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>6.10.4</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
       </dependency>
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
@@ -6054,12 +6054,12 @@
       <dependency>
         <groupId>com.google.auth</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>google-auth-library-credentials</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>1.21.0</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>1.22.0</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
       </dependency>
       <dependency>
         <groupId>com.google.auth</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>google-auth-library-oauth2-http</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>1.21.0</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>1.22.0</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <exclusions>
           <exclusion>
             <groupId>com.google.code.findbugs</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
@@ -6070,7 +6070,7 @@
       <dependency>
         <groupId>com.google.cloud</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>google-cloud-pubsub</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>1.126.0</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>1.126.2</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <exclusions>
           <exclusion>
             <groupId>com.google.android</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
@@ -6347,7 +6347,7 @@
       <dependency>
         <groupId>joda-time</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>joda-time</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>2.12.6</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>2.12.7</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
       </dependency>
       <dependency>
         <groupId>net.i2p.crypto</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
@@ -6563,7 +6563,7 @@
       <dependency>
         <groupId>org.mvel</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>mvel2</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>2.5.1.Final</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>2.5.2.Final</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
       </dependency>
       <dependency>
         <groupId>org.mybatis</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
@@ -7489,74 +7489,74 @@
         <version>2.5.0</version><!-- org.amqphub.quarkus:quarkus-qpid-jms-bom:2.5.0 -->
       </dependency>
       <dependency>
-        <groupId>org.eclipse.jetty</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <artifactId>jetty-alpn-client</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <version>12.0.5</version><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
+        <groupId>org.eclipse.jetty</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <artifactId>jetty-alpn-client</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <version>12.0.6</version><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
       </dependency>
       <dependency>
-        <groupId>org.eclipse.jetty</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <artifactId>jetty-client</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <version>12.0.5</version><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
+        <groupId>org.eclipse.jetty</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <artifactId>jetty-client</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <version>12.0.6</version><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
       </dependency>
       <dependency>
-        <groupId>org.eclipse.jetty</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <artifactId>jetty-http</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <version>12.0.5</version><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
+        <groupId>org.eclipse.jetty</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <artifactId>jetty-http</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <version>12.0.6</version><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
       </dependency>
       <dependency>
-        <groupId>org.eclipse.jetty</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <artifactId>jetty-io</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <version>12.0.5</version><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
+        <groupId>org.eclipse.jetty</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <artifactId>jetty-io</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <version>12.0.6</version><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
       </dependency>
       <dependency>
-        <groupId>org.eclipse.jetty</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <artifactId>jetty-security</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <version>12.0.5</version><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
+        <groupId>org.eclipse.jetty</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <artifactId>jetty-security</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <version>12.0.6</version><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
       </dependency>
       <dependency>
-        <groupId>org.eclipse.jetty</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <artifactId>jetty-server</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <version>12.0.5</version><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
+        <groupId>org.eclipse.jetty</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <artifactId>jetty-server</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <version>12.0.6</version><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
       </dependency>
       <dependency>
-        <groupId>org.eclipse.jetty</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <artifactId>jetty-session</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <version>12.0.5</version><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
+        <groupId>org.eclipse.jetty</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <artifactId>jetty-session</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <version>12.0.6</version><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
       </dependency>
       <dependency>
-        <groupId>org.eclipse.jetty</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <artifactId>jetty-util</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <version>12.0.5</version><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
+        <groupId>org.eclipse.jetty</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <artifactId>jetty-util</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <version>12.0.6</version><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
       </dependency>
       <dependency>
-        <groupId>org.eclipse.jetty</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <artifactId>jetty-util-ajax</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <version>12.0.5</version><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
+        <groupId>org.eclipse.jetty</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <artifactId>jetty-util-ajax</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <version>12.0.6</version><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
       </dependency>
       <dependency>
-        <groupId>org.eclipse.jetty.websocket</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <artifactId>jetty-websocket-core-common</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <version>12.0.5</version><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
+        <groupId>org.eclipse.jetty.websocket</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <artifactId>jetty-websocket-core-common</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <version>12.0.6</version><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
       </dependency>
       <dependency>
-        <groupId>org.eclipse.jetty.websocket</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <artifactId>jetty-websocket-core-server</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <version>12.0.5</version><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
+        <groupId>org.eclipse.jetty.websocket</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <artifactId>jetty-websocket-core-server</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <version>12.0.6</version><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
       </dependency>
       <dependency>
-        <groupId>org.eclipse.jetty.websocket</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <artifactId>jetty-websocket-jetty-api</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <version>12.0.5</version><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
+        <groupId>org.eclipse.jetty.websocket</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <artifactId>jetty-websocket-jetty-api</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <version>12.0.6</version><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
       </dependency>
       <dependency>
-        <groupId>org.eclipse.jetty.websocket</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <artifactId>jetty-websocket-jetty-common</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <version>12.0.5</version><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
+        <groupId>org.eclipse.jetty.websocket</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <artifactId>jetty-websocket-jetty-common</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <version>12.0.6</version><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
       </dependency>
       <dependency>
-        <groupId>org.eclipse.jetty.websocket</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <artifactId>jetty-websocket-jetty-server</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
-        <version>12.0.5</version><!-- org.eclipse.jetty:jetty-bom:12.0.5 -->
+        <groupId>org.eclipse.jetty.websocket</groupId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <artifactId>jetty-websocket-jetty-server</artifactId><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
+        <version>12.0.6</version><!-- org.eclipse.jetty:jetty-bom:12.0.6 -->
       </dependency>
       <dependency>
         <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.20 -->
