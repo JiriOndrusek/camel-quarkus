@@ -71,15 +71,19 @@ public class SplunkHecTestResource implements QuarkusTestResourceLifecycleManage
             String splunkHost = container.getHost();
 
             String banner = StringUtils.repeat("*", 50);
-            LOG.info(banner);
-            LOG.infof("Splunk UI running on: http://%s:%d/splunkweb", splunkHost, container.getMappedPort(WEB_PORT));
-            LOG.info(banner);
 
-            return Map.of(
+            Map<String, String> map = Map.of(
                     SplunkHecResource.PARAM_REMOTE_HOST, splunkHost,
                     SplunkHecResource.PARAM_HEC_TOKEN, HEC_TOKEN,
                     SplunkHecResource.PARAM_REMOTE_PORT, container.getMappedPort(REMOTE_PORT).toString(),
                     SplunkHecResource.PARAM_HEC_PORT, container.getMappedPort(HEC_PORT).toString());
+
+            LOG.info(banner);
+            LOG.infof("Splunk UI running on: http://%s:%d/splunkweb", splunkHost, container.getMappedPort(WEB_PORT));
+            LOG.info(map);
+            LOG.info(banner);
+
+            return map;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

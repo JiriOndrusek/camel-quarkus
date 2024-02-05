@@ -25,11 +25,14 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-@QuarkusTestResource(SplunkHecTestResource.class)
+//@QuarkusTestResource(SplunkHecTestResource.class)
 class SplunkHecTest {
 
     @Test
-    public void loadComponentSplunkHec() {
+    public void loadComponentSplunkHec() throws InterruptedException {
+
+        //sleep 2h for testing
+//        Thread.sleep(60 * 60 * 1000);
 
         String url = String.format("http://%s:%d",
                 getConfigValue(SplunkHecResource.PARAM_REMOTE_HOST, String.class),
