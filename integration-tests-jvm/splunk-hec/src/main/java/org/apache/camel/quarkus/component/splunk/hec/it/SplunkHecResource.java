@@ -47,21 +47,22 @@ public class SplunkHecResource {
     @Inject
     ProducerTemplate producer;
 
-//    @ConfigProperty(name = PARAM_REMOTE_PORT)
-//    Integer remotePort;
-    Integer remotePort = 32769;
+    @ConfigProperty(name = PARAM_REMOTE_PORT)
+    Integer remotePort;
+    //    Integer remotePort = 32769;
 
-//    @ConfigProperty(name = PARAM_HEC_PORT)
-//    Integer hecPort;
-        Integer hecPort = 32770;
+    @ConfigProperty(name = PARAM_HEC_PORT)
+    Integer hecPort;
+//    Integer hecPort = 8088;
+    //        Integer hecPort = 32770;
 
-//    @ConfigProperty(name = PARAM_REMOTE_HOST)
-//    String host;
-        String host = "localhost";
+    @ConfigProperty(name = PARAM_REMOTE_HOST)
+    String host;
+//            String host = "localhost";
 
-//    @ConfigProperty(name = PARAM_HEC_TOKEN)
-//    String token;
-        String token = "4b35e71f-6a0f-4bab-94ce-f591ff45eecd";
+    @ConfigProperty(name = PARAM_HEC_TOKEN)
+    String token;
+//            String token = "4b35e71f-6a0f-4bab-94ce-f591ff45eecd";
 
     @Path("/load/component/splunk-hec")
     @GET
@@ -79,9 +80,10 @@ public class SplunkHecResource {
     @POST
     @Produces(MediaType.TEXT_PLAIN)
     public String send(String data) throws Exception {
+        System.out.println("**************** sending");
         String url = String.format("splunk-hec:%s:%s/%s?skipTlsVerify=true&index=testindex", host, hecPort, token);
-        String ret = producer.requestBodyAndHeader(url, data, "foo", "bar", String.class);
-
+        String ret = producer.requestBody(url, data, String.class);
+        System.out.println("****************" + ret);
         return ret;
     }
 }

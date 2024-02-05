@@ -25,11 +25,11 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-//@QuarkusTestResource(SplunkHecTestResource.class)
+@QuarkusTestResource(SplunkHecTestResource.class)
 class SplunkHecTest {
 
     @Test
-    public void loadComponentSplunkHec() throws InterruptedException {
+    public void produce() throws InterruptedException {
 
         //sleep 2h for testing
 //        Thread.sleep(60 * 60 * 1000);
@@ -38,27 +38,25 @@ class SplunkHecTest {
                 getConfigValue(SplunkHecResource.PARAM_REMOTE_HOST, String.class),
                 getConfigValue(SplunkHecResource.PARAM_REMOTE_PORT, Integer.class));
 
-        //write data via hec
+//        String url = "https://localhost:8089";
+
         RestAssured.given()
-                .body("Hello Sheldon!")
-                .post("/splunk-hec/send")
-                .then()
-                .statusCode(200);
+            .body("Hello Sheldon")
+            .post("/splunk-hec/send")
+            .then()
+            .statusCode(200);
 
-        //create search and get its id
-        String sid = RestAssured.given().relaxedHTTPSValidation().auth().preemptive().basic("admin", "password")
-                .body("search=search *")
+
+        RestAssured.given()
+                .request()
+                .formParam("search", "search \"hello Sheldon\"")
+                .formParam("exec_mode", "oneshot")
+                //.formParam("output_mode", "json")
+                .relaxedHTTPSValidation()
+                .auth().basic("admin", "password")
                 .post(url + "/services/search/jobs")
-                .then()
-                .contentType(ContentType.XML)
-                .extract()
-                .path("response.sid");
-
-        //assert response via rest
-        RestAssured.given().relaxedHTTPSValidation().auth().preemptive().basic("admin", "password")
-                .get(url + "/services/search/jobs/" + sid)
-                .then()
-                .body(Matchers.containsString("Hello Sheldon!"));
+                .then().statusCode(200)
+                .body(Matchers.containsString("Hello Sheldon"));
     }
 
     private <T> T getConfigValue(String key, Class<T> type) {
