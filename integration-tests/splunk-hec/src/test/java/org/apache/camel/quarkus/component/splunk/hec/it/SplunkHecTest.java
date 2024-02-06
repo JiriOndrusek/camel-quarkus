@@ -19,11 +19,12 @@ package org.apache.camel.quarkus.component.splunk.hec.it;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
+import org.apache.camel.quarkus.test.support.splunk.SplunkTestResource;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-@QuarkusTestResource(SplunkHecTestResource.class)
+@QuarkusTestResource(SplunkTestResource.class)
 class SplunkHecTest {
 
     @Test

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.splunk.it;
+package org.apache.camel.quarkus.test.support.splunk;
 
 import java.time.Duration;
 import java.util.Map;
@@ -30,10 +30,13 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
 
-    public static String TEST_INDEX = "testindex";
     private static final String SPLUNK_IMAGE_NAME = ConfigProvider.getConfig().getValue("splunk.container.image", String.class);
     private static final int REMOTE_PORT = 8089;
     private static final int WEB_PORT = 8000;
+    private static final int HEC_PORT = 8088;
+    private static final int TCP_PORT = 9998;
+    //todo generate random one during the start
+    private static final String HEC_TOKEN = "4b35e71f-6a0f-4bab-94ce-f591ff45eecd";
     private static final Logger LOG = Logger.getLogger(SplunkTestResource.class);
 
     private GenericContainer<?> container;
@@ -43,7 +46,7 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
 
         try {
             container = new GenericContainer<>(SPLUNK_IMAGE_NAME)
-                    .withExposedPorts(REMOTE_PORT, SplunkResource.LOCAL_TCP_PORT, WEB_PORT)
+                    .withExposedPorts(REMOTE_PORT, TCP_PORT, WEB_PORT)
                     .withEnv("SPLUNK_START_ARGS", "--accept-license")
                     .withEnv("SPLUNK_PASSWORD", "changeit")
                     .withEnv("SPLUNK_LICENSE_URI", "Free")
@@ -64,8 +67,8 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
             container.execInContainer("sudo", "microdnf", "--nodocs", "update", "tzdata");//install tzdata package so we can specify tz other than UTC
 
             container.execInContainer("sudo", "./bin/splunk", "restart");
-            container.execInContainer("sudo", "./bin/splunk", "add", "index", TEST_INDEX);
-            container.execInContainer("sudo", "./bin/splunk", "add", "tcp", String.valueOf(SplunkResource.LOCAL_TCP_PORT),
+            container.execInContainer("sudo", "./bin/splunk", "add", "index", SplunkConstants.TEST_INDEX);
+            container.execInContainer("sudo", "./bin/splunk", "add", "tcp", String.valueOf(TCP_PORT),
                     "-sourcetype",
                     ProducerType.TCP.name());
 
@@ -77,10 +80,12 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
             LOG.info(banner);
 
             return Map.of(
-                    SplunkResource.PARAM_REMOTE_HOST, splunkHost,
-                    SplunkResource.PARAM_REMOTE_PORT, container.getMappedPort(REMOTE_PORT).toString(),
-                    SplunkResource.PARAM_REMOTE_PORT, container.getMappedPort(REMOTE_PORT).toString(),
-                    SplunkResource.PARAM_TCP_PORT, container.getMappedPort(SplunkResource.LOCAL_TCP_PORT).toString());
+                    SplunkConstants.PARAM_REMOTE_HOST, splunkHost,
+                    SplunkConstants.PARAM_REMOTE_PORT, container.getMappedPort(REMOTE_PORT).toString(),
+                    SplunkConstants.PARAM_TCP_PORT, container.getMappedPort(TCP_PORT).toString(),
+                    SplunkConstants.PARAM_HEC_TOKEN, HEC_TOKEN,
+                    SplunkConstants.PARAM_REMOTE_PORT, container.getMappedPort(REMOTE_PORT).toString(),
+                    SplunkConstants.PARAM_HEC_PORT, container.getMappedPort(HEC_PORT).toString());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

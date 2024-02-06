@@ -150,7 +150,7 @@ group-09:
   - management
   - nats
   - splunk
-  - splunk-hex
+  - splunk-hec
   - spring-rabbitmq
   - xpath
 group-10:
