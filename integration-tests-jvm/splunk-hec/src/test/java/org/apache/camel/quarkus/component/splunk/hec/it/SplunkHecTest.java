@@ -20,33 +20,33 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import org.eclipse.microprofile.config.ConfigProvider;
-import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.shaded.org.hamcrest.Matchers;
 
 @QuarkusTest
-//@QuarkusTestResource(SplunkHecTestResource.class)
+@QuarkusTestResource(SplunkHecTestResource.class)
 class SplunkHecTest {
 
     @Test
     public void produce() throws InterruptedException {
 
         //sleep 2h for testing
-//        Thread.sleep(60 * 60 * 1000);
+        //        Thread.sleep(60 * 60 * 1000);
 
-//        String url = String.format("http://%s:%d",
-//                getConfigValue(SplunkHecResource.PARAM_REMOTE_HOST, String.class),
-//                getConfigValue(SplunkHecResource.PARAM_REMOTE_PORT, Integer.class));
-
-                String url = "http://localhost:32801";
-
-//        RestAssured.given()
-//                .body("Hello Sheldon")
-//                .post("/splunk-hec/send")
-//                .then()
-//                .statusCode(200);
-
-        System.out.println("Msg sent !!!!!!!!!!!!!");
+        String url = String.format("http://%s:%d",
+                getConfigValue(SplunkHecResource.PARAM_REMOTE_HOST, String.class),
+                getConfigValue(SplunkHecResource.PARAM_REMOTE_PORT, Integer.class));
+        //        //
+        //                String url = "http://localhost:32781";
+        //
+        RestAssured.given()
+                .body("Hello Sheldon")
+                .post("/splunk-hec/send")
+                .then()
+                .statusCode(200);
+        //
+        //        System.out.println("Msg sent !!!!!!!!!!!!!");
+        //
+        Thread.sleep(10 * 1000);
 
         RestAssured.given()
                 .request()
@@ -57,8 +57,10 @@ class SplunkHecTest {
                 .auth().basic("admin", "password")
                 .post(url + "/services/search/jobs")
                 .then().statusCode(200)
-//                .extract().asString();
-                        .body(org.hamcrest.Matchers.containsString("hello 22"));
+                //                .extract().asString();
+                .body(org.hamcrest.Matchers.containsString("Hello Sheldon"));
+
+        //        System.out.println(r);
 
     }
 

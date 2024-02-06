@@ -18,6 +18,7 @@ package org.apache.camel.quarkus.component.splunk.hec.it;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.TimeZone;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.apache.commons.lang3.StringUtils;
@@ -49,7 +50,7 @@ public class SplunkHecTestResource implements QuarkusTestResourceLifecycleManage
                     .withEnv("SPLUNK_HEC_TOKEN", HEC_TOKEN)
                     .withEnv("SPLUNK_LICENSE_URI", "Free")
                     .withEnv("SPLUNK_ROOT_ENDPOINT", "/splunkweb")
-                    //                    .withEnv("TZ", TimeZone.getDefault().getID())
+                    .withEnv("TZ", TimeZone.getDefault().getID())
                     .waitingFor(
                             Wait.forLogMessage(".*Ansible playbook complete.*\\n", 1)
                                     .withStartupTimeout(Duration.ofMinutes(5)));
@@ -60,10 +61,9 @@ public class SplunkHecTestResource implements QuarkusTestResourceLifecycleManage
                     "/opt/splunk/etc/system/default/server.conf");
             container.execInContainer("sudo", "sed", "-i", "s/enableSplunkdSSL = true/enableSplunkdSSL = false/",
                     "/opt/splunk/etc/system/default/server.conf");
-            //            container.execInContainer("sudo", "sed", "-i", "s/minFreeSpace = 5000/minFreeSpace = 100/",
-            //                    "/opt/splunk/etc/system/default/server.conf");
-
-            //            container.execInContainer("sudo", "microdnf", "--nodocs", "update", "tzdata");//install tzdata package so we can specify tz other than UTC
+            container.execInContainer("sudo", "sed", "-i", "s/minFreeSpace = 5000/minFreeSpace = 100/",
+                    "/opt/splunk/etc/system/default/server.conf");
+            container.execInContainer("sudo", "microdnf", "--nodocs", "update", "tzdata");//install tzdata package so we can specify tz other than UTC
 
             container.execInContainer("sudo", "./bin/splunk", "restart");
             container.execInContainer("sudo", "./bin/splunk", "add", "index", TEST_INDEX);
