@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.splunk.hec.it;
+package org.apache.camel.quarkus.test.support.splunk;
 
 import java.time.Duration;
 import java.util.Map;
@@ -27,29 +27,29 @@ import org.jboss.logging.Logger;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
-public class SplunkHecTestResource implements QuarkusTestResourceLifecycleManager {
+public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
 
-    public static final String TEST_INDEX = "testindex";
-    public static final String HEC_TOKEN = "4b35e71f-6a0f-4bab-94ce-f591ff45eecd";
+    public static String TEST_INDEX = "testindex";
+    public static final String HEC_TOKEN = "TESTTEST-TEST-TEST-TEST-TESTTESTTEST";
+
     private static final String SPLUNK_IMAGE_NAME = ConfigProvider.getConfig().getValue("splunk.container.image", String.class);
     private static final int REMOTE_PORT = 8089;
     private static final int WEB_PORT = 8000;
     private static final int HEC_PORT = 8088;
-    private static final Logger LOG = Logger.getLogger(SplunkHecTestResource.class);
+    private static final int TCP_PORT = 9998;
+    private static final Logger LOG = Logger.getLogger(SplunkTestResource.class);
 
     private GenericContainer<?> container;
 
     @Override
     public Map<String, String> start() {
-
         try {
             container = new GenericContainer<>(SPLUNK_IMAGE_NAME)
-                    .withExposedPorts(REMOTE_PORT, WEB_PORT, HEC_PORT)
+                    .withExposedPorts(REMOTE_PORT, TCP_PORT, WEB_PORT, HEC_PORT)
                     .withEnv("SPLUNK_START_ARGS", "--accept-license")
-                    .withEnv("SPLUNK_PASSWORD", "password")
+                    .withEnv("SPLUNK_PASSWORD", "changeit")
                     .withEnv("SPLUNK_HEC_TOKEN", HEC_TOKEN)
                     .withEnv("SPLUNK_LICENSE_URI", "Free")
-                    .withEnv("SPLUNK_ROOT_ENDPOINT", "/splunkweb")
                     .withEnv("TZ", TimeZone.getDefault().getID())
                     .waitingFor(
                             Wait.forLogMessage(".*Ansible playbook complete.*\\n", 1)
@@ -63,27 +63,28 @@ public class SplunkHecTestResource implements QuarkusTestResourceLifecycleManage
                     "/opt/splunk/etc/system/default/server.conf");
             container.execInContainer("sudo", "sed", "-i", "s/minFreeSpace = 5000/minFreeSpace = 100/",
                     "/opt/splunk/etc/system/default/server.conf");
+
             container.execInContainer("sudo", "microdnf", "--nodocs", "update", "tzdata");//install tzdata package so we can specify tz other than UTC
 
             container.execInContainer("sudo", "./bin/splunk", "restart");
             container.execInContainer("sudo", "./bin/splunk", "add", "index", TEST_INDEX);
+            container.execInContainer("sudo", "./bin/splunk", "add", "tcp", String.valueOf(TCP_PORT),
+                    "-sourcetype", "TCP");
 
             String splunkHost = container.getHost();
 
             String banner = StringUtils.repeat("*", 50);
-
-            Map<String, String> map = Map.of(
-                    SplunkHecResource.PARAM_REMOTE_HOST, splunkHost,
-                    SplunkHecResource.PARAM_HEC_TOKEN, HEC_TOKEN,
-                    SplunkHecResource.PARAM_REMOTE_PORT, container.getMappedPort(REMOTE_PORT).toString(),
-                    SplunkHecResource.PARAM_HEC_PORT, container.getMappedPort(HEC_PORT).toString());
-
             LOG.info(banner);
-            LOG.infof("Splunk UI running on: http://%s:%d/splunkweb", splunkHost, container.getMappedPort(WEB_PORT));
-            LOG.info(map);
+            LOG.infof("Splunk UI running on: http://%s:%d", splunkHost, container.getMappedPort(WEB_PORT));
             LOG.info(banner);
 
-            return map;
+            return Map.of(
+                    SplunkConstants.PARAM_REMOTE_HOST, splunkHost,
+                    SplunkConstants.PARAM_TCP_PORT, container.getMappedPort(TCP_PORT).toString(),
+                    SplunkConstants.PARAM_HEC_TOKEN, HEC_TOKEN,
+                    SplunkConstants.PARAM_TEST_INDEX, TEST_INDEX,
+                    SplunkConstants.PARAM_REMOTE_PORT, container.getMappedPort(REMOTE_PORT).toString(),
+                    SplunkConstants.PARAM_HEC_PORT, container.getMappedPort(HEC_PORT).toString());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

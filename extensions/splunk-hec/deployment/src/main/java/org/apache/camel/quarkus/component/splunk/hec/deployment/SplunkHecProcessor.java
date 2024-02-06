@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.component.splunk.hec.deployment;
 
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.ExtensionSslNativeSupportBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import org.jboss.logging.Logger;
 
@@ -30,4 +31,8 @@ class SplunkHecProcessor {
         return new FeatureBuildItem(FEATURE);
     }
 
+    @BuildStep
+    ExtensionSslNativeSupportBuildItem activateSslNativeSupport() {
+        return new ExtensionSslNativeSupportBuildItem(FEATURE);
+    }
 }

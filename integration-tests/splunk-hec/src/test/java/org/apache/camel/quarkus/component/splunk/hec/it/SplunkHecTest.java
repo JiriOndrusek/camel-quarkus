@@ -16,12 +16,17 @@
  */
 package org.apache.camel.quarkus.component.splunk.hec.it;
 
+import java.util.concurrent.TimeUnit;
+
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
+import org.apache.camel.quarkus.test.support.splunk.SplunkConstants;
 import org.apache.camel.quarkus.test.support.splunk.SplunkTestResource;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.shaded.org.awaitility.Awaitility;
+import org.testcontainers.shaded.org.hamcrest.core.StringContains;
 
 @QuarkusTest
 @QuarkusTestResource(SplunkTestResource.class)
@@ -30,43 +35,32 @@ class SplunkHecTest {
     @Test
     public void produce() throws InterruptedException {
 
-        //sleep 2h for testing
-        //        Thread.sleep(60 * 60 * 1000);
-
         String url = String.format("http://%s:%d",
-                getConfigValue(SplunkHecResource.PARAM_REMOTE_HOST, String.class),
-                getConfigValue(SplunkHecResource.PARAM_REMOTE_PORT, Integer.class));
-        //        //
-        //                String url = "http://localhost:32781";
-        //
+                getConfigValue(SplunkConstants.PARAM_REMOTE_HOST, String.class),
+                getConfigValue(SplunkConstants.PARAM_REMOTE_PORT, Integer.class));
+
         RestAssured.given()
                 .body("Hello Sheldon")
                 .post("/splunk-hec/send")
                 .then()
                 .statusCode(200);
-        //
-        //        System.out.println("Msg sent !!!!!!!!!!!!!");
-        // use awaitility instead
-        Thread.sleep(10 * 1000);
 
-        RestAssured.given()
-                .request()
-                .formParam("search", "search index=\"testindex\"")
-                .formParam("exec_mode", "oneshot")
-                //.formParam("output_mode", "json")
-                .relaxedHTTPSValidation()
-                .auth().basic("admin", "password")
-                .post(url + "/services/search/jobs")
-                .then().statusCode(200)
-                //                .extract().asString();
-                .body(org.hamcrest.Matchers.containsString("Hello Sheldon"));
-
-        //        System.out.println(r);
+        //there might a delay between the data written and received by the search, therefore await()
+        Awaitility.await().atMost(1, TimeUnit.SECONDS).until(
+                () -> RestAssured.given()
+                        .request()
+                        .formParam("search", "search index=\"testindex\"")
+                        .formParam("exec_mode", "oneshot")
+                        .relaxedHTTPSValidation()
+                        .auth().basic("admin", "password")
+                        .post(url + "/services/search/jobs")
+                        .then().statusCode(200)
+                        .extract().asString(),
+                StringContains.containsString("Hello Sheldon"));
 
     }
 
     private <T> T getConfigValue(String key, Class<T> type) {
         return ConfigProvider.getConfig().getValue(key, type);
     }
-
 }

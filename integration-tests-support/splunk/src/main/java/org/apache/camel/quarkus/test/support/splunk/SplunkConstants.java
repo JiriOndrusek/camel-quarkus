@@ -18,7 +18,7 @@ package org.apache.camel.quarkus.test.support.splunk;
 
 public final class SplunkConstants {
 
-    public static final String TEST_INDEX = "testindex";
+    public static final String PARAM_TEST_INDEX = "org.apache.camel.quarkus.component.splunk.hec.it.SplunkHecResource_testIndex";
     public static final String PARAM_REMOTE_HOST = "org.apache.camel.quarkus.component.splunk.hec.it.SplunkHecResource_host";
     public static final String PARAM_HEC_PORT = "org.apache.camel.quarkus.component.splunk.hec.it.SplunkHecResource_hecPort";
     public static final String PARAM_HEC_TOKEN = "org.apache.camel.quarkus.component.splunk.hec.it.SplunkHecResource_hecToken";
