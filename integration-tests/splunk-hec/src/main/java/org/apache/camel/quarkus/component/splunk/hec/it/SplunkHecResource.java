@@ -33,23 +33,28 @@ public class SplunkHecResource {
     @Inject
     ProducerTemplate producer;
 
-    @ConfigProperty(name = SplunkConstants.PARAM_HEC_PORT)
-    Integer hecPort;
+//    @ConfigProperty(name = SplunkConstants.PARAM_HEC_PORT)
+//    Integer hecPort;
+        Integer hecPort = 32796;
 
-    @ConfigProperty(name = SplunkConstants.PARAM_REMOTE_HOST)
-    String host;
+//    @ConfigProperty(name = SplunkConstants.PARAM_REMOTE_HOST)
+//    String host;
+        String host = "localhost";
 
-    @ConfigProperty(name = SplunkConstants.PARAM_TEST_INDEX)
-    String index;
+//    @ConfigProperty(name = SplunkConstants.PARAM_TEST_INDEX)
+//    String index;
+        String index = "testindex";
 
-    @ConfigProperty(name = SplunkConstants.PARAM_HEC_TOKEN)
-    String token;
+//    @ConfigProperty(name = SplunkConstants.PARAM_HEC_TOKEN)
+//    String token;
+        String token = "TESTTEST-TEST-TEST-TEST-TESTTESTTEST";
 
     @Path("/send")
     @POST
     @Produces(MediaType.TEXT_PLAIN)
     public String send(String data) {
-        String url = String.format("splunk-hec:%s:%s/%s?skipTlsVerify=true&index=%s", host, hecPort, token, index);
+                String url = String.format("splunk-hec:%s:%s/%s?index=%s", host, hecPort, token, index);
+//        String url = String.format("splunk-hec:%s:%s/%s?skipTlsVerify=true&index=%s", host, hecPort, token, index);
         return producer.requestBody(url, data, String.class);
     }
 }

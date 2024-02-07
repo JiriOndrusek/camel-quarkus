@@ -22,28 +22,31 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import org.apache.camel.quarkus.test.support.splunk.SplunkConstants;
-import org.apache.camel.quarkus.test.support.splunk.SplunkTestResource;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 import org.testcontainers.shaded.org.hamcrest.core.StringContains;
 
 @QuarkusTest
-@QuarkusTestResource(SplunkTestResource.class)
+//@QuarkusTestResource(SplunkHecTestResource.class)
 class SplunkHecTest {
 
     @Test
     public void produce() throws InterruptedException {
 
-        String url = String.format("http://%s:%d",
-                getConfigValue(SplunkConstants.PARAM_REMOTE_HOST, String.class),
-                getConfigValue(SplunkConstants.PARAM_REMOTE_PORT, Integer.class));
+//        String url = String.format("http://%s:%d",
+//                getConfigValue(SplunkConstants.PARAM_REMOTE_HOST, String.class),
+//                getConfigValue(SplunkConstants.PARAM_REMOTE_PORT, Integer.class));
+
+                String url = "https://localhost:32795";
 
         RestAssured.given()
-                .body("Hello Sheldon")
+                .body("Hello Irma")
                 .post("/splunk-hec/send")
                 .then()
                 .statusCode(200);
+
+//        Thread.sleep(10 * 60 * 60 * 1000);
 
         //there might a delay between the data written and received by the search, therefore await()
         Awaitility.await().atMost(1, TimeUnit.SECONDS).until(

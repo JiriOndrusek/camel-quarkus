@@ -84,7 +84,7 @@ class LdapTest {
 
         // Load the LDIF file from the Camel LDAP tests
         LDIFReader ldifReader = new LDIFReader(
-                LdapTest.class.getClassLoader().getResourceAsStream("LdapRouteTest.ldif"));
+                LdapTest.class.getClassLoader().getResourceAsStreaFm("LdapRouteTest.ldif"));
         ldapServer.importFromLDIF(true, ldifReader);
         ldapServer.startListening();
     }

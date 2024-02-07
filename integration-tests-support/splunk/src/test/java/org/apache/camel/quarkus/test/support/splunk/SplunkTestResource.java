@@ -16,6 +16,7 @@
  */
 package org.apache.camel.quarkus.test.support.splunk;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
 import java.util.TimeZone;
@@ -26,6 +27,7 @@ import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.logging.Logger;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.Transferable;
 
 public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
 
@@ -39,6 +41,14 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
     private static final Logger LOG = Logger.getLogger(SplunkTestResource.class);
 
     private GenericContainer<?> container;
+
+    public byte[] getServerCertPath() throws IOException {
+        return null;
+    }
+
+    public byte[] getCaCertPath() throws IOException {
+        return null;
+    }
 
     @Override
     public Map<String, String> start() {
@@ -54,12 +64,35 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
                             Wait.forLogMessage(".*Ansible playbook complete.*\\n", 1)
                                     .withStartupTimeout(Duration.ofMinutes(5)));
 
+            byte[] serverCertPath = getServerCertPath();
+            byte[] caCertPath = getCaCertPath();
+            //serverCert = $SPLUNK_HOME/etc/auth/server.pem
+            //sslPassword = password
+            //caCertFile = $SPLUNK_HOME/etc/auth/cacert.pem
+            if (serverCertPath != null) {
+                container = container.withCopyToContainer(Transferable.of(serverCertPath), "/opt/splunk/server.pem");
+            }
+            if (caCertPath != null) {
+                container = container.withCopyToContainer(Transferable.of(caCertPath), "/opt/splunk/cacert.pem");
+            }
+
             container.start();
+
+            if (serverCertPath != null && caCertPath != null) {
+                container.execInContainer("sudo", "sed", "-i",
+                        "s/caCertFile = $SPLUNK_HOME\\/etc\\/auth\\/cacert.pem/caCertFile = \\/opt\\/splunk\\/cacert.pem/",
+                        "/opt/splunk/etc/system/default/server.conf");
+                container.execInContainer("sudo", "sed", "-i",
+                        "s/serverCert = $SPLUNK_HOME\\/etc\\/auth\\/server.pem/serverCert = \\/opt\\/splunk\\/server.pem/",
+                        "/opt/splunk/etc/system/default/server.conf");
+            } else {
+                container.execInContainer("sudo", "sed", "-i", "s/enableSplunkdSSL = true/enableSplunkdSSL = false/",
+                        "/opt/splunk/etc/system/default/server.conf");
+            }
 
             container.execInContainer("sudo", "sed", "-i", "s/allowRemoteLogin=requireSetPassword/allowRemoteLogin=always/",
                     "/opt/splunk/etc/system/default/server.conf");
-            container.execInContainer("sudo", "sed", "-i", "s/enableSplunkdSSL = true/enableSplunkdSSL = false/",
-                    "/opt/splunk/etc/system/default/server.conf");
+
             container.execInContainer("sudo", "sed", "-i", "s/minFreeSpace = 5000/minFreeSpace = 100/",
                     "/opt/splunk/etc/system/default/server.conf");
 
