@@ -40,6 +40,7 @@ import org.apache.camel.spi.FactoryFinderResolver;
 import org.apache.camel.spi.Language;
 import org.apache.camel.spi.ManagementNameStrategy;
 import org.apache.camel.spi.ModelJAXBContextFactory;
+import org.apache.camel.spi.ModelReifierFactory;
 import org.apache.camel.spi.ModelToXMLDumper;
 import org.apache.camel.spi.ModelToYAMLDumper;
 import org.apache.camel.spi.PackageScanResourceResolver;
@@ -106,6 +107,17 @@ public class FastCamelContext extends DefaultCamelContext implements CatalogCame
     protected ComponentNameResolver createComponentNameResolver() {
         // Component names are discovered at build time
         return null;
+    }
+
+    @Override
+    protected ModelReifierFactory createModelReifierFactory() {
+        //reifier is not required during the cinstruction time of context (for camel Quarkus)
+        return null;
+    }
+
+    ModelReifierFactory createDefaultModelReifierFactory() {
+        //original creation is triggered right after the con text is constructed
+        return super.createModelReifierFactory();
     }
 
     @Override

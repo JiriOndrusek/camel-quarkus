@@ -75,6 +75,9 @@ public class CamelContextRecorder {
         extendedCamelContext.addContextPlugin(VariableRepositoryFactory.class, new DefaultVariableRepositoryFactory(context));
         extendedCamelContext.setRegistry(registry.getValue());
 
+        //initialize reifier factory (later then implemented in the Camel)
+        context.setModelReifierFactory(context.createDefaultModelReifierFactory());
+
         TypeConverterRegistry typeConverterRegistryValue = typeConverterRegistry.getValue();
         typeConverterRegistryValue.setInjector(new FastTypeConverterInjector(context));
         context.setTypeConverterRegistry(typeConverterRegistryValue);
