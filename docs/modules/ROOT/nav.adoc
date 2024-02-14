@@ -223,6 +223,7 @@
 *** xref:reference/extensions/ognl.adoc[OGNL]
 *** xref:reference/extensions/olingo4.adoc[Olingo4]
 *** xref:reference/extensions/openapi-java.adoc[OpenAPI Java]
+*** xref:reference/extensions/opensearch.adoc[OpenSearch]
 *** xref:reference/extensions/openstack.adoc[OpenStack]
 *** xref:reference/extensions/opentelemetry.adoc[OpenTelemetry]
 *** xref:reference/extensions/optaplanner.adoc[OptaPlanner]

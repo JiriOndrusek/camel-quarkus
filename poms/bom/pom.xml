@@ -1957,6 +1957,21 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.camel</groupId>
+                <artifactId>camel-opensearch</artifactId>
+                <version>${camel.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.google.code.findbugs</groupId>
+                        <artifactId>jsr305</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel</groupId>
                 <artifactId>camel-openstack</artifactId>
                 <version>${camel.version}</version>
                 <exclusions>
@@ -4802,6 +4817,16 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.camel.quarkus</groupId>
+                <artifactId>camel-quarkus-opensearch</artifactId>
+                <version>${camel-quarkus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel.quarkus</groupId>
+                <artifactId>camel-quarkus-opensearch-deployment</artifactId>
+                <version>${camel-quarkus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel.quarkus</groupId>
                 <artifactId>camel-quarkus-openstack</artifactId>
                 <version>${camel-quarkus.version}</version>
             </dependency>
@@ -6803,14 +6828,19 @@
                 <version>${mvel2.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.mvnpm.at.lit-labs</groupId>
+                <artifactId>ssr-dom-shim</artifactId>
+                <version>${ssr-dom-shim.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.mybatis</groupId>
                 <artifactId>mybatis</artifactId>
                 <version>${mybatis.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.mvnpm.at.lit-labs</groupId>
-                <artifactId>ssr-dom-shim</artifactId>
-                <version>${ssr-dom-shim.version}</version>
+                <groupId>org.opensearch.client</groupId>
+                <artifactId>opensearch-rest-client</artifactId>
+                <version>${opensearch-rest-client-version}</version>
             </dependency>
             <dependency>
                 <groupId>org.optaplanner</groupId>

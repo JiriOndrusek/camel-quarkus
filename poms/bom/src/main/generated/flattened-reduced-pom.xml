@@ -1895,6 +1895,21 @@
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
+        <artifactId>camel-opensearch</artifactId>
+        <version>4.4.0</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.camel</groupId>
         <artifactId>camel-openstack</artifactId>
         <version>4.4.0</version>
         <exclusions>
@@ -4728,6 +4743,16 @@
       </dependency>
       <dependency>
         <groupId>org.apache.camel.quarkus</groupId>
+        <artifactId>camel-quarkus-opensearch</artifactId>
+        <version>3.8.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.camel.quarkus</groupId>
+        <artifactId>camel-quarkus-opensearch-deployment</artifactId>
+        <version>3.8.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.camel.quarkus</groupId>
         <artifactId>camel-quarkus-openstack</artifactId>
         <version>3.8.0-SNAPSHOT</version>
       </dependency>
@@ -6626,14 +6651,19 @@
         <version>2.5.2.Final</version>
       </dependency>
       <dependency>
+        <groupId>org.mvnpm.at.lit-labs</groupId>
+        <artifactId>ssr-dom-shim</artifactId>
+        <version>1.1.2-pre.1</version>
+      </dependency>
+      <dependency>
         <groupId>org.mybatis</groupId>
         <artifactId>mybatis</artifactId>
         <version>3.5.15</version>
       </dependency>
       <dependency>
-        <groupId>org.mvnpm.at.lit-labs</groupId>
-        <artifactId>ssr-dom-shim</artifactId>
-        <version>1.1.2-pre.1</version>
+        <groupId>org.opensearch.client</groupId>
+        <artifactId>opensearch-rest-client</artifactId>
+        <version>2.11.1</version>
       </dependency>
       <dependency>
         <groupId>org.optaplanner</groupId>
