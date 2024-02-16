@@ -22,6 +22,7 @@ import java.util.List;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import org.jboss.logging.Logger;
 
 class Jt400Processor {
@@ -39,6 +40,17 @@ class Jt400Processor {
         List<ReflectiveClassBuildItem> items = new ArrayList<>();
         items.add(ReflectiveClassBuildItem.builder("com.ibm.as400.access.CurrentUser").build());
         items.add(ReflectiveClassBuildItem.builder("com.ibm.as400.access.UnixSocketUser").build());
+        return items;
+    }
+
+    @BuildStep
+    List<RuntimeInitializedClassBuildItem> runtimeInitializedClasses() {
+        List<RuntimeInitializedClassBuildItem> items = new ArrayList<>();
+        items.add(new RuntimeInitializedClassBuildItem("com.ibm.as400.access.CredentialVault"));
+        items.add(new RuntimeInitializedClassBuildItem("com.ibm.as400.access.GSSTokenVault"));
+        items.add(new RuntimeInitializedClassBuildItem("com.ibm.as400.access.IdentityTokenVault"));
+        items.add(new RuntimeInitializedClassBuildItem("com.ibm.as400.access.PasswordVault"));
+        items.add(new RuntimeInitializedClassBuildItem("com.ibm.as400.access.ProfileTokenVault"));
         return items;
     }
 }

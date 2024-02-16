@@ -14,15 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ibm.as400.access;
-
-import com.oracle.svm.core.annotate.Delete;
-import com.oracle.svm.core.annotate.TargetClass;
+package org.apache.camel.quarkus.component.jt400.graal;
 
 final class Jt400Substitutions {
 }
-
-@TargetClass(className = "sun.util.BuddhistCalendar")
-@Delete
-final class Target_sun_util_BuddhistCalendar {
-}
+//
+//@TargetClass(className = "sun.util.BuddhistCalendar")
+//@Delete
+//final class Target_sun_util_BuddhistCalendar {
+//}
