@@ -16,12 +16,12 @@
  */
 package org.apache.camel.quarkus.component.jt400.deployment;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.annotations.ExecutionTime;
-import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
-import io.quarkus.deployment.pkg.steps.NativeOrNativeSourcesBuild;
-import org.apache.camel.quarkus.core.JvmOnlyRecorder;
+import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import org.jboss.logging.Logger;
 
 class Jt400Processor {
@@ -34,13 +34,14 @@ class Jt400Processor {
         return new FeatureBuildItem(FEATURE);
     }
 
-    /**
-     * Remove this once this extension starts supporting the native mode.
-     */
-    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class)
-    @Record(value = ExecutionTime.RUNTIME_INIT)
-    void warnJvmInNative(JvmOnlyRecorder recorder) {
-        JvmOnlyRecorder.warnJvmInNative(LOG, FEATURE); // warn at build time
-        recorder.warnJvmInNative(FEATURE); // warn at runtime
+    @BuildStep
+    List<RuntimeInitializedClassBuildItem> runtimeInitializedClasses() {
+        List<RuntimeInitializedClassBuildItem> items = new ArrayList<>();
+        items.add(new RuntimeInitializedClassBuildItem("com.ibm.as400.access.CredentialVault"));
+        items.add(new RuntimeInitializedClassBuildItem("com.ibm.as400.access.GSSTokenVault"));
+        items.add(new RuntimeInitializedClassBuildItem("com.ibm.as400.access.IdentityTokenVault"));
+        items.add(new RuntimeInitializedClassBuildItem("com.ibm.as400.access.PasswordVault"));
+        items.add(new RuntimeInitializedClassBuildItem("com.ibm.as400.access.ProfileTokenVault"));
+        return items;
     }
 }
