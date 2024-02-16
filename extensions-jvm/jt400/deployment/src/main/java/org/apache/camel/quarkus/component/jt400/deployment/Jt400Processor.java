@@ -16,12 +16,12 @@
  */
 package org.apache.camel.quarkus.component.jt400.deployment;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.annotations.ExecutionTime;
-import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
-import io.quarkus.deployment.pkg.steps.NativeOrNativeSourcesBuild;
-import org.apache.camel.quarkus.core.JvmOnlyRecorder;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import org.jboss.logging.Logger;
 
 class Jt400Processor {
@@ -34,13 +34,11 @@ class Jt400Processor {
         return new FeatureBuildItem(FEATURE);
     }
 
-    /**
-     * Remove this once this extension starts supporting the native mode.
-     */
-    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class)
-    @Record(value = ExecutionTime.RUNTIME_INIT)
-    void warnJvmInNative(JvmOnlyRecorder recorder) {
-        JvmOnlyRecorder.warnJvmInNative(LOG, FEATURE); // warn at build time
-        recorder.warnJvmInNative(FEATURE); // warn at runtime
+    @BuildStep
+    List<ReflectiveClassBuildItem> reflectiveClasses() {
+        List<ReflectiveClassBuildItem> items = new ArrayList<>();
+        items.add(ReflectiveClassBuildItem.builder("com.ibm.as400.access.CurrentUser").build());
+        items.add(ReflectiveClassBuildItem.builder("com.ibm.as400.access.UnixSocketUser").build());
+        return items;
     }
 }
