@@ -37,7 +37,7 @@
     <inceptionYear>2019</inceptionYear>
 
     <properties>
-
+        <jt400.version>dev</jt400.version>
         <!-- Primary dependencies - maintained manually -->
         <camel.major.minor>4.3</camel.major.minor> <!-- run after each change: cd docs && mvnd validate -->
         <camel.version>${camel.major.minor}.0</camel.version>

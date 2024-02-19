@@ -19,8 +19,10 @@ package org.apache.camel.quarkus.component.jt400.deployment;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ibm.as400.access.AS400ImplRemote;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import org.jboss.logging.Logger;
 
@@ -32,6 +34,14 @@ class Jt400Processor {
     @BuildStep
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
+    }
+
+    @BuildStep
+    List<ReflectiveClassBuildItem> reflectiveClasses() {
+        List<ReflectiveClassBuildItem> items = new ArrayList<ReflectiveClassBuildItem>();
+        items.add(ReflectiveClassBuildItem.builder(AS400ImplRemote.class).build());
+        items.add(ReflectiveClassBuildItem.builder("com.ibm.as400.access.AS400ImplProxy").build());
+        return items;
     }
 
     @BuildStep

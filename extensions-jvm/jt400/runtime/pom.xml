@@ -39,13 +39,17 @@
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-core</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-awt</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>io.quarkus</groupId>-->
+<!--            <artifactId>quarkus-awt</artifactId>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-jt400</artifactId>
+        </dependency>
+        <dependency>
+            <artifactId>jt400</artifactId>
+            <groupId>net.sf.jt400</groupId>
         </dependency>
         <dependency>
             <groupId>org.graalvm.sdk</groupId>

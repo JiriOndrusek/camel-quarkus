@@ -21,10 +21,19 @@ import java.io.IOException;
 import com.ibm.as400.access.AS400;
 import com.ibm.as400.access.AS400SecurityException;
 import com.ibm.as400.access.PasswordDialog;
+import com.ibm.as400.access.SecureAS400;
 import com.oracle.svm.core.annotate.Substitute;
 import com.oracle.svm.core.annotate.TargetClass;
 
 final class JT400Substitutions {
+}
+
+@TargetClass(value = SecureAS400.class)
+final class SubstituteSecureAS400 {
+    @Substitute
+    public boolean isGuiAvailable() {
+        return false;
+    }
 }
 
 @TargetClass(value = AS400.class)
@@ -34,9 +43,22 @@ final class SubstituteAS400 {
         return false;
     }
 
+    //    @Substitute
+    //    private void promptSignon() throws AS400SecurityException, IOException {
+    //        //do nothing GUI is not available
+    //    }
+
+    //todo workaround for stacktrace
+    //    at java.awt.Dialog.show(Dialog.java:1047)
+    //    at com.ibm.as400.access.ChangePasswordDialog.prompt(ChangePasswordDialog.java:188)
+    //    at com.ibm.as400.access.ToolboxSignonHandler.handlePasswordChange(ToolboxSignonHandler.java:431)
+    //    at com.ibm.as400.access.ToolboxSignonHandler.passwordAboutToExpire(ToolboxSignonHandler.java:91)
+    //    at com.ibm.as400.access.AS400.promptSignon(AS400.java:3386)
+    //    at com.ibm.as400.access.AS400.signon(AS400.java:4735)
     @Substitute
-    private void promptSignon() throws AS400SecurityException, IOException {
-        //do nothing GUI is not available
+    public boolean isInPasswordExpirationWarningDays() throws AS400SecurityException, IOException {
+        //skip verification, because it cen end with GUi dialog
+        return false;
     }
 }
 
@@ -53,6 +75,22 @@ final class SubstitutePasswordDialog {
     @Substitute
     boolean prompt() {
         //behave like the dialog was cancelled
+        return false;
+    }
+}
+
+//todo workaround for
+//    at java.awt.Dialog.show(Dialog.java:1055)
+//    at com.ibm.as400.access.ChangePasswordDialog.prompt(ChangePasswordDialog.java:188)
+//    at com.ibm.as400.access.ToolboxSignonHandler.handlePasswordChange(ToolboxSignonHandler.java:431)
+//    at com.ibm.as400.access.ToolboxSignonHandler.passwordAboutToExpire(ToolboxSignonHandler.java:91)
+//    at com.ibm.as400.access.AS400.promptSignon(AS400.java:3386)
+//    at com.ibm.as400.access.AS400.signon(AS400.java:4735)
+@TargetClass(className = "com.ibm.as400.access.ChangePasswordDialog")
+final class SubstituteChangePasswordDialog {
+    @Substitute
+    boolean prompt(String systemName, String userId) {
+        //no change
         return false;
     }
 }
