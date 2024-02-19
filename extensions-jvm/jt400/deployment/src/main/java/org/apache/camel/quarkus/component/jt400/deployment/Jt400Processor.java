@@ -42,6 +42,8 @@ class Jt400Processor {
         items.add(new RuntimeInitializedClassBuildItem("com.ibm.as400.access.IdentityTokenVault"));
         items.add(new RuntimeInitializedClassBuildItem("com.ibm.as400.access.PasswordVault"));
         items.add(new RuntimeInitializedClassBuildItem("com.ibm.as400.access.ProfileTokenVault"));
+        items.add(new RuntimeInitializedClassBuildItem("com.ibm.as400.access.AS400"));
+        items.add(new RuntimeInitializedClassBuildItem("java.lang.Thread"));
         return items;
     }
 }
