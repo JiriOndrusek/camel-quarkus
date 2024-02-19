@@ -44,6 +44,16 @@ class Jt400Processor {
         items.add(new RuntimeInitializedClassBuildItem("com.ibm.as400.access.ProfileTokenVault"));
         items.add(new RuntimeInitializedClassBuildItem("com.ibm.as400.access.AS400"));
         items.add(new RuntimeInitializedClassBuildItem("java.lang.Thread"));
+        items.add(new RuntimeInitializedClassBuildItem("com.ibm.as400.access.PasswordDialog"));
+        //        items.add(new RuntimeInitializedClassBuildItem("com.ibm.as400.access.ToolboxSignonHandler"));
+        items.add(new RuntimeInitializedClassBuildItem("com.ibm.as400.access.MessageDialog"));
+        items.add(new RuntimeInitializedClassBuildItem("sun.java2d.Disposer"));
+        items.add(new RuntimeInitializedClassBuildItem("org.apache.camel.component.jt400.Jt400PgmProducer"));
+        items.add(new RuntimeInitializedClassBuildItem("com.ibm.as400.access.AS400"));
         return items;
     }
+
+    //    NativeImageSystemPropertyBuildItem nativeSystemProperty() {
+    //        return new NativeImageSystemPropertyBuildItem("com.ibm.as400.access.AS400.guiAvailable", "false");
+    //    }
 }
