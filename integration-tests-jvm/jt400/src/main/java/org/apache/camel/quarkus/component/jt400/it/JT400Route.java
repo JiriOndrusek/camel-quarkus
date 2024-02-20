@@ -24,7 +24,7 @@ public class JT400Route extends RouteBuilder {
 
     @Override
     public void configure() {
-        from("jt400://username:password@system/lib.lib/MSGOUTDQ.DTAQ?keyed=true&searchKey=MYKEY&searchType=GE")
+        from("jt400://username:password@system/lib.lib/MSGOUTDQ.DTAQ?keyed=true&searchKey=MYKEY&searchType=GE&guiAvailable=true")
                 .log("${body}");
     }
 

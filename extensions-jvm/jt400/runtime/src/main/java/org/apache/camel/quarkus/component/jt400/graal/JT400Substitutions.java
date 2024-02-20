@@ -16,6 +16,7 @@
  */
 package org.apache.camel.quarkus.component.jt400.graal;
 
+import java.awt.*;
 import java.io.IOException;
 
 import com.ibm.as400.access.AS400;
@@ -105,10 +106,33 @@ final class SubstituteChangePasswordDialog {
 //    at com.ibm.as400.access.AS400.getCcsid(AS400.java:1925)
 @TargetClass(className = "com.ibm.as400.access.MessageDialog")
 final class SubstituteMessageDialog {
+
+    @Substitute
+    SubstituteMessageDialog(Frame parent, String messageText, String titleText, boolean allowChoice) {
+        //do nothing, gui is turned off
+    }
+
     @Substitute
     boolean display() {
         //behave like 'No' was pressed
         return false;
+    }
+}
+
+@TargetClass(value = Container.class)
+final class SubstituteContainer {
+    @Substitute
+    public Component add(Component comp) {
+        //do nothing, gui is disabled
+        return comp;
+    }
+}
+
+@TargetClass(value = Window.class)
+final class SubstituteWindow {
+    @Substitute
+    private void init(GraphicsConfiguration gc) {
+        //do nothing, gui is disabled
     }
 }
 
