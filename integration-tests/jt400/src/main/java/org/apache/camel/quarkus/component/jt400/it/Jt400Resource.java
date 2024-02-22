@@ -24,6 +24,8 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.camel.CamelContext;
+import org.apache.camel.ConsumerTemplate;
+import org.apache.camel.Exchange;
 import org.jboss.logging.Logger;
 
 @Path("/jt400")
@@ -33,8 +35,12 @@ public class Jt400Resource {
     private static final Logger LOG = Logger.getLogger(Jt400Resource.class);
 
     private static final String COMPONENT_JT400 = "jt400";
+
     @Inject
     CamelContext context;
+
+    @Inject
+    ConsumerTemplate consumerTemplate;
 
     @Path("/load/component/jt400")
     @GET
@@ -46,5 +52,17 @@ public class Jt400Resource {
         }
         LOG.warnf("Could not load [%s] from the Camel context", COMPONENT_JT400);
         return Response.status(500, COMPONENT_JT400 + " could not be loaded from the Camel context").build();
+    }
+
+    @Path("/get/data/")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response getData() throws Exception {
+
+        Exchange ex = consumerTemplate.receive(
+                "jt400://username:password@system/qsys.lib/MSGOUTDQ.DTAQ?connectionPool=#mockPool&keyed=true&format=binary&searchKey=MYKEY&searchType=GE");
+
+        return Response.ok().entity(ex.getIn().getBody(String.class)).build();
+
     }
 }

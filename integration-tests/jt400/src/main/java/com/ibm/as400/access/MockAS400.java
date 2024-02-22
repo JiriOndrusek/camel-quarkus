@@ -32,5 +32,7 @@ public class MockAS400 extends AS400 {
     public void connectService(int service, int overridePort) throws AS400SecurityException, IOException {
         //do nothing
         System.out.println("connect service");
+
+        setSignonInfo(0, 0, "testUser");
     }
 }
