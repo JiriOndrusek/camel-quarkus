@@ -10,7 +10,7 @@ import java.net.SocketException;
 
 public class MockSocketContainer extends SocketContainer {
 
-    ByteArrayOutputStream bOutput = new ByteArrayOutputStream(100);
+    ByteArrayOutputStream bOutput = new ByteArrayOutputStream(50);
 
     byte[] _data = new byte[50];
 

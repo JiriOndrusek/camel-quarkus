@@ -6,19 +6,14 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.ibm.as400.access.AS400ConnectionPool;
+import com.ibm.as400.access.MockAS400;
+import com.ibm.as400.access.MockAS400ImplRemote;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Named;
-import org.apache.camel.quarkus.component.jt400.it.mock.MockAS400ConnectionPool;
 
 public class Jt400Producers {
 
-    @Produces
-    @ApplicationScoped
-    @Named("mockPool")
-    AS400ConnectionPool produceConnectionPool() {
-        return new MockAS400ConnectionPool();
-    }
 
     @Produces
     @ApplicationScoped
@@ -27,5 +22,29 @@ public class Jt400Producers {
         Map<String, List<String>> result = new HashMap<>();
         result.put("queue", new CopyOnWriteArrayList<>());
         return result;
+    }
+
+
+
+    //-------------------------- mocked backend ------------------------------------------------
+
+    @Produces
+    @ApplicationScoped
+    MockAS400ImplRemote produceMockAS400ImplRemote() {
+        return new MockAS400ImplRemote();
+    }
+
+    @Produces
+    @ApplicationScoped
+    MockAS400 produceMockAS400(MockAS400ImplRemote as400ImplRemote) {
+        return new MockAS400(as400ImplRemote);
+    }
+
+
+    @Produces
+    @ApplicationScoped
+    @Named("mockPool")
+    AS400ConnectionPool produceConnectionPool(MockAS400 mockAS400) {
+        return new MockAS400ConnectionPool(mockAS400);
     }
 }

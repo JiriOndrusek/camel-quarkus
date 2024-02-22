@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.jt400.it.mock;
+package org.apache.camel.quarkus.component.jt400.it;
 
 import java.util.Locale;
 
@@ -23,17 +23,21 @@ import com.ibm.as400.access.AS400ConnectionPool;
 import com.ibm.as400.access.ConnectionPoolException;
 import com.ibm.as400.access.MockAS400;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Named;
 
 /**
  * Mock {@code AS400ConnectionPool} implementation, useful in unit testing JT400 endpoints.
  */
-@ApplicationScoped
-
+//@ApplicationScoped
+//@Named("mockPool")
 public class MockAS400ConnectionPool extends AS400ConnectionPool {
 
     private static final long serialVersionUID = -7473444280370756827L;
 
-    public MockAS400ConnectionPool() {
+    private final MockAS400 mockAS400;
+
+    public MockAS400ConnectionPool(MockAS400 mockAS400) {
+        this.mockAS400 = mockAS400;
         setRunMaintenance(false);
         setThreadUsed(false);
     }
@@ -52,7 +56,7 @@ public class MockAS400ConnectionPool extends AS400ConnectionPool {
 
     @Override
     public AS400 getConnection(String systemName, String userID, String password) {
-        return new MockAS400();
+        return mockAS400;
     }
 
     @Override
