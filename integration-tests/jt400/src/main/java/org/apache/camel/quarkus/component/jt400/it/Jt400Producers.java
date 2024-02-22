@@ -14,7 +14,6 @@ import jakarta.inject.Named;
 
 public class Jt400Producers {
 
-
     @Produces
     @ApplicationScoped
     @Named("collected-data")
@@ -23,8 +22,6 @@ public class Jt400Producers {
         result.put("queue", new CopyOnWriteArrayList<>());
         return result;
     }
-
-
 
     //-------------------------- mocked backend ------------------------------------------------
 
@@ -39,7 +36,6 @@ public class Jt400Producers {
     MockAS400 produceMockAS400(MockAS400ImplRemote as400ImplRemote) {
         return new MockAS400(as400ImplRemote);
     }
-
 
     @Produces
     @ApplicationScoped

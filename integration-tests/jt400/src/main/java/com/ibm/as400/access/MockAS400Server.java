@@ -1,8 +1,6 @@
 package com.ibm.as400.access;
 
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 
 public class MockAS400Server extends AS400NoThreadServer {
 

@@ -22,8 +22,6 @@ import com.ibm.as400.access.AS400;
 import com.ibm.as400.access.AS400ConnectionPool;
 import com.ibm.as400.access.ConnectionPoolException;
 import com.ibm.as400.access.MockAS400;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Named;
 
 /**
  * Mock {@code AS400ConnectionPool} implementation, useful in unit testing JT400 endpoints.

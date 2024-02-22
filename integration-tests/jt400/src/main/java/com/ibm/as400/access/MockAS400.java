@@ -20,6 +20,7 @@ public class MockAS400 extends AS400 {
         //ConvTable37 depends on this value
         return 37;
     }
+
     @Override
     public void connectService(int service, int overridePort) throws AS400SecurityException, IOException {
         //connection to real i server is ignored
