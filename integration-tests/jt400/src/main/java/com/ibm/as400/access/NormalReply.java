@@ -2,7 +2,19 @@ package com.ibm.as400.access;
 
 import java.nio.charset.StandardCharsets;
 
-public class Reply3 extends DQReadNormalReplyDataStream {
+public class NormalReply extends DQReadNormalReplyDataStream {
+
+//    private final int hashCode;
+//    private final String senderInformation;
+//    private final String entry;
+//    private final String key;
+//
+//    public NormalReply(int hashCode, String senderInformation, String entry, String key) {
+//        this.hashCode = hashCode;
+//        this.senderInformation = senderInformation;
+//        this.entry = entry;
+//        this.key = key;
+//    }
 
     @Override
     public int hashCode() {

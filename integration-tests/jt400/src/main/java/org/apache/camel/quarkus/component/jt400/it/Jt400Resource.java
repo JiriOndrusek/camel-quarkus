@@ -16,10 +16,21 @@
  */
 package org.apache.camel.quarkus.component.jt400.it;
 
+import com.ibm.as400.access.DataStream;
+import com.ibm.as400.access.MockAS400ImplRemote;
+import com.ibm.as400.access.MockedResponses;
+import com.ibm.as400.access.OkReply;
+import com.ibm.as400.access.RequestReply;
+import com.ibm.as400.access.NormalReply;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -28,9 +39,13 @@ import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.Exchange;
 import org.jboss.logging.Logger;
 
+import java.nio.charset.StandardCharsets;
+
 @Path("/jt400")
 @ApplicationScoped
 public class Jt400Resource {
+
+    public enum ReplyType {normal, ok, request}
 
     private static final Logger LOG = Logger.getLogger(Jt400Resource.class);
 
@@ -41,6 +56,9 @@ public class Jt400Resource {
 
     @Inject
     ConsumerTemplate consumerTemplate;
+
+    @Inject
+    MockAS400ImplRemote as400ImplRemote;
 
     @Path("/load/component/jt400")
     @GET
@@ -54,10 +72,31 @@ public class Jt400Resource {
         return Response.status(500, COMPONENT_JT400 + " could not be loaded from the Camel context").build();
     }
 
+    @Path("/put/mockResponse")
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response putMockResponse(ReplyType replyType) throws Exception {
+        DataStream dataStream = switch (replyType) {
+            case normal -> new NormalReply();
+            case ok -> new OkReply();
+            case request -> new RequestReply();
+        };
+
+        MockedResponses.add(dataStream);
+
+        return Response.ok().build();
+    }
+
     @Path("/get/data/")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public Response getData() throws Exception {
+
+//        as400ImplRemote.addResponse(new OkReply());
+//        as400ImplRemote.addResponse(new RequestReply());
+//        as400ImplRemote.addResponse(new OkReply());
+//        as400ImplRemote.addResponse(new NormalReply());
 
         Exchange ex = consumerTemplate.receive(
                 "jt400://username:password@system/qsys.lib/MSGOUTDQ.DTAQ?connectionPool=#mockPool&keyed=true&format=binary&searchKey=MYKEY&searchType=GE");

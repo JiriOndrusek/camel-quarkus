@@ -1,6 +1,6 @@
 package com.ibm.as400.access;
 
-public class Reply1 extends DQRequestAttributesNormalReplyDataStream {
+public class OkReply extends DQRequestAttributesNormalReplyDataStream {
 
     @Override
     public int hashCode() {
