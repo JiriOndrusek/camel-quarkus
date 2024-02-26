@@ -121,6 +121,18 @@ public class Jt400Resource {
         return Response.ok().entity(ex).build();
     }
 
+    @Path("/programCall")
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response programCall() throws Exception {
+
+        Object ex = producerTemplate.requestBody(
+                "jt400://GRUPO:ATWORK@server/QSYS.LIB/assets.LIB/compute.PGM?connectionPool=#mockPool&outputFieldsIdx=1&fieldsLength=10,10,512",
+                new String[] { "par1", "par2" });
+        return Response.ok().entity(ex).build();
+    }
+
     @Path("/put/mockResponse")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
