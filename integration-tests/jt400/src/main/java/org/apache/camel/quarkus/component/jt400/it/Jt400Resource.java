@@ -18,15 +18,15 @@ package org.apache.camel.quarkus.component.jt400.it;
 
 import java.util.Map;
 
-import com.ibm.as400.access.DQCommonReply;
+import com.ibm.as400.access.ReplyDQCommon;
 import com.ibm.as400.access.DataStream;
 import com.ibm.as400.access.MockAS400ImplRemote;
 import com.ibm.as400.access.MockedResponses;
-import com.ibm.as400.access.NormalReply;
-import com.ibm.as400.access.OkReply;
-import com.ibm.as400.access.RCCallProgramReply;
-import com.ibm.as400.access.RCExchangeAttributesReply;
-import com.ibm.as400.access.RequestReply;
+import com.ibm.as400.access.ReplyDQReadNormal;
+import com.ibm.as400.access.ReplyOk;
+import com.ibm.as400.access.ReplyRCCallProgram;
+import com.ibm.as400.access.ReplyRCExchangeAttributes;
+import com.ibm.as400.access.ReplyDQRequestAttributesNormal;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -49,7 +49,7 @@ import org.jboss.logging.Logger;
 public class Jt400Resource {
 
     public enum ReplyType {
-        normal, ok, request, dqCommonReply, RCExchangeAttributesReply, RCCallProgramReply
+        DQReadNormal, ok, DQRequestAttributesNormal, DQCommonReply, RCExchangeAttributesReply, RCCallProgramReply
     }
 
     private static final Logger LOG = Logger.getLogger(Jt400Resource.class);
@@ -139,17 +139,17 @@ public class Jt400Resource {
     public Response putMockResponse(
             Map params) throws Exception {
         DataStream dataStream = switch (ReplyType.valueOf((String) params.get("replyType"))) {
-        case normal -> new NormalReply((Integer) params.get("hashCode"),
+        case DQReadNormal -> new ReplyDQReadNormal((Integer) params.get("hashCode"),
                 (String) params.get("senderInformation"),
                 (String) params.get("entry"),
                 (String) params.get("key"));
-        case ok -> new OkReply();
-        case dqCommonReply -> new DQCommonReply(
+        case ok -> new ReplyOk();
+        case DQCommonReply -> new ReplyDQCommon(
                 (Integer) params.get("hashCode"));
-        case request -> new RequestReply(
+        case DQRequestAttributesNormal -> new ReplyDQRequestAttributesNormal(
                 (Integer) params.get("keyLength"));
-        case RCExchangeAttributesReply -> new RCExchangeAttributesReply();
-        case RCCallProgramReply -> new RCCallProgramReply();
+        case RCExchangeAttributesReply -> new ReplyRCExchangeAttributes();
+        case RCCallProgramReply -> new ReplyRCCallProgram();
         };
 
         MockedResponses.add(dataStream);

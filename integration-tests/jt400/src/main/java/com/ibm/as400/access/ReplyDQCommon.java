@@ -1,10 +1,10 @@
 package com.ibm.as400.access;
 
-public class DQCommonReply extends DQCommonReplyDataStream {
+public class ReplyDQCommon extends DQCommonReplyDataStream {
 
     private final int hashCode;
 
-    public DQCommonReply(int hashCode) {
+    public ReplyDQCommon(int hashCode) {
         this.hashCode = hashCode;
     }
 

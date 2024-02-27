@@ -1,10 +1,10 @@
 package com.ibm.as400.access;
 
-public class RequestReply extends DQRequestAttributesNormalReplyDataStream {
+public class ReplyDQRequestAttributesNormal extends DQRequestAttributesNormalReplyDataStream {
 
     private final int keyLength;
 
-    public RequestReply(int keyLength) {
+    public ReplyDQRequestAttributesNormal(int keyLength) {
         this.keyLength = keyLength;
     }
 

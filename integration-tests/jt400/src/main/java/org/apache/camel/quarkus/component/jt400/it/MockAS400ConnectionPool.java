@@ -26,8 +26,6 @@ import com.ibm.as400.access.MockAS400;
 /**
  * Mock {@code AS400ConnectionPool} implementation, useful in unit testing JT400 endpoints.
  */
-//@ApplicationScoped
-//@Named("mockPool")
 public class MockAS400ConnectionPool extends AS400ConnectionPool {
 
     private static final long serialVersionUID = -7473444280370756827L;
@@ -38,12 +36,6 @@ public class MockAS400ConnectionPool extends AS400ConnectionPool {
         this.mockAS400 = mockAS400;
         setRunMaintenance(false);
         setThreadUsed(false);
-    }
-
-    @Deprecated
-    @Override
-    public AS400 getConnection(String systemName, String userID) {
-        throw new UnsupportedOperationException();
     }
 
     @Deprecated

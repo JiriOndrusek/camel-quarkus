@@ -1,6 +1,6 @@
 package com.ibm.as400.access;
 
-public class RCExchangeAttributesReply extends RCExchangeAttributesReplyDataStream {
+public class ReplyRCExchangeAttributes extends RCExchangeAttributesReplyDataStream {
 
     @Override
     int getRC() {

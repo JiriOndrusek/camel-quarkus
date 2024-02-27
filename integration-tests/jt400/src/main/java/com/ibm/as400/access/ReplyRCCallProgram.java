@@ -2,9 +2,9 @@ package com.ibm.as400.access;
 
 import java.nio.charset.StandardCharsets;
 
-public class RCCallProgramReply extends RCCallProgramReplyDataStream {
+public class ReplyRCCallProgram extends RCCallProgramReplyDataStream {
 
-    public RCCallProgramReply() {
+    public ReplyRCCallProgram() {
     }
 
     @Override

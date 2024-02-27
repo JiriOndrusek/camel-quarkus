@@ -2,14 +2,14 @@ package com.ibm.as400.access;
 
 import java.nio.charset.StandardCharsets;
 
-public class NormalReply extends DQReadNormalReplyDataStream {
+public class ReplyDQReadNormal extends DQReadNormalReplyDataStream {
 
     private final int hashCode;
     private final String senderInformation;
     private final String entry;
     private final String key;
 
-    public NormalReply(int hashCode, String senderInformation, String entry, String key) {
+    public ReplyDQReadNormal(int hashCode, String senderInformation, String entry, String key) {
         this.hashCode = hashCode;
         this.senderInformation = senderInformation;
         this.entry = entry;

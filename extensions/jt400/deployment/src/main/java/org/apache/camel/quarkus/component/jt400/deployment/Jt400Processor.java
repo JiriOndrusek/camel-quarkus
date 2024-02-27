@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.ibm.as400.access.ConvTable;
+import com.ibm.as400.access.NLSImplNative;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
@@ -47,15 +48,15 @@ class Jt400Processor {
         List<RuntimeInitializedClassBuildItem> items = new ArrayList<>();
         items.add(new RuntimeInitializedClassBuildItem("com.ibm.as400.access.CredentialVault"));
 
-        //todo is required ?
-        items.add(new RuntimeInitializedClassBuildItem("com.ibm.as400.vaccess.AS400JDBCDataSourcePaneBeanInfo"));
+        //        //todo is required ?
+        //        items.add(new RuntimeInitializedClassBuildItem("com.ibm.as400.vaccess.AS400JDBCDataSourcePaneBeanInfo"));
         return items;
     }
 
     @BuildStep
     List<ReflectiveClassBuildItem> reflectiveClasses() {
         List<ReflectiveClassBuildItem> items = new ArrayList<>();
-        items.add(ReflectiveClassBuildItem.builder("com.ibm.as400.access.NLSImplNative").build());
+        items.add(ReflectiveClassBuildItem.builder(NLSImplNative.class).build());
         return items;
     }
 
