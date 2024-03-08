@@ -1,0 +1,22 @@
+=== External IBM i
+
+To execute the tests against external IBM i server, provide the connection information by setting environment variables
+
+```
+export JT400_URL=#jdbc_url
+export JT400_USERNAME=#username
+export JT400_PASSWORD=#password
+```
+
+or for windows:
+
+```
+$Env:JT400_URL = "#jdbc_url"
+$Env:JT400_USERNAME="#username"
+$Env:JT400_PASSWORD="#password"
+```
+
+
+=== Mocked test
+
+Mock tests are part of module. Execution of mock tests
