@@ -16,8 +16,11 @@
  */
 package org.apache.camel.quarkus.component.jt400.it;
 
+import java.util.Locale;
+
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
@@ -27,56 +30,49 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 public class Jt400Test {
 
     @Test
+    public void testDataQueue() {
+        RestAssured.given()
+                .body("Leonard")
+                .post("/jt400/messageQueue/write")
+                .then()
+                .statusCode(200)
+                .body(Matchers.equalTo("Hello Leonard"));
+
+        RestAssured.get("/jt400/messageQueue/read")
+                .then()
+                .statusCode(200)
+                .body(Matchers.equalTo("Hello Leonard"));
+    }
+
+    @Test
     public void testKeyedDataQueue() {
+        String key = RandomStringUtils.randomAlphanumeric(16).toLowerCase(Locale.ROOT);
+
         RestAssured.given()
                 .body("Sheldon")
-                .post("/jt400/keyedDataQueue/write/key")
+                .post("/jt400/keyedDataQueue/write/" + key)
                 .then()
                 .statusCode(200)
-                .body(Matchers.equalTo("Sheldon"));
+                .body(Matchers.equalTo("Hello Sheldon"));
 
-        RestAssured.get("/jt400/keyedDataQueue/read/key2")
+        RestAssured.get("/jt400/keyedDataQueue/read/" + key)
                 .then()
                 .statusCode(200)
-                .body(Matchers.equalTo("Sheldon"));
-
+                .body(Matchers.equalTo("Hello Sheldon"));
 
     }
-    //
+
+
+
     //    @Test
-    //    public void testReadMessageQueue() {
-    //        prepareMockReply(Jt400MockResource.ReplyType.RCExchangeAttributesReply);
-    //        prepareMockReply(Jt400MockResource.ReplyType.RCExchangeAttributesReply);
-    //        prepareMockReply(Jt400MockResource.ReplyType.RCCallProgramReply);
-    //
-    //        RestAssured.get("/jt400/messageQueue/read")
-    //                .then()
-    //                .statusCode(200);
-    //    }
-    //
-    //    @Test
-    //    public void testWriteMessageQueue() {
-    //        prepareMockReply(Jt400MockResource.ReplyType.RCExchangeAttributesReply);
-    //        prepareMockReply(Jt400MockResource.ReplyType.RCExchangeAttributesReply);
-    //        prepareMockReply(Jt400MockResource.ReplyType.RCCallProgramReply);
-    //
-    //        RestAssured.given()
-    //                .body("Written in mocked jt400!")
-    //                .post("/jt400/messageQueue/write/testKey")
-    //                .then()
-    //                .statusCode(200)
-    //                .body(Matchers.equalTo("Written in mocked jt400!"));
-    //    }
-    //
-        @Test
-        public void testProgramCall() {
-            RestAssured.given()
-                    .body("Written in mocked jt400!")
-                    .post("/jt400/programCall")
-                    .then()
-                    .statusCode(200)
-                    .body(Matchers.both(Matchers.not(Matchers.containsString("par1"))).and(
-                            Matchers.containsString("par2")));
-        }
+    public void testProgramCall() {
+        RestAssured.given()
+                .body("test")
+                .post("/jt400/programCall")
+                .then()
+                .statusCode(200)
+                .body(Matchers.both(Matchers.not(Matchers.containsString("par1"))).and(
+                        Matchers.containsString("par2")));
+    }
 
 }

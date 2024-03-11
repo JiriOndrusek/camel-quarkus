@@ -47,6 +47,12 @@ public class Jt400Resource {
     @ConfigProperty(name = "cq.jt400.password")
     String jt400Password;
 
+    @ConfigProperty(name = "cq.jt400.keyed-queue")
+    String jt400KeyedQueue;
+
+    @ConfigProperty(name = "cq.jt400.message-queue")
+    String jt400MessageQueue;
+
     @Inject
     CamelContext context;
 
@@ -64,9 +70,7 @@ public class Jt400Resource {
     @Produces(MediaType.TEXT_PLAIN)
     public Response keyedDataQueueRead(@PathParam("key") String key) {
 
-        String url = String.format(
-                "jt400://%s:%s@%s/QSYS.LIB/QGPL.LIB/SAMPLEQ.DTAQ?keyed=true&format=binary&searchKey=%s&searchType=GE", jt400USername,
-                jt400Password, jt400Url, key);
+        String url = getUrl(jt400KeyedQueue + String.format("?keyed=true&format=text&searchKey=%s&searchType=GE", key));
 
         Exchange ex = consumerTemplate.receive(url);
 
@@ -78,55 +82,55 @@ public class Jt400Resource {
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
     public Response keyedDataQueueWrite(@PathParam("key") String key, String data) throws Exception {
-        String url = getBaseUrl() + "/QSYS.LIB/QGPL.LIB/SAMPLEQ.DTAQ?keyed=true";
+        String url = getUrl(jt400KeyedQueue + "?keyed=true");
 
         Object ex = producerTemplate.requestBodyAndHeader(
                 url,
-                data,
+                "Hello " + data,
                 Jt400Endpoint.KEY,
                 key);
         return Response.ok().entity(ex).build();
     }
-    //
-    //    @Path("/messageQueue/read")
-    //    @GET
-    //    @Produces(MediaType.TEXT_PLAIN)
-    //    public Response messageQueueRead() throws InterruptedException {
-    //        Exchange ex = consumerTemplate.receive(
-    //                "jt400://username:password@system/qsys.lib/MSGOUTQ.MSGQ?connectionPool=#mockPool&readTimeout=100");
-    //        if (ex.getIn().getBody() != null) {
-    //            //reurn ok,because something is returned (the message contains 1 char, which is not correctly converted)
-    //            return Response.ok().build();
-    //        }
-    //
-    //        return Response.serverError().build();
-    //    }
-    //
-    //    @Path("/messageQueue/write/{key}")
-    //    @POST
-    //    @Consumes(MediaType.TEXT_PLAIN)
-    //    @Produces(MediaType.TEXT_PLAIN)
-    //    public Response messageQueueWrite(@PathParam("key") String key, String data) throws Exception {
-    //
-    //        Object ex = producerTemplate.requestBodyAndHeader(
-    //                "jt400://username:password@system/qsys.lib/MSGINQ.MSGQ?connectionPool=#mockPool",
-    //                data,
-    //                Jt400Endpoint.KEY,
-    //                key);
-    //        return Response.ok().entity(ex).build();
-    //    }
-    //
-        @Path("/programCall")
-        @POST
-        @Consumes(MediaType.TEXT_PLAIN)
-        @Produces(MediaType.APPLICATION_JSON)
-        public Response programCall() throws Exception {
-            String url = getBaseUrl() + "/QSYS.LIB/assets.LIB/compute.PGM?connectionPool=#mockPool&outputFieldsIdx=1&fieldsLength=10,10,512";
-            Object ex = producerTemplate.requestBody(
-                    url,
-                    new String[] { "par1", "par2" });
-            return Response.ok().entity(ex).build();
-        }
+
+    @Path("/messageQueue/read")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response messageQueueRead() throws InterruptedException {
+        String url = getUrl(jt400MessageQueue + "?readTimeout=100");
+
+        Exchange ex = consumerTemplate.receive(url);
+
+        return Response.ok().entity(ex.getIn().getBody(String.class)).build();
+    }
+
+    @Path("/messageQueue/write/")
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response messageQueueWrite(String data) throws Exception {
+
+        String url = getUrl(jt400MessageQueue);
+
+        Object ex = producerTemplate.requestBody(
+                url,
+                "Hello " + data);
+
+        return Response.ok().entity(ex).build();
+    }
+
+    @Path("/programCall")
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response programCall() throws Exception {
+        //        String url = getUrl(jt400KeyedQueue + "?connectionPool=#mockPool&outputFieldsIdx=1&fieldsLength=10,10,512");
+        //        Object ex = producerTemplate.requestBody(
+        //                url,
+        //                new String[] { "par1", "par2" });
+        Object response = producerTemplate.requestBody("direct:executeProgram", "test");
+
+        return Response.ok().entity(response).build();
+    }
     //
     //    @Path("/put/mockResponse")
     //    @POST
@@ -152,8 +156,7 @@ public class Jt400Resource {
     //        return Response.ok().build();
     //    }
 
-
-    private String getBaseUrl() {
-        return String.format("jt400://%s:%s@%s", jt400USername, jt400Password, jt400Url);
+    private String getUrl(String suffix) {
+        return String.format("jt400://%s:%s@%s%s", jt400USername, jt400Password, jt400Url, suffix);
     }
 }
