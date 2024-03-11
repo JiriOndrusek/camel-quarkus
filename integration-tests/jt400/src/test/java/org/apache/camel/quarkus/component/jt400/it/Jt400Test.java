@@ -16,12 +16,17 @@
  */
 package org.apache.camel.quarkus.component.jt400.it;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
@@ -33,15 +38,32 @@ public class Jt400Test {
     public void testDataQueue() {
         RestAssured.given()
                 .body("Leonard")
-                .post("/jt400/messageQueue/write")
+                .post("/jt400/dataQueue/write")
                 .then()
                 .statusCode(200)
                 .body(Matchers.equalTo("Hello Leonard"));
 
-        RestAssured.get("/jt400/messageQueue/read")
+        RestAssured.post("/jt400/dataQueue/read")
                 .then()
                 .statusCode(200)
                 .body(Matchers.equalTo("Hello Leonard"));
+    }
+
+    @Test
+    public void testDataQueueBinary() {
+        RestAssured.given()
+                .body("Fred")
+                .post("/jt400/dataQueue/write")
+                .then()
+                .statusCode(200)
+                .body(Matchers.equalTo("Hello Fred"));
+
+        RestAssured.given()
+                .queryParam("format", "binary")
+                .post("/jt400/dataQueue/read")
+                .then()
+                .statusCode(200)
+                .body(Matchers.equalTo("Hello Fred"));
     }
 
     @Test
@@ -50,18 +72,34 @@ public class Jt400Test {
 
         RestAssured.given()
                 .body("Sheldon")
-                .post("/jt400/keyedDataQueue/write/" + key)
+                .queryParam("key", key)
+                .post("/jt400/dataQueue/write/" )
                 .then()
                 .statusCode(200)
                 .body(Matchers.equalTo("Hello Sheldon"));
 
-        RestAssured.get("/jt400/keyedDataQueue/read/" + key)
+        RestAssured.given()
+                .body(key)
+                .post("/jt400/dataQueue/read/")
                 .then()
                 .statusCode(200)
                 .body(Matchers.equalTo("Hello Sheldon"));
-
     }
 
+    @Test
+    public void testMessageQueue() {
+        RestAssured.given()
+                .body("Irma")
+                .post("/jt400/messageQueue/write")
+                .then()
+                .statusCode(200)
+                .body(Matchers.equalTo("Hello Irma"));
+
+        RestAssured.post("/jt400/messageQueue/read")
+                .then()
+                .statusCode(200)
+                .body(Matchers.equalTo("Hello Irma"));
+    }
 
 
     //    @Test

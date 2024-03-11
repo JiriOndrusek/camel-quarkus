@@ -21,10 +21,12 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.camel.CamelContext;
@@ -33,6 +35,13 @@ import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.jt400.Jt400Endpoint;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Path("/jt400")
 @ApplicationScoped
@@ -50,11 +59,11 @@ public class Jt400Resource {
     @ConfigProperty(name = "cq.jt400.keyed-queue")
     String jt400KeyedQueue;
 
+    @ConfigProperty(name = "cq.jt400.data-queue")
+    String jt400DataQueue;
+
     @ConfigProperty(name = "cq.jt400.message-queue")
     String jt400MessageQueue;
-
-    @Inject
-    CamelContext context;
 
     @Inject
     ProducerTemplate producerTemplate;
@@ -62,99 +71,85 @@ public class Jt400Resource {
     @Inject
     ConsumerTemplate consumerTemplate;
 
-    @Inject
-    MockAS400ImplRemote as400ImplRemote;
+    @Path("/dataQueue/read/")
+    @POST
+    public Response keyedDataQueueRead(String key, @QueryParam("format") String format) {
 
-    @Path("/keyedDataQueue/read/{key}")
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response keyedDataQueueRead(@PathParam("key") String key) {
+        boolean keyed = key != null && !key.isEmpty();
+        String _format = Optional.ofNullable(format).orElse("text");
+        StringBuilder suffix = new StringBuilder();
 
-        String url = getUrl(jt400KeyedQueue + String.format("?keyed=true&format=text&searchKey=%s&searchType=GE", key));
+        if(keyed) {
+            suffix.append(jt400KeyedQueue).append(String.format("?keyed=true&format=%s&searchKey=%s&searchType=GE", _format, key));
+        } else {
+            suffix.append(jt400DataQueue).append(String.format("?readTimeout=100&format=%s", _format));
+        }
 
-        Exchange ex = consumerTemplate.receive(url);
+        Exchange ex = consumerTemplate.receive(getUrl(suffix.toString()));
 
+        if("binary".equals(format)) {
+            return Response.ok().entity(
+                    new String(ex.getIn().getBody(byte[].class), Charset.forName("Cp037"))
+            ).build();
+        }
         return Response.ok().entity(ex.getIn().getBody(String.class)).build();
+
     }
 
-    @Path("/keyedDataQueue/write/{key}")
+    @Path("/dataQueue/write/")
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response keyedDataQueueWrite(@PathParam("key") String key, String data) throws Exception {
-        String url = getUrl(jt400KeyedQueue + "?keyed=true");
+    public Response keyedDataQueueWrite(@QueryParam("key") String key,
+                                        @QueryParam("searchType") String searchType,
+                                        String data) {
+        boolean keyed = key != null;
+        StringBuilder suffix = new StringBuilder();
+        Map<String,Object> headers = new HashMap<>();
 
-        Object ex = producerTemplate.requestBodyAndHeader(
-                url,
+        if(keyed) {
+            suffix.append(jt400KeyedQueue).append("?keyed=true");
+            headers.put(Jt400Endpoint.KEY, key);
+        } else {
+            suffix.append(jt400DataQueue);
+        }
+
+        Object ex = producerTemplate.requestBodyAndHeaders(
+                getUrl(suffix.toString()),
                 "Hello " + data,
-                Jt400Endpoint.KEY,
-                key);
+                headers);
         return Response.ok().entity(ex).build();
-    }
-
-    @Path("/messageQueue/read")
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response messageQueueRead() throws InterruptedException {
-        String url = getUrl(jt400MessageQueue + "?readTimeout=100");
-
-        Exchange ex = consumerTemplate.receive(url);
-
-        return Response.ok().entity(ex.getIn().getBody(String.class)).build();
     }
 
     @Path("/messageQueue/write/")
     @POST
-    @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response messageQueueWrite(String data) throws Exception {
-
-        String url = getUrl(jt400MessageQueue);
-
-        Object ex = producerTemplate.requestBody(
-                url,
-                "Hello " + data);
+    public Response messageQueueWrite(String data) {
+        Object ex = producerTemplate.requestBody(getUrl(jt400MessageQueue), "Hello " + data);
 
         return Response.ok().entity(ex).build();
     }
+
+    @Path("/messageQueue/read/")
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response messageQueueRead() {
+        Exchange ex = consumerTemplate.receive(getUrl(jt400MessageQueue));
+
+        return Response.ok().entity(ex.getIn().getBody(String.class)).build();
+    }
+
+
 
     @Path("/programCall")
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.APPLICATION_JSON)
     public Response programCall() throws Exception {
-        //        String url = getUrl(jt400KeyedQueue + "?connectionPool=#mockPool&outputFieldsIdx=1&fieldsLength=10,10,512");
-        //        Object ex = producerTemplate.requestBody(
-        //                url,
-        //                new String[] { "par1", "par2" });
         Object response = producerTemplate.requestBody("direct:executeProgram", "test");
 
         return Response.ok().entity(response).build();
     }
-    //
-    //    @Path("/put/mockResponse")
-    //    @POST
-    //    @Consumes(MediaType.APPLICATION_JSON)
-    //    public Response putMockResponse(
-    //            Map params) throws Exception {
-    //        DataStream dataStream = switch (ReplyType.valueOf((String) params.get("replyType"))) {
-    //        case DQReadNormal -> new ReplyDQReadNormal((Integer) params.get("hashCode"),
-    //                (String) params.get("senderInformation"),
-    //                (String) params.get("entry"),
-    //                (String) params.get("key"));
-    //        case ok -> new ReplyOk();
-    //        case DQCommonReply -> new ReplyDQCommon(
-    //                (Integer) params.get("hashCode"));
-    //        case DQRequestAttributesNormal -> new ReplyDQRequestAttributesNormal(
-    //                (Integer) params.get("keyLength"));
-    //        case RCExchangeAttributesReply -> new ReplyRCExchangeAttributes();
-    //        case RCCallProgramReply -> new ReplyRCCallProgram();
-    //        };
-    //
-    //        MockedResponses.add(dataStream);
-    //
-    //        return Response.ok().build();
-    //    }
 
     private String getUrl(String suffix) {
         return String.format("jt400://%s:%s@%s%s", jt400USername, jt400Password, jt400Url, suffix);
