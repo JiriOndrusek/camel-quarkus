@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.component.jt400.it;
 
 import com.ibm.as400.access.MockAS400ImplRemote;
+import com.ibm.as400.access.QueuedMessage;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -73,6 +74,7 @@ public class Jt400Resource {
 
     @Path("/dataQueue/read/")
     @POST
+    @Produces(MediaType.APPLICATION_JSON)
     public Response keyedDataQueueRead(String key, @QueryParam("format") String format) {
 
         boolean keyed = key != null && !key.isEmpty();
@@ -88,11 +90,9 @@ public class Jt400Resource {
         Exchange ex = consumerTemplate.receive(getUrl(suffix.toString()));
 
         if("binary".equals(format)) {
-            return Response.ok().entity(
-                    new String(ex.getIn().getBody(byte[].class), Charset.forName("Cp037"))
-            ).build();
+            return generateResponse(new String(ex.getIn().getBody(byte[].class), Charset.forName("Cp037")), ex);
         }
-        return Response.ok().entity(ex.getIn().getBody(String.class)).build();
+        return generateResponse(ex.getIn().getBody(String.class), ex);
 
     }
 
@@ -132,11 +132,11 @@ public class Jt400Resource {
 
     @Path("/messageQueue/read/")
     @POST
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response messageQueueRead() {
         Exchange ex = consumerTemplate.receive(getUrl(jt400MessageQueue));
 
-        return Response.ok().entity(ex.getIn().getBody(String.class)).build();
+        return generateResponse(ex.getIn().getBody(String.class), ex);
     }
 
 
@@ -153,5 +153,21 @@ public class Jt400Resource {
 
     private String getUrl(String suffix) {
         return String.format("jt400://%s:%s@%s%s", jt400USername, jt400Password, jt400Url, suffix);
+    }
+
+    Response generateResponse(String result, Exchange ex) {
+        Map<String, Object> retVal = new HashMap<>();
+
+        retVal.put("result", result);
+        ex.getIn().getHeaders().entrySet().stream().forEach(e -> {
+            if(e.getValue() instanceof QueuedMessage) {
+                retVal.put(e.getKey(), "QueuedMessage: " + ((QueuedMessage)e.getValue()).getText());
+            } else {
+                retVal.put(e.getKey(), e.getValue());
+            }
+        });
+
+        return Response.ok().entity(retVal).build();
+
     }
 }

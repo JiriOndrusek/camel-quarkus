@@ -24,6 +24,7 @@ import java.util.stream.IntStream;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
+import org.apache.camel.component.jt400.Jt400Constants;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
@@ -63,7 +64,7 @@ public class Jt400Test {
                 .post("/jt400/dataQueue/read")
                 .then()
                 .statusCode(200)
-                .body(Matchers.equalTo("Hello Fred"));
+                .body("result", Matchers.equalTo("Hello Fred"));
     }
 
     @Test
@@ -83,7 +84,8 @@ public class Jt400Test {
                 .post("/jt400/dataQueue/read/")
                 .then()
                 .statusCode(200)
-                .body(Matchers.equalTo("Hello Sheldon"));
+                .body("result", Matchers.equalTo("Hello Sheldon"))
+                .body(Jt400Constants.KEY, Matchers.equalTo(key));
     }
 
     @Test
@@ -98,7 +100,16 @@ public class Jt400Test {
         RestAssured.post("/jt400/messageQueue/read")
                 .then()
                 .statusCode(200)
-                .body(Matchers.equalTo("Hello Irma"));
+                .body("result", Matchers.is("Hello Irma"))
+                //check of headers
+                .body(Jt400Constants.SENDER_INFORMATION, Matchers.not(Matchers.empty()))
+                .body(Jt400Constants.MESSAGE_FILE, Matchers.is(""))
+                .body(Jt400Constants.MESSAGE_SEVERITY, Matchers.is(0))
+                .body(Jt400Constants.MESSAGE_ID, Matchers.is(""))
+                .body(Jt400Constants.MESSAGE_TYPE, Matchers.is(4))
+                .body(Jt400Constants.MESSAGE, Matchers.is("QueuedMessage: Hello Irma"));
+                //Jt400Constants.MESSAGE_DFT_RPY && Jt400Constants.MESSAGE_REPLYTO_KEY are used only for a special configuration of
+                //jt400 message queue
     }
 
 
