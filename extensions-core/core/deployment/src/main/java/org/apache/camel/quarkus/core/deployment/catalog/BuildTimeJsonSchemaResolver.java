@@ -74,6 +74,11 @@ public class BuildTimeJsonSchemaResolver implements JSonSchemaResolver {
         throw new UnsupportedOperationException("Main JSON schema resolution is not supported");
     }
 
+    @Override
+    public String getPojoBeanJSonSchema(String name) {
+        throw new UnsupportedOperationException("Pojo bean JSON schema resolution is not supported");
+    }
+
     public Set<SchemaResource> getSchemaResources() {
         return schemaResources;
     }

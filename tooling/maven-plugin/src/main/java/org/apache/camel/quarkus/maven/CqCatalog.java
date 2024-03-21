@@ -224,7 +224,7 @@ public class CqCatalog {
 
     public static Stream<Kind> kinds() {
         return Stream.of(Kind.values())
-                .filter(kind -> (kind != Kind.eip && kind != Kind.model));
+                .filter(kind -> (kind != Kind.eip && kind != Kind.model && kind != Kind.bean));
     }
 
     public static boolean isFirstScheme(ArtifactModel<?> model) {
@@ -334,6 +334,7 @@ public class CqCatalog {
         private static final String LANGUAGE_DIR = CQ_CATALOG_DIR + "/languages";
         private static final String TRANSFORMER_DIR = CQ_CATALOG_DIR + "/transformers";
         private static final String OTHER_DIR = CQ_CATALOG_DIR + "/others";
+        private static final String BEANS_DIR = CQ_CATALOG_DIR + "/beans";
         private static final String COMPONENTS_CATALOG = CQ_CATALOG_DIR + "/components.properties";
         private static final String DATA_FORMATS_CATALOG = CQ_CATALOG_DIR + "/dataformats.properties";
         private static final String DEV_CONSOLE_CATALOG = CQ_CATALOG_DIR + "/consoles.properties";
@@ -401,6 +402,11 @@ public class CqCatalog {
         @Override
         public String getOtherJSonSchemaDirectory() {
             return OTHER_DIR;
+        }
+
+        @Override
+        public String getPojoBeanJSonSchemaDirectory() {
+            return BEANS_DIR;
         }
 
         protected String getComponentsCatalog() {
@@ -505,6 +511,20 @@ public class CqCatalog {
         public List<String> findOtherNames() {
             List<String> names = new ArrayList<>();
             InputStream is = getCamelCatalog().getVersionManager().getResourceAsStream(getOtherCatalog());
+            if (is != null) {
+                try {
+                    CatalogHelper.loadLines(is, names);
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+            return names;
+        }
+
+        @Override
+        public List<String> findBeansNames() {
+            List<String> names = new ArrayList<>();
+            InputStream is = getCamelCatalog().getVersionManager().getResourceAsStream(getPojoBeanJSonSchemaDirectory());
             if (is != null) {
                 try {
                     CatalogHelper.loadLines(is, names);

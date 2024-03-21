@@ -41,6 +41,7 @@ public class QuarkusRuntimeProvider implements RuntimeProvider {
     private static final String LANGUAGE_DIR = "org/apache/camel/catalog/quarkus/languages";
     private static final String TRANSFORMER_DIR = "org/apache/camel/catalog/quarkus/transformers";
     private static final String OTHER_DIR = "org/apache/camel/catalog/quarkus/others";
+    private static final String BEANS_DIR = "org/apache/camel/catalog/beans";
     private static final String CAPABILITIES_CATALOG = "org/apache/camel/catalog/quarkus/capabilities.properties";
     private static final String COMPONENTS_CATALOG = "org/apache/camel/catalog/quarkus/components.properties";
     private static final String DEV_CONSOLE_CATALOG = "org/apache/camel/catalog/quarkus/consoles.properties";
@@ -48,6 +49,7 @@ public class QuarkusRuntimeProvider implements RuntimeProvider {
     private static final String LANGUAGE_CATALOG = "org/apache/camel/catalog/quarkus/languages.properties";
     private static final String TRANSFORMER_CATALOG = "org/apache/camel/catalog/quarkus/transformers.properties";
     private static final String OTHER_CATALOG = "org/apache/camel/catalog/quarkus/others.properties";
+    private static final String BEANS_CATALOG = "org/apache/camel/catalog/quarkus/beans.properties";
 
     private CamelCatalog camelCatalog;
 
@@ -104,6 +106,11 @@ public class QuarkusRuntimeProvider implements RuntimeProvider {
     @Override
     public String getOtherJSonSchemaDirectory() {
         return OTHER_DIR;
+    }
+
+    @Override
+    public String getPojoBeanJSonSchemaDirectory() {
+        return BEANS_DIR;
     }
 
     @Override
@@ -180,6 +187,20 @@ public class QuarkusRuntimeProvider implements RuntimeProvider {
     public List<String> findOtherNames() {
         List<String> names = new ArrayList<>();
         InputStream is = camelCatalog.getVersionManager().getResourceAsStream(OTHER_CATALOG);
+        if (is != null) {
+            try {
+                CatalogHelper.loadLines(is, names);
+            } catch (IOException e) {
+                // ignore
+            }
+        }
+        return names;
+    }
+
+    @Override
+    public List<String> findBeansNames() {
+        List<String> names = new ArrayList<>();
+        InputStream is = camelCatalog.getVersionManager().getResourceAsStream(BEANS_CATALOG);
         if (is != null) {
             try {
                 CatalogHelper.loadLines(is, names);
