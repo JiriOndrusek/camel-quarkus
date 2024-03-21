@@ -103,7 +103,6 @@
     </build>
 
     <profiles>
-        <!-- //https://github.com/apache/camel-quarkus/issues/5895
         <profile>
             <id>native</id>
             <activation>
@@ -131,7 +130,6 @@
                 </plugins>
             </build>
         </profile>
-        -->
         <profile>
             <id>virtualDependencies</id>
             <activation>
