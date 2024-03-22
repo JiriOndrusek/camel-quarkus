@@ -73,7 +73,7 @@ public class QuarkusRuntimeProviderTest {
     public void extensionsPresent() throws Exception {
 
         final Set<String> artifactIdsPresentInCatalog = Stream.of(Kind.values())
-                .filter(kind -> kind != Kind.eip)
+                .filter(kind -> (kind != Kind.eip && kind != Kind.model && kind != Kind.bean))
                 .flatMap(kind -> catalog.findNames(kind).stream()
                         .map(name -> catalog.model(kind, name)))
                 .filter(model -> model instanceof ArtifactModel)
