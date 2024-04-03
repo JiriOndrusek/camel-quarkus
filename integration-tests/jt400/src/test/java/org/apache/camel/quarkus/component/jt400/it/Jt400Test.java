@@ -17,18 +17,49 @@
 package org.apache.camel.quarkus.component.jt400.it;
 
 import com.ibm.as400.access.AS400;
+import com.ibm.as400.access.AS400SecurityException;
+import com.ibm.as400.access.ErrorCompletingRequestException;
 import com.ibm.as400.access.MessageQueue;
+import com.ibm.as400.access.ObjectDoesNotExistException;
+import com.ibm.as400.access.QueuedMessage;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
+import jakarta.ws.rs.core.Response;
 import org.apache.camel.component.jt400.Jt400Constants;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+
+import java.io.IOException;
+import java.util.Locale;
 
 @QuarkusTest
 @EnabledIfEnvironmentVariable(named = "JT400_URL", matches = ".+")
 public class Jt400Test {
+
+    @BeforeEach
+    public void before() throws Exception {
+        //clear message queue
+
+        //read all messages from the queues to be sure that they are empty
+        Object msg = getMessageQueue("cq.jt400.message-replyto-queue").receive(null);;
+        while(msg != null) {
+
+            msg = getMessageQueue("cq.jt400.message-replyto-queue").receive(null);
+            System.out.println("1111111111111111" + msg);
+        }
+
+        msg = getMessageQueue("cq.jt400.message-queue").receive(null);
+        while(msg != null) {
+
+            msg = getMessageQueue("cq.jt400.message-queue").receive(null);
+            System.out.println("2222222222222" + msg);
+        }
+    }
 
     //    @Test
     public void testDataQueue() {
@@ -126,7 +157,11 @@ public class Jt400Test {
     }
 
     @Test
-    public void testInquiryMessageQueue() {
+    public void testInquiryMessageQueue() throws AS400SecurityException, ObjectDoesNotExistException, IOException, InterruptedException, ErrorCompletingRequestException {
+
+
+
+
         //
         //        create message (asking)
         //
@@ -147,14 +182,47 @@ public class Jt400Test {
         String MESSAGE_REPLYTO_KEY = "CamelJt400MessageReplyToKey";
          */
 
-//        getMessageQueue();
+//        MessageQueue queue = getMessageQueue();
+        //send inquiry message
+//        queue.sendInquiry("question #1", queue.getPath());
+
+        String msg = RandomStringUtils.randomAlphanumeric(10).toLowerCase(Locale.ROOT);
 
         RestAssured.given()
-                .body("Irma")
-                .post("/jt400/messageQueueInquiry/write")
+                .body(msg)
+                .post("/jt400/inquiryMessageViaClient")
                 .then()
-                .statusCode(200)
-                .body(Matchers.equalTo("reply to: Irma"));
+                .statusCode(200);
+
+//        Thread.sleep(5000);
+//        RestAssured.post("/jt400/messageQueue/read")
+//                .then()
+//                .statusCode(200)
+//                .body("result", Matchers.is("Hello Irma"))
+//                //check of headers
+//                .body(Jt400Constants.SENDER_INFORMATION, Matchers.not(Matchers.empty()))
+//                .body(Jt400Constants.MESSAGE_FILE, Matchers.is(""))
+//                .body(Jt400Constants.MESSAGE_SEVERITY, Matchers.is(0))
+//                .body(Jt400Constants.MESSAGE_ID, Matchers.is(""))
+//                .body(Jt400Constants.MESSAGE_TYPE, Matchers.is(4))
+//                .body(Jt400Constants.MESSAGE, Matchers.is("QueuedMessage: Hello Irma"));
+
+        RestAssured.given()
+                .post("/jt400/stopInquiry")
+                .then()
+                .statusCode(200);
+
+        QueuedMessage dqe = getMessageQueue("cq.jt400.message-replyto-queue").receive(null);
+        System.out.println("---------------------" + dqe.getText());
+//
+//        System.out.println("********************************");
+//        System.out.println("******* " + dqe.getText());
+//        RestAssured.given()
+//                .body("Irma")
+//                .post("/jt400/messageQueueInquiry/write")
+//                .then()
+//                .statusCode(200)
+//                .body(Matchers.equalTo("reply to: Irma"));
 
 //        RestAssured.post("/jt400/messageQueue/read")
 //                .then()
@@ -181,17 +249,19 @@ public class Jt400Test {
                 .body(Matchers.containsString("hello camel"));
     }
 
-    private MessageQueue getMessageQueue() {
+    private MessageQueue getMessageQueue(String queue) {
         String jt400Url = ConfigProvider.getConfig().getValue("cq.jt400.url", String.class);
         String jt400Username = ConfigProvider.getConfig().getValue("cq.jt400.username", String.class);
         String jt400Password = ConfigProvider.getConfig().getValue("cq.jt400.password", String.class);
+        String jt400Library = ConfigProvider.getConfig().getValue("cq.jt400.library", String.class);
+        String jt400MessageQueue = ConfigProvider.getConfig().getValue(queue, String.class);
 
+        String objectPath = String.format("/QSYS.LIB/%s.LIB/%s", jt400Library, jt400MessageQueue);
 
         AS400 as400 = new AS400(jt400Url, jt400Username, jt400Password);
-//        MessageQueue queue = new MessageQueue(as400, jt400Endpoint.getConfiguration().getObjectPath());
+        MessageQueue result = new MessageQueue(as400, objectPath);
 
-        return null;
-
+        return result;
     }
 
 }

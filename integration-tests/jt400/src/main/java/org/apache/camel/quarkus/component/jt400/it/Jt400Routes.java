@@ -30,16 +30,17 @@ public class Jt400Routes extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        from(getUrlForLibrary(jt400MessageQueue + "?sendingReply=true"))
+        from(getUrlForLibrary(jt400MessageReplyToQueue + "?sendingReply=true"))
                 .id("inquiryRoute")
                 .autoStartup(false)
                 .choice()
                 .when(header(Jt400Constants.MESSAGE_TYPE).isEqualTo(AS400Message.INQUIRY))
                 .process((exchange) -> {
                     String reply = "reply to: " + exchange.getIn().getBody(String.class);
+                    System.out.println(">>>>>>>>>>>>>>>>. " + reply);
                     exchange.getIn().setBody(reply);
                 })
-                .to(getUrlForLibrary(jt400MessageQueue));
+                .to(getUrlForLibrary(jt400MessageReplyToQueue));
     }
 
     private String getUrlForLibrary(String suffix) {

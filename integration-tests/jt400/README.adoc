@@ -69,6 +69,7 @@ Message queue can be created by following the command
 CRTMSGQ LIBRARY/TESTMSGQ
 ```
 
+
 Seconf queue is required for testing of inquiry messages:
 
 ```

@@ -143,6 +143,29 @@ public class Jt400Resource {
         return Response.ok().entity(ex).build();
     }
 
+    @Path("/inquiryMessageViaClient/")
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response inquiryMessageViaClient(String data) throws Exception {
+        context.getRouteController().startRoute("inquiryRoute");
+        Thread.sleep(2000);
+        Jt400Endpoint jt400Endpoint = context.getEndpoint(getUrlForLibrary(jt400MessageReplyToQueue), Jt400Endpoint.class);
+        AS400 as400 = jt400Endpoint.getConfiguration().getConnection();
+        MessageQueue queue = new MessageQueue(as400, jt400Endpoint.getConfiguration().getObjectPath());
+        try {
+            queue.sendInquiry(data, "/QSYS.LIB/" + jt400Library + ".LIB/" + jt400MessageReplyToQueue);
+        } catch (Exception e) {
+            return Response.status(500).entity(e.getMessage()).build();
+        }
+
+//        Thread.sleep(2000);
+//        stopInquiry();
+//        Thread.sleep(2000);
+//        String msg = queue.receive(null).getText();
+
+        return Response.ok().build();
+    }
+
     @Path("/messageQueueInquiry/write/")
     @POST
     @Produces(MediaType.TEXT_PLAIN)
@@ -177,6 +200,23 @@ public class Jt400Resource {
 
     }
 
+    @Path("/stopInquiry/")
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response stopInquiry() throws Exception {
+
+            Jt400Endpoint jt400Endpoint = context.getEndpoint(getUrlForLibrary(jt400MessageQueue), Jt400Endpoint.class);
+            AS400 as400 = jt400Endpoint.getConfiguration().getConnection();
+
+        context.getRouteController().stopRoute("inquiryRoute");
+        Jt400Component jt400 = context.getComponent("jt400", Jt400Component.class);
+        jt400.stop();
+
+        Thread.sleep(2000);
+            return Response.ok().build();
+
+    }
+
     @Path("/messageQueue/write/")
     @POST
     @Produces(MediaType.TEXT_PLAIN)
@@ -187,13 +227,8 @@ public class Jt400Resource {
     @Path("/messageQueue/read/")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response messageQueueRead() {
-        Exchange ex = consumerTemplate.receive(getUrlForLibrary(jt400MessageQueue + "?sendingReply=true"));
-
-        if(AS400Message.INQUIRY == ex.getIn().getHeader(Jt400Constants.MESSAGE_TYPE, Integer.class)) {
-            ex.getIn().setBody("reply");
-        }
-
+    public Response messageQueueRead(@QueryParam("queue") String queue) {
+        Exchange ex = consumerTemplate.receive(getUrlForLibrary(queue == null ? jt400MessageQueue : queue + "?sendingReply=true"));
 
 
         return generateResponse(ex.getIn().getBody(String.class), ex);
