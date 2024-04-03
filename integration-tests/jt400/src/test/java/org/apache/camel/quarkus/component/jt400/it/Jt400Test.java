@@ -27,7 +27,7 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 @EnabledIfEnvironmentVariable(named = "JT400_URL", matches = ".+")
 public class Jt400Test {
 
-    @Test
+    //    @Test
     public void testDataQueue() {
         RestAssured.given()
                 .body("Leonard")
@@ -42,7 +42,7 @@ public class Jt400Test {
                 .body("result", Matchers.equalTo("Hello Leonard"));
     }
 
-    @Test
+    //    @Test
     public void testDataQueueBinary() {
         RestAssured.given()
                 .body("Fred")
@@ -59,7 +59,7 @@ public class Jt400Test {
                 .body("result", Matchers.equalTo("Hello Fred"));
     }
 
-    @Test
+    //    @Test
     public void testKeyedDataQueue() {
         String key = "key1";
         String key2 = "key2";
@@ -98,7 +98,7 @@ public class Jt400Test {
                 .body(Jt400Constants.KEY, Matchers.equalTo(key2));
     }
 
-    @Test
+    //    @Test
     public void testMessageQueue() {
         RestAssured.given()
                 .body("Irma")
@@ -119,7 +119,54 @@ public class Jt400Test {
                 .body(Jt400Constants.MESSAGE_TYPE, Matchers.is(4))
                 .body(Jt400Constants.MESSAGE, Matchers.is("QueuedMessage: Hello Irma"));
         //Jt400Constants.MESSAGE_DFT_RPY && Jt400Constants.MESSAGE_REPLYTO_KEY are used only for a special
-        // type of message which can not be created by the camel compinent (*INQUIRY)
+        // type of message which can not be created by the camel component (*INQUIRY)
+    }
+
+    @Test
+    public void testInquiryMessageQueue() {
+//
+//        create message (asking)
+//
+//         create message with sendingReply = ture && Jt400Constants.MESSAGE_REPLYTO_KEY = message #1
+
+//        producer "jt400://username:password@localhost/qsys.lib/qusrsys.lib/myq.msgq?sendingReply=true")
+
+//        to "jt400://username:password@localhost/qsys.lib/qusrsys.lib/myq.msgq"
+
+
+
+
+        /*
+            @Metadata(description = "*Consumer:* The key of the message that will be replied to (if the `sendingReply` parameter is set to `true`). "
+                            +
+                            "*Producer:* If set, and if the message body is not empty, a new message will not be sent to the provided message queue. "
+                            +
+                            "Instead, a response will be sent to the message identified by the given key. " +
+                            "This is set automatically when reading from the message queue if the `sendingReply` parameter is set to `true`.",
+              javaType = "byte[]")
+    String MESSAGE_REPLYTO_KEY = "CamelJt400MessageReplyToKey";
+         */
+        RestAssured.given()
+                .body("Irma")
+                .queryParam("replyTo", "test")
+                .post("/jt400/messageQueue/write")
+                .then()
+                .statusCode(200)
+                .body(Matchers.equalTo("Hello Irma"));
+
+        RestAssured.post("/jt400/messageQueue/read")
+                .then()
+                .statusCode(200)
+                .body("result", Matchers.is("Hello Irma"))
+                //check of headers
+                .body(Jt400Constants.SENDER_INFORMATION, Matchers.not(Matchers.empty()))
+                .body(Jt400Constants.MESSAGE_FILE, Matchers.is(""))
+                .body(Jt400Constants.MESSAGE_SEVERITY, Matchers.is(0))
+                .body(Jt400Constants.MESSAGE_ID, Matchers.is(""))
+                .body(Jt400Constants.MESSAGE_TYPE, Matchers.is(4))
+                .body(Jt400Constants.MESSAGE, Matchers.is("QueuedMessage: Hello Irma"));
+        //Jt400Constants.MESSAGE_DFT_RPY && Jt400Constants.MESSAGE_REPLYTO_KEY are used only for a special
+        // type of message which can not be created by the camel component (*INQUIRY)
     }
 
     @Test

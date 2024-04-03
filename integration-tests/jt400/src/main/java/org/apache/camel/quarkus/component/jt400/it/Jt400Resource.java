@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.component.jt400.it;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -34,6 +35,7 @@ import jakarta.ws.rs.core.Response;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.component.jt400.Jt400Constants;
 import org.apache.camel.component.jt400.Jt400Endpoint;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -126,8 +128,16 @@ public class Jt400Resource {
     @Path("/messageQueue/write/")
     @POST
     @Produces(MediaType.TEXT_PLAIN)
-    public Response messageQueueWrite(String data) {
-        Object ex = producerTemplate.requestBody(getUrlForLibrary(jt400MessageQueue), "Hello " + data);
+    public Response messageQueueWrite(String data,
+            @QueryParam("replyTo") String replyTo) {
+        Object ex;
+        if (replyTo != null && !"".equals(replyTo)) {
+            ex = producerTemplate.requestBodyAndHeader(getUrlForLibrary(jt400MessageQueue), "Hello " + data,
+                    Jt400Constants.MESSAGE_REPLYTO_KEY,
+                    "test".getBytes(StandardCharsets.UTF_8));
+        } else {
+            ex = producerTemplate.requestBody(getUrlForLibrary(jt400MessageQueue), "Hello " + data);
+        }
 
         return Response.ok().entity(ex).build();
     }
