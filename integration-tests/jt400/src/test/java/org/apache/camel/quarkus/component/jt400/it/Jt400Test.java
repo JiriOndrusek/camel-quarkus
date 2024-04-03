@@ -29,6 +29,7 @@ import org.apache.camel.component.jt400.Jt400Constants;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,8 +42,8 @@ import java.util.Locale;
 @EnabledIfEnvironmentVariable(named = "JT400_URL", matches = ".+")
 public class Jt400Test {
 
-    @BeforeEach
-    public void before() throws Exception {
+    @BeforeAll
+    public static void beforeAll() throws Exception {
         //clear message queue
 
         //read all messages from the queues to be sure that they are empty
@@ -61,7 +62,7 @@ public class Jt400Test {
         }
     }
 
-    //    @Test
+        @Test
     public void testDataQueue() {
         RestAssured.given()
                 .body("Leonard")
@@ -76,7 +77,7 @@ public class Jt400Test {
                 .body("result", Matchers.equalTo("Hello Leonard"));
     }
 
-    //    @Test
+        @Test
     public void testDataQueueBinary() {
         RestAssured.given()
                 .body("Fred")
@@ -93,7 +94,7 @@ public class Jt400Test {
                 .body("result", Matchers.equalTo("Hello Fred"));
     }
 
-    //    @Test
+        @Test
     public void testKeyedDataQueue() {
         String key = "key1";
         String key2 = "key2";
@@ -158,85 +159,27 @@ public class Jt400Test {
 
     @Test
     public void testInquiryMessageQueue() throws AS400SecurityException, ObjectDoesNotExistException, IOException, InterruptedException, ErrorCompletingRequestException {
-
-
-
-
-        //
-        //        create message (asking)
-        //
-        //         create message with sendingReply = ture && Jt400Constants.MESSAGE_REPLYTO_KEY = message #1
-
-        //        producer "jt400://username:password@localhost/qsys.lib/qusrsys.lib/myq.msgq?sendingReply=true")
-
-        //        to "jt400://username:password@localhost/qsys.lib/qusrsys.lib/myq.msgq"
-
-        /*
-            @Metadata(description = "*Consumer:* The key of the message that will be replied to (if the `sendingReply` parameter is set to `true`). "
-                            +
-                            "*Producer:* If set, and if the message body is not empty, a new message will not be sent to the provided message queue. "
-                            +
-                            "Instead, a response will be sent to the message identified by the given key. " +
-                            "This is set automatically when reading from the message queue if the `sendingReply` parameter is set to `true`.",
-              javaType = "byte[]")
-        String MESSAGE_REPLYTO_KEY = "CamelJt400MessageReplyToKey";
-         */
-
-//        MessageQueue queue = getMessageQueue();
-        //send inquiry message
-//        queue.sendInquiry("question #1", queue.getPath());
-
         String msg = RandomStringUtils.randomAlphanumeric(10).toLowerCase(Locale.ROOT);
 
+        //todo start route and wait for the result using awaitility
+
+        //sending a message using the same client as component
         RestAssured.given()
                 .body(msg)
                 .post("/jt400/inquiryMessageViaClient")
                 .then()
                 .statusCode(200);
 
-//        Thread.sleep(5000);
-//        RestAssured.post("/jt400/messageQueue/read")
-//                .then()
-//                .statusCode(200)
-//                .body("result", Matchers.is("Hello Irma"))
-//                //check of headers
-//                .body(Jt400Constants.SENDER_INFORMATION, Matchers.not(Matchers.empty()))
-//                .body(Jt400Constants.MESSAGE_FILE, Matchers.is(""))
-//                .body(Jt400Constants.MESSAGE_SEVERITY, Matchers.is(0))
-//                .body(Jt400Constants.MESSAGE_ID, Matchers.is(""))
-//                .body(Jt400Constants.MESSAGE_TYPE, Matchers.is(4))
-//                .body(Jt400Constants.MESSAGE, Matchers.is("QueuedMessage: Hello Irma"));
-
+        //todo stop the route and wait for the status using awaitlity
         RestAssured.given()
                 .post("/jt400/stopInquiry")
                 .then()
                 .statusCode(200);
 
+//        Thread.sleep(5000);
+        //try to use awaitility to be sure
         QueuedMessage dqe = getMessageQueue("cq.jt400.message-replyto-queue").receive(null);
-        System.out.println("---------------------" + dqe.getText());
-//
-//        System.out.println("********************************");
-//        System.out.println("******* " + dqe.getText());
-//        RestAssured.given()
-//                .body("Irma")
-//                .post("/jt400/messageQueueInquiry/write")
-//                .then()
-//                .statusCode(200)
-//                .body(Matchers.equalTo("reply to: Irma"));
-
-//        RestAssured.post("/jt400/messageQueue/read")
-//                .then()
-//                .statusCode(200)
-//                .body("result", Matchers.is("Hello Irma"))
-//                //check of headers
-//                .body(Jt400Constants.SENDER_INFORMATION, Matchers.not(Matchers.empty()))
-//                .body(Jt400Constants.MESSAGE_FILE, Matchers.is(""))
-//                .body(Jt400Constants.MESSAGE_SEVERITY, Matchers.is(0))
-//                .body(Jt400Constants.MESSAGE_ID, Matchers.is(""))
-//                .body(Jt400Constants.MESSAGE_TYPE, Matchers.is(4))
-//                .body(Jt400Constants.MESSAGE, Matchers.is("QueuedMessage: Hello Irma"));
-//        //Jt400Constants.MESSAGE_DFT_RPY && Jt400Constants.MESSAGE_REPLYTO_KEY are used only for a special
-//        // type of message which can not be created by the camel component (*INQUIRY)
+        Assertions.assertEquals("reply to: " + msg, dqe.getText());
     }
 
     @Test
@@ -249,7 +192,7 @@ public class Jt400Test {
                 .body(Matchers.containsString("hello camel"));
     }
 
-    private MessageQueue getMessageQueue(String queue) {
+    private static MessageQueue getMessageQueue(String queue) {
         String jt400Url = ConfigProvider.getConfig().getValue("cq.jt400.url", String.class);
         String jt400Username = ConfigProvider.getConfig().getValue("cq.jt400.username", String.class);
         String jt400Password = ConfigProvider.getConfig().getValue("cq.jt400.password", String.class);

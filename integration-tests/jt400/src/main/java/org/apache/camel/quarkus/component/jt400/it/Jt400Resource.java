@@ -46,6 +46,8 @@ import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.Service;
+import org.apache.camel.ServiceStatus;
 import org.apache.camel.component.jt400.Jt400Component;
 import org.apache.camel.component.jt400.Jt400Constants;
 import org.apache.camel.component.jt400.Jt400Endpoint;
@@ -147,60 +149,33 @@ public class Jt400Resource {
     @POST
     @Produces(MediaType.TEXT_PLAIN)
     public Response inquiryMessageViaClient(String data) throws Exception {
+        //route has to be started with delay, to avoid `CPF2451 Message queue TESTMSGQ is allocated to another job`
         context.getRouteController().startRoute("inquiryRoute");
-        Thread.sleep(2000);
+        //wait for the route to be started
+//        for(int i = 0; i < 20; i++) {
+//            if(ServiceStatus.Started == context.getRouteController().getRouteStatus("inquiryRoute")) {
+//                break;
+//            }
+//            Thread.sleep(100);
+//        }
+        Thread.sleep(5000);
         Jt400Endpoint jt400Endpoint = context.getEndpoint(getUrlForLibrary(jt400MessageReplyToQueue), Jt400Endpoint.class);
         AS400 as400 = jt400Endpoint.getConfiguration().getConnection();
+        //send inquiry message (with the same client as is used in the component, to avoid `CPF2451 Message queue TESTMSGQ is allocated to another job`.
         MessageQueue queue = new MessageQueue(as400, jt400Endpoint.getConfiguration().getObjectPath());
         try {
             queue.sendInquiry(data, "/QSYS.LIB/" + jt400Library + ".LIB/" + jt400MessageReplyToQueue);
         } catch (Exception e) {
             return Response.status(500).entity(e.getMessage()).build();
         }
-
 //        Thread.sleep(2000);
-//        stopInquiry();
-//        Thread.sleep(2000);
-//        String msg = queue.receive(null).getText();
+        //stop route afterwards
+//        context.getRouteController().stopRoute("inquiryRoute");
 
         return Response.ok().build();
     }
 
-    @Path("/messageQueueInquiry/write/")
-    @POST
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response messageQueueInquiryWrite(String data) throws Exception {
-        context.getRouteController().startRoute("inquiryRoute");
-
-        Thread.sleep(2000);
-
-
-
-            Jt400Endpoint jt400Endpoint = context.getEndpoint(getUrlForLibrary(jt400MessageQueue), Jt400Endpoint.class);
-            AS400 as400 = jt400Endpoint.getConfiguration().getConnection();
-            MessageQueue queue = new MessageQueue(as400, jt400Endpoint.getConfiguration().getObjectPath());
-            try {
-                queue.sendInquiry(data, "/QSYS.LIB/" + jt400Library + ".LIB/" + jt400MessageQueue);
-            } catch (Exception e) {
-                return Response.status(500).entity(e.getMessage()).build();
-            }
-
-
-            //wait for read
-        Thread.sleep(2000);
-        context.getRouteController().stopRoute("inquiryRoute");
-        Thread.sleep(5000);
-
-        //read
-        queue = new MessageQueue(as400, jt400Endpoint.getConfiguration().getObjectPath());
-        QueuedMessage dqe = queue.receive(null);
-
-
-            return Response.ok().entity(dqe.getText()).build();
-
-    }
-
-    @Path("/stopInquiry/")
+        @Path("/stopInquiry/")
     @POST
     @Produces(MediaType.TEXT_PLAIN)
     public Response stopInquiry() throws Exception {
