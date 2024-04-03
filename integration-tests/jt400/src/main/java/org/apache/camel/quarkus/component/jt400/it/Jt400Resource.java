@@ -16,12 +16,21 @@
  */
 package org.apache.camel.quarkus.component.jt400.it;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import com.ibm.as400.access.AS400;
+import com.ibm.as400.access.AS400Message;
+import com.ibm.as400.access.AS400SecurityException;
+import com.ibm.as400.access.DataQueue;
+import com.ibm.as400.access.DataQueueEntry;
+import com.ibm.as400.access.ErrorCompletingRequestException;
+import com.ibm.as400.access.MessageQueue;
+import com.ibm.as400.access.ObjectDoesNotExistException;
 import com.ibm.as400.access.QueuedMessage;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -32,9 +41,12 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
+import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.component.jt400.Jt400Component;
 import org.apache.camel.component.jt400.Jt400Constants;
 import org.apache.camel.component.jt400.Jt400Endpoint;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -47,7 +59,7 @@ public class Jt400Resource {
     String jt400Url;
 
     @ConfigProperty(name = "cq.jt400.username")
-    String jt400USername;
+    String jt400Username;
 
     @ConfigProperty(name = "cq.jt400.password")
     String jt400Password;
@@ -64,6 +76,9 @@ public class Jt400Resource {
     @ConfigProperty(name = "cq.jt400.message-queue")
     String jt400MessageQueue;
 
+    @ConfigProperty(name = "cq.jt400.message-replyto-queue")
+    String jt400MessageReplyToQueue;
+
     @ConfigProperty(name = "cq.jt400.user-space")
     String jt400UserSpace;
 
@@ -72,6 +87,9 @@ public class Jt400Resource {
 
     @Inject
     ConsumerTemplate consumerTemplate;
+
+    @Inject
+    CamelContext context;
 
     @Path("/dataQueue/read/")
     @POST
@@ -125,28 +143,58 @@ public class Jt400Resource {
         return Response.ok().entity(ex).build();
     }
 
+    @Path("/messageQueueInquiry/write/")
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response messageQueueInquiryWrite(String data) throws Exception {
+        context.getRouteController().startRoute("inquiryRoute");
+
+        Thread.sleep(2000);
+
+
+
+            Jt400Endpoint jt400Endpoint = context.getEndpoint(getUrlForLibrary(jt400MessageQueue), Jt400Endpoint.class);
+            AS400 as400 = jt400Endpoint.getConfiguration().getConnection();
+            MessageQueue queue = new MessageQueue(as400, jt400Endpoint.getConfiguration().getObjectPath());
+            try {
+                queue.sendInquiry(data, "/QSYS.LIB/" + jt400Library + ".LIB/" + jt400MessageQueue);
+            } catch (Exception e) {
+                return Response.status(500).entity(e.getMessage()).build();
+            }
+
+
+            //wait for read
+        Thread.sleep(2000);
+        context.getRouteController().stopRoute("inquiryRoute");
+        Thread.sleep(5000);
+
+        //read
+        queue = new MessageQueue(as400, jt400Endpoint.getConfiguration().getObjectPath());
+        QueuedMessage dqe = queue.receive(null);
+
+
+            return Response.ok().entity(dqe.getText()).build();
+
+    }
+
     @Path("/messageQueue/write/")
     @POST
     @Produces(MediaType.TEXT_PLAIN)
-    public Response messageQueueWrite(String data,
-            @QueryParam("replyTo") String replyTo) {
-        Object ex;
-        if (replyTo != null && !"".equals(replyTo)) {
-            ex = producerTemplate.requestBodyAndHeader(getUrlForLibrary(jt400MessageQueue), "Hello " + data,
-                    Jt400Constants.MESSAGE_REPLYTO_KEY,
-                    "test".getBytes(StandardCharsets.UTF_8));
-        } else {
-            ex = producerTemplate.requestBody(getUrlForLibrary(jt400MessageQueue), "Hello " + data);
-        }
-
-        return Response.ok().entity(ex).build();
+    public Response messageQueueWrite(String data) {
+        return Response.ok().entity(producerTemplate.requestBody(getUrlForLibrary(jt400MessageQueue), "Hello " + data)).build();
     }
 
     @Path("/messageQueue/read/")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response messageQueueRead() {
-        Exchange ex = consumerTemplate.receive(getUrlForLibrary(jt400MessageQueue));
+        Exchange ex = consumerTemplate.receive(getUrlForLibrary(jt400MessageQueue + "?sendingReply=true"));
+
+        if(AS400Message.INQUIRY == ex.getIn().getHeader(Jt400Constants.MESSAGE_TYPE, Integer.class)) {
+            ex.getIn().setBody("reply");
+        }
+
+
 
         return generateResponse(ex.getIn().getBody(String.class), ex);
     }
@@ -174,12 +222,12 @@ public class Jt400Resource {
     }
 
     private String getUrlForLibrary(String suffix) {
-        return String.format("jt400://%s:%s@%s%s", jt400USername, jt400Password, jt400Url,
+        return String.format("jt400://%s:%s@%s%s", jt400Username, jt400Password, jt400Url,
                 "/QSYS.LIB/" + jt400Library + ".LIB/" + suffix);
     }
 
     private String getUrl(String suffix) {
-        return String.format("jt400://%s:%s@%s%s", jt400USername, jt400Password, jt400Url, suffix);
+        return String.format("jt400://%s:%s@%s%s", jt400Username, jt400Password, jt400Url, suffix);
     }
 
     Response generateResponse(String result, Exchange ex) {

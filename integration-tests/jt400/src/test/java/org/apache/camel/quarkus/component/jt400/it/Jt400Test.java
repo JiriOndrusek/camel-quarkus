@@ -16,9 +16,12 @@
  */
 package org.apache.camel.quarkus.component.jt400.it;
 
+import com.ibm.as400.access.AS400;
+import com.ibm.as400.access.MessageQueue;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import org.apache.camel.component.jt400.Jt400Constants;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
@@ -98,7 +101,7 @@ public class Jt400Test {
                 .body(Jt400Constants.KEY, Matchers.equalTo(key2));
     }
 
-    //    @Test
+        @Test
     public void testMessageQueue() {
         RestAssured.given()
                 .body("Irma")
@@ -124,17 +127,14 @@ public class Jt400Test {
 
     @Test
     public void testInquiryMessageQueue() {
-//
-//        create message (asking)
-//
-//         create message with sendingReply = ture && Jt400Constants.MESSAGE_REPLYTO_KEY = message #1
+        //
+        //        create message (asking)
+        //
+        //         create message with sendingReply = ture && Jt400Constants.MESSAGE_REPLYTO_KEY = message #1
 
-//        producer "jt400://username:password@localhost/qsys.lib/qusrsys.lib/myq.msgq?sendingReply=true")
+        //        producer "jt400://username:password@localhost/qsys.lib/qusrsys.lib/myq.msgq?sendingReply=true")
 
-//        to "jt400://username:password@localhost/qsys.lib/qusrsys.lib/myq.msgq"
-
-
-
+        //        to "jt400://username:password@localhost/qsys.lib/qusrsys.lib/myq.msgq"
 
         /*
             @Metadata(description = "*Consumer:* The key of the message that will be replied to (if the `sendingReply` parameter is set to `true`). "
@@ -144,29 +144,31 @@ public class Jt400Test {
                             "Instead, a response will be sent to the message identified by the given key. " +
                             "This is set automatically when reading from the message queue if the `sendingReply` parameter is set to `true`.",
               javaType = "byte[]")
-    String MESSAGE_REPLYTO_KEY = "CamelJt400MessageReplyToKey";
+        String MESSAGE_REPLYTO_KEY = "CamelJt400MessageReplyToKey";
          */
+
+//        getMessageQueue();
+
         RestAssured.given()
                 .body("Irma")
-                .queryParam("replyTo", "test")
-                .post("/jt400/messageQueue/write")
+                .post("/jt400/messageQueueInquiry/write")
                 .then()
                 .statusCode(200)
-                .body(Matchers.equalTo("Hello Irma"));
+                .body(Matchers.equalTo("reply to: Irma"));
 
-        RestAssured.post("/jt400/messageQueue/read")
-                .then()
-                .statusCode(200)
-                .body("result", Matchers.is("Hello Irma"))
-                //check of headers
-                .body(Jt400Constants.SENDER_INFORMATION, Matchers.not(Matchers.empty()))
-                .body(Jt400Constants.MESSAGE_FILE, Matchers.is(""))
-                .body(Jt400Constants.MESSAGE_SEVERITY, Matchers.is(0))
-                .body(Jt400Constants.MESSAGE_ID, Matchers.is(""))
-                .body(Jt400Constants.MESSAGE_TYPE, Matchers.is(4))
-                .body(Jt400Constants.MESSAGE, Matchers.is("QueuedMessage: Hello Irma"));
-        //Jt400Constants.MESSAGE_DFT_RPY && Jt400Constants.MESSAGE_REPLYTO_KEY are used only for a special
-        // type of message which can not be created by the camel component (*INQUIRY)
+//        RestAssured.post("/jt400/messageQueue/read")
+//                .then()
+//                .statusCode(200)
+//                .body("result", Matchers.is("Hello Irma"))
+//                //check of headers
+//                .body(Jt400Constants.SENDER_INFORMATION, Matchers.not(Matchers.empty()))
+//                .body(Jt400Constants.MESSAGE_FILE, Matchers.is(""))
+//                .body(Jt400Constants.MESSAGE_SEVERITY, Matchers.is(0))
+//                .body(Jt400Constants.MESSAGE_ID, Matchers.is(""))
+//                .body(Jt400Constants.MESSAGE_TYPE, Matchers.is(4))
+//                .body(Jt400Constants.MESSAGE, Matchers.is("QueuedMessage: Hello Irma"));
+//        //Jt400Constants.MESSAGE_DFT_RPY && Jt400Constants.MESSAGE_REPLYTO_KEY are used only for a special
+//        // type of message which can not be created by the camel component (*INQUIRY)
     }
 
     @Test
@@ -177,6 +179,19 @@ public class Jt400Test {
                 .then()
                 .statusCode(200)
                 .body(Matchers.containsString("hello camel"));
+    }
+
+    private MessageQueue getMessageQueue() {
+        String jt400Url = ConfigProvider.getConfig().getValue("cq.jt400.url", String.class);
+        String jt400Username = ConfigProvider.getConfig().getValue("cq.jt400.username", String.class);
+        String jt400Password = ConfigProvider.getConfig().getValue("cq.jt400.password", String.class);
+
+
+        AS400 as400 = new AS400(jt400Url, jt400Username, jt400Password);
+//        MessageQueue queue = new MessageQueue(as400, jt400Endpoint.getConfiguration().getObjectPath());
+
+        return null;
+
     }
 
 }
