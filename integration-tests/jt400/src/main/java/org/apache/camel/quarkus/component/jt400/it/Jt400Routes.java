@@ -24,15 +24,12 @@ public class Jt400Routes extends RouteBuilder {
     @ConfigProperty(name = "cq.jt400.message-queue")
     String jt400MessageQueue;
 
-
     @ConfigProperty(name = "cq.jt400.message-replyto-queue")
     String jt400MessageReplyToQueue;
 
     @Override
     public void configure() throws Exception {
         from(getUrlForLibrary(jt400MessageReplyToQueue + "?sendingReply=true"))
-                .id("inquiryRoute")
-                .autoStartup(false)
                 .choice()
                 .when(header(Jt400Constants.MESSAGE_TYPE).isEqualTo(AS400Message.INQUIRY))
                 .process((exchange) -> {

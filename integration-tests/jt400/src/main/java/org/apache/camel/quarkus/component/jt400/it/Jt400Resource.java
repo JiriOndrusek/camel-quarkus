@@ -16,21 +16,13 @@
  */
 package org.apache.camel.quarkus.component.jt400.it;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 import com.ibm.as400.access.AS400;
-import com.ibm.as400.access.AS400Message;
-import com.ibm.as400.access.AS400SecurityException;
-import com.ibm.as400.access.DataQueue;
-import com.ibm.as400.access.DataQueueEntry;
-import com.ibm.as400.access.ErrorCompletingRequestException;
 import com.ibm.as400.access.MessageQueue;
-import com.ibm.as400.access.ObjectDoesNotExistException;
 import com.ibm.as400.access.QueuedMessage;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -43,13 +35,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
-import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.Service;
-import org.apache.camel.ServiceStatus;
-import org.apache.camel.component.jt400.Jt400Component;
-import org.apache.camel.component.jt400.Jt400Constants;
 import org.apache.camel.component.jt400.Jt400Endpoint;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -145,20 +132,10 @@ public class Jt400Resource {
         return Response.ok().entity(ex).build();
     }
 
-    @Path("/inquiryMessageViaClient/")
+    @Path("/client/inquiryMessage/write/")
     @POST
     @Produces(MediaType.TEXT_PLAIN)
-    public Response inquiryMessageViaClient(String data) throws Exception {
-        //route has to be started with delay, to avoid `CPF2451 Message queue TESTMSGQ is allocated to another job`
-        context.getRouteController().startRoute("inquiryRoute");
-        //wait for the route to be started
-//        for(int i = 0; i < 20; i++) {
-//            if(ServiceStatus.Started == context.getRouteController().getRouteStatus("inquiryRoute")) {
-//                break;
-//            }
-//            Thread.sleep(100);
-//        }
-        Thread.sleep(5000);
+    public Response clientInquiryMessageWrite(String data) throws Exception {
         Jt400Endpoint jt400Endpoint = context.getEndpoint(getUrlForLibrary(jt400MessageReplyToQueue), Jt400Endpoint.class);
         AS400 as400 = jt400Endpoint.getConfiguration().getConnection();
         //send inquiry message (with the same client as is used in the component, to avoid `CPF2451 Message queue TESTMSGQ is allocated to another job`.
@@ -168,28 +145,21 @@ public class Jt400Resource {
         } catch (Exception e) {
             return Response.status(500).entity(e.getMessage()).build();
         }
-//        Thread.sleep(2000);
-        //stop route afterwards
-//        context.getRouteController().stopRoute("inquiryRoute");
-
         return Response.ok().build();
     }
 
-        @Path("/stopInquiry/")
+    @Path("/client/queuedMessage/read")
     @POST
     @Produces(MediaType.TEXT_PLAIN)
-    public Response stopInquiry() throws Exception {
+    public Response clientQueuedMessageRead(String queueName) throws Exception {
 
-            Jt400Endpoint jt400Endpoint = context.getEndpoint(getUrlForLibrary(jt400MessageQueue), Jt400Endpoint.class);
-            AS400 as400 = jt400Endpoint.getConfiguration().getConnection();
+        Jt400Endpoint jt400Endpoint = context.getEndpoint(getUrlForLibrary(queueName), Jt400Endpoint.class);
+        AS400 as400 = jt400Endpoint.getConfiguration().getConnection();
+        //send inquiry message (with the same client as is used in the component, to avoid `CPF2451 Message queue TESTMSGQ is allocated to another job`.
+        MessageQueue queue = new MessageQueue(as400, jt400Endpoint.getConfiguration().getObjectPath());
+        QueuedMessage message = queue.receive(null);
 
-        context.getRouteController().stopRoute("inquiryRoute");
-        Jt400Component jt400 = context.getComponent("jt400", Jt400Component.class);
-        jt400.stop();
-
-        Thread.sleep(2000);
-            return Response.ok().build();
-
+        return Response.ok().entity(message != null ? message.getText() : "").build();
     }
 
     @Path("/messageQueue/write/")
@@ -203,8 +173,8 @@ public class Jt400Resource {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response messageQueueRead(@QueryParam("queue") String queue) {
-        Exchange ex = consumerTemplate.receive(getUrlForLibrary(queue == null ? jt400MessageQueue : queue + "?sendingReply=true"));
-
+        Exchange ex = consumerTemplate
+                .receive(getUrlForLibrary(queue == null ? jt400MessageQueue : queue + "?sendingReply=true"));
 
         return generateResponse(ex.getIn().getBody(String.class), ex);
     }
