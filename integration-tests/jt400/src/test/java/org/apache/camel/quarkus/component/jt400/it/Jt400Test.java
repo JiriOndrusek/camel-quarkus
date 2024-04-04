@@ -42,46 +42,47 @@ public class Jt400Test {
 
     @BeforeAll
     public static void beforeAll() throws Exception {
-        System.out.println("**************************************************");
-        System.out.println("************** before all***********");
-        System.out.println("**************************************************");
-        //clear message queue
-
-        Object msg;
-        int maxCount = 10;
-        int i = 0;
         //read all messages from the queues to be sure that they are empty
 
         //clear reply-to message queue
-        do {
-            msg = getQueue("cq.jt400.message-replyto-queue",
-                    (as400, path) -> new MessageQueue(as400, path))
-                    .receive(null);
-        } while (i++ < maxCount && msg != null);
+        clearQueue("cq.jt400.message-replyto-queue",
+                (as400, path) -> {
+                    try {
+                        return new MessageQueue(as400, path).receive(null);
+                    } catch (Exception e) {
+                        return null;
+                    }
+                });
 
-        //clear message queue
-        i = 0;
-        do {
-            msg = getQueue("cq.jt400.message-queue",
-                    (as400, path) -> new MessageQueue(as400, path))
-                    .receive(null);
-        } while (i++ < maxCount && msg != null);
+        //clear  message queue
+        clearQueue("cq.jt400.message-queue",
+                (as400, path) -> {
+                    try {
+                        return new MessageQueue(as400, path).receive(null);
+                    } catch (Exception e) {
+                        return null;
+                    }
+                });
 
-        //clear keyed data queue
-        i = 0;
-        do {
-            msg = getQueue("cq.jt400.keyed-queue",
-                    (as400, path) -> new KeyedDataQueue(as400, path))
-                    .read("key1");
-        } while (i++ < maxCount && msg != null);
+        //clear  keyed queue for key1
+        clearQueue("cq.jt400.message-queue",
+                (as400, path) -> {
+                    try {
+                        return new KeyedDataQueue(as400, path).read("key1");
+                    } catch (Exception e) {
+                        return null;
+                    }
+                });
 
-        i = 0;
-        do {
-            msg = getQueue("cq.jt400.keyed-queue",
-                    (as400, path) -> new KeyedDataQueue(as400, path))
-                    .read("key2");
-        } while (i++ < maxCount && msg != null);
-
+        //clear  keyed queue for key2
+        clearQueue("cq.jt400.message-queue",
+                (as400, path) -> {
+                    try {
+                        return new KeyedDataQueue(as400, path).read("key1");
+                    } catch (Exception e) {
+                        return null;
+                    }
+                });
     }
 
     @Test
@@ -206,17 +207,6 @@ public class Jt400Test {
                 .then()
                 .statusCode(200)
                 .body(Matchers.equalTo("reply to: " + msg));
-
-        /*Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(10, TimeUnit.SECONDS).until(
-                () -> {return         RestAssured.given()
-                        .body(ConfigProvider.getConfig().getValue("cq.jt400.message-replyto-queue", String.class))
-                        .post("/jt400/client/queuedMessage/read")
-                        .then()
-                        .statusCode(200)
-                        .extract().asString();
-                },
-                Matchers.is("reply to: " + msg));
-        */
     }
 
     @Test
@@ -227,35 +217,6 @@ public class Jt400Test {
                 .then()
                 .statusCode(200)
                 .body(Matchers.containsString("hello camel"));
-    }
-    //
-    //    private static MessageQueue getMessageQueue(String queue) {
-    //        String jt400Url = ConfigProvider.getConfig().getValue("cq.jt400.url", String.class);
-    //        String jt400Username = ConfigProvider.getConfig().getValue("cq.jt400.username", String.class);
-    //        String jt400Password = ConfigProvider.getConfig().getValue("cq.jt400.password", String.class);
-    //        String jt400Library = ConfigProvider.getConfig().getValue("cq.jt400.library", String.class);
-    //        String jt400MessageQueue = ConfigProvider.getConfig().getValue(queue, String.class);
-    //
-    //        String objectPath = String.format("/QSYS.LIB/%s.LIB/%s", jt400Library, jt400MessageQueue);
-    //
-    //        AS400 as400 = new AS400(jt400Url, jt400Username, jt400Password);
-    //        MessageQueue result = new MessageQueue(as400, objectPath);
-    //
-    //        return result;
-    //    }
-
-    private static <T> T getQueue(String queue, BiFunction<AS400, String, T> createQueueu) {
-        String jt400Url = ConfigProvider.getConfig().getValue("cq.jt400.url", String.class);
-        String jt400Username = ConfigProvider.getConfig().getValue("cq.jt400.username", String.class);
-        String jt400Password = ConfigProvider.getConfig().getValue("cq.jt400.password", String.class);
-        String jt400Library = ConfigProvider.getConfig().getValue("cq.jt400.library", String.class);
-        String jt400MessageQueue = ConfigProvider.getConfig().getValue(queue, String.class);
-
-        String objectPath = String.format("/QSYS.LIB/%s.LIB/%s", jt400Library, jt400MessageQueue);
-
-        AS400 as400 = new AS400(jt400Url, jt400Username, jt400Password);
-
-        return createQueueu.apply(as400, objectPath);
     }
 
     private static void clearQueue(String queue, BiFunction<AS400, String, Object> readFromQueue) {
@@ -275,6 +236,10 @@ public class Jt400Test {
         do {
             msg = readFromQueue.apply(as400, objectPath);
         } while (i++ < 10 && msg != null);
+
+        if (i == 10 && msg != null) {
+            throw new IllegalStateException("There is a message present in queue!");
+        }
     }
 
 }

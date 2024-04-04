@@ -21,9 +21,6 @@ public class Jt400Routes extends RouteBuilder {
     @ConfigProperty(name = "cq.jt400.password")
     String jt400Password;
 
-    @ConfigProperty(name = "cq.jt400.message-queue")
-    String jt400MessageQueue;
-
     @ConfigProperty(name = "cq.jt400.message-replyto-queue")
     String jt400MessageReplyToQueue;
 
@@ -34,7 +31,6 @@ public class Jt400Routes extends RouteBuilder {
                 .when(header(Jt400Constants.MESSAGE_TYPE).isEqualTo(AS400Message.INQUIRY))
                 .process((exchange) -> {
                     String reply = "reply to: " + exchange.getIn().getBody(String.class);
-                    System.out.println(">>>>>>>>>>>>>>>>. " + reply);
                     exchange.getIn().setBody(reply);
                 })
                 .to(getUrlForLibrary(jt400MessageReplyToQueue));
