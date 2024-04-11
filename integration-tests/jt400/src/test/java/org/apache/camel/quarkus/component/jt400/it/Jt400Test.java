@@ -16,17 +16,11 @@
  */
 package org.apache.camel.quarkus.component.jt400.it;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import com.ibm.as400.access.AS400;
-import com.ibm.as400.access.AS400SecurityException;
-import com.ibm.as400.access.ErrorCompletingRequestException;
-import com.ibm.as400.access.MessageQueue;
-import com.ibm.as400.access.ObjectDoesNotExistException;
 import com.ibm.as400.access.QueuedMessage;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -36,7 +30,6 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.awaitility.Awaitility;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -47,33 +40,7 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 @QuarkusTestResource(Jt400TestResource.class)
 public class Jt400Test {
 
-    private static String key1 = null, key2 = null;
-    private static Set<byte[]> messageQueueKeys = new HashSet<>();
-
     Jt400ClientHelper clientHelper;
-/*
-    @AfterAll
-    public static void afterAll() throws Exception {
-        //read all messages from the queues to be sure that they are empty
-
-//        //lifo queue
-//        clearQueue("cq.jt400.lifo-queue", (as400, path) -> new DataQueue(as400, path).read(1));
-//        //todo lock
-//        //keyed for key1 queue
-//        if(key1 != null) {
-//            clearQueue("cq.jt400.keyed-queue", (as400, path) -> new KeyedDataQueue(as400, path).read(key1));
-//        }
-//        //keyed for key2 queue
-//        if(key2 != null) {
-//            clearQueue("cq.jt400.keyed-queue", (as400, path) -> new KeyedDataQueue(as400, path).read("key2"));
-//        }
-        //message queue
-//        clearQueue("cq.jt400.message-queue", (as400, path) -> new MessageQueue(as400, path).receive(null));
-//        //replyTo queue
-//        clearQueue("cq.jt400.message-replyto-queue", (as400, path) -> new MessageQueue(as400, path).receive(null));
-
-        clearMessageQueue();
-    }*/
 
     @Test
     public void testDataQueue() {
@@ -111,46 +78,47 @@ public class Jt400Test {
                 .body("result", Matchers.equalTo("Hello " + msg));
     }
 
+    //works in parallel, each test has random keys
     @Test
     public void testKeyedDataQueue() {
-        String msg1 = RandomStringUtils.randomAlphanumeric(10).toLowerCase(Locale.ROOT);
-        String msg2 = RandomStringUtils.randomAlphanumeric(10).toLowerCase(Locale.ROOT);
-        //todo lock
-        key1 = RandomStringUtils.randomAlphanumeric(10).toLowerCase(Locale.ROOT);
-        key2 = RandomStringUtils.randomAlphanumeric(10).toLowerCase(Locale.ROOT);
+        String msg1 = RandomStringUtils.randomAlphanumeric(20).toLowerCase(Locale.ROOT);
+        String msg2 = RandomStringUtils.randomAlphanumeric(20).toLowerCase(Locale.ROOT);
+
+        getClientHelper().addKeyedDataQueueKey1ToDelete(RandomStringUtils.randomAlphanumeric(20).toLowerCase(Locale.ROOT));
+        getClientHelper().addKeyedDataQueueKey2ToDelete(RandomStringUtils.randomAlphanumeric(20).toLowerCase(Locale.ROOT));
 
         RestAssured.given()
                 .body(msg1)
-                .queryParam("key", key1)
+                .queryParam("key", getClientHelper().getKey1ForKeyedDataQueue())
                 .post("/jt400/dataQueue/write/")
                 .then()
                 .statusCode(200)
                 .body(Matchers.equalTo("Hello " + msg1));
 
         RestAssured.given()
-                .body("Sheldon2")
-                .queryParam("key", key2)
+                .body(msg2)
+                .queryParam("key", getClientHelper().getKey2ForKeyedDataQueue())
                 .post("/jt400/dataQueue/write/")
                 .then()
                 .statusCode(200)
-                .body(Matchers.equalTo("Hello Sheldon2"));
-
+                .body(Matchers.equalTo("Hello " + msg2));
+//
         RestAssured.given()
-                .body(key1)
+                .body(getClientHelper().getKey1ForKeyedDataQueue())
                 .post("/jt400/dataQueue/read/")
                 .then()
                 .statusCode(200)
                 .body("result", Matchers.equalTo("Hello " + msg1))
-                .body(Jt400Constants.KEY, Matchers.equalTo(key1));
+                .body(Jt400Constants.KEY, Matchers.equalTo(getClientHelper().getKey1ForKeyedDataQueue()));
 
         RestAssured.given()
-                .body(key1)
+                .body(getClientHelper().getKey1ForKeyedDataQueue())
                 .queryParam("searchType", "NE")
                 .post("/jt400/dataQueue/read/")
                 .then()
                 .statusCode(200)
-                .body("result", Matchers.not(Matchers.equalTo("Hello " + msg2)))
-                .body(Jt400Constants.KEY, Matchers.equalTo(key2));
+                .body("result", Matchers.not(Matchers.equalTo("Hello " + msg1)))
+                .body(Jt400Constants.KEY, Matchers.equalTo(getClientHelper().getKey2ForKeyedDataQueue()));
     }
 
     //works in parallel
@@ -172,7 +140,7 @@ public class Jt400Test {
         QueuedMessage queueMessage = getClientHelper().getQueueMessage("Hello " + msg);
         Assertions.assertNotNull(queueMessage);
         //register to delete
-        getClientHelper().addQueuMessageKeyToDelete(queueMessage.getKey());
+        getClientHelper().addQueueMessageKeyToDelete(queueMessage.getKey());
 
         //read (the read message might be different in case the test runs in parallel
 
