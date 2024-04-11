@@ -164,21 +164,10 @@ public class Jt400Test {
     }
 
     @Test
-    @Disabled //CPF2451 Message queue REPLYMSGQ is allocated to another job.
-    public void testInquiryMessageQueue() {
+//    @Disabled //CPF2451 Message queue REPLYMSGQ is allocated to another job.
+    public void testInquiryMessageQueue() throws InterruptedException {
         String msg = RandomStringUtils.randomAlphanumeric(10).toLowerCase(Locale.ROOT);
 
-
-        //start route before sending message
-        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(
-                () -> RestAssured.get("/jt400/route/inquiryRoute/start")
-                        .then()
-                        .statusCode(200)
-                        .extract().asString(),
-                Matchers.is(Boolean.TRUE.toString()));
-
-
-        try {
             //sending a message using the same client as component
             RestAssured.given()
                     .body(msg)
@@ -186,6 +175,30 @@ public class Jt400Test {
                     .then()
                     .statusCode(200);
 
+            //start route before sending message
+            Awaitility.await().atMost(10, TimeUnit.SECONDS).until(
+                    () -> RestAssured.get("/jt400/route/inquiryRoute/start")
+                            .then()
+                            .statusCode(200)
+                            .extract().asString(),
+                    Matchers.is(Boolean.TRUE.toString()));
+
+
+            //await to be processed
+            Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(20, TimeUnit.SECONDS).until(
+                    () -> RestAssured.get("/jt400/inquiryMessageProcessed")
+                        .then()
+                        .statusCode(200)
+                        .extract().asString(),
+                    Matchers.is(String.valueOf(Boolean.TRUE)));
+Thread.sleep(2000);
+            //stop route
+            Awaitility.await().atMost(10, TimeUnit.SECONDS).until(
+                    () -> RestAssured.get("/jt400/route/inquiryRoute/stop")
+                            .then()
+                            .statusCode(200)
+                            .extract().asString(),
+                    Matchers.is(Boolean.TRUE.toString()));
 
             Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(10, TimeUnit.SECONDS).until(
                     () -> RestAssured.given()
@@ -196,15 +209,6 @@ public class Jt400Test {
                         .extract().asString(),
                     Matchers.is("reply to: " + msg));
 
-        } finally {
-            //stop route after the test sending message
-            Awaitility.await().atMost(10, TimeUnit.SECONDS).until(
-                    () -> RestAssured.get("/jt400/route/inquiryRoute/start")
-                            .then()
-                            .statusCode(200)
-                            .extract().asString(),
-                    Matchers.is(Boolean.TRUE.toString()));
-        }
     }
 
     //works in parallel

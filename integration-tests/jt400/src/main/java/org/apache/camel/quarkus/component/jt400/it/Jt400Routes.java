@@ -52,10 +52,14 @@ public class Jt400Routes extends RouteBuilder {
                 .autoStartup(false)
                 .choice()
                 .when(header(Jt400Constants.MESSAGE_TYPE).isEqualTo(AS400Message.INQUIRY))
-                .choice()
-                .when(body().contains(inquiryMessageHolder.getMessageText()))
                 .process((exchange) -> {
-                    String reply = "reply to: " + exchange.getIn().getBody(String.class);
+                    String msg = exchange.getIn().getBody(String.class);
+                    if(inquiryMessageHolder.getMessageText() != null && !inquiryMessageHolder.getMessageText().equals(msg)) {
+                        throw new IllegalStateException("Current exchange is not triggered by current test process, therefore ignoring the exchange");
+                    } else {
+                        inquiryMessageHolder.setProcessed(true);
+                    }
+                    String reply = "reply to: " + msg;
                     exchange.getIn().setBody(reply);
                 })
                 .to(getUrlForLibrary(jt400MessageReplyToQueue));

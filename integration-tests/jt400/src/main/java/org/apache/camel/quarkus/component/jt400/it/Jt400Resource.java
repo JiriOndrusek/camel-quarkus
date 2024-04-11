@@ -150,12 +150,9 @@ public class Jt400Resource {
         }
 
         if("stop".equals(action)) {
-            if (context.getRouteController().getRouteStatus(routeName).isStopped()) {
-                context.getRouteController().startRoute(routeName);
+            if (context.getRouteController().getRouteStatus(routeName).isStoppable()) {
+                context.getRouteController().stopRoute(routeName);
             }
-
-
-
             boolean resp =  context.getRouteController().getRouteStatus(routeName).isStopped();
 
             //stop component to avoid CPF2451 Message queue REPLYMSGQ is allocated to another job.
@@ -166,6 +163,13 @@ public class Jt400Resource {
         }
 
         return Response.status(500).entity("Unknown action.").build();
+    }
+
+    @Path("/inquiryMessageProcessed")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String inquiryMessageProcessed() {
+        return String.valueOf(inquiryMessageHolder.isProcessed());
     }
 
     @Path("/client/inquiryMessage/write/")
@@ -185,6 +189,7 @@ public class Jt400Resource {
         } catch (Exception e) {
             return Response.status(500).entity(e.getMessage()).build();
         }
+        as400.disconnectAllServices();
         return Response.ok().build();
     }
 
