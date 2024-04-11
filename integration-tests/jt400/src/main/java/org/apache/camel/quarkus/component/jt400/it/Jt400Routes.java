@@ -18,6 +18,7 @@ package org.apache.camel.quarkus.component.jt400.it;
 
 import com.ibm.as400.access.AS400Message;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jt400.Jt400Constants;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -40,11 +41,19 @@ public class Jt400Routes extends RouteBuilder {
     @ConfigProperty(name = "cq.jt400.message-replyto-queue")
     String jt400MessageReplyToQueue;
 
+    @Inject
+    InquiryMessageHolder inquiryMessageHolder;
+
     @Override
     public void configure() throws Exception {
         from(getUrlForLibrary(jt400MessageReplyToQueue + "?sendingReply=true"))
+                .id("inquiryRoute")
+                //route has tobe stopped to avoid "CPF2451 Message queue REPLYMSGQ is allocated to another job."
+                .autoStartup(false)
                 .choice()
                 .when(header(Jt400Constants.MESSAGE_TYPE).isEqualTo(AS400Message.INQUIRY))
+                .choice()
+                .when(body().contains(inquiryMessageHolder.getMessageText()))
                 .process((exchange) -> {
                     String reply = "reply to: " + exchange.getIn().getBody(String.class);
                     exchange.getIn().setBody(reply);
