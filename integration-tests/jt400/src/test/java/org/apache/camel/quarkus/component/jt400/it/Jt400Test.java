@@ -19,6 +19,7 @@ package org.apache.camel.quarkus.component.jt400.it;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
+import com.ibm.as400.access.DataQueueEntry;
 import com.ibm.as400.access.QueuedMessage;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -26,7 +27,6 @@ import io.restassured.RestAssured;
 import org.apache.camel.component.jt400.Jt400Constants;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.awaitility.Awaitility;
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -36,12 +36,21 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 @EnabledIfEnvironmentVariable(named = "JT400_URL", matches = ".+")
 @QuarkusTestResource(Jt400TestResource.class)
 public class Jt400Test {
+    
+    private final int MSG_LENGTH = 20;
+    //tests may be executed in parallel, therefore the timeout is a little bigger in case the test has to wait for another one
+    private final int WAIT_IN_SECONDS = 20;
 
     Jt400ClientHelper clientHelper;
 
     @Test
-    public void testDataQueue() {
-        String msg = RandomStringUtils.randomAlphanumeric(10).toLowerCase(Locale.ROOT);
+    public void testDataQueue()  throws Exception {
+        String msg = RandomStringUtils.randomAlphanumeric(MSG_LENGTH).toLowerCase(Locale.ROOT);
+
+        //wait until queue is empty (mighy be used by the test running in parallel)
+        Awaitility.await().atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
+                () -> getClientHelper().peekLifoQueueEntry(),
+                Matchers.nullValue());
 
         RestAssured.given()
                 .body(msg)
@@ -49,6 +58,11 @@ public class Jt400Test {
                 .then()
                 .statusCode(200)
                 .body(Matchers.equalTo("Hello " + msg));
+
+        //check the value
+        DataQueueEntry dataQueueEntry = getClientHelper().peekLifoQueueEntry();
+        //register to delete
+        getClientHelper().clearLifoDataQueue(dataQueueEntry);
 
         RestAssured.post("/jt400/dataQueue/read")
                 .then()
@@ -57,15 +71,26 @@ public class Jt400Test {
     }
 
     @Test
-    public void testDataQueueBinary() {
-        String msg = RandomStringUtils.randomAlphanumeric(10).toLowerCase(Locale.ROOT);
+    public void testDataQueueBinary() throws Exception {
+        String msg = RandomStringUtils.randomAlphanumeric(MSG_LENGTH).toLowerCase(Locale.ROOT);
+
+        //wait until queue is empty (mighy be used by the test running in parallel)
+        Awaitility.await().atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
+                () -> getClientHelper().peekLifoQueueEntry(),
+                Matchers.nullValue());
 
         RestAssured.given()
                 .body(msg)
+                .queryParam("format", "binary")
                 .post("/jt400/dataQueue/write")
                 .then()
                 .statusCode(200)
                 .body(Matchers.equalTo("Hello " + msg));
+
+        //check the value
+        DataQueueEntry dataQueueEntry = getClientHelper().peekLifoQueueEntry();
+        //register to delete
+        getClientHelper().clearLifoDataQueue(dataQueueEntry);
 
         RestAssured.given()
                 .queryParam("format", "binary")
@@ -75,14 +100,13 @@ public class Jt400Test {
                 .body("result", Matchers.equalTo("Hello " + msg));
     }
 
-    //works in parallel, each test has random keys
     @Test
     public void testKeyedDataQueue() {
-        String msg1 = RandomStringUtils.randomAlphanumeric(20).toLowerCase(Locale.ROOT);
-        String msg2 = RandomStringUtils.randomAlphanumeric(20).toLowerCase(Locale.ROOT);
+        String msg1 = RandomStringUtils.randomAlphanumeric(MSG_LENGTH).toLowerCase(Locale.ROOT);
+        String msg2 = RandomStringUtils.randomAlphanumeric(MSG_LENGTH).toLowerCase(Locale.ROOT);
 
-        getClientHelper().addKeyedDataQueueKey1ToDelete(RandomStringUtils.randomAlphanumeric(20).toLowerCase(Locale.ROOT));
-        getClientHelper().addKeyedDataQueueKey2ToDelete(RandomStringUtils.randomAlphanumeric(20).toLowerCase(Locale.ROOT));
+        getClientHelper().addKeyedDataQueueKey1ToDelete(RandomStringUtils.randomAlphanumeric(MSG_LENGTH).toLowerCase(Locale.ROOT));
+        getClientHelper().addKeyedDataQueueKey2ToDelete(RandomStringUtils.randomAlphanumeric(MSG_LENGTH).toLowerCase(Locale.ROOT));
 
         RestAssured.given()
                 .body(msg1)
@@ -99,7 +123,7 @@ public class Jt400Test {
                 .then()
                 .statusCode(200)
                 .body(Matchers.equalTo("Hello " + msg2));
-        //
+
         RestAssured.given()
                 .body(getClientHelper().getKey1ForKeyedDataQueue())
                 .post("/jt400/dataQueue/read/")
@@ -118,12 +142,11 @@ public class Jt400Test {
                 .body(Jt400Constants.KEY, Matchers.equalTo(getClientHelper().getKey2ForKeyedDataQueue()));
     }
 
-    //works in parallel
     @Test
     public void testMessageQueue() throws Exception {
 
         //write
-        String msg = RandomStringUtils.randomAlphanumeric(20).toLowerCase(Locale.ROOT);
+        String msg = RandomStringUtils.randomAlphanumeric(MSG_LENGTH).toLowerCase(Locale.ROOT);
 
         Assertions.assertNull(getClientHelper().getQueueMessage("Hello " + msg));
 
@@ -160,7 +183,6 @@ public class Jt400Test {
     }
 
     @Test
-    //    @Disabled //CPF2451 Message queue REPLYMSGQ is allocated to another job.
     public void testInquiryMessageQueue() throws Exception {
         String msg = RandomStringUtils.randomAlphanumeric(10).toLowerCase(Locale.ROOT);
 
@@ -177,7 +199,7 @@ public class Jt400Test {
 
 
         //start route before sending message
-        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(
+        Awaitility.await().atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
                 () -> RestAssured.get("/jt400/route/inquiryRoute/start")
                         .then()
                         .statusCode(200)
@@ -193,7 +215,7 @@ public class Jt400Test {
                 Matchers.is(String.valueOf(Boolean.TRUE)));
 
         //stop route
-        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(
+        Awaitility.await().atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
                 () -> RestAssured.get("/jt400/route/inquiryRoute/stop")
                         .then()
                         .statusCode(200)
@@ -205,7 +227,7 @@ public class Jt400Test {
                     QueuedMessage queuedMessage = getClientHelper().getReplyToQueueMessage("reply to: " + msg);
                     if(queuedMessage != null) {
                         //register to delete
-                        getClientHelper().addQueueMessageKeyToDelete(queueMessage.getKey());
+                        getClientHelper().addReplyToMessageKeyToDelete(queueMessage.getKey());
                     }
                     return queuedMessage;
                 },
@@ -213,7 +235,6 @@ public class Jt400Test {
 
     }
 
-    //works in parallel
     @Test
     public void testProgramCall() {
         RestAssured.given()
@@ -224,110 +245,6 @@ public class Jt400Test {
                 .body(Matchers.containsString("hello camel"));
     }
 
-    /*   private static void clearQueue(String queue, BiFunctionWithException<AS400, String, Object> readFromQueue) {
-        String jt400Url = ConfigProvider.getConfig().getValue("cq.jt400.url", String.class);
-        String jt400Username = ConfigProvider.getConfig().getValue("cq.jt400.username", String.class);
-        String jt400Password = ConfigProvider.getConfig().getValue("cq.jt400.password", String.class);
-        String jt400Library = ConfigProvider.getConfig().getValue("cq.jt400.library", String.class);
-        String jt400MessageQueue = ConfigProvider.getConfig().getValue(queue, String.class);
-
-        String objectPath = String.format("/QSYS.LIB/%s.LIB/%s", jt400Library, jt400MessageQueue);
-
-        AS400 as400 = new AS400(jt400Url, jt400Username, jt400Password);
-
-        int i = 0;
-        Object msg;
-        //read messages until null is received
-        do {
-            try {
-                msg = readFromQueue.apply(as400, objectPath);
-            } catch (Exception e) {
-                throw new IllegalStateException("Error when clearing queue " + jt400MessageQueue + "!", e);
-            }
-        } while (i++ < 10 && msg != null);
-
-        as400.close();
-
-        if (i == 10 && msg != null) {
-            throw new IllegalStateException("There is a message present in a queue " + jt400MessageQueue + "!");
-        }
-    }
-
-    private static AS400 getAs400()  {
-        String jt400Url = ConfigProvider.getConfig().getValue("cq.jt400.url", String.class);
-        String jt400Username = ConfigProvider.getConfig().getValue("cq.jt400.username", String.class);
-        String jt400Password = ConfigProvider.getConfig().getValue("cq.jt400.password", String.class);
-
-        return new AS400(jt400Url, jt400Username, jt400Password);
-    }
-
-    private static MessageQueue getMessageQueue() throws Exception {
-        String jt400MessageQueue = ConfigProvider.getConfig().getValue("cq.jt400.message-queue", String.class);
-        String jt400Library = ConfigProvider.getConfig().getValue("cq.jt400.library", String.class);
-
-        String objectPath = String.format("/QSYS.LIB/%s.LIB/%s", jt400Library, jt400MessageQueue);
-
-        return new MessageQueue(getAs400(), objectPath);
-    }
-
-      private static void clearMessageQueue() throws Exception {
-        String jt400Url = ConfigProvider.getConfig().getValue("cq.jt400.url", String.class);
-        String jt400Username = ConfigProvider.getConfig().getValue("cq.jt400.username", String.class);
-        String jt400Password = ConfigProvider.getConfig().getValue("cq.jt400.password", String.class);
-        String jt400Library = ConfigProvider.getConfig().getValue("cq.jt400.library", String.class);
-        String jt400MessageQueue = ConfigProvider.getConfig().getValue("cq.jt400.message-queue", String.class);
-
-        String objectPath = String.format("/QSYS.LIB/%s.LIB/%s", jt400Library, jt400MessageQueue);
-
-        AS400 as400 = new AS400(jt400Url, jt400Username, jt400Password);
-
-        try {
-            MessageQueue queue = new MessageQueue(as400, objectPath);
-
-            messageQueueKeys.forEach(key -> {
-                try {
-                    queue.remove(key);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
-            //if keys is null, clear whole message queue
-    //            if (keys == null) {
-    //                queue.remove();
-    //            Enumeration<QueuedMessage> msgsEnumeration = queue.getMessages();
-    //            while(msgsEnumeration.hasMoreElements()) {
-    //                QueuedMessage msg = msgsEnumeration.nextElement();
-    //                queue.remove();
-    //            }
-    //            }
-        } finally {
-          as400.close();
-        }
-    //            List<Messag> msgs = Collections.list()
-    //
-    //        int i = 0;
-    //        Object msg;
-    //        //read messages until null is received
-    //        do {
-    //            try {
-    //                msg = readFromQueue.apply(as400, objectPath);
-    //            } catch (Exception e) {
-    //                throw new IllegalStateException("Error when clearing queue " + jt400MessageQueue + "!", e);
-    //            }
-    //        } while (i++ < 10 && msg != null);
-    //
-    //        as400.close();
-    //
-    //        if (i == 10 && msg != null) {
-    //            throw new IllegalStateException("There is a message present in a queue " + jt400MessageQueue + "!");
-    //        }
-    }
-
-    @FunctionalInterface
-    private interface BiFunctionWithException<T, U, R> {
-        R apply(T t, U u) throws Exception;
-    }
-    */
     public Jt400ClientHelper getClientHelper() {
         return clientHelper;
     }

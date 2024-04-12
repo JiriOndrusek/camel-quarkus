@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.component.jt400.it;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -106,7 +107,7 @@ public class Jt400Resource {
         Exchange ex = consumerTemplate.receive(getUrlForLibrary(suffix.toString()));
 
         if ("binary".equals(format)) {
-            return generateResponse(new String(ex.getIn().getBody(byte[].class), Charset.forName("Cp037")), ex);
+            return generateResponse(new String(ex.getIn().getBody(byte[].class), StandardCharsets.UTF_8), ex);
         }
         return generateResponse(ex.getIn().getBody(String.class), ex);
 
@@ -117,24 +118,35 @@ public class Jt400Resource {
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
     public Response keyedDataQueueWrite(@QueryParam("key") String key,
-            @QueryParam("searchType") String searchType,
+                                        @QueryParam("format") String format,
             String data) {
+        String _format = Optional.ofNullable(format).orElse("text");
         boolean keyed = key != null;
         StringBuilder suffix = new StringBuilder();
         Map<String, Object> headers = new HashMap<>();
 
         if (keyed) {
-            suffix.append(jt400KeyedQueue).append("?keyed=true");
+            suffix.append(jt400KeyedQueue).append("?keyed=true").append("&format=").append(_format);
             headers.put(Jt400Endpoint.KEY, key);
         } else {
-            suffix.append(jt400LifoQueue);
+            suffix.append(jt400LifoQueue).append("?format=").append(_format);
         }
 
-        Object ex = producerTemplate.requestBodyAndHeaders(
-                getUrlForLibrary(suffix.toString()),
-                "Hello " + data,
-                headers);
-        return Response.ok().entity(ex).build();
+        Object retVal;
+        if ("binary".equals(format)) {
+            byte[] result = (byte[])producerTemplate.requestBodyAndHeaders(
+                    getUrlForLibrary(suffix.toString()),
+                    ("Hello " + data).getBytes(StandardCharsets.UTF_8),
+                    headers);
+            retVal= new String(result, StandardCharsets.UTF_8);
+        } else {
+            retVal = producerTemplate.requestBodyAndHeaders(
+                    getUrlForLibrary(suffix.toString()),
+                    "Hello " + data,
+                    headers);
+            }
+
+        return Response.ok().entity(retVal).build();
     }
 
     @Path("/route/{route}/{action}")
