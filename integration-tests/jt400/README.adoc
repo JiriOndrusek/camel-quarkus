@@ -118,7 +118,8 @@ Each test is using random data and clears data after the run.
 In some cases data might stay written into the real server if test fails unexpectedly.
 This state should not alter following executions.
 
-For example during development, it might be handy to clear all failed data. To clear queues, please add following parameter to execution:
+Usage of clear queues parameter is *strongly* suggested during development
+To clear queues, please add following parameter to execution:
 ```
 -Dcq.jt400.clear-all=true
 ```

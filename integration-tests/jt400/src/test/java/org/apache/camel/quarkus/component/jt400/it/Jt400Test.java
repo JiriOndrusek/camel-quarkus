@@ -16,7 +16,10 @@
  */
 package org.apache.camel.quarkus.component.jt400.it;
 
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import com.ibm.as400.access.DataQueueEntry;
@@ -87,10 +90,18 @@ public class Jt400Test {
                 .statusCode(200)
                 .body(Matchers.equalTo("Hello " + msg));
 
-        //check the value
-        DataQueueEntry dataQueueEntry = getClientHelper().peekLifoQueueEntry();
+        Map<String, DataQueueEntry> entries = new HashMap<>();
+        //peek the value
+        Awaitility.await().atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
+                () -> {
+                    DataQueueEntry dataQueueEntry = getClientHelper().peekLifoQueueEntry();
+                    String entryMessage = new String(dataQueueEntry.getData(), StandardCharsets.UTF_8);
+                    entries.put(entryMessage, dataQueueEntry);
+                    return entryMessage;
+                },
+                Matchers.is("Hello " + msg));
         //register to delete
-        getClientHelper().clearLifoDataQueue(dataQueueEntry);
+        getClientHelper().clearLifoDataQueue(entries.get("Hello " + msg));
 
         RestAssured.given()
                 .queryParam("format", "binary")
