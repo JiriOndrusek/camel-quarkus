@@ -36,7 +36,7 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 @EnabledIfEnvironmentVariable(named = "JT400_URL", matches = ".+")
 @QuarkusTestResource(Jt400TestResource.class)
 public class Jt400Test {
-    
+
     private final int MSG_LENGTH = 20;
     //tests may be executed in parallel, therefore the timeout is a little bigger in case the test has to wait for another one
     private final int WAIT_IN_SECONDS = 20;
@@ -44,7 +44,7 @@ public class Jt400Test {
     Jt400ClientHelper clientHelper;
 
     @Test
-    public void testDataQueue()  throws Exception {
+    public void testDataQueue() throws Exception {
         String msg = RandomStringUtils.randomAlphanumeric(MSG_LENGTH).toLowerCase(Locale.ROOT);
 
         //wait until queue is empty (mighy be used by the test running in parallel)
@@ -105,8 +105,10 @@ public class Jt400Test {
         String msg1 = RandomStringUtils.randomAlphanumeric(MSG_LENGTH).toLowerCase(Locale.ROOT);
         String msg2 = RandomStringUtils.randomAlphanumeric(MSG_LENGTH).toLowerCase(Locale.ROOT);
 
-        getClientHelper().addKeyedDataQueueKey1ToDelete(RandomStringUtils.randomAlphanumeric(MSG_LENGTH).toLowerCase(Locale.ROOT));
-        getClientHelper().addKeyedDataQueueKey2ToDelete(RandomStringUtils.randomAlphanumeric(MSG_LENGTH).toLowerCase(Locale.ROOT));
+        getClientHelper()
+                .addKeyedDataQueueKey1ToDelete(RandomStringUtils.randomAlphanumeric(MSG_LENGTH).toLowerCase(Locale.ROOT));
+        getClientHelper()
+                .addKeyedDataQueueKey2ToDelete(RandomStringUtils.randomAlphanumeric(MSG_LENGTH).toLowerCase(Locale.ROOT));
 
         RestAssured.given()
                 .body(msg1)
@@ -197,7 +199,6 @@ public class Jt400Test {
         QueuedMessage queueMessage = getClientHelper().getReplyToQueueMessage(msg);
         Assertions.assertNotNull(queueMessage);
 
-
         //start route before sending message
         Awaitility.await().atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
                 () -> RestAssured.get("/jt400/route/inquiryRoute/start")
@@ -225,7 +226,7 @@ public class Jt400Test {
         Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(20, TimeUnit.SECONDS).until(
                 () -> {
                     QueuedMessage queuedMessage = getClientHelper().getReplyToQueueMessage("reply to: " + msg);
-                    if(queuedMessage != null) {
+                    if (queuedMessage != null) {
                         //register to delete
                         getClientHelper().addReplyToMessageKeyToDelete(queueMessage.getKey());
                     }

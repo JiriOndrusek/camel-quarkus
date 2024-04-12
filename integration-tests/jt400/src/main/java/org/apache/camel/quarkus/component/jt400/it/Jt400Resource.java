@@ -16,7 +16,6 @@
  */
 package org.apache.camel.quarkus.component.jt400.it;
 
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -118,7 +117,7 @@ public class Jt400Resource {
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
     public Response keyedDataQueueWrite(@QueryParam("key") String key,
-                                        @QueryParam("format") String format,
+            @QueryParam("format") String format,
             String data) {
         String _format = Optional.ofNullable(format).orElse("text");
         boolean keyed = key != null;
@@ -134,17 +133,17 @@ public class Jt400Resource {
 
         Object retVal;
         if ("binary".equals(format)) {
-            byte[] result = (byte[])producerTemplate.requestBodyAndHeaders(
+            byte[] result = (byte[]) producerTemplate.requestBodyAndHeaders(
                     getUrlForLibrary(suffix.toString()),
                     ("Hello " + data).getBytes(StandardCharsets.UTF_8),
                     headers);
-            retVal= new String(result, StandardCharsets.UTF_8);
+            retVal = new String(result, StandardCharsets.UTF_8);
         } else {
             retVal = producerTemplate.requestBodyAndHeaders(
                     getUrlForLibrary(suffix.toString()),
                     "Hello " + data,
                     headers);
-            }
+        }
 
         return Response.ok().entity(retVal).build();
     }

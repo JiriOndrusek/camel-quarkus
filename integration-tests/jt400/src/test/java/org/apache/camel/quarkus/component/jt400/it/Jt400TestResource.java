@@ -1,6 +1,5 @@
 package org.apache.camel.quarkus.component.jt400.it;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -10,27 +9,26 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.ibm.as400.access.AS400;
-import com.ibm.as400.access.AS400SecurityException;
 import com.ibm.as400.access.DataQueue;
 import com.ibm.as400.access.DataQueueEntry;
-import com.ibm.as400.access.ErrorCompletingRequestException;
 import com.ibm.as400.access.KeyedDataQueue;
 import com.ibm.as400.access.MessageQueue;
-import com.ibm.as400.access.ObjectDoesNotExistException;
 import com.ibm.as400.access.QueuedMessage;
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.eclipse.microprofile.config.ConfigProvider;
 
 public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
 
-    private static final Optional<String> JT400_CLEAR_ALL = ConfigProvider.getConfig().getOptionalValue("cq.jt400.clear-all", String.class);
+    private static final Optional<String> JT400_CLEAR_ALL = ConfigProvider.getConfig().getOptionalValue("cq.jt400.clear-all",
+            String.class);
     private static final String JT400_URL = ConfigProvider.getConfig().getValue("cq.jt400.url", String.class);
     private static final String JT400_USERNAME = ConfigProvider.getConfig().getValue("cq.jt400.username", String.class);
     private static final String JT400_PASSWORD = ConfigProvider.getConfig().getValue("cq.jt400.password", String.class);
     private static final String JT400_LIBRARY = ConfigProvider.getConfig().getValue("cq.jt400.library", String.class);
     private static final String JT400_MESSAGE_QUEUE = ConfigProvider.getConfig().getValue("cq.jt400.message-queue",
             String.class);
-    private static final String JT400_REPLY_TO_MESSAGE_QUEUE = ConfigProvider.getConfig().getValue("cq.jt400.message-replyto-queue",
+    private static final String JT400_REPLY_TO_MESSAGE_QUEUE = ConfigProvider.getConfig().getValue(
+            "cq.jt400.message-replyto-queue",
             String.class);
     private static final String JT400_LIFO_QUEUE = ConfigProvider.getConfig().getValue("cq.jt400.lifo-queue",
             String.class);
@@ -54,7 +52,7 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
     @Override
     public void stop() {
         if (as400 != null) {
-            if(JT400_CLEAR_ALL.isPresent() && Boolean.parseBoolean(JT400_CLEAR_ALL.get())) {
+            if (JT400_CLEAR_ALL.isPresent() && Boolean.parseBoolean(JT400_CLEAR_ALL.get())) {
                 try {
                     clientHelper.clearAll();
                 } catch (Exception e) {
@@ -123,7 +121,7 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
                     clearTeasks.add(() -> {
                         DataQueue dq = new DataQueue(as400, getObjectPath(JT400_LIFO_QUEUE));
                         DataQueueEntry peek = dq.peek();
-                        if(peek != null && Arrays.equals(peek.getData(), entry.getData())){
+                        if (peek != null && Arrays.equals(peek.getData(), entry.getData())) {
                             dq.read();
                         }
                     });
@@ -173,7 +171,6 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
                     });
                 }
 
-
                 @Override
                 public void clearAll() throws Exception {
                     //message queue
@@ -181,8 +178,8 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
 
                     //lifo queue
                     DataQueue dq = new DataQueue(as400, getObjectPath(JT400_LIFO_QUEUE));
-                    for(int i = 01; i< CLEAR_DEPTH; i++) {
-                        if(dq.read() == null) {
+                    for (int i = 01; i < CLEAR_DEPTH; i++) {
+                        if (dq.read() == null) {
                             break;
                         }
                     }
@@ -196,7 +193,6 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
 
         }
     }
-
 
 }
 
