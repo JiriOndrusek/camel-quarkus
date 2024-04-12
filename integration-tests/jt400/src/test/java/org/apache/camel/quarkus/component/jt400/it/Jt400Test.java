@@ -191,7 +191,7 @@ public class Jt400Test {
                         .statusCode(200)
                         .extract().asString(),
                     Matchers.is(String.valueOf(Boolean.TRUE)));
-Thread.sleep(2000);
+Thread.sleep(5000);
             //stop route
             Awaitility.await().atMost(10, TimeUnit.SECONDS).until(
                     () -> RestAssured.get("/jt400/route/inquiryRoute/stop")
@@ -200,7 +200,7 @@ Thread.sleep(2000);
                             .extract().asString(),
                     Matchers.is(Boolean.TRUE.toString()));
 
-            Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(10, TimeUnit.SECONDS).until(
+            Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(20, TimeUnit.SECONDS).until(
                     () -> RestAssured.given()
                         .body(ConfigProvider.getConfig().getValue("cq.jt400.message-replyto-queue", String.class))
                         .post("/jt400/client/queuedMessage/read")

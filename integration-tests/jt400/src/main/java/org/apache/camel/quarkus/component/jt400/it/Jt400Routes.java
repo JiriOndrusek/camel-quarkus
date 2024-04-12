@@ -62,6 +62,7 @@ public class Jt400Routes extends RouteBuilder {
                     String reply = "reply to: " + msg;
                     exchange.getIn().setBody(reply);
                 })
+                .log(">>>>>>>>>>>>")
                 .to(getUrlForLibrary(jt400MessageReplyToQueue));
     }
 
