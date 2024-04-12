@@ -16,78 +16,41 @@
  */
 package org.apache.camel.quarkus.component.jt400.it;
 
-import java.io.IOException;
 import java.util.Locale;
-import java.util.function.BiFunction;
+import java.util.concurrent.TimeUnit;
 
-import com.ibm.as400.access.AS400;
-import com.ibm.as400.access.AS400SecurityException;
-import com.ibm.as400.access.ErrorCompletingRequestException;
-import com.ibm.as400.access.KeyedDataQueue;
-import com.ibm.as400.access.MessageQueue;
-import com.ibm.as400.access.ObjectDoesNotExistException;
+import com.ibm.as400.access.DataQueueEntry;
+import com.ibm.as400.access.QueuedMessage;
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import org.apache.camel.component.jt400.Jt400Constants;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.eclipse.microprofile.config.ConfigProvider;
+import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 @QuarkusTest
 @EnabledIfEnvironmentVariable(named = "JT400_URL", matches = ".+")
+@QuarkusTestResource(Jt400TestResource.class)
 public class Jt400Test {
+    
+    private final int MSG_LENGTH = 20;
+    //tests may be executed in parallel, therefore the timeout is a little bigger in case the test has to wait for another one
+    private final int WAIT_IN_SECONDS = 20;
 
-    @BeforeAll
-    public static void beforeAll() throws Exception {
-        //read all messages from the queues to be sure that they are empty
-
-        //clear reply-to message queue
-        clearQueue("cq.jt400.message-replyto-queue",
-                (as400, path) -> {
-                    try {
-                        return new MessageQueue(as400, path).receive(null);
-                    } catch (Exception e) {
-                        return null;
-                    }
-                });
-
-        //clear  message queue
-        clearQueue("cq.jt400.message-queue",
-                (as400, path) -> {
-                    try {
-                        return new MessageQueue(as400, path).receive(null);
-                    } catch (Exception e) {
-                        return null;
-                    }
-                });
-
-        //clear  keyed queue for key1
-        clearQueue("cq.jt400.message-queue",
-                (as400, path) -> {
-                    try {
-                        return new KeyedDataQueue(as400, path).read("key1");
-                    } catch (Exception e) {
-                        return null;
-                    }
-                });
-
-        //clear  keyed queue for key2
-        clearQueue("cq.jt400.message-queue",
-                (as400, path) -> {
-                    try {
-                        return new KeyedDataQueue(as400, path).read("key1");
-                    } catch (Exception e) {
-                        return null;
-                    }
-                });
-    }
+    Jt400ClientHelper clientHelper;
 
     @Test
-    public void testDataQueue() {
-        String msg = RandomStringUtils.randomAlphanumeric(10).toLowerCase(Locale.ROOT);
+    public void testDataQueue()  throws Exception {
+        String msg = RandomStringUtils.randomAlphanumeric(MSG_LENGTH).toLowerCase(Locale.ROOT);
+
+        //wait until queue is empty (mighy be used by the test running in parallel)
+        Awaitility.await().atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
+                () -> getClientHelper().peekLifoQueueEntry(),
+                Matchers.nullValue());
 
         RestAssured.given()
                 .body(msg)
@@ -95,6 +58,11 @@ public class Jt400Test {
                 .then()
                 .statusCode(200)
                 .body(Matchers.equalTo("Hello " + msg));
+
+        //check the value
+        DataQueueEntry dataQueueEntry = getClientHelper().peekLifoQueueEntry();
+        //register to delete
+        getClientHelper().clearLifoDataQueue(dataQueueEntry);
 
         RestAssured.post("/jt400/dataQueue/read")
                 .then()
@@ -103,15 +71,26 @@ public class Jt400Test {
     }
 
     @Test
-    public void testDataQueueBinary() {
-        String msg = RandomStringUtils.randomAlphanumeric(10).toLowerCase(Locale.ROOT);
+    public void testDataQueueBinary() throws Exception {
+        String msg = RandomStringUtils.randomAlphanumeric(MSG_LENGTH).toLowerCase(Locale.ROOT);
+
+        //wait until queue is empty (mighy be used by the test running in parallel)
+        Awaitility.await().atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
+                () -> getClientHelper().peekLifoQueueEntry(),
+                Matchers.nullValue());
 
         RestAssured.given()
                 .body(msg)
+                .queryParam("format", "binary")
                 .post("/jt400/dataQueue/write")
                 .then()
                 .statusCode(200)
                 .body(Matchers.equalTo("Hello " + msg));
+
+        //check the value
+        DataQueueEntry dataQueueEntry = getClientHelper().peekLifoQueueEntry();
+        //register to delete
+        getClientHelper().clearLifoDataQueue(dataQueueEntry);
 
         RestAssured.given()
                 .queryParam("format", "binary")
@@ -123,49 +102,53 @@ public class Jt400Test {
 
     @Test
     public void testKeyedDataQueue() {
-        String msg1 = RandomStringUtils.randomAlphanumeric(10).toLowerCase(Locale.ROOT);
-        String msg2 = RandomStringUtils.randomAlphanumeric(10).toLowerCase(Locale.ROOT);
-        String key1 = "key1";
-        String key2 = "key2";
+        String msg1 = RandomStringUtils.randomAlphanumeric(MSG_LENGTH).toLowerCase(Locale.ROOT);
+        String msg2 = RandomStringUtils.randomAlphanumeric(MSG_LENGTH).toLowerCase(Locale.ROOT);
+
+        getClientHelper().addKeyedDataQueueKey1ToDelete(RandomStringUtils.randomAlphanumeric(MSG_LENGTH).toLowerCase(Locale.ROOT));
+        getClientHelper().addKeyedDataQueueKey2ToDelete(RandomStringUtils.randomAlphanumeric(MSG_LENGTH).toLowerCase(Locale.ROOT));
 
         RestAssured.given()
                 .body(msg1)
-                .queryParam("key", key1)
+                .queryParam("key", getClientHelper().getKey1ForKeyedDataQueue())
                 .post("/jt400/dataQueue/write/")
                 .then()
                 .statusCode(200)
                 .body(Matchers.equalTo("Hello " + msg1));
 
         RestAssured.given()
-                .body("Sheldon2")
-                .queryParam("key", key2)
+                .body(msg2)
+                .queryParam("key", getClientHelper().getKey2ForKeyedDataQueue())
                 .post("/jt400/dataQueue/write/")
                 .then()
                 .statusCode(200)
-                .body(Matchers.equalTo("Hello Sheldon2"));
+                .body(Matchers.equalTo("Hello " + msg2));
 
         RestAssured.given()
-                .body(key1)
+                .body(getClientHelper().getKey1ForKeyedDataQueue())
                 .post("/jt400/dataQueue/read/")
                 .then()
                 .statusCode(200)
                 .body("result", Matchers.equalTo("Hello " + msg1))
-                .body(Jt400Constants.KEY, Matchers.equalTo(key1));
+                .body(Jt400Constants.KEY, Matchers.equalTo(getClientHelper().getKey1ForKeyedDataQueue()));
 
         RestAssured.given()
-                .body(key1)
+                .body(getClientHelper().getKey1ForKeyedDataQueue())
                 .queryParam("searchType", "NE")
                 .post("/jt400/dataQueue/read/")
                 .then()
                 .statusCode(200)
-                .body("result", Matchers.not(Matchers.equalTo("Hello " + msg2)))
-                .body(Jt400Constants.KEY, Matchers.equalTo(key2));
+                .body("result", Matchers.not(Matchers.equalTo("Hello " + msg1)))
+                .body(Jt400Constants.KEY, Matchers.equalTo(getClientHelper().getKey2ForKeyedDataQueue()));
     }
 
     @Test
-    public void testMessageQueue() throws AS400SecurityException, ObjectDoesNotExistException, IOException,
-            InterruptedException, ErrorCompletingRequestException {
-        String msg = RandomStringUtils.randomAlphanumeric(10).toLowerCase(Locale.ROOT);
+    public void testMessageQueue() throws Exception {
+
+        //write
+        String msg = RandomStringUtils.randomAlphanumeric(MSG_LENGTH).toLowerCase(Locale.ROOT);
+
+        Assertions.assertNull(getClientHelper().getQueueMessage("Hello " + msg));
 
         RestAssured.given()
                 .body(msg)
@@ -174,24 +157,33 @@ public class Jt400Test {
                 .statusCode(200)
                 .body(Matchers.equalTo("Hello " + msg));
 
-        RestAssured.post("/jt400/messageQueue/read")
+        QueuedMessage queueMessage = getClientHelper().getQueueMessage("Hello " + msg);
+        Assertions.assertNotNull(queueMessage);
+        //register to delete
+        getClientHelper().addQueueMessageKeyToDelete(queueMessage.getKey());
+
+        //read (the read message might be different in case the test runs in parallel
+
+        msg = RestAssured.post("/jt400/messageQueue/read")
                 .then()
                 .statusCode(200)
-                .body("result", Matchers.is("Hello " + msg))
                 //check of headers
                 .body(Jt400Constants.SENDER_INFORMATION, Matchers.not(Matchers.empty()))
                 .body(Jt400Constants.MESSAGE_FILE, Matchers.is(""))
                 .body(Jt400Constants.MESSAGE_SEVERITY, Matchers.is(0))
                 .body(Jt400Constants.MESSAGE_ID, Matchers.is(""))
                 .body(Jt400Constants.MESSAGE_TYPE, Matchers.is(4))
-                .body(Jt400Constants.MESSAGE, Matchers.is("QueuedMessage: Hello " + msg));
+                .body(Jt400Constants.MESSAGE, Matchers.startsWith("QueuedMessage: Hello "))
+                .extract().path("result").toString();
         //Jt400Constants.MESSAGE_DFT_RPY && Jt400Constants.MESSAGE_REPLYTO_KEY are used only for a special
         // type of message which can not be created by the camel component (*INQUIRY)
+
+        Assertions.assertNotNull(getClientHelper().getQueueMessage(msg));
+
     }
 
     @Test
-    public void testInquiryMessageQueue() throws AS400SecurityException, ObjectDoesNotExistException, IOException,
-            InterruptedException, ErrorCompletingRequestException {
+    public void testInquiryMessageQueue() throws Exception {
         String msg = RandomStringUtils.randomAlphanumeric(10).toLowerCase(Locale.ROOT);
 
         //sending a message using the same client as component
@@ -201,12 +193,46 @@ public class Jt400Test {
                 .then()
                 .statusCode(200);
 
-        RestAssured.given()
-                .body(ConfigProvider.getConfig().getValue("cq.jt400.message-replyto-queue", String.class))
-                .post("/jt400/client/queuedMessage/read")
-                .then()
-                .statusCode(200)
-                .body(Matchers.equalTo("reply to: " + msg));
+        //register deletion of the messae in case some following task fails
+        QueuedMessage queueMessage = getClientHelper().getReplyToQueueMessage(msg);
+        Assertions.assertNotNull(queueMessage);
+
+
+        //start route before sending message
+        Awaitility.await().atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
+                () -> RestAssured.get("/jt400/route/inquiryRoute/start")
+                        .then()
+                        .statusCode(200)
+                        .extract().asString(),
+                Matchers.is(Boolean.TRUE.toString()));
+
+        //await to be processed
+        Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(20, TimeUnit.SECONDS).until(
+                () -> RestAssured.get("/jt400/inquiryMessageProcessed")
+                        .then()
+                        .statusCode(200)
+                        .extract().asString(),
+                Matchers.is(String.valueOf(Boolean.TRUE)));
+
+        //stop route
+        Awaitility.await().atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
+                () -> RestAssured.get("/jt400/route/inquiryRoute/stop")
+                        .then()
+                        .statusCode(200)
+                        .extract().asString(),
+                Matchers.is(Boolean.TRUE.toString()));
+
+        Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(20, TimeUnit.SECONDS).until(
+                () -> {
+                    QueuedMessage queuedMessage = getClientHelper().getReplyToQueueMessage("reply to: " + msg);
+                    if(queuedMessage != null) {
+                        //register to delete
+                        getClientHelper().addReplyToMessageKeyToDelete(queueMessage.getKey());
+                    }
+                    return queuedMessage;
+                },
+                Matchers.notNullValue());
+
     }
 
     @Test
@@ -219,27 +245,11 @@ public class Jt400Test {
                 .body(Matchers.containsString("hello camel"));
     }
 
-    private static void clearQueue(String queue, BiFunction<AS400, String, Object> readFromQueue) {
-        String jt400Url = ConfigProvider.getConfig().getValue("cq.jt400.url", String.class);
-        String jt400Username = ConfigProvider.getConfig().getValue("cq.jt400.username", String.class);
-        String jt400Password = ConfigProvider.getConfig().getValue("cq.jt400.password", String.class);
-        String jt400Library = ConfigProvider.getConfig().getValue("cq.jt400.library", String.class);
-        String jt400MessageQueue = ConfigProvider.getConfig().getValue(queue, String.class);
-
-        String objectPath = String.format("/QSYS.LIB/%s.LIB/%s", jt400Library, jt400MessageQueue);
-
-        AS400 as400 = new AS400(jt400Url, jt400Username, jt400Password);
-
-        int i = 0;
-        Object msg = null;
-        //read messages until null is received
-        do {
-            msg = readFromQueue.apply(as400, objectPath);
-        } while (i++ < 10 && msg != null);
-
-        if (i == 10 && msg != null) {
-            throw new IllegalStateException("There is a message present in a queue!");
-        }
+    public Jt400ClientHelper getClientHelper() {
+        return clientHelper;
     }
 
+    public void setClientHelper(Jt400ClientHelper clientHelper) {
+        this.clientHelper = clientHelper;
+    }
 }

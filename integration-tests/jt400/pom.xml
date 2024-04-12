@@ -52,6 +52,10 @@
             <artifactId>camel-quarkus-jt400</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.apache.camel.quarkus</groupId>
+            <artifactId>camel-quarkus-log</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-resteasy</artifactId>
         </dependency>
@@ -69,6 +73,11 @@
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -138,6 +147,17 @@
                 <quarkus.test.flat-class-path>false</quarkus.test.flat-class-path>
             </properties>
         </profile>
+<!--        <profile>-->
+<!--            <id>clear-all</id>-->
+<!--            <activation>-->
+<!--                <property>-->
+<!--                    <name>cq.jt400.clear-all</name>-->
+<!--                </property>-->
+<!--            </activation>-->
+<!--            <properties>-->
+<!--                <cq.jt400.clear-all>true</cq.jt400.clear-all>-->
+<!--            </properties>-->
+<!--        </profile>-->
     </profiles>
 
 </project>

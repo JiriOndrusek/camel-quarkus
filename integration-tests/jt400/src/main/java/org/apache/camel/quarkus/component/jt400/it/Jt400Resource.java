@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.component.jt400.it;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -27,8 +28,10 @@ import com.ibm.as400.access.QueuedMessage;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
@@ -80,6 +83,9 @@ public class Jt400Resource {
     @Inject
     CamelContext context;
 
+    @Inject
+    InquiryMessageHolder inquiryMessageHolder;
+
     @Path("/dataQueue/read/")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -101,7 +107,7 @@ public class Jt400Resource {
         Exchange ex = consumerTemplate.receive(getUrlForLibrary(suffix.toString()));
 
         if ("binary".equals(format)) {
-            return generateResponse(new String(ex.getIn().getBody(byte[].class), Charset.forName("Cp037")), ex);
+            return generateResponse(new String(ex.getIn().getBody(byte[].class), StandardCharsets.UTF_8), ex);
         }
         return generateResponse(ex.getIn().getBody(String.class), ex);
 
@@ -112,30 +118,80 @@ public class Jt400Resource {
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
     public Response keyedDataQueueWrite(@QueryParam("key") String key,
-            @QueryParam("searchType") String searchType,
+                                        @QueryParam("format") String format,
             String data) {
+        String _format = Optional.ofNullable(format).orElse("text");
         boolean keyed = key != null;
         StringBuilder suffix = new StringBuilder();
         Map<String, Object> headers = new HashMap<>();
 
         if (keyed) {
-            suffix.append(jt400KeyedQueue).append("?keyed=true");
+            suffix.append(jt400KeyedQueue).append("?keyed=true").append("&format=").append(_format);
             headers.put(Jt400Endpoint.KEY, key);
         } else {
-            suffix.append(jt400LifoQueue);
+            suffix.append(jt400LifoQueue).append("?format=").append(_format);
         }
 
-        Object ex = producerTemplate.requestBodyAndHeaders(
-                getUrlForLibrary(suffix.toString()),
-                "Hello " + data,
-                headers);
-        return Response.ok().entity(ex).build();
+        Object retVal;
+        if ("binary".equals(format)) {
+            byte[] result = (byte[])producerTemplate.requestBodyAndHeaders(
+                    getUrlForLibrary(suffix.toString()),
+                    ("Hello " + data).getBytes(StandardCharsets.UTF_8),
+                    headers);
+            retVal= new String(result, StandardCharsets.UTF_8);
+        } else {
+            retVal = producerTemplate.requestBodyAndHeaders(
+                    getUrlForLibrary(suffix.toString()),
+                    "Hello " + data,
+                    headers);
+            }
+
+        return Response.ok().entity(retVal).build();
+    }
+
+    @Path("/route/{route}/{action}")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response startRoute(@PathParam("route") String routeName, @PathParam("action") String action) throws Exception {
+        if ("start".equals(action)) {
+            if (context.getRouteController().getRouteStatus(routeName).isStartable()) {
+                context.getRouteController().startRoute(routeName);
+            }
+
+            return Response.ok().entity(context.getRouteController().getRouteStatus(routeName).isStarted()).build();
+        }
+
+        if ("stop".equals(action)) {
+            if (context.getRouteController().getRouteStatus(routeName).isStoppable()) {
+                context.getRouteController().stopRoute(routeName);
+            }
+            boolean resp = context.getRouteController().getRouteStatus(routeName).isStopped();
+
+            //stop component to avoid CPF2451 Message queue REPLYMSGQ is allocated to another job.
+            Jt400Endpoint jt400Endpoint = context.getEndpoint(getUrlForLibrary(jt400MessageReplyToQueue), Jt400Endpoint.class);
+            jt400Endpoint.close();
+
+            return Response.ok().entity(resp).build();
+        }
+
+        return Response.status(500).entity("Unknown action.").build();
+    }
+
+    @Path("/inquiryMessageProcessed")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String inquiryMessageProcessed() {
+        return String.valueOf(inquiryMessageHolder.isProcessed());
     }
 
     @Path("/client/inquiryMessage/write/")
     @POST
     @Produces(MediaType.TEXT_PLAIN)
     public Response clientInquiryMessageWrite(String data) throws Exception {
+
+        //set the value to the holder, for the route to respond to this message only (because of parallel runs)
+        inquiryMessageHolder.setMessageText(data);
+
         Jt400Endpoint jt400Endpoint = context.getEndpoint(getUrlForLibrary(jt400MessageReplyToQueue), Jt400Endpoint.class);
         AS400 as400 = jt400Endpoint.getConfiguration().getConnection();
         //send inquiry message (with the same client as is used in the component, to avoid `CPF2451 Message queue TESTMSGQ is allocated to another job`.
@@ -145,6 +201,7 @@ public class Jt400Resource {
         } catch (Exception e) {
             return Response.status(500).entity(e.getMessage()).build();
         }
+        as400.disconnectAllServices();
         return Response.ok().build();
     }
 
@@ -176,7 +233,7 @@ public class Jt400Resource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response messageQueueRead(@QueryParam("queue") String queue) {
         Exchange ex = consumerTemplate
-                .receive(getUrlForLibrary(queue == null ? jt400MessageQueue : queue));
+                .receive(getUrlForLibrary(queue == null ? jt400MessageQueue : queue) + "?messageAction=SAME");
 
         return generateResponse(ex.getIn().getBody(String.class), ex);
     }
