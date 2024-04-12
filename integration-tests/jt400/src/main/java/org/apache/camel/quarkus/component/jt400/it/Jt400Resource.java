@@ -141,7 +141,7 @@ public class Jt400Resource {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public Response startRoute(@PathParam("route") String routeName, @PathParam("action") String action) throws Exception {
-        if("start".equals(action)) {
+        if ("start".equals(action)) {
             if (context.getRouteController().getRouteStatus(routeName).isStartable()) {
                 context.getRouteController().startRoute(routeName);
             }
@@ -149,11 +149,11 @@ public class Jt400Resource {
             return Response.ok().entity(context.getRouteController().getRouteStatus(routeName).isStarted()).build();
         }
 
-        if("stop".equals(action)) {
+        if ("stop".equals(action)) {
             if (context.getRouteController().getRouteStatus(routeName).isStoppable()) {
                 context.getRouteController().stopRoute(routeName);
             }
-            boolean resp =  context.getRouteController().getRouteStatus(routeName).isStopped();
+            boolean resp = context.getRouteController().getRouteStatus(routeName).isStopped();
 
             //stop component to avoid CPF2451 Message queue REPLYMSGQ is allocated to another job.
             Jt400Endpoint jt400Endpoint = context.getEndpoint(getUrlForLibrary(jt400MessageReplyToQueue), Jt400Endpoint.class);

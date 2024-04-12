@@ -16,9 +16,7 @@
  */
 package org.apache.camel.quarkus.component.jt400.it;
 
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.ibm.as400.access.QueuedMessage;
@@ -31,7 +29,6 @@ import org.awaitility.Awaitility;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
@@ -102,7 +99,7 @@ public class Jt400Test {
                 .then()
                 .statusCode(200)
                 .body(Matchers.equalTo("Hello " + msg2));
-//
+        //
         RestAssured.given()
                 .body(getClientHelper().getKey1ForKeyedDataQueue())
                 .post("/jt400/dataQueue/read/")
@@ -160,54 +157,59 @@ public class Jt400Test {
 
         Assertions.assertNotNull(getClientHelper().getQueueMessage(msg));
 
-
     }
 
     @Test
-//    @Disabled //CPF2451 Message queue REPLYMSGQ is allocated to another job.
-    public void testInquiryMessageQueue() throws InterruptedException {
+    //    @Disabled //CPF2451 Message queue REPLYMSGQ is allocated to another job.
+    public void testInquiryMessageQueue() throws Exception {
         String msg = RandomStringUtils.randomAlphanumeric(10).toLowerCase(Locale.ROOT);
 
-            //sending a message using the same client as component
-            RestAssured.given()
-                    .body(msg)
-                    .post("/jt400/client/inquiryMessage/write")
-                    .then()
-                    .statusCode(200);
+        //sending a message using the same client as component
+        RestAssured.given()
+                .body(msg)
+                .post("/jt400/client/inquiryMessage/write")
+                .then()
+                .statusCode(200);
 
-            //start route before sending message
-            Awaitility.await().atMost(10, TimeUnit.SECONDS).until(
-                    () -> RestAssured.get("/jt400/route/inquiryRoute/start")
-                            .then()
-                            .statusCode(200)
-                            .extract().asString(),
-                    Matchers.is(Boolean.TRUE.toString()));
+        //register deletion of the messae in case some following task fails
+        QueuedMessage queueMessage = getClientHelper().getReplyToQueueMessage(msg);
+        Assertions.assertNotNull(queueMessage);
 
 
-            //await to be processed
-            Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(20, TimeUnit.SECONDS).until(
-                    () -> RestAssured.get("/jt400/inquiryMessageProcessed")
+        //start route before sending message
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(
+                () -> RestAssured.get("/jt400/route/inquiryRoute/start")
                         .then()
                         .statusCode(200)
                         .extract().asString(),
-                    Matchers.is(String.valueOf(Boolean.TRUE)));
-Thread.sleep(5000);
-            //stop route
-            Awaitility.await().atMost(10, TimeUnit.SECONDS).until(
-                    () -> RestAssured.get("/jt400/route/inquiryRoute/stop")
-                            .then()
-                            .statusCode(200)
-                            .extract().asString(),
-                    Matchers.is(Boolean.TRUE.toString()));
+                Matchers.is(Boolean.TRUE.toString()));
 
-            Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(20, TimeUnit.SECONDS).until(
-                    () -> RestAssured.given()
-                        .body(ConfigProvider.getConfig().getValue("cq.jt400.message-replyto-queue", String.class))
-                        .post("/jt400/client/queuedMessage/read")
+        //await to be processed
+        Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(20, TimeUnit.SECONDS).until(
+                () -> RestAssured.get("/jt400/inquiryMessageProcessed")
                         .then()
                         .statusCode(200)
                         .extract().asString(),
-                    Matchers.is("reply to: " + msg));
+                Matchers.is(String.valueOf(Boolean.TRUE)));
+
+        //stop route
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(
+                () -> RestAssured.get("/jt400/route/inquiryRoute/stop")
+                        .then()
+                        .statusCode(200)
+                        .extract().asString(),
+                Matchers.is(Boolean.TRUE.toString()));
+
+        Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(20, TimeUnit.SECONDS).until(
+                () -> {
+                    QueuedMessage queuedMessage = getClientHelper().getReplyToQueueMessage("reply to: " + msg);
+                    if(queuedMessage != null) {
+                        //register to delete
+                        getClientHelper().addQueueMessageKeyToDelete(queueMessage.getKey());
+                    }
+                    return queuedMessage;
+                },
+                Matchers.notNullValue());
 
     }
 
@@ -222,7 +224,7 @@ Thread.sleep(5000);
                 .body(Matchers.containsString("hello camel"));
     }
 
- /*   private static void clearQueue(String queue, BiFunctionWithException<AS400, String, Object> readFromQueue) {
+    /*   private static void clearQueue(String queue, BiFunctionWithException<AS400, String, Object> readFromQueue) {
         String jt400Url = ConfigProvider.getConfig().getValue("cq.jt400.url", String.class);
         String jt400Username = ConfigProvider.getConfig().getValue("cq.jt400.username", String.class);
         String jt400Password = ConfigProvider.getConfig().getValue("cq.jt400.password", String.class);
@@ -268,7 +270,7 @@ Thread.sleep(5000);
         return new MessageQueue(getAs400(), objectPath);
     }
 
-   private static void clearMessageQueue() throws Exception {
+      private static void clearMessageQueue() throws Exception {
         String jt400Url = ConfigProvider.getConfig().getValue("cq.jt400.url", String.class);
         String jt400Username = ConfigProvider.getConfig().getValue("cq.jt400.username", String.class);
         String jt400Password = ConfigProvider.getConfig().getValue("cq.jt400.password", String.class);
@@ -290,42 +292,42 @@ Thread.sleep(5000);
                 }
             });
             //if keys is null, clear whole message queue
-//            if (keys == null) {
-//                queue.remove();
-//            Enumeration<QueuedMessage> msgsEnumeration = queue.getMessages();
-//            while(msgsEnumeration.hasMoreElements()) {
-//                QueuedMessage msg = msgsEnumeration.nextElement();
-//                queue.remove();
-//            }
-//            }
+    //            if (keys == null) {
+    //                queue.remove();
+    //            Enumeration<QueuedMessage> msgsEnumeration = queue.getMessages();
+    //            while(msgsEnumeration.hasMoreElements()) {
+    //                QueuedMessage msg = msgsEnumeration.nextElement();
+    //                queue.remove();
+    //            }
+    //            }
         } finally {
           as400.close();
         }
-//            List<Messag> msgs = Collections.list()
-//
-//        int i = 0;
-//        Object msg;
-//        //read messages until null is received
-//        do {
-//            try {
-//                msg = readFromQueue.apply(as400, objectPath);
-//            } catch (Exception e) {
-//                throw new IllegalStateException("Error when clearing queue " + jt400MessageQueue + "!", e);
-//            }
-//        } while (i++ < 10 && msg != null);
-//
-//        as400.close();
-//
-//        if (i == 10 && msg != null) {
-//            throw new IllegalStateException("There is a message present in a queue " + jt400MessageQueue + "!");
-//        }
+    //            List<Messag> msgs = Collections.list()
+    //
+    //        int i = 0;
+    //        Object msg;
+    //        //read messages until null is received
+    //        do {
+    //            try {
+    //                msg = readFromQueue.apply(as400, objectPath);
+    //            } catch (Exception e) {
+    //                throw new IllegalStateException("Error when clearing queue " + jt400MessageQueue + "!", e);
+    //            }
+    //        } while (i++ < 10 && msg != null);
+    //
+    //        as400.close();
+    //
+    //        if (i == 10 && msg != null) {
+    //            throw new IllegalStateException("There is a message present in a queue " + jt400MessageQueue + "!");
+    //        }
     }
 
     @FunctionalInterface
     private interface BiFunctionWithException<T, U, R> {
         R apply(T t, U u) throws Exception;
     }
-*/
+    */
     public Jt400ClientHelper getClientHelper() {
         return clientHelper;
     }
@@ -334,4 +336,3 @@ Thread.sleep(5000);
         this.clientHelper = clientHelper;
     }
 }
-
