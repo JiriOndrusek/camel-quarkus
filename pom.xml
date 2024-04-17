@@ -534,7 +534,6 @@
                             <exclude>**/*.conf</exclude>
                             <exclude>**/*.csv</exclude>
                             <exclude>**/*.der</exclude>
-                            <exclude>**/*.ext</exclude>
                             <exclude>**/*.ftl</exclude>
                             <exclude>**/*.graphql</exclude>
                             <exclude>**/*.ics</exclude>
@@ -551,7 +550,6 @@
                             <exclude>**/*.mp4</exclude>
                             <exclude>**/*.mvel</exclude>
                             <exclude>**/*.p12</exclude>
-                            <exclude>**/*.pkcs12</exclude>
                             <exclude>**/*.pem</exclude>
                             <exclude>**/*.pgp</exclude>
                             <exclude>**/*.proto</exclude>
