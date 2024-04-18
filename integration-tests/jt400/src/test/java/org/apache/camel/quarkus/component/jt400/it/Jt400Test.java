@@ -41,12 +41,12 @@ public class Jt400Test {
 
     private final int MSG_LENGTH = 20;
     //tests may be executed in parallel, therefore the timeout is a little bigger in case the test has to wait for another one
-    private final int WAIT_IN_SECONDS = 20;
+    private final int WAIT_IN_SECONDS = 60;
 
     @BeforeAll
     public static void beforeAll() throws Exception {
         //for development purposes
-        //        logQueues();
+        logQueues();
 
         //lock execution
         Jt400TestResource.CLIENT_HELPER.lock();
@@ -55,6 +55,9 @@ public class Jt400Test {
     @AfterAll
     public static void afterAll() throws Exception {
         getClientHelper().unlock();
+
+        //for development purposes
+        logQueues();
     }
 
     private static void logQueues() throws Exception {
@@ -236,14 +239,26 @@ public class Jt400Test {
                 Matchers.is(Boolean.TRUE.toString()));
         LOGGER.debug("testInquiryMessageQueue: inquiry route started");
 
+//        //debug, that the message is present when route starts
+//        queuedMessage = getClientHelper().peekReplyToQueueMessage(msg);
+//        if (queuedMessage != null) {
+//            LOGGER.debug("testInquiryMessageQueue: message confirmed by peek (after route started): " + msg);
+//        }
+
         //await to be processed
-        Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(20, TimeUnit.SECONDS).until(
+        Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
                 () -> RestAssured.get("/jt400/inquiryMessageProcessed")
                         .then()
                         .statusCode(200)
                         .extract().asString(),
                 Matchers.is(String.valueOf(Boolean.TRUE)));
         LOGGER.debug("testInquiryMessageQueue: inquiry message processed");
+//
+//        //debug, that the message is present when route starts
+//        queuedMessage = getClientHelper().peekReplyToQueueMessage(msg);
+//        if (queuedMessage != null) {
+//            LOGGER.debug("testInquiryMessageQueue: message confirmed by peek (after route stopped): " + msg);
+//        }
 
         //stop route (and wait for stop)
         Awaitility.await().atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(

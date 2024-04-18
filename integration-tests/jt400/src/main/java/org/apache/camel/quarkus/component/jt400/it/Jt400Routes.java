@@ -52,6 +52,7 @@ public class Jt400Routes extends RouteBuilder {
                 .id("inquiryRoute")
                 //route has tobe stopped to avoid "CPF2451 Message queue REPLYMSGQ is allocated to another job."
                 .autoStartup(false)
+                .log("Inquiry route received ${body}")
                 .choice()
                 .when(header(Jt400Constants.MESSAGE_TYPE).isEqualTo(AS400Message.INQUIRY))
                 .process((exchange) -> {

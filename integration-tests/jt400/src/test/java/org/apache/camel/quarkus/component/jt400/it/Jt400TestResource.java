@@ -80,7 +80,7 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
     //5 minute timeout to obtain a log for the tests execution
     private final static int LOCK_TIMEOUT = 300000;
 
-    private static AS400 as400 = new AS400(JT400_URL, JT400_USERNAME, JT400_PASSWORD);;
+
 
     @Override
     public Map<String, String> start() {
@@ -90,13 +90,10 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
 
     @Override
     public void stop() {
-        if (as400 != null) {
-            try {
-                CLIENT_HELPER.clearAll(JT400_CLEAR_ALL.isPresent() && Boolean.parseBoolean(JT400_CLEAR_ALL.get()));
-            } catch (Exception e) {
-                LOGGER.debug("Clearing of the external queues failed", e);
-            }
-            as400.close();
+        try {
+            CLIENT_HELPER.clearAll(JT400_CLEAR_ALL.isPresent() && Boolean.parseBoolean(JT400_CLEAR_ALL.get()));
+        } catch (Exception e) {
+            LOGGER.debug("Clearing of the external queues failed", e);
         }
     }
 
@@ -115,18 +112,24 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
         }
 
         private QueuedMessage getQueueMessage(String queue, String msg) throws Exception {
-            MessageQueue messageQueue = new MessageQueue(as400,
-                    getObjectPath(queue));
-            Enumeration<QueuedMessage> msgs = messageQueue.getMessages();
+            AS400 as400 = getAs400();
+            try {
+                MessageQueue messageQueue = new MessageQueue(as400,
+                        getObjectPath(queue));
+                Enumeration<QueuedMessage> msgs = messageQueue.getMessages();
 
-            while (msgs.hasMoreElements()) {
-                QueuedMessage queuedMessage = msgs.nextElement();
+                while (msgs.hasMoreElements()) {
+                    QueuedMessage queuedMessage = msgs.nextElement();
 
-                if (msg.equals(queuedMessage.getText())) {
-                    return queuedMessage;
+                    if (msg.equals(queuedMessage.getText())) {
+                        return queuedMessage;
+                    }
                 }
+                return null;
+
+            } finally {
+                as400.close();
             }
-            return null;
         }
 
         @Override
@@ -142,65 +145,85 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
 
         @Override
         public void clearAll(boolean all) throws Exception {
-            //message queue
-            MessageQueue mq = new MessageQueue(as400, getObjectPath(JT400_MESSAGE_QUEUE));
-            if (all) {
-                mq.remove();
-            } else if (toRemove.containsKey(RESOURCE_TYPE.messageQueue)) {
-                clearMessageQueue(RESOURCE_TYPE.messageQueue, mq);
+            AS400 as400 = getAs400();
+
+            try {
+                if (all) {
+                    LOGGER.debug("Attention! Clearing all data.");
+                }
+                //message queue
+                MessageQueue mq = new MessageQueue(as400, getObjectPath(JT400_MESSAGE_QUEUE));
+                if (all) {
+                    mq.remove();
+                } else if (toRemove.containsKey(RESOURCE_TYPE.messageQueue)) {
+                    clearMessageQueue(RESOURCE_TYPE.messageQueue, mq);
+                }
+
+                //lifo queue
+                DataQueue dq = new DataQueue(as400, getObjectPath(JT400_LIFO_QUEUE));
+                if (all) {
+                    for (int i = 01; i < CLEAR_DEPTH; i++) {
+                        if (dq.read() == null) {
+                            break;
+                        }
+                    }
+                } else if (toRemove.containsKey(RESOURCE_TYPE.lifoQueueu)) {
+                    for (Object entry : toRemove.get(RESOURCE_TYPE.lifoQueueu)) {
+                        List<byte[]> otherMessages = new LinkedList<>();
+                        DataQueueEntry dqe = dq.read();
+                        while (dqe != null && !(entry.equals(dqe.getString())
+                                || entry.equals(new String(dqe.getData(), StandardCharsets.UTF_8)))) {
+                            otherMessages.add(dqe.getData());
+                            dqe = dq.read();
+                        }
+                        //write back other messages in reverse order (it is a lifo)
+                        Collections.reverse(otherMessages);
+                        for (byte[] msg : otherMessages) {
+                            dq.write(msg);
+                        }
+                    }
+                }
+                //reply-to queue
+                MessageQueue rq = new MessageQueue(as400, getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE));
+                if (all) {
+                    rq.remove();
+                } else if (toRemove.containsKey(RESOURCE_TYPE.replyToQueueu)) {
+                    clearMessageQueue(RESOURCE_TYPE.replyToQueueu, rq);
+                }
+
+                //keyed queue
+                KeyedDataQueue kdq = new KeyedDataQueue(as400, getObjectPath(JT400_KEYED_QUEUE));
+                if (all) {
+                    kdq.clear();
+                } else if (toRemove.containsKey(RESOURCE_TYPE.keyedDataQue)) {
+                    for (Object entry : toRemove.get(RESOURCE_TYPE.keyedDataQue)) {
+                        kdq.clear((String) entry);
+                    }
+                }
+
+            } finally {
+                as400.close();
             }
 
-            //lifo queue
-            DataQueue dq = new DataQueue(as400, getObjectPath(JT400_LIFO_QUEUE));
-            if (all) {
-                for (int i = 01; i < CLEAR_DEPTH; i++) {
-                    if (dq.read() == null) {
-                        break;
-                    }
-                }
-            } else if (toRemove.containsKey(RESOURCE_TYPE.lifoQueueu)) {
-                for (Object entry : toRemove.get(RESOURCE_TYPE.lifoQueueu)) {
-                    List<byte[]> otherMessages = new LinkedList<>();
-                    DataQueueEntry dqe = dq.read();
-                    while (dqe != null && !(entry.equals(dqe.getString())
-                            || entry.equals(new String(dqe.getData(), StandardCharsets.UTF_8)))) {
-                        otherMessages.add(dqe.getData());
-                        dqe = dq.read();
-                    }
-                    //write back other messages in reverse order (it is a lifo)
-                    Collections.reverse(otherMessages);
-                    for (byte[] msg : otherMessages) {
-                        dq.write(msg);
-                    }
-                }
-            }
-            //reply-to queue
-            MessageQueue rq = new MessageQueue(as400, getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE));
-            if (all) {
-                rq.remove();
-            } else if (toRemove.containsKey(RESOURCE_TYPE.replyToQueueu)) {
-                clearMessageQueue(RESOURCE_TYPE.replyToQueueu, rq);
-            }
-
-            //keyed queue
-            KeyedDataQueue kdq = new KeyedDataQueue(as400, getObjectPath(JT400_KEYED_QUEUE));
-            if (all) {
-                kdq.clear();
-            } else if (toRemove.containsKey(RESOURCE_TYPE.keyedDataQue)) {
-                for (Object entry : toRemove.get(RESOURCE_TYPE.keyedDataQue)) {
-                    kdq.clear((String) entry);
-                }
-            }
         }
 
-        private void clearMessageQueue(RESOURCE_TYPE type, MessageQueue mq) throws AS400SecurityException,
+        private void clearMessageQueue(RESOURCE_TYPE type, MessageQueue mq) throws Exception,
                 ErrorCompletingRequestException, InterruptedException, IOException, ObjectDoesNotExistException {
             if (!toRemove.get(type).isEmpty()) {
                 List<QueuedMessage> msgs = Collections.list(mq.getMessages());
-                Map<String, byte[]> keys = msgs.stream().collect(Collectors.toMap(q -> q.getText(), q -> q.getKey()));
+                Map<String, Set<byte[]>> keys = new HashMap<>();
+                for (QueuedMessage queuedMessage: msgs) {
+                    if(!keys.containsKey(queuedMessage.getText())) {
+                        keys.put(queuedMessage.getText(), new HashSet<>());
+                    }
+                    keys.get(queuedMessage.getText()).add(queuedMessage.getKey());
+                }
                 for (Object entry : toRemove.get(type)) {
+                    LOGGER.debug("Removing msg " + entry + " from the queue " + type);
                     if (entry instanceof String) {
-                        mq.remove(keys.get((String) entry));
+                        for (byte[] key: keys.get((String)entry)) {
+                            mq.remove(key);
+                        }
                     } else {
                         mq.remove((byte[]) entry);
                     }
@@ -234,12 +257,12 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
             if (key == null) {
                 key = generateKey();
                 //write key into keyed queue
-                KeyedDataQueue kdq = new KeyedDataQueue(as400, getObjectPath(JT400_KEYED_QUEUE));
+                KeyedDataQueue kdq = new KeyedDataQueue(getAs400(), getObjectPath(JT400_KEYED_QUEUE));
 
                 Assertions.assertTrue(kdq.isFIFO(), "keyed dataqueue has to be FIFO");
 
                 kdq.write(LOCK_KEY, key);
-
+                LOGGER.debug("Asked for lock " + key);
                 //added 5 seconds for the timeout, to have some spare time for removing old locks
                 Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(LOCK_TIMEOUT + 5000, TimeUnit.SECONDS)
                         .until(
@@ -272,7 +295,7 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
         @Override
         public void unlock() throws Exception {
             Assertions.assertEquals(key,
-                    new KeyedDataQueue(as400, getObjectPath(JT400_KEYED_QUEUE)).read(LOCK_KEY).getString());
+                    new KeyedDataQueue(getAs400(), getObjectPath(JT400_KEYED_QUEUE)).read(LOCK_KEY).getString());
             //clear key
             key = null;
         }
@@ -286,16 +309,16 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
             StringBuilder sb = new StringBuilder();
 
             sb.append("\n* MESSAGE QUEUE\n");
-            sb.append("\t" + Collections.list(new MessageQueue(as400, getObjectPath(JT400_MESSAGE_QUEUE)).getMessages())
+            sb.append("\t" + Collections.list(new MessageQueue(getAs400(), getObjectPath(JT400_MESSAGE_QUEUE)).getMessages())
                     .stream().map(mq -> mq.getText()).sorted().collect(Collectors.joining(", ")));
 
             sb.append("\n* INQUIRY QUEUE\n");
             sb.append("\t" + Collections
-                    .list(new MessageQueue(as400, getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE)).getMessages())
+                    .list(new MessageQueue(getAs400(), getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE)).getMessages())
                     .stream().map(mq -> mq.getText()).sorted().collect(Collectors.joining(", ")));
 
             sb.append("\n* LIFO QUEUE\n");
-            DataQueue dq = new DataQueue(as400, getObjectPath(JT400_LIFO_QUEUE));
+            DataQueue dq = new DataQueue(getAs400(), getObjectPath(JT400_LIFO_QUEUE));
             DataQueueEntry dqe;
             List<byte[]> lifoMessages = new LinkedList<>();
             List<String> lifoTexts = new LinkedList<>();
@@ -315,17 +338,21 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
             sb.append(lifoTexts.stream().collect(Collectors.joining(", ")));
 
             sb.append("\n* KEYED DATA QUEUE\n");
-            KeyedDataQueue kdq = new KeyedDataQueue(as400, getObjectPath(JT400_KEYED_QUEUE));
+            KeyedDataQueue kdq = new KeyedDataQueue(getAs400(), getObjectPath(JT400_KEYED_QUEUE));
             KeyedDataQueueEntry kdqe = kdq.peek(LOCK_KEY);
             sb.append("\tlock: " + (kdqe == null ? "null" : kdqe.getString()));
             return sb.toString();
         }
 
         public void sendInquiry(String msg) throws Exception {
-            new MessageQueue(as400, getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE)).sendInquiry(msg,
+            new MessageQueue(getAs400(), getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE)).sendInquiry(msg,
                     getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE));
         }
     };
+
+    private static AS400 getAs400() {
+        return new AS400(JT400_URL, JT400_USERNAME, JT400_PASSWORD);
+    }
 
 }
 
