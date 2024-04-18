@@ -214,15 +214,6 @@ public class Jt400Test {
 
         LOGGER.debug("testInquiryMessageQueue: writing " + msg);
 
-        //sending a message using the same client as component
-        getClientHelper().sendInquiry(msg);
-
-        //register deletion of the message in case some following task fails
-        QueuedMessage queuedMessage = getClientHelper().peekReplyToQueueMessage(msg);
-        if (queuedMessage != null) {
-            getClientHelper().registerForRemoval(Jt400TestResource.RESOURCE_TYPE.replyToQueueu, queuedMessage.getKey());
-            LOGGER.debug("testInquiryMessageQueue: message confirmed by peek: " + msg);
-        }
 
         //set filter for expected messages (for parallel executions)
         RestAssured.given()
@@ -239,11 +230,22 @@ public class Jt400Test {
                 Matchers.is(Boolean.TRUE.toString()));
         LOGGER.debug("testInquiryMessageQueue: inquiry route started");
 
-//        //debug, that the message is present when route starts
-//        queuedMessage = getClientHelper().peekReplyToQueueMessage(msg);
-//        if (queuedMessage != null) {
-//            LOGGER.debug("testInquiryMessageQueue: message confirmed by peek (after route started): " + msg);
-//        }
+        //        //debug, that the message is present when route starts
+        //        queuedMessage = getClientHelper().peekReplyToQueueMessage(msg);
+        //        if (queuedMessage != null) {
+        //            LOGGER.debug("testInquiryMessageQueue: message confirmed by peek (after route started): " + msg);
+        //        }
+
+
+        //sending a message using the same client as component
+        getClientHelper().sendInquiry(msg);
+
+        //register deletion of the message in case some following task fails
+        QueuedMessage queuedMessage = getClientHelper().peekReplyToQueueMessage(msg);
+        if (queuedMessage != null) {
+            getClientHelper().registerForRemoval(Jt400TestResource.RESOURCE_TYPE.replyToQueueu, queuedMessage.getKey());
+            LOGGER.debug("testInquiryMessageQueue: message confirmed by peek: " + msg);
+        }
 
         //await to be processed
         Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
@@ -253,12 +255,12 @@ public class Jt400Test {
                         .extract().asString(),
                 Matchers.is(String.valueOf(Boolean.TRUE)));
         LOGGER.debug("testInquiryMessageQueue: inquiry message processed");
-//
-//        //debug, that the message is present when route starts
-//        queuedMessage = getClientHelper().peekReplyToQueueMessage(msg);
-//        if (queuedMessage != null) {
-//            LOGGER.debug("testInquiryMessageQueue: message confirmed by peek (after route stopped): " + msg);
-//        }
+        //
+        //        //debug, that the message is present when route starts
+        //        queuedMessage = getClientHelper().peekReplyToQueueMessage(msg);
+        //        if (queuedMessage != null) {
+        //            LOGGER.debug("testInquiryMessageQueue: message confirmed by peek (after route stopped): " + msg);
+        //        }
 
         //stop route (and wait for stop)
         Awaitility.await().atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(

@@ -32,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.ibm.as400.access.AS400;
-import com.ibm.as400.access.AS400SecurityException;
 import com.ibm.as400.access.DataQueue;
 import com.ibm.as400.access.DataQueueEntry;
 import com.ibm.as400.access.ErrorCompletingRequestException;
@@ -212,8 +211,8 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
             if (!toRemove.get(type).isEmpty()) {
                 List<QueuedMessage> msgs = Collections.list(mq.getMessages());
                 Map<String, Set<byte[]>> keys = new HashMap<>();
-                for (QueuedMessage queuedMessage: msgs) {
-                    if(!keys.containsKey(queuedMessage.getText())) {
+                for (QueuedMessage queuedMessage : msgs) {
+                    if (!keys.containsKey(queuedMessage.getText())) {
                         keys.put(queuedMessage.getText(), new HashSet<>());
                     }
                     keys.get(queuedMessage.getText()).add(queuedMessage.getKey());
@@ -221,7 +220,7 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
                 for (Object entry : toRemove.get(type)) {
                     LOGGER.debug("Removing msg " + entry + " from the queue " + type);
                     if (entry instanceof String) {
-                        for (byte[] key: keys.get((String)entry)) {
+                        for (byte[] key : keys.get((String) entry)) {
                             mq.remove(key);
                         }
                     } else {
