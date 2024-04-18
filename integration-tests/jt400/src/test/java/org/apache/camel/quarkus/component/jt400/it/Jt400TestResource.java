@@ -90,7 +90,7 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
     @Override
     public void stop() {
         try {
-            CLIENT_HELPER.clearAll(JT400_CLEAR_ALL.isPresent() && Boolean.parseBoolean(JT400_CLEAR_ALL.get()));
+            CLIENT_HELPER.clear();
         } catch (Exception e) {
             LOGGER.debug("Clearing of the external queues failed", e);
         }
@@ -103,6 +103,7 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
     public static Jt400ClientHelper CLIENT_HELPER = new Jt400ClientHelper() {
 
         private String key = null;
+        private boolean cleared = false;
         Map<RESOURCE_TYPE, Set<Object>> toRemove = new HashMap<>();
 
         @Override
@@ -143,7 +144,13 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
         }
 
         @Override
-        public void clearAll(boolean all) throws Exception {
+        public void clear() throws Exception {
+            //clear only once
+            if(cleared) {
+                return;
+            }
+            boolean all = JT400_CLEAR_ALL.isPresent() && Boolean.parseBoolean(JT400_CLEAR_ALL.get());
+
             AS400 as400 = getAs400();
 
             try {
@@ -201,6 +208,7 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
                 }
 
             } finally {
+                cleared = true;
                 as400.close();
             }
 
@@ -365,7 +373,7 @@ interface Jt400ClientHelper {
 
     //------------------- clear listeners ------------------------------
 
-    void clearAll(boolean all) throws Exception;
+    void clear() throws Exception;
 
     //----------------------- locking
 

@@ -45,19 +45,22 @@ public class Jt400Test {
 
     @BeforeAll
     public static void beforeAll() throws Exception {
+        //lock execution
+        getClientHelper().lock();
+
         //for development purposes
         logQueues();
-
-        //lock execution
-        Jt400TestResource.CLIENT_HELPER.lock();
     }
 
     @AfterAll
     public static void afterAll() throws Exception {
-        getClientHelper().unlock();
-
         //for development purposes
         logQueues();
+
+        //clear data after tests and before unlocking
+        getClientHelper().clear();
+
+        getClientHelper().unlock();
     }
 
     private static void logQueues() throws Exception {
@@ -212,7 +215,18 @@ public class Jt400Test {
         String msg = RandomStringUtils.randomAlphanumeric(10).toLowerCase(Locale.ROOT);
         String replyMsg = "reply to: " + msg;
 
-        LOGGER.debug("testInquiryMessageQueue: writing " + msg);
+        //sending a message using the same client as component
+        getClientHelper().sendInquiry(msg);
+
+        LOGGER.debug("testInquiryMessageQueue: message " + msg + " written via client");
+
+        //register deletion of the message in case some following task fails
+        QueuedMessage queuedMessage = getClientHelper().peekReplyToQueueMessage(msg);
+        if (queuedMessage != null) {
+            getClientHelper().registerForRemoval(Jt400TestResource.RESOURCE_TYPE.replyToQueueu, queuedMessage.getKey());
+            LOGGER.debug("testInquiryMessageQueue: message confirmed by peek: " + msg);
+        }
+
 
 
         //set filter for expected messages (for parallel executions)
@@ -237,15 +251,7 @@ public class Jt400Test {
         //        }
 
 
-        //sending a message using the same client as component
-        getClientHelper().sendInquiry(msg);
 
-        //register deletion of the message in case some following task fails
-        QueuedMessage queuedMessage = getClientHelper().peekReplyToQueueMessage(msg);
-        if (queuedMessage != null) {
-            getClientHelper().registerForRemoval(Jt400TestResource.RESOURCE_TYPE.replyToQueueu, queuedMessage.getKey());
-            LOGGER.debug("testInquiryMessageQueue: message confirmed by peek: " + msg);
-        }
 
         //await to be processed
         Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
