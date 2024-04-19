@@ -111,7 +111,7 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
         }
 
         private QueuedMessage getQueueMessage(String queue, String msg) throws Exception {
-            AS400 as400 = getAs400();
+            AS400 as400 = createAs400();
             try {
                 MessageQueue messageQueue = new MessageQueue(as400,
                         getObjectPath(queue));
@@ -150,7 +150,7 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
             }
             boolean all = JT400_CLEAR_ALL.isPresent() && Boolean.parseBoolean(JT400_CLEAR_ALL.get());
 
-            AS400 as400 = getAs400();
+            AS400 as400 = createAs400();
 
             try {
                 if (all) {
@@ -238,13 +238,20 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
         }
 
         /**
-         * todo
+         * Locking mechanism is based on Integrated file system and it file locking (which is part of JTOpen)
+         *
+         * File <i>/home/${JT400_USERNAME}/lock</i> has to exists.
+         * Each lock ateempt asks for lock of inputStream for that file.
+         * At the end of the execution the lock is released.
+         *
+         * Important!
+         * The underlying AS400 (used for opening the stream) has to stay connected, otherwise the lock is released.
          */
         @Override
         public void lock() throws Exception {
 
             if (lockKey == null) {
-                lockAs400 = getAs400();
+                lockAs400 = createAs400();
                 lockFile = new IFSFileInputStream(lockAs400, "/home/REDHAT5/lock");
 
                 LOGGER.debug("Asked for lock.");
@@ -279,51 +286,62 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
 
         @Override
         public String dumpQueues() throws Exception {
-            StringBuilder sb = new StringBuilder();
+            AS400 as400 = createAs400();
+            try {
+                StringBuilder sb = new StringBuilder();
 
-            sb.append("\n* MESSAGE QUEUE\n");
-            sb.append("\t" + Collections.list(new MessageQueue(getAs400(), getObjectPath(JT400_MESSAGE_QUEUE)).getMessages())
-                    .stream().map(mq -> mq.getText()).sorted().collect(Collectors.joining(", ")));
+                sb.append("\n* MESSAGE QUEUE\n");
+                sb.append("\t" + Collections.list(new MessageQueue(as400, getObjectPath(JT400_MESSAGE_QUEUE)).getMessages())
+                        .stream().map(mq -> mq.getText()).sorted().collect(Collectors.joining(", ")));
 
-            sb.append("\n* INQUIRY QUEUE\n");
-            sb.append("\t" + Collections
-                    .list(new MessageQueue(getAs400(), getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE)).getMessages())
-                    .stream().map(mq -> mq.getText()).sorted().collect(Collectors.joining(", ")));
+                sb.append("\n* INQUIRY QUEUE\n");
+                sb.append("\t" + Collections
+                        .list(new MessageQueue(as400, getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE)).getMessages())
+                        .stream().map(mq -> mq.getText()).sorted().collect(Collectors.joining(", ")));
 
-            sb.append("\n* LIFO QUEUE\n");
-            DataQueue dq = new DataQueue(getAs400(), getObjectPath(JT400_LIFO_QUEUE));
-            DataQueueEntry dqe;
-            List<byte[]> lifoMessages = new LinkedList<>();
-            List<String> lifoTexts = new LinkedList<>();
-            do {
-                dqe = dq.read();
-                if (dqe != null) {
-                    lifoTexts.add(dqe.getString() + " (" + new String(dqe.getData(), StandardCharsets.UTF_8) + ")");
-                    lifoMessages.add(dqe.getData());
+                sb.append("\n* LIFO QUEUE\n");
+                DataQueue dq = new DataQueue(as400, getObjectPath(JT400_LIFO_QUEUE));
+                DataQueueEntry dqe;
+                List<byte[]> lifoMessages = new LinkedList<>();
+                List<String> lifoTexts = new LinkedList<>();
+                do {
+                    dqe = dq.read();
+                    if (dqe != null) {
+                        lifoTexts.add(dqe.getString() + " (" + new String(dqe.getData(), StandardCharsets.UTF_8) + ")");
+                        lifoMessages.add(dqe.getData());
+                    }
+                } while (dqe != null);
+
+                //write back other messages in reverse order (it is a lifo)
+                Collections.reverse(lifoMessages);
+                for (byte[] msg : lifoMessages) {
+                    dq.write(msg);
                 }
-            } while (dqe != null);
+                sb.append(lifoTexts.stream().collect(Collectors.joining(", ")));
 
-            //write back other messages in reverse order (it is a lifo)
-            Collections.reverse(lifoMessages);
-            for (byte[] msg : lifoMessages) {
-                dq.write(msg);
+                sb.append("\n* KEYED DATA QUEUE\n");
+                KeyedDataQueue kdq = new KeyedDataQueue(as400, getObjectPath(JT400_KEYED_QUEUE));
+                KeyedDataQueueEntry kdqe = kdq.peek(LOCK_KEY);
+                sb.append("\tlock: " + (kdqe == null ? "null" : kdqe.getString()));
+                return sb.toString();
+
+            } finally {
+                as400.close();
             }
-            sb.append(lifoTexts.stream().collect(Collectors.joining(", ")));
-
-            sb.append("\n* KEYED DATA QUEUE\n");
-            KeyedDataQueue kdq = new KeyedDataQueue(getAs400(), getObjectPath(JT400_KEYED_QUEUE));
-            KeyedDataQueueEntry kdqe = kdq.peek(LOCK_KEY);
-            sb.append("\tlock: " + (kdqe == null ? "null" : kdqe.getString()));
-            return sb.toString();
         }
 
         public void sendInquiry(String msg) throws Exception {
-            new MessageQueue(getAs400(), getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE)).sendInquiry(msg,
-                    getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE));
+            AS400 as400 = createAs400();
+            try {
+                new MessageQueue(as400, getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE)).sendInquiry(msg,
+                        getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE));
+            } finally {
+                as400.close();
+            }
         }
     };
 
-    private static AS400 getAs400() {
+    private static AS400 createAs400() {
         return new AS400(JT400_URL, JT400_USERNAME, JT400_PASSWORD);
     }
 
