@@ -77,7 +77,7 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
     private final static int CLEAR_DEPTH = 100;
     public final static String LOCK_KEY = "cq.jt400.global-lock";
     //5 minute timeout to obtain a log for the tests execution
-    private final static int LOCK_TIMEOUT = 300000;
+    private final static int LOCK_TIMEOUT = 00000;
 
 
 

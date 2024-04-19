@@ -41,21 +41,24 @@ public class Jt400Test {
 
     private final int MSG_LENGTH = 20;
     //tests may be executed in parallel, therefore the timeout is a little bigger in case the test has to wait for another one
-    private final int WAIT_IN_SECONDS = 60;
+    private final int WAIT_IN_SECONDS = 90;
 
     @BeforeAll
     public static void beforeAll() throws Exception {
         //lock execution
         getClientHelper().lock();
 
-        //for development purposes
-        logQueues();
+//        //for development purposes
+//        logQueues();
     }
 
     @AfterAll
     public static void afterAll() throws Exception {
-        //for development purposes
-        logQueues();
+//        //for development purposes
+//        logQueues();
+
+        //todo trying if it has a impact
+        Thread.sleep(10000);
 
         //clear data after tests and before unlocking
         getClientHelper().clear();
