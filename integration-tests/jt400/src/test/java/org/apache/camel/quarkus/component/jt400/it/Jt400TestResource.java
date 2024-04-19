@@ -46,6 +46,7 @@ import org.awaitility.Awaitility;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.Matchers;
 import org.jboss.logging.Logger;
+import org.junit.jupiter.api.Assertions;
 
 public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
     private static final Logger LOGGER = Logger.getLogger(Jt400TestResource.class);
@@ -88,6 +89,15 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
 
     @Override
     public void stop() {
+
+        //clear data after tests and before unlocking
+        try {
+            CLIENT_HELPER.clear();
+            CLIENT_HELPER.unlock();
+        } catch (Exception e) {
+            Assertions.fail();
+        }
+
         if (lockAs400 != null) {
             lockAs400.close();
         }
@@ -151,66 +161,77 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
             }
             boolean all = JT400_CLEAR_ALL.isPresent() && Boolean.parseBoolean(JT400_CLEAR_ALL.get());
 
-            AS400 as400 = createAs400();
-
-            try {
+//            try {
                 if (all) {
                     LOGGER.debug("Attention! Clearing all data.");
                 }
-                //message queue
-                MessageQueue mq = new MessageQueue(as400, getObjectPath(JT400_MESSAGE_QUEUE));
-                if (all) {
-                    mq.remove();
-                } else if (toRemove.containsKey(RESOURCE_TYPE.messageQueue)) {
-                    clearMessageQueue(RESOURCE_TYPE.messageQueue, mq);
-                }
 
-                //lifo queue
-                DataQueue dq = new DataQueue(as400, getObjectPath(JT400_LIFO_QUEUE));
-                if (all) {
-                    for (int i = 01; i < CLEAR_DEPTH; i++) {
-                        if (dq.read() == null) {
-                            break;
-                        }
-                    }
-                } else if (toRemove.containsKey(RESOURCE_TYPE.lifoQueueu)) {
-                    for (Object entry : toRemove.get(RESOURCE_TYPE.lifoQueueu)) {
-                        List<byte[]> otherMessages = new LinkedList<>();
-                        DataQueueEntry dqe = dq.read();
-                        while (dqe != null && !(entry.equals(dqe.getString())
-                                || entry.equals(new String(dqe.getData(), StandardCharsets.UTF_8)))) {
-                            otherMessages.add(dqe.getData());
-                            dqe = dq.read();
-                        }
-                        //write back other messages in reverse order (it is a lifo)
-                        Collections.reverse(otherMessages);
-                        for (byte[] msg : otherMessages) {
-                            dq.write(msg);
-                        }
-                    }
-                }
+
+            try (AS400 as400 = createAs400()) {
+
                 //reply-to queue
                 MessageQueue rq = new MessageQueue(as400, getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE));
+
                 if (all) {
                     rq.remove();
                 } else if (toRemove.containsKey(RESOURCE_TYPE.replyToQueueu)) {
                     clearMessageQueue(RESOURCE_TYPE.replyToQueueu, rq);
                 }
+            }
 
-                //keyed queue
-                KeyedDataQueue kdq = new KeyedDataQueue(as400, getObjectPath(JT400_KEYED_QUEUE));
-                if (all) {
-                    kdq.clear();
-                } else if (toRemove.containsKey(RESOURCE_TYPE.keyedDataQue)) {
-                    for (Object entry : toRemove.get(RESOURCE_TYPE.keyedDataQue)) {
-                        kdq.clear((String) entry);
+                try (AS400 as400 = createAs400()) {
+                    //message queue
+                    MessageQueue mq = new MessageQueue(as400, getObjectPath(JT400_MESSAGE_QUEUE));
+                    if (all) {
+                        mq.remove();
+                    } else if (toRemove.containsKey(RESOURCE_TYPE.messageQueue)) {
+                        clearMessageQueue(RESOURCE_TYPE.messageQueue, mq);
                     }
                 }
 
-            } finally {
-                cleared = true;
-                as400.close();
-            }
+                try (AS400 as400 = createAs400()) {
+                    //lifo queue
+                    DataQueue dq = new DataQueue(as400, getObjectPath(JT400_LIFO_QUEUE));
+                    if (all) {
+                        for (int i = 01; i < CLEAR_DEPTH; i++) {
+                            if (dq.read() == null) {
+                                break;
+                            }
+                        }
+                    } else if (toRemove.containsKey(RESOURCE_TYPE.lifoQueueu)) {
+                        for (Object entry : toRemove.get(RESOURCE_TYPE.lifoQueueu)) {
+                            List<byte[]> otherMessages = new LinkedList<>();
+                            DataQueueEntry dqe = dq.read();
+                            while (dqe != null && !(entry.equals(dqe.getString())
+                                    || entry.equals(new String(dqe.getData(), StandardCharsets.UTF_8)))) {
+                                otherMessages.add(dqe.getData());
+                                dqe = dq.read();
+                            }
+                            //write back other messages in reverse order (it is a lifo)
+                            Collections.reverse(otherMessages);
+                            for (byte[] msg : otherMessages) {
+                                dq.write(msg);
+                            }
+                        }
+                    }
+                }
+
+                try (AS400 as400 = createAs400()) {
+                    //keyed queue
+                    KeyedDataQueue kdq = new KeyedDataQueue(as400, getObjectPath(JT400_KEYED_QUEUE));
+                    if (all) {
+                        kdq.clear();
+                    } else if (toRemove.containsKey(RESOURCE_TYPE.keyedDataQue)) {
+                        for (Object entry : toRemove.get(RESOURCE_TYPE.keyedDataQue)) {
+                            kdq.clear((String) entry);
+                        }
+                    }
+                }
+
+//            } finally {
+//                cleared = true;
+//                as400.close();
+//            }
 
         }
 
