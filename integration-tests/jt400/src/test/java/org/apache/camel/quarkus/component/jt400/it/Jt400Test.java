@@ -41,15 +41,15 @@ public class Jt400Test {
 
     private final int MSG_LENGTH = 20;
     //tests may be executed in parallel, therefore the timeout is a little bigger in case the test has to wait for another one
-    private final int WAIT_IN_SECONDS = 90;
+    private final int WAIT_IN_SECONDS = 30;
 
     @BeforeAll
     public static void beforeAll() throws Exception {
         //lock execution
         getClientHelper().lock();
 
-        //                //for development purposes
-        //                logQueues();
+        //for development purposes
+        logQueues();
     }
 
     @AfterAll
@@ -211,22 +211,23 @@ public class Jt400Test {
 
     @Test
     public void testInquiryMessageQueue() throws Exception {
+        Thread.sleep(1000);
         LOGGER.debug("** testInquiryMessageQueue() **: has started ");
         String msg = RandomStringUtils.randomAlphanumeric(10).toLowerCase(Locale.ROOT);
         String replyMsg = "reply to: " + msg;
 
         //sending a message using the same client as component
         getClientHelper().sendInquiry(msg);
-
+        Thread.sleep(1000);
         LOGGER.debug("testInquiryMessageQueue: message " + msg + " written via client");
-
+        Thread.sleep(1000);
         //register deletion of the message in case some following task fails
         QueuedMessage queuedMessage = getClientHelper().peekReplyToQueueMessage(msg);
         if (queuedMessage != null) {
             getClientHelper().registerForRemoval(Jt400TestResource.RESOURCE_TYPE.replyToQueueu, queuedMessage.getKey());
             LOGGER.debug("testInquiryMessageQueue: message confirmed by peek: " + msg);
         }
-
+        Thread.sleep(1000);
         //set filter for expected messages (for parallel executions)
         RestAssured.given()
                 .body(msg)
@@ -241,13 +242,13 @@ public class Jt400Test {
                         .extract().asString(),
                 Matchers.is(Boolean.TRUE.toString()));
         LOGGER.debug("testInquiryMessageQueue: inquiry route started");
-
+        Thread.sleep(1000);
         //        //debug, that the message is present when route starts
         //        queuedMessage = getClientHelper().peekReplyToQueueMessage(msg);
         //        if (queuedMessage != null) {
         //            LOGGER.debug("testInquiryMessageQueue: message confirmed by peek (after route started): " + msg);
         //        }
-
+        Thread.sleep(1000);
         //await to be processed
         Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
                 () -> RestAssured.get("/jt400/inquiryMessageProcessed")
@@ -262,7 +263,7 @@ public class Jt400Test {
         //        if (queuedMessage != null) {
         //            LOGGER.debug("testInquiryMessageQueue: message confirmed by peek (after route stopped): " + msg);
         //        }
-
+        Thread.sleep(1000);
         //stop route (and wait for stop)
         Awaitility.await().atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
                 () -> RestAssured.get("/jt400/route/stop/inquiryRoute")
@@ -271,7 +272,7 @@ public class Jt400Test {
                         .extract().asString(),
                 Matchers.is(Boolean.TRUE.toString()));
         LOGGER.debug("testInquiryMessageQueue: inquiry route stooped");
-
+        Thread.sleep(1000);
         //check written message with client
         Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(20, TimeUnit.SECONDS).until(
                 () -> getClientHelper().peekReplyToQueueMessage(replyMsg),

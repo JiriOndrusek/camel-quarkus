@@ -144,6 +144,7 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
 
         @Override
         public void clear() throws Exception {
+            Thread.sleep(1000);
             //clear only once
             if (cleared) {
                 return;
