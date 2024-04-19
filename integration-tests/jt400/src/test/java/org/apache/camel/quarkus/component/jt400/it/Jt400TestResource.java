@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -35,18 +34,18 @@ import com.ibm.as400.access.AS400;
 import com.ibm.as400.access.DataQueue;
 import com.ibm.as400.access.DataQueueEntry;
 import com.ibm.as400.access.ErrorCompletingRequestException;
+import com.ibm.as400.access.IFSFileInputStream;
+import com.ibm.as400.access.IFSKey;
 import com.ibm.as400.access.KeyedDataQueue;
 import com.ibm.as400.access.KeyedDataQueueEntry;
 import com.ibm.as400.access.MessageQueue;
 import com.ibm.as400.access.ObjectDoesNotExistException;
 import com.ibm.as400.access.QueuedMessage;
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.awaitility.Awaitility;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.Matchers;
 import org.jboss.logging.Logger;
-import org.junit.jupiter.api.Assertions;
 
 public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
     private static final Logger LOGGER = Logger.getLogger(Jt400TestResource.class);
@@ -77,9 +76,9 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
     private final static int CLEAR_DEPTH = 100;
     public final static String LOCK_KEY = "cq.jt400.global-lock";
     //5 minute timeout to obtain a log for the tests execution
-    private final static int LOCK_TIMEOUT = 00000;
+    private final static int LOCK_TIMEOUT = 30000;
 
-
+    private static AS400 lockAs400;
 
     @Override
     public Map<String, String> start() {
@@ -89,10 +88,8 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
 
     @Override
     public void stop() {
-        try {
-            CLIENT_HELPER.clear();
-        } catch (Exception e) {
-            LOGGER.debug("Clearing of the external queues failed", e);
+        if (lockAs400 != null) {
+            lockAs400.close();
         }
     }
 
@@ -102,9 +99,11 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
 
     public static Jt400ClientHelper CLIENT_HELPER = new Jt400ClientHelper() {
 
-        private String key = null;
         private boolean cleared = false;
         Map<RESOURCE_TYPE, Set<Object>> toRemove = new HashMap<>();
+
+        IFSFileInputStream lockFile;
+        IFSKey lockKey;
 
         @Override
         public QueuedMessage peekReplyToQueueMessage(String msg) throws Exception {
@@ -146,7 +145,7 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
         @Override
         public void clear() throws Exception {
             //clear only once
-            if(cleared) {
+            if (cleared) {
                 return;
             }
             boolean all = JT400_CLEAR_ALL.isPresent() && Boolean.parseBoolean(JT400_CLEAR_ALL.get());
@@ -239,76 +238,43 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
         }
 
         /**
-         * Keyed dataque (FIFO) is used for locking purposes.
-         *
-         * - Each participant saves unique token into a key cq.jt400.global-lock
-         * - Each participant the reads the FIFO queue and if the resulted string is its own unique token, execution is allowed
-         * - When execution ends, the key is removed
-         *
-         * If the token is not its own
-         * -read of the token is repeated until timeout or its own token is returned (so the second participant waits, until the
-         * first participant removes its token)
-         *
-         * Dead lock prevention
-         *
-         * - part of the unique token is timestamp, if participant finds a token, which is too old, token is removed
-         * - action to clear-all data removes also the locking tokens
-         *
-         *
-         * Therefore only 1 token (thus 1 participant) is allowed to run the tests, the others have to wait
-         *
-         * @throws Exception
+         * todo
          */
         @Override
         public void lock() throws Exception {
-            if (key == null) {
-                key = generateKey();
-                //write key into keyed queue
-                KeyedDataQueue kdq = new KeyedDataQueue(getAs400(), getObjectPath(JT400_KEYED_QUEUE));
 
-                Assertions.assertTrue(kdq.isFIFO(), "keyed dataqueue has to be FIFO");
+            if (lockKey == null) {
+                lockAs400 = getAs400();
+                lockFile = new IFSFileInputStream(lockAs400, "/home/REDHAT5/lock");
 
-                kdq.write(LOCK_KEY, key);
-                LOGGER.debug("Asked for lock " + key);
-                //added 5 seconds for the timeout, to have some spare time for removing old locks
-                Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(LOCK_TIMEOUT + 5000, TimeUnit.SECONDS)
-                        .until(
-                                () -> {
-                                    KeyedDataQueueEntry kdqe = kdq.peek(LOCK_KEY);
-                                    if (kdqe == null) {
-                                        //if kdqe is null, try to lock again
-                                        LOGGER.debug("locked in the queueu was removed, locking again with " + key);
-                                        kdq.write(LOCK_KEY, key);
-                                    }
-                                    String peekedKey = kdqe == null ? null : kdqe.getString();
-                                    //if waiting takes more than 300s, check whether the actual lock can be removed
-                                    LOGGER.debug("peeked lock " + peekedKey + "(my lock is " + key + ")");
+                LOGGER.debug("Asked for lock.");
 
-                                    if (peekedKey != null && !key.equals(peekedKey)) {
-                                        long peekedTime = Long.parseLong(peekedKey.substring(11));
-                                        if (System.currentTimeMillis() - peekedTime > LOCK_TIMEOUT) {
-                                            //read the key (therefore remove it)
-                                            String readKey = kdq.read(LOCK_KEY).getString();
-                                            System.out.println("Removed old lock " + readKey);
-                                            peekedKey = kdq.peek(LOCK_KEY).getString();
-                                        }
-                                    }
-                                    return peekedKey;
-                                },
-                                Matchers.is(key));
+                Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(LOCK_TIMEOUT, TimeUnit.SECONDS)
+                        .until(() -> {
+                            try {
+                                lockKey = lockFile.lock(8l);
+                            } catch (Exception e) {
+                                //lock was not acquired
+                                return false;
+                            }
+                            LOGGER.debug("Acquired lock.");
+                            return true;
+
+                        },
+                                Matchers.is(true));
             }
         }
 
         @Override
         public void unlock() throws Exception {
-            Assertions.assertEquals(key,
-                    new KeyedDataQueue(getAs400(), getObjectPath(JT400_KEYED_QUEUE)).read(LOCK_KEY).getString());
-            //clear key
-            key = null;
-        }
-
-        private String generateKey() {
-            return RandomStringUtils.randomAlphanumeric(10).toLowerCase(Locale.ROOT) + ":" + System.currentTimeMillis();
+            if (lockKey != null) {
+                lockFile.unlock(lockKey);
+                LOGGER.debug("Released lock ");
+                lockKey = null;
+                lockAs400.close();
+                lockAs400 = null;
+                lockFile = null;
+            }
         }
 
         @Override

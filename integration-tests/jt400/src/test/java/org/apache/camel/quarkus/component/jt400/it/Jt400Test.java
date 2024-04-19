@@ -48,17 +48,14 @@ public class Jt400Test {
         //lock execution
         getClientHelper().lock();
 
-//        //for development purposes
-//        logQueues();
+        //                //for development purposes
+        //                logQueues();
     }
 
     @AfterAll
     public static void afterAll() throws Exception {
-//        //for development purposes
-//        logQueues();
-
-        //todo trying if it has a impact
-        Thread.sleep(10000);
+        //        //for development purposes
+        //        logQueues();
 
         //clear data after tests and before unlocking
         getClientHelper().clear();
@@ -230,8 +227,6 @@ public class Jt400Test {
             LOGGER.debug("testInquiryMessageQueue: message confirmed by peek: " + msg);
         }
 
-
-
         //set filter for expected messages (for parallel executions)
         RestAssured.given()
                 .body(msg)
@@ -252,9 +247,6 @@ public class Jt400Test {
         //        if (queuedMessage != null) {
         //            LOGGER.debug("testInquiryMessageQueue: message confirmed by peek (after route started): " + msg);
         //        }
-
-
-
 
         //await to be processed
         Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
