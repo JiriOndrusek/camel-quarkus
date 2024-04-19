@@ -188,7 +188,8 @@ public class Jt400Resource {
         Jt400Component comp = context.getComponent("jt400", Jt400Component.class);
         comp.close();
         comp.getConnectionPool().close();
-        context.getEndpoints().stream().filter(e -> e instanceof Jt400Endpoint).forEach(e -> ((Jt400Endpoint) e).getConfiguration().getConnection());
+        context.getEndpoints().stream().filter(e -> e instanceof Jt400Endpoint)
+                .forEach(e -> ((Jt400Endpoint) e).getConfiguration().getConnection());
 
         return Response.ok().build();
     }

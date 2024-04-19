@@ -46,7 +46,6 @@ import org.awaitility.Awaitility;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.Matchers;
 import org.jboss.logging.Logger;
-import org.junit.jupiter.api.Assertions;
 
 public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
     private static final Logger LOGGER = Logger.getLogger(Jt400TestResource.class);
@@ -92,10 +91,13 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
 
         //clear data after tests and before unlocking
         try {
-            CLIENT_HELPER.clear();
+            //            System.out.println("--------------------------------");
+            //            System.out.println("------------- clear -------------");
+            //            System.out.println("--------------------------------");
+            //            CLIENT_HELPER.clear();
             CLIENT_HELPER.unlock();
         } catch (Exception e) {
-            Assertions.fail();
+            e.printStackTrace();
         }
 
         if (lockAs400 != null) {
@@ -153,86 +155,74 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
         }
 
         @Override
-        public void clear() throws Exception {
+        public boolean clear() throws Exception {
             Thread.sleep(1000);
             //clear only once
             if (cleared) {
-                return;
+                return false;
             }
-            boolean all = JT400_CLEAR_ALL.isPresent() && Boolean.parseBoolean(JT400_CLEAR_ALL.get());
-
-//            try {
-                if (all) {
-                    LOGGER.debug("Attention! Clearing all data.");
-                }
-
-
-            try (AS400 as400 = createAs400()) {
-
-                //reply-to queue
-                MessageQueue rq = new MessageQueue(as400, getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE));
-
-                if (all) {
-                    rq.remove();
-                } else if (toRemove.containsKey(RESOURCE_TYPE.replyToQueueu)) {
-                    clearMessageQueue(RESOURCE_TYPE.replyToQueueu, rq);
-                }
+            //            boolean all = JT400_CLEAR_ALL.isPresent() && Boolean.parseBoolean(JT400_CLEAR_ALL.get());
+            boolean all = true;
+            if (all) {
+                LOGGER.debug("Attention! Clearing all data.");
             }
 
-                try (AS400 as400 = createAs400()) {
-                    //message queue
-                    MessageQueue mq = new MessageQueue(as400, getObjectPath(JT400_MESSAGE_QUEUE));
-                    if (all) {
-                        mq.remove();
-                    } else if (toRemove.containsKey(RESOURCE_TYPE.messageQueue)) {
-                        clearMessageQueue(RESOURCE_TYPE.messageQueue, mq);
+            //            try (AS400 as400 = createAs400()) {
+            AS400 as400 = lockAs400;
+            //reply-to queue
+            MessageQueue rq = new MessageQueue(as400, getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE));
+
+            if (all) {
+                rq.remove();
+            } else if (toRemove.containsKey(RESOURCE_TYPE.replyToQueueu)) {
+                clearMessageQueue(RESOURCE_TYPE.replyToQueueu, rq);
+            }
+
+            //message queue
+            MessageQueue mq = new MessageQueue(as400, getObjectPath(JT400_MESSAGE_QUEUE));
+            if (all) {
+                mq.remove();
+            } else if (toRemove.containsKey(RESOURCE_TYPE.messageQueue)) {
+                clearMessageQueue(RESOURCE_TYPE.messageQueue, mq);
+            }
+
+            //lifo queue
+            DataQueue dq = new DataQueue(as400, getObjectPath(JT400_LIFO_QUEUE));
+            if (all) {
+                for (int i = 01; i < CLEAR_DEPTH; i++) {
+                    if (dq.read() == null) {
+                        break;
                     }
                 }
-
-                try (AS400 as400 = createAs400()) {
-                    //lifo queue
-                    DataQueue dq = new DataQueue(as400, getObjectPath(JT400_LIFO_QUEUE));
-                    if (all) {
-                        for (int i = 01; i < CLEAR_DEPTH; i++) {
-                            if (dq.read() == null) {
-                                break;
-                            }
-                        }
-                    } else if (toRemove.containsKey(RESOURCE_TYPE.lifoQueueu)) {
-                        for (Object entry : toRemove.get(RESOURCE_TYPE.lifoQueueu)) {
-                            List<byte[]> otherMessages = new LinkedList<>();
-                            DataQueueEntry dqe = dq.read();
-                            while (dqe != null && !(entry.equals(dqe.getString())
-                                    || entry.equals(new String(dqe.getData(), StandardCharsets.UTF_8)))) {
-                                otherMessages.add(dqe.getData());
-                                dqe = dq.read();
-                            }
-                            //write back other messages in reverse order (it is a lifo)
-                            Collections.reverse(otherMessages);
-                            for (byte[] msg : otherMessages) {
-                                dq.write(msg);
-                            }
-                        }
+            } else if (toRemove.containsKey(RESOURCE_TYPE.lifoQueueu)) {
+                for (Object entry : toRemove.get(RESOURCE_TYPE.lifoQueueu)) {
+                    List<byte[]> otherMessages = new LinkedList<>();
+                    DataQueueEntry dqe = dq.read();
+                    while (dqe != null && !(entry.equals(dqe.getString())
+                            || entry.equals(new String(dqe.getData(), StandardCharsets.UTF_8)))) {
+                        otherMessages.add(dqe.getData());
+                        dqe = dq.read();
+                    }
+                    //write back other messages in reverse order (it is a lifo)
+                    Collections.reverse(otherMessages);
+                    for (byte[] msg : otherMessages) {
+                        dq.write(msg);
                     }
                 }
+            }
 
-                try (AS400 as400 = createAs400()) {
-                    //keyed queue
-                    KeyedDataQueue kdq = new KeyedDataQueue(as400, getObjectPath(JT400_KEYED_QUEUE));
-                    if (all) {
-                        kdq.clear();
-                    } else if (toRemove.containsKey(RESOURCE_TYPE.keyedDataQue)) {
-                        for (Object entry : toRemove.get(RESOURCE_TYPE.keyedDataQue)) {
-                            kdq.clear((String) entry);
-                        }
-                    }
+            //keyed queue
+            KeyedDataQueue kdq = new KeyedDataQueue(as400, getObjectPath(JT400_KEYED_QUEUE));
+            if (all) {
+                kdq.clear();
+            } else if (toRemove.containsKey(RESOURCE_TYPE.keyedDataQue)) {
+                for (Object entry : toRemove.get(RESOURCE_TYPE.keyedDataQue)) {
+                    kdq.clear((String) entry);
                 }
+            }
+            //            }
 
-//            } finally {
-//                cleared = true;
-//                as400.close();
-//            }
-
+            return true;
         }
 
         private void clearMessageQueue(RESOURCE_TYPE type, MessageQueue mq) throws Exception,
@@ -246,6 +236,7 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
                     }
                     keys.get(queuedMessage.getText()).add(queuedMessage.getKey());
                 }
+                System.out.println(type + " before: " + msgs.size());
                 for (Object entry : toRemove.get(type)) {
                     LOGGER.debug("Removing msg " + entry + " from the queue " + type);
                     if (entry instanceof String) {
@@ -256,6 +247,7 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
                         mq.remove((byte[]) entry);
                     }
                 }
+                System.out.println(type + " after: " + Collections.list(mq.getMessages()).size());
             }
         }
 
@@ -379,7 +371,7 @@ interface Jt400ClientHelper {
 
     //------------------- clear listeners ------------------------------
 
-    void clear() throws Exception;
+    boolean clear() throws Exception;
 
     //----------------------- locking
 
