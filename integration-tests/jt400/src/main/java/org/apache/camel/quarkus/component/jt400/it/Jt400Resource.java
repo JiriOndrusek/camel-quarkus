@@ -169,14 +169,6 @@ public class Jt400Resource {
             context.getRouteController().stopRoute(routeName);
         }
         boolean resp = context.getRouteController().getRouteStatus(routeName).isStopped();
-        //
-        //                //stop component to avoid CPF2451 Message queue REPLYMSGQ is allocated to another job.
-        //                Jt400Endpoint jt400Endpoint = context.getEndpoint(getUrlForLibrary(jt400MessageReplyToQueue), Jt400Endpoint.class);
-        //                jt400Endpoint.close();
-        //
-        //        Jt400Component comp = context.getComponent("jt400", Jt400Component.class);
-        //        comp.stop();
-        //        comp.getConnectionPool().close();
 
         return Response.ok().entity(resp).build();
     }
@@ -188,8 +180,6 @@ public class Jt400Resource {
         Jt400Component comp = context.getComponent("jt400", Jt400Component.class);
         comp.close();
         comp.getConnectionPool().close();
-        context.getEndpoints().stream().filter(e -> e instanceof Jt400Endpoint)
-                .forEach(e -> ((Jt400Endpoint) e).getConfiguration().getConnection());
 
         return Response.ok().build();
     }

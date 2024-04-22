@@ -78,6 +78,7 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
     //5 minute timeout to obtain a log for the tests execution
     private final static int LOCK_TIMEOUT = 30000;
 
+    //todo rename to global connection
     private static AS400 lockAs400;
 
     @Override

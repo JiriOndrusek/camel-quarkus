@@ -47,6 +47,8 @@ public class Jt400Test {
         //lock execution
         getClientHelper().lock();
 
+        //wait is required because of possible CPF2451 Message queue REPLYMSGQ is allocated to another job
+        //it takes ~20 seconds to release connections on reply queue (might be a problem in component)
         Awaitility.await().atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
                 () -> {
                     try {
@@ -210,7 +212,6 @@ public class Jt400Test {
 
     @Test
     public void testInquiryMessageQueue() throws Exception {
-        Thread.sleep(1000);/** todo remove */
         LOGGER.debug("**** testInquiryMessageQueue() **: has started ");
         String msg = RandomStringUtils.randomAlphanumeric(10).toLowerCase(Locale.ROOT);
         String replyMsg = "reply to: " + msg;
@@ -219,15 +220,12 @@ public class Jt400Test {
 
         //sending a message using the same client as component
         getClientHelper().sendInquiry(msg);
-        Thread.sleep(1000);/** todo remove */
         LOGGER.debug("testInquiryMessageQueue: message " + msg + " written via client");
-        Thread.sleep(1000);/** todo remove */
         //register deletion of the message in case some following task fails
         QueuedMessage queuedMessage = getClientHelper().peekReplyToQueueMessage(msg);
         if (queuedMessage != null) {
             LOGGER.debug("testInquiryMessageQueue: message confirmed by peek: " + msg);
         }
-        Thread.sleep(1000);/** todo remove */
         //set filter for expected messages (for parallel executions)
         RestAssured.given()
                 .body(msg)
@@ -242,7 +240,6 @@ public class Jt400Test {
                         .extract().asString(),
                 Matchers.is(Boolean.TRUE.toString()));
         LOGGER.debug("testInquiryMessageQueue: inquiry route started");
-        Thread.sleep(1000); /** todo remove */
         //await to be processed
         Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
                 () -> RestAssured.get("/jt400/inquiryMessageProcessed")
@@ -252,7 +249,6 @@ public class Jt400Test {
                 Matchers.is(String.valueOf(Boolean.TRUE)));
         LOGGER.debug("testInquiryMessageQueue: inquiry message processed");
 
-        Thread.sleep(1000);/** todo remove */
         //stop route (and wait for stop)
         Awaitility.await().atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
                 () -> RestAssured.get("/jt400/route/stop/inquiryRoute")
@@ -262,7 +258,6 @@ public class Jt400Test {
                 Matchers.is(Boolean.TRUE.toString()));
         LOGGER.debug("testInquiryMessageQueue: inquiry route stooped");
 
-        Thread.sleep(1000);/** todo remove */
         //check written message with client
         Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(20, TimeUnit.SECONDS).until(
                 () -> getClientHelper().peekReplyToQueueMessage(replyMsg),
