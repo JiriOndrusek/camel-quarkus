@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.component.jt400.it;
 
 import java.util.Locale;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import com.ibm.as400.access.QueuedMessage;
@@ -26,8 +27,10 @@ import io.restassured.RestAssured;
 import org.apache.camel.component.jt400.Jt400Constants;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.awaitility.Awaitility;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.Matchers;
 import org.jboss.logging.Logger;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
@@ -40,29 +43,40 @@ public class Jt400Test {
 
     private final int MSG_LENGTH = 20;
     //tests may be executed in parallel, therefore the timeout is a little bigger in case the test has to wait for another one
-    private static final int WAIT_IN_SECONDS = 30;
+    private static final int WAIT_IN_SECONDS = 10;
+
+    @AfterAll
+    public static void afterAll() throws Exception {
+        getClientHelper().clear();
+    }
 
     @BeforeAll
     public static void beforeAll() throws Exception {
-        //lock execution
-        getClientHelper().lock();
+
+        //if clear all is enabled, clear all data
+        if(Jt400TestResource.JT400_CLEAR_ALL.isPresent()) {
+            getClientHelper().clear();
+        }
+
+//        //lock execution
+//        getClientHelper().lock();
+
+//        //clear al data in advance to be sure that there is no data in the queues
+//        //it is not possible to clear data after the run because of CPF2451 Message queue REPLYMSGQ is allocated to another job
+//        //wait is required also because of CPF2451, usually takes ~20 seconds to release connections to a  reply queue
+//        Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
+//                () -> {
+//                    try {
+//                        return getClientHelper().clear();
+//                    } catch (Exception e) {
+//                        LOGGER.debug("Clear failed because of: " + e.getMessage());
+//                        return false;
+//                    }
+//                },
+//                Matchers.is(true));
 
         //for development purposes
-        //        logQueues();
-
-        //clear al data in advance to be sure that there is no data in the queues
-        //it is not possible to clear data after the run because of CPF2451 Message queue REPLYMSGQ is allocated to another job
-        //wait is required also because of CPF2451, usually takes ~20 seconds to release connections to a  reply queue
-        Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
-                () -> {
-                    try {
-                        return getClientHelper().clear();
-                    } catch (Exception e) {
-                        LOGGER.debug("Clear failed because of: " + e.getMessage());
-                        return false;
-                    }
-                },
-                Matchers.is(true));
+//        logQueues();
     }
 
     private static void logQueues() throws Exception {
@@ -214,29 +228,29 @@ public class Jt400Test {
     @Test
     public void testInquiryMessageQueue() throws Exception {
         LOGGER.debug("**** testInquiryMessageQueue() **: has started ");
-
+        Thread.sleep(1000);
         String msg = RandomStringUtils.randomAlphanumeric(10).toLowerCase(Locale.ROOT);
         String replyMsg = "reply to: " + msg;
         getClientHelper().registerForRemoval(Jt400TestResource.RESOURCE_TYPE.replyToQueueu, msg);
         getClientHelper().registerForRemoval(Jt400TestResource.RESOURCE_TYPE.replyToQueueu, replyMsg);
-
+        Thread.sleep(1000);
         //sending a message using the same client as component
         getClientHelper().sendInquiry(msg);
-
+        Thread.sleep(1000);
         LOGGER.debug("testInquiryMessageQueue: message " + msg + " written via client");
         //register deletion of the message in case some following task fails
-        QueuedMessage queuedMessage = getClientHelper().peekReplyToQueueMessage(msg);
-        if (queuedMessage != null) {
-            LOGGER.debug("testInquiryMessageQueue: message confirmed by peek: " + msg);
-        }
-
+//        QueuedMessage queuedMessage = getClientHelper().peekReplyToQueueMessage(msg);
+//        if (queuedMessage != null) {
+//            LOGGER.debug("testInquiryMessageQueue: message confirmed by peek: " + msg);
+//        }
+        Thread.sleep(1000);
         //set filter for expected messages (for parallel executions)
         RestAssured.given()
                 .body(msg)
                 .post("/jt400/inquiryMessageSetExpected")
                 .then()
                 .statusCode(204);
-
+        Thread.sleep(1000);
         //start route before sending message (and wait for start)
         Awaitility.await().atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
                 () -> RestAssured.get("/jt400/route/start/inquiryRoute")
@@ -245,8 +259,8 @@ public class Jt400Test {
                         .extract().asString(),
                 Matchers.is(Boolean.TRUE.toString()));
         LOGGER.debug("testInquiryMessageQueue: inquiry route started");
-
-        //await to be processed
+        Thread.sleep(1000);
+//        await to be processed
         Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
                 () -> RestAssured.get("/jt400/inquiryMessageProcessed")
                         .then()
@@ -254,7 +268,7 @@ public class Jt400Test {
                         .extract().asString(),
                 Matchers.is(String.valueOf(Boolean.TRUE)));
         LOGGER.debug("testInquiryMessageQueue: inquiry message processed");
-
+        Thread.sleep(10000);
         //stop route (and wait for stop)
         Awaitility.await().atMost(WAIT_IN_SECONDS, TimeUnit.SECONDS).until(
                 () -> RestAssured.get("/jt400/route/stop/inquiryRoute")
@@ -263,7 +277,7 @@ public class Jt400Test {
                         .extract().asString(),
                 Matchers.is(Boolean.TRUE.toString()));
         LOGGER.debug("testInquiryMessageQueue: inquiry route stooped");
-
+        Thread.sleep(1000);
         //check written message with client
         Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(20, TimeUnit.SECONDS).until(
                 () -> getClientHelper().peekReplyToQueueMessage(replyMsg),
@@ -295,6 +309,8 @@ public class Jt400Test {
                 .statusCode(200)
                 .body(Matchers.containsString("hello camel"));
     }
+
+
 
     private static Jt400ClientHelper getClientHelper() {
         return Jt400TestResource.CLIENT_HELPER;

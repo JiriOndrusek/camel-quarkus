@@ -21,9 +21,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import com.ibm.as400.access.AS400ConnectionPool;
 import com.ibm.as400.access.QueuedMessage;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -161,6 +164,10 @@ public class Jt400Resource {
         return Response.ok().entity(context.getRouteController().getRouteStatus(routeName).isStarted()).build();
     }
 
+    @Inject
+    @Named("jt400ConnectionPool")
+    public AS400ConnectionPool as400ConnectionPool;
+
     @Path("/route/stop/{route}")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
@@ -170,13 +177,19 @@ public class Jt400Resource {
         }
         boolean resp = context.getRouteController().getRouteStatus(routeName).isStopped();
 
+        Jt400Component comp = context.getComponent("jt400", Jt400Component.class);
+        comp.close();
+
+        as400ConnectionPool.close();
+
+
         return Response.ok().entity(resp).build();
     }
 
     @Path("/component/stopWrong")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public Response stopComponent() throws Exception {
+    public Response stopWrong() throws Exception {
         Jt400Component comp = context.getComponent("jt400", Jt400Component.class);
         comp.close();
         //this second call to close connection won't wprk, because the connection pool is already closing
@@ -212,7 +225,7 @@ public class Jt400Resource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response messageQueueRead(@QueryParam("queue") String queue) {
         Exchange ex = consumerTemplate
-                .receive(getUrlForLibrary(queue == null ? jt400MessageQueue : queue) + "?messageAction=SAME");
+                .receive(getUrlForLibrary(queue == null ? jt400MessageQueue : queue) + "&messageAction=SAME");
 
         return generateResponse(ex.getIn().getBody(String.class), ex);
     }
@@ -241,7 +254,7 @@ public class Jt400Resource {
 
     private String getUrlForLibrary(String suffix) {
         return String.format("jt400://%s:%s@%s%s", jt400Username, jt400Password, jt400Url,
-                "/QSYS.LIB/" + jt400Library + ".LIB/" + suffix);
+                "/QSYS.LIB/" + jt400Library + ".LIB/" + suffix + (suffix.contains("?") ? "&" : "?") + "connectionPool=#jt400ConnectionPool");
     }
 
     private String getUrl(String suffix) {

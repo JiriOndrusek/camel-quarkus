@@ -136,3 +136,18 @@ $Env:JT400_MESSAGE_QUEUE="#messagequeue_if_not_TESTMSGQ.MSGQ"
 $Env:JT400_MESSAGE_REPLYTO_QUEUE="#messagequeueinquiry_if_not_REPLYMSGQ.MSGQ"
 ```
 
+=== Clear queues after unexpected failures
+
+If tests finishes without unexpected failure, tests are taking care of clearing the data.
+In some cases data might stay written into the real server if test fails unexpectedly.
+This state should might alter following executions.
+
+To force full clear (of each queue) can be achieved by add ing parameter
+```
+-Dcq.jt400.clear-all=true
+```
+Be aware that with `-Dcq.jt400.clear-all=true`, the tests can not successfully finish in parallel run.
+
+Usage of clear queues parameter is *strongly* suggested during development
+
+

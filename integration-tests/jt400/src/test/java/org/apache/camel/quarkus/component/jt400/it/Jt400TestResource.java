@@ -16,6 +16,8 @@
  */
 package org.apache.camel.quarkus.component.jt400.it;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -27,15 +29,20 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.ibm.as400.access.AS400;
+import com.ibm.as400.access.AS400SecurityException;
 import com.ibm.as400.access.DataQueue;
 import com.ibm.as400.access.DataQueueEntry;
+import com.ibm.as400.access.ErrorCompletingRequestException;
 import com.ibm.as400.access.IFSFileInputStream;
 import com.ibm.as400.access.IFSKey;
+import com.ibm.as400.access.IllegalObjectTypeException;
 import com.ibm.as400.access.KeyedDataQueue;
 import com.ibm.as400.access.MessageQueue;
+import com.ibm.as400.access.ObjectDoesNotExistException;
 import com.ibm.as400.access.QueuedMessage;
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.awaitility.Awaitility;
@@ -46,13 +53,15 @@ import org.jboss.logging.Logger;
 public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
     private static final Logger LOGGER = Logger.getLogger(Jt400TestResource.class);
 
-    public static enum RESOURCE_TYPE {
+    public enum RESOURCE_TYPE {
         messageQueue,
         keyedDataQue,
         lifoQueueu,
         replyToQueueu;
     }
 
+    static final Optional<String> JT400_CLEAR_ALL = ConfigProvider.getConfig().getOptionalValue("cq.jt400.clear-all",
+            String.class);
     private static final String JT400_URL = ConfigProvider.getConfig().getValue("cq.jt400.url", String.class);
     private static final String JT400_USERNAME = ConfigProvider.getConfig().getValue("cq.jt400.username", String.class);
     private static final String JT400_PASSWORD = ConfigProvider.getConfig().getValue("cq.jt400.password", String.class);
@@ -139,33 +148,111 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
         }
 
         @Override
-        public boolean clear() throws Exception {
+        public boolean clear() {
 
             //clear only once
             if (cleared) {
                 return false;
             }
 
+            boolean all = JT400_CLEAR_ALL.isPresent();
+
             try (AS400 as400 = createAs400()) {
-                //reply-to queue
-                new MessageQueue(as400, getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE)).remove();
 
-                //message queue
-                new MessageQueue(as400, getObjectPath(JT400_MESSAGE_QUEUE)).remove();
-
-                //lifo queue
+                MessageQueue mq = new MessageQueue(as400, getObjectPath(JT400_MESSAGE_QUEUE));
+                MessageQueue rq = new MessageQueue(as400, getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE));
                 DataQueue dq = new DataQueue(as400, getObjectPath(JT400_LIFO_QUEUE));
-                for (int i = 01; i < CLEAR_DEPTH; i++) {
-                    if (dq.read() == null) {
-                        break;
+                KeyedDataQueue kdq = new KeyedDataQueue(as400, getObjectPath(JT400_KEYED_QUEUE));
+
+                if(all) {
+                    logError(() -> mq.remove());
+                    logError(() -> rq.remove());
+                    logError(() -> kdq.clear());
+
+                    for (int i = 1; i < CLEAR_DEPTH; i++) {
+                        if (logError(() -> dq.read()) == null) {
+                            break;
+                        }
+                    }
+                } else {
+                    logError(() -> clearMessageQueue(RESOURCE_TYPE.messageQueue, mq));
+                    logError(() -> clearMessageQueue(RESOURCE_TYPE.replyToQueueu, rq));
+                    toRemove.getOrDefault(RESOURCE_TYPE.keyedDataQue, Collections.emptySet()).stream()
+                            .forEach(entry -> logError(() -> kdq.clear((String) entry)));
+
+                    if (toRemove.containsKey(RESOURCE_TYPE.lifoQueueu)) {
+                        Set<Object> entriesToRemove = toRemove.get(RESOURCE_TYPE.lifoQueueu);
+                        List<byte[]> otherMessages = new LinkedList<>();
+                        for (int i = 1; i < CLEAR_DEPTH; i++) {
+                            DataQueueEntry dqe = logError(() -> dq.read());
+                            if(dqe == null) {
+                                break;
+                            }
+                            try {
+                                entriesToRemove.remove(dqe.getString());
+                            } catch (UnsupportedEncodingException e) {
+                                LOGGER.debug("Failed to decode entry from lifo queue.", e);
+                            }
+                            if(entriesToRemove.isEmpty()) {
+                                break;
+                            }
+                        }
+
+                        //write back other messages in reverse order (it is a lifo)
+                        Collections.reverse(otherMessages);
+                        for (byte[] msg : otherMessages) {
+                            logError(() -> dq.write(msg));
+                        }
                     }
                 }
-
-                //keyed queue
-                new KeyedDataQueue(as400, getObjectPath(JT400_KEYED_QUEUE)).clear();
             }
 
             return true;
+        }
+
+        private void logError(org.jboss.resteasy.spi.RunnableWithException task) {
+            try {
+                task.run();
+            } catch (Exception e) {
+                LOGGER.debug("Failed to clear queue.", e);
+            }
+        }
+
+        private <T> T logError(SupplierWithException<T> task) {
+            try {
+                task.get();
+            } catch (Exception e) {
+                LOGGER.debug("Failed to clear queue.", e);
+            }
+            return null;
+        }
+
+        private void clearMessageQueue(RESOURCE_TYPE type, MessageQueue mq) throws AS400SecurityException,
+                ErrorCompletingRequestException, InterruptedException, IOException, ObjectDoesNotExistException {
+            if (toRemove.containsKey(type) && !toRemove.get(type).isEmpty()) {
+                List<QueuedMessage> msgs = Collections.list(mq.getMessages());
+                Map<String, Set<byte[]>> textToBytes = msgs.stream().collect(Collectors.toMap(q -> q.getText(), q -> Collections.singleton(q.getKey()),
+                        (v1, v2) -> {
+                            //merge sets in case of duplicated keys - which may happen
+                            Set<byte[]> retVal = new HashSet<>();
+                            retVal.addAll(v1);
+                            retVal.addAll(v2);
+                            return v2;
+                        }));
+                for (Object entry : toRemove.get(type)) {
+                    if (entry instanceof String && textToBytes.containsKey((String)entry)) {
+                        textToBytes.get((String) entry).stream().forEach(v -> {
+                            try {
+                                mq.remove(v);
+                            } catch (Exception e) {
+                                LOGGER.debug("Failed to remove key `" + entry + "` from replyTo queue", e);
+                            }
+                        });
+                    } else if(entry instanceof byte[]) {
+                        mq.remove((byte[]) entry);
+                    }
+                }
+            }
         }
 
         /**
@@ -245,12 +332,11 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
         }
 
         public void sendInquiry(String msg) throws Exception {
-            AS400 as400 = createAs400();
-            try {
+
+            try(AS400 as400 = createAs400()) {
                 new MessageQueue(as400, getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE)).sendInquiry(msg,
                         getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE));
-            } finally {
-                as400.close();
+                as400.disconnectAllServices();
             }
         }
     };
@@ -271,7 +357,7 @@ interface Jt400ClientHelper {
 
     //------------------- clear listeners ------------------------------
 
-    boolean clear() throws Exception;
+    boolean clear();
 
     //----------------------- locking
 
@@ -280,3 +366,9 @@ interface Jt400ClientHelper {
     String dumpQueues() throws Exception;
 
 }
+
+@FunctionalInterface
+interface SupplierWithException<T> {
+    T get() throws Exception;
+}
+

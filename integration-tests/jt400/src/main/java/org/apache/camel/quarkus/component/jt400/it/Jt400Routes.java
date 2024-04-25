@@ -48,7 +48,7 @@ public class Jt400Routes extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        from(getUrlForLibrary(jt400MessageReplyToQueue + "?sendingReply=true"))
+        from(getUrlForLibrary(jt400MessageReplyToQueue + "?sendingReply=true&connectionPool=#jt400ConnectionPool"))
                 .id("inquiryRoute")
                 //route has tobe stopped to avoid "CPF2451 Message queue REPLYMSGQ is allocated to another job."
                 .autoStartup(false)
@@ -66,7 +66,7 @@ public class Jt400Routes extends RouteBuilder {
                     String reply = "reply to: " + msg;
                     exchange.getIn().setBody(reply);
                 })
-                .to(getUrlForLibrary(jt400MessageReplyToQueue))
+                .to(getUrlForLibrary(jt400MessageReplyToQueue + "?connectionPool=#jt400ConnectionPool"))
                 .process(e -> inquiryMessageHolder.setProcessed(true));
     }
 
