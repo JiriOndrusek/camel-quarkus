@@ -25,26 +25,30 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.ibm.as400.access.AS400;
+import com.ibm.as400.access.AS400ConnectionPool;
 import com.ibm.as400.access.AS400SecurityException;
 import com.ibm.as400.access.DataQueue;
 import com.ibm.as400.access.DataQueueEntry;
 import com.ibm.as400.access.ErrorCompletingRequestException;
 import com.ibm.as400.access.IFSFileInputStream;
 import com.ibm.as400.access.IFSKey;
-import com.ibm.as400.access.IllegalObjectTypeException;
 import com.ibm.as400.access.KeyedDataQueue;
 import com.ibm.as400.access.MessageQueue;
 import com.ibm.as400.access.ObjectDoesNotExistException;
 import com.ibm.as400.access.QueuedMessage;
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
+import org.apache.camel.component.jt400.Jt400Component;
+import org.apache.camel.component.jt400.Jt400Endpoint;
+import org.apache.camel.component.jt400.Jt400MsgQueueService;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.awaitility.Awaitility;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.Matchers;
@@ -147,6 +151,110 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
             }
         }
 
+        public void testCPF2451() throws Exception {
+
+            String routeConsumerUrl = String.format("jt400://%s:%s@%s%s", JT400_USERNAME, JT400_PASSWORD, JT400_URL,
+                    "/QSYS.LIB/" + JT400_LIBRARY + ".LIB/");
+
+            AS400ConnectionPool cp = new AS400ConnectionPool();
+            Jt400Component comp = new Jt400Component();
+            Jt400Endpoint consumerEndpoint = new Jt400Endpoint(routeConsumerUrl, comp, cp);
+            consumerEndpoint.getConfiguration().setObjectPath(getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE));
+            Jt400MsgQueueService consumerService = new Jt400MsgQueueService(consumerEndpoint);
+            Thread.sleep(1000);
+
+            consumerService.start();
+            Thread.sleep(1000);
+
+            String msg = "AAAAAAAAAAA" + RandomStringUtils.randomAlphanumeric(10).toLowerCase(Locale.ROOT);
+            sendInquiry(msg);
+            System.out.println("xxx: message '" + msg + "' written via client");
+            Thread.sleep(1000);
+
+            registerForRemoval(RESOURCE_TYPE.replyToQueueu, msg);
+
+            MessageQueue consumerQueue = consumerService.getMsgQueue();
+            Thread.sleep(1000);
+
+            QueuedMessage consumedMessage = consumerQueue.receive(null, //message key
+                    30, //timeout
+                    "*OLD", // message action
+                    MessageQueue.ANY);
+            Thread.sleep(1000);
+            System.out.println("xxx: message '" + consumedMessage + "' read");
+
+            Thread.sleep(1000);
+
+            Jt400Endpoint producerEndpoint = new Jt400Endpoint(routeConsumerUrl, comp, cp);
+            producerEndpoint.getConfiguration().setObjectPath(getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE));
+            Jt400MsgQueueService producerService = new Jt400MsgQueueService(consumerEndpoint);
+            producerService.start();
+            Thread.sleep(1000);
+            MessageQueue producerQueue = producerService.getMsgQueue();
+            String reply = "Reply to: " + consumedMessage.getText();
+            //            registerForRemoval(RESOURCE_TYPE.replyToQueueu, reply);
+            //            consumerService.stop();
+            producerQueue.reply(consumedMessage.getKey(), reply);
+            Thread.sleep(1000);
+
+            //            producerService.stop();
+
+            //check written message with client
+            Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(20, TimeUnit.SECONDS).until(
+                    () -> peekReplyToQueueMessage(reply),
+                    Matchers.notNullValue());
+            LOGGER.debug("testInquiryMessageQueue: reply message confirmed by peek: " + reply);
+
+            //            String reply;
+            //            //reply to message
+            ////            try (AS400 as400 = createAs400()) {
+            //            {
+            //                AS400 as400 = createAs400();
+            //                MessageQueue queue = new MessageQueue(as400, getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE));
+            //
+            //                queue.reply(qm.getKey(), reply );
+            //                System.out.println("xxx: replied with:  " + reply);
+            //            }
+            //            Thread.sleep(1000);
+            //
+
+            clear();
+
+            //            System.out.println("xxxxxxxxxxxxxx peek before: " + getQueueMessage(JT400_MESSAGE_QUEUE, msg));
+            //
+            //            AS400 as400 = createAs400();
+            //            MessageQueue mq = new MessageQueue(as400, getObjectPath(JT400_MESSAGE_QUEUE));
+            //            mq.sendInformational(msg);
+            //            //do not close connection
+            //            System.out.println("xxxxxxxxxxxxxx peek after write: " + getQueueMessage(JT400_MESSAGE_QUEUE, msg));
+            //            //try to delete with other client
+            //            try (AS400 client2 = createAs400()) {
+            //                MessageQueue mq2 = new MessageQueue(client2, getObjectPath(JT400_MESSAGE_QUEUE));
+            //                mq2.remove();
+            //            }
+            //
+            //            System.out.println("xxxxxxxxxxxxxx peek after clear: " + getQueueMessage(JT400_MESSAGE_QUEUE, msg));
+        }
+
+        public void testCPF2451_simple() throws Exception {
+
+            String msg = "testing message";
+            System.out.println("xxxxxxxxxxxxxx peek before: " + getQueueMessage(JT400_MESSAGE_QUEUE, msg));
+
+            AS400 as400 = createAs400();
+            MessageQueue mq = new MessageQueue(as400, getObjectPath(JT400_MESSAGE_QUEUE));
+            mq.sendInformational(msg);
+            //do not close connection
+            System.out.println("xxxxxxxxxxxxxx peek after write: " + getQueueMessage(JT400_MESSAGE_QUEUE, msg));
+            //try to delete with other client
+            try (AS400 client2 = createAs400()) {
+                MessageQueue mq2 = new MessageQueue(client2, getObjectPath(JT400_MESSAGE_QUEUE));
+                mq2.remove();
+            }
+
+            System.out.println("xxxxxxxxxxxxxx peek after clear: " + getQueueMessage(JT400_MESSAGE_QUEUE, msg));
+        }
+
         @Override
         public boolean clear() {
 
@@ -164,7 +272,7 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
                 DataQueue dq = new DataQueue(as400, getObjectPath(JT400_LIFO_QUEUE));
                 KeyedDataQueue kdq = new KeyedDataQueue(as400, getObjectPath(JT400_KEYED_QUEUE));
 
-                if(all) {
+                if (all) {
                     logError(() -> mq.remove());
                     logError(() -> rq.remove());
                     logError(() -> kdq.clear());
@@ -185,7 +293,7 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
                         List<byte[]> otherMessages = new LinkedList<>();
                         for (int i = 1; i < CLEAR_DEPTH; i++) {
                             DataQueueEntry dqe = logError(() -> dq.read());
-                            if(dqe == null) {
+                            if (dqe == null) {
                                 break;
                             }
                             try {
@@ -193,7 +301,7 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
                             } catch (UnsupportedEncodingException e) {
                                 LOGGER.debug("Failed to decode entry from lifo queue.", e);
                             }
-                            if(entriesToRemove.isEmpty()) {
+                            if (entriesToRemove.isEmpty()) {
                                 break;
                             }
                         }
@@ -231,16 +339,17 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
                 ErrorCompletingRequestException, InterruptedException, IOException, ObjectDoesNotExistException {
             if (toRemove.containsKey(type) && !toRemove.get(type).isEmpty()) {
                 List<QueuedMessage> msgs = Collections.list(mq.getMessages());
-                Map<String, Set<byte[]>> textToBytes = msgs.stream().collect(Collectors.toMap(q -> q.getText(), q -> Collections.singleton(q.getKey()),
-                        (v1, v2) -> {
-                            //merge sets in case of duplicated keys - which may happen
-                            Set<byte[]> retVal = new HashSet<>();
-                            retVal.addAll(v1);
-                            retVal.addAll(v2);
-                            return v2;
-                        }));
+                Map<String, Set<byte[]>> textToBytes = msgs.stream()
+                        .collect(Collectors.toMap(q -> q.getText(), q -> Collections.singleton(q.getKey()),
+                                (v1, v2) -> {
+                                    //merge sets in case of duplicated keys - which may happen
+                                    Set<byte[]> retVal = new HashSet<>();
+                                    retVal.addAll(v1);
+                                    retVal.addAll(v2);
+                                    return v2;
+                                }));
                 for (Object entry : toRemove.get(type)) {
-                    if (entry instanceof String && textToBytes.containsKey((String)entry)) {
+                    if (entry instanceof String && textToBytes.containsKey((String) entry)) {
                         textToBytes.get((String) entry).stream().forEach(v -> {
                             try {
                                 mq.remove(v);
@@ -248,7 +357,7 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
                                 LOGGER.debug("Failed to remove key `" + entry + "` from replyTo queue", e);
                             }
                         });
-                    } else if(entry instanceof byte[]) {
+                    } else if (entry instanceof byte[]) {
                         mq.remove((byte[]) entry);
                     }
                 }
@@ -333,7 +442,7 @@ public class Jt400TestResource implements QuarkusTestResourceLifecycleManager {
 
         public void sendInquiry(String msg) throws Exception {
 
-            try(AS400 as400 = createAs400()) {
+            try (AS400 as400 = createAs400()) {
                 new MessageQueue(as400, getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE)).sendInquiry(msg,
                         getObjectPath(JT400_REPLY_TO_MESSAGE_QUEUE));
                 as400.disconnectAllServices();
@@ -355,6 +464,8 @@ interface Jt400ClientHelper {
 
     void sendInquiry(String msg) throws Exception;
 
+    void testCPF2451() throws Exception;
+
     //------------------- clear listeners ------------------------------
 
     boolean clear();
@@ -371,4 +482,3 @@ interface Jt400ClientHelper {
 interface SupplierWithException<T> {
     T get() throws Exception;
 }
-

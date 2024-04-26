@@ -26,7 +26,6 @@ import com.ibm.as400.access.QueuedMessage;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import jakarta.inject.Singleton;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -182,7 +181,6 @@ public class Jt400Resource {
 
         as400ConnectionPool.close();
 
-
         return Response.ok().entity(resp).build();
     }
 
@@ -254,7 +252,8 @@ public class Jt400Resource {
 
     private String getUrlForLibrary(String suffix) {
         return String.format("jt400://%s:%s@%s%s", jt400Username, jt400Password, jt400Url,
-                "/QSYS.LIB/" + jt400Library + ".LIB/" + suffix + (suffix.contains("?") ? "&" : "?") + "connectionPool=#jt400ConnectionPool");
+                "/QSYS.LIB/" + jt400Library + ".LIB/" + suffix + (suffix.contains("?") ? "&" : "?")
+                        + "connectionPool=#jt400ConnectionPool");
     }
 
     private String getUrl(String suffix) {

@@ -1,0 +1,13 @@
+if inquiryTest, i'm gettong as400 creation 77 twice
+
+in simulation only once
+
+real test accesses are trugered by services start (which happens also in simulation)
+
+ConnectionList l308 - real test is in use, simulation not
+
+PoolItemProperties l137 setInUse (real service stets false, but the next validation returns true)
+
+moved consumer stop down and behavior is the same
+
+try without dumpQueries -> it is the first connection #55
