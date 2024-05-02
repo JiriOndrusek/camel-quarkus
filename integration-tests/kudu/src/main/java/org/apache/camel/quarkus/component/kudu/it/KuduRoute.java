@@ -25,23 +25,24 @@ public class KuduRoute extends RouteBuilder {
     @Override
     public void configure() {
         final String kuduEndpointUriFormat = "kudu:{{" + KUDU_AUTHORITY_CONFIG_KEY + "}}/" + TABLE_NAME + "?operation=%s";
+        final String kuduMasterEndpointUriFormat = "kudu:{{" + KUDU_AUTHORITY_CONFIG_KEY + "}}/" + TABLE_NAME + "?operation=%s&kudu-client=#kuduMasterClient";
 
         from("direct:create_table")
-                .toF(kuduEndpointUriFormat, "create_table");
-
-        from("direct:insert")
-                .toF(kuduEndpointUriFormat, "insert");
-
-        from("direct:update")
-                .toF(kuduEndpointUriFormat, "update");
-
-        from("direct:upsert")
-                .toF(kuduEndpointUriFormat, "upsert");
-
-        from("direct:delete")
-                .toF(kuduEndpointUriFormat, "delete");
-
-        from("direct:scan")
-                .toF(kuduEndpointUriFormat, "scan");
+                .toF(kuduMasterEndpointUriFormat, "create_table");
+//
+//        from("direct:insert")
+//                .toF(kuduEndpointUriFormat, "insert");
+//
+//        from("direct:update")
+//                .toF(kuduEndpointUriFormat, "update");
+//
+//        from("direct:upsert")
+//                .toF(kuduEndpointUriFormat, "upsert");
+//
+//        from("direct:delete")
+//                .toF(kuduEndpointUriFormat, "delete");
+//
+//        from("direct:scan")
+//                .toF(kuduEndpointUriFormat, "scan");
     }
 }

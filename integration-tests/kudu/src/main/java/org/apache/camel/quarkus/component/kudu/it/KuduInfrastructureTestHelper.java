@@ -65,6 +65,8 @@ public class KuduInfrastructureTestHelper {
 
     static final String KUDU_TABLET_NETWORK_ALIAS = "kudu-tserver";
     static final String DOCKER_HOST = "docker.host";
+    static final String MASTER_URL = "master.url";
+    static final String SERVER_URL = "server.url";
     private static final Logger LOG = Logger.getLogger(KuduInfrastructureTestHelper.class);
 
     void onStart(@Observes StartupEvent ev) {
