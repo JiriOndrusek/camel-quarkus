@@ -38,6 +38,8 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 
 import static org.apache.camel.quarkus.component.kudu.it.KuduInfrastructureTestHelper.DOCKER_HOST;
 import static org.apache.camel.quarkus.component.kudu.it.KuduInfrastructureTestHelper.KUDU_TABLET_NETWORK_ALIAS;
+import static org.apache.camel.quarkus.component.kudu.it.KuduInfrastructureTestHelper.MASTER_URL;
+import static org.apache.camel.quarkus.component.kudu.it.KuduInfrastructureTestHelper.SERVER_URL;
 import static org.apache.camel.quarkus.component.kudu.it.KuduRoute.KUDU_AUTHORITY_CONFIG_KEY;
 
 public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
@@ -61,7 +63,7 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
         // Setup the Kudu master server container
         masterContainer = new GenericContainer<>(KUDU_IMAGE)
                 .withCommand("master")
-                .withEnv("MASTER_ARGS", "--unlock_unsafe_flags=true")
+                .withEnv("MASTER_ARGS", "--unlock_unsafe_flags=true --rpc_authentication=required")
                 .withExposedPorts(KUDU_MASTER_RPC_PORT, KUDU_MASTER_HTTP_PORT)
                 .withNetwork(kuduNetwork)
                 .withNetworkAliases(KUDU_MASTER_NETWORK_ALIAS)
@@ -110,7 +112,9 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
 
         return CollectionHelper.mapOf(
                 KUDU_AUTHORITY_CONFIG_KEY, masterRpcAuthority,
-                DOCKER_HOST, DockerClientFactory.instance().dockerHostIpAddress());
+                DOCKER_HOST, DockerClientFactory.instance().dockerHostIpAddress(),
+                MASTER_URL, masterRpcAuthority);
+//                SERVER_URL, tServerRpcAuthority);
     }
 
     @Override
