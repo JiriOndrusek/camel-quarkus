@@ -25,7 +25,8 @@ public class KuduRoute extends RouteBuilder {
     @Override
     public void configure() {
         final String kuduEndpointUriFormat = "kudu:{{" + KUDU_AUTHORITY_CONFIG_KEY + "}}/" + TABLE_NAME + "?operation=%s";
-        final String kuduMasterEndpointUriFormat = "kudu:{{" + KUDU_AUTHORITY_CONFIG_KEY + "}}/" + TABLE_NAME + "?operation=%s&kudu-client=#kuduMasterClient";
+        final String kuduMasterEndpointUriFormat = "kudu:{{" + KUDU_AUTHORITY_CONFIG_KEY + "}}/" + TABLE_NAME
+                + "?operation=%s&kudu-client=#kuduMasterClient";
 
         from("direct:create_table")
                 .toF(kuduMasterEndpointUriFormat, "create_table");
