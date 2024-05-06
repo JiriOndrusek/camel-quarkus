@@ -1,0 +1,107 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+version: "3"
+services:
+  kerberos:
+    image: jairsjunior/kerberos-docker
+    build: .
+    hostname: kerberos
+    container_name: kerberos
+    environment:
+      - REALM=ATHENA.MIT.EDU
+      - DOMAIN_REALM=kerberos
+      - KERB_MASTER_KEY=masterkey
+      - KERB_ADMIN_USER=admin
+      - KERB_ADMIN_PASS=admin
+      - SEARCH_DOMAINS=search.consul kerberos
+    healthcheck:
+      test: |-
+        python -c "
+        import socket;
+        import sys;
+        a_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM);
+        result_of_check = a_socket.connect_ex(('127.0.0.1', 88));
+        sys.exit(result_of_check);
+        "
+      interval: 5s
+      timeout: 5s
+      retries: 2
+    volumes:
+      - ./kerberos-data:/volumes/kerberos
+      - ./kerberos-keytabs:/volumes/keytabs
+      - ./kerberos-users:/volumes/users
+  kudu-master-1:
+    image: docker.io/apache/kudu:1.17.0
+    depends_on:
+      kerberos:
+        condition: service_healthy
+    ports:
+      - "7051:7051"
+      - "8051:8051"
+    command: ["master", "sh -c 'chmod 0640 /kerberos/keytabs/master1.keytab'", "kinit -k"]
+    volumes:
+      - kudu-master-1:/var/lib/kudu
+      - ./kerberos-keytabs:/kerberos/keytabs
+      - ./krbconf:/etc/conf
+    environment:
+      - >
+        MASTER_ARGS=--logtostderr
+        --unlock_experimental_flags
+        --unlock_unsafe_flags=true
+        --rpc_authentication=required
+        --rpc-encryption=required
+        --keytab-file=/kerberos/keytabs/master1.keytab
+        --principal=master/kudu
+  #        --rpc_ca_certificate_file=/home/kudu/kuduca.crt.pem
+  #        --rpc_certificate_file=/home/kudu/master.crt.pem
+  #        --rpc_private_key_file=/home/kudu/master.key.pem
+  kudu-tserver-1:
+    image: docker.io/apache/kudu:1.17.0
+    depends_on:
+      - kudu-master-1
+    ports:
+      - "7050:7050"
+      - "8050:8050"
+    command: ["tserver", "sh -c 'chmod 0640 /kerberos/keytabs/tserver1.keytab'"]
+    volumes:
+      - kudu-tserver-1:/var/lib/kudu
+      - ./kerberos-keytabs:/kerberos/keytabs
+    environment:
+      - KUDU_MASTERS=kudu-master-1:7051
+      - >
+        TSERVER_ARGS=--logtostderr
+        --unlock_experimental_flags
+        --unlock_unsafe_flags=true
+        --keytab-file=/kerberos/keytabs/tserver1.keytab
+#        --rpc_authentication=required
+#        --rpc-encryption=required
+
+#        --principal=tserver/kudu
+#        --sasl_enabled=true
+#        --sasl_external_principal_mapping=true
+#        --rpc_ca_certificate_file=/home/kudu/kuduca.crt.pem
+#        --rpc_certificate_file=/home/kudu/tserver.crt.pem
+#        --rpc_private_key_file=/home/kudu/tserver.key.pem
+  empty-1:
+    image: docker.io/library/empty-kudu:1.17.01
+    volumes:
+      - ./kerberos-keytabs:/kerberos/keytabs
+      - ./krbconf:/etc/conf
+volumes:
+  kudu-master-1:
+  kudu-tserver-1:
+  kerberos-keytabs:

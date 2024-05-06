@@ -1,0 +1,3 @@
+kudu,master,master1
+tserver,kudu,tserver1
+client,kudu,client

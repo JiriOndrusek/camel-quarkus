@@ -1,0 +1,1 @@
+https://github.com/SvenDowideit/dockerfiles/blob/master/centos-kerberos/krb5.conf
