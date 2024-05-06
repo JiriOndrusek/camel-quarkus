@@ -69,10 +69,10 @@ public class KuduInfrastructureTestHelper {
     static final String SERVER_URL = "server.url";
     private static final Logger LOG = Logger.getLogger(KuduInfrastructureTestHelper.class);
 
-    void onStart(@Observes StartupEvent ev) {
-        LOG.info("Attempting to override the kudu tablet server hostname resolution on application startup");
-        KuduInfrastructureTestHelper.overrideTabletServerHostnameResolution();
-    }
+//    void onStart(@Observes StartupEvent ev) {
+//        LOG.info("Attempting to override the kudu tablet server hostname resolution on application startup");
+//        KuduInfrastructureTestHelper.overrideTabletServerHostnameResolution();
+//    }
 
     public static void overrideTabletServerHostnameResolution() {
         try {
