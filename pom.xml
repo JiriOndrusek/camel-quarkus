@@ -86,6 +86,7 @@
         <bcprov-ext-jdk18on.version>1.78</bcprov-ext-jdk18on.version><!-- TODO: Remove this. Required as there is no 1.78.1 version released -->
         <brotli.version>0.1.2</brotli.version><!-- @sync org.apache.httpcomponents.client5:httpclient5-parent:${httpclient5.version} prop:brotli.version -->
         <caffeine.version>3.1.5</caffeine.version><!-- @sync io.quarkus:quarkus-bom:${quarkus.version} dep:com.github.ben-manes.caffeine:caffeine -->
+        <certificate.generator.version>0.5.0</certificate.generator.version>
         <commons-beanutils.version>${commons-beanutils-version}</commons-beanutils.version>
         <commons-cli.version>1.4</commons-cli.version><!-- keep in sync with Quarkus, via quarkus-bootstrap-core -->
         <commons-exec.version>${commons-exec-version}</commons-exec.version>
