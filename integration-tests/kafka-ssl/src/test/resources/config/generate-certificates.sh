@@ -31,7 +31,7 @@ export PEM_FILE_CERT=kafka-cert.pem
 export PEM_FILE_KEY=kafka-key.pem
 keySize=2048
 days=10000
-encryptionAlgo="aes-256-cbc"
+encryptionAlgo="AES-256-CBC"
 
 # Certificate authority
 openssl genrsa -out "kafkaca.key" $keySize
