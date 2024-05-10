@@ -30,10 +30,10 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 
-@Certificates(certificates = {
-        @Certificate(name = KafkaSslTestResource.KAFKA_HOSTNAME, formats = {
-                Format.PKCS12 }, password = KafkaSslTestResource.KAFKA_KEYSTORE_PASSWORD)
-}, baseDir = "target/certs")
+//@Certificates(certificates = {
+//        @Certificate(name = KafkaSslTestResource.KAFKA_HOSTNAME, formats = {
+//                Format.PKCS12 }, password = KafkaSslTestResource.KAFKA_KEYSTORE_PASSWORD)
+//}, baseDir = "target/certs")
 @QuarkusTest
 @QuarkusTestResource(KafkaSslTestResource.class)
 public class KafkaSslTest {

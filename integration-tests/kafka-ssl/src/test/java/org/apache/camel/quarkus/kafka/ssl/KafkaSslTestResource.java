@@ -28,8 +28,8 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.testcontainers.utility.MountableFile;
 
 public class KafkaSslTestResource extends KafkaTestResource {
-    static final String KAFKA_KEYSTORE_PASSWORD = "Z_pkTh9xgZovK4t34cGB2o6afT4zZg0L";
-    static final String KAFKA_HOSTNAME = "localhost";
+    static final String KAFKA_KEYSTORE_PASSWORD = "tests3cret";
+    static final String KAFKA_HOSTNAME = "test";
 
     private static final String KAFKA_KEYSTORE_FILE = KAFKA_HOSTNAME + "-keystore.p12";
     private static final String KAFKA_KEYSTORE_TYPE = "PKCS12";
@@ -106,7 +106,7 @@ public class KafkaSslTestResource extends KafkaTestResource {
 
             Stream.of(KAFKA_KEYSTORE_FILE, KAFKA_TRUSTSTORE_FILE)
                     .forEach(keyStoreFile -> {
-                        copyFileToContainer(MountableFile.forHostPath(Paths.get("target", "certs").resolve(keyStoreFile)),
+                        copyFileToContainer(MountableFile.forHostPath(Paths.get("target/classes", "certs").resolve(keyStoreFile)),
                                 "/etc/kafka/secrets/" + keyStoreFile);
                     });
         }
