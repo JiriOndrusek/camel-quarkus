@@ -29,11 +29,46 @@ export PKCS_FILE=kafka-keystore.p12
 export PKCS_TRUST_FILE=kafka-truststore.p12
 export PEM_FILE_CERT=kafka-cert.pem
 export PEM_FILE_KEY=kafka-key.pem
+keySize=2048
+days=10000
+encryptionAlgo="aes-256-cbc"
 
-keytool -genkey -alias kafka-test-store -keyalg RSA -keystore ${JKS_FILE} -keysize 2048 -validity 3650 -ext "san=${SUBJECT_ALT_NAMES}" -dname CN=${CN} -keypass ${SECRET} -storepass ${SECRET}
-keytool -export -alias kafka-test-store -file ${CERT_FILE} -keystore ${JKS_FILE} -keypass ${SECRET} -storepass ${SECRET}
-keytool -importkeystore -srckeystore ${JKS_FILE} -srcstorepass ${SECRET} -destkeystore ${PKCS_FILE} -deststoretype PKCS12 -deststorepass ${SECRET}
+# Certificate authority
+openssl genrsa -out "kafkaca.key" $keySize
+openssl req -x509 -new -subj '/O=apache.org/OU=eng (NOT FOR PRODUCTION)/CN=kafkaca' -key "kafkaca.key" -nodes -out "kafkaca.pem" -days $days -extensions v3_req
+openssl req -new -subj '/O=apache.org/OU=eng (NOT FOR PRODUCTION)/CN=kafkaca' -x509 -key "kafkaca.key" -days $days -out "kafkaca.crt"
+openssl x509 -inform PEM -outform PEM -in "kafkaca.crt" -out "kafkaca.crt.pem"
+
+echo "1"
+#generate key
+openssl genrsa -out "localhost.key" 2048
+# Generate certificates
+echo "2"
+openssl req -new -subj "/O=apache.org/OU=eng (NOT FOR PRODUCTION)/CN=localhost" -key "localhost.key"  -out "localhost.csr"
+echo "3"
+openssl x509 -req -in "localhost.csr" -CA "kafkaca.pem" -CAkey "kafkaca.key" -CAcreateserial -days $days -out "${CERT_FILE}"
+# Export keystores
+echo "4"
+openssl pkcs12 -export -in "${CERT_FILE}" -inkey "localhost.key" -certfile "kafkaca.crt" -name "localhost" -out "${PKCS_FILE}" -passout pass:"${SECRET}" -keypbe "$encryptionAlgo" -certpbe PBE-SHA1-3DES
+# Truststore
+echo "5"
 keytool -keystore ${JKS_TRUST_FILE} -import -file ${CERT_FILE} -keypass ${SECRET} -storepass ${SECRET} -noprompt
+echo "6"
 keytool -importkeystore -srckeystore ${JKS_TRUST_FILE} -srcstorepass ${SECRET} -destkeystore ${PKCS_TRUST_FILE} -deststoretype PKCS12 -deststorepass ${SECRET}
 
 rm -f *.crt *.jks
+
+#openssl pkcs12 -info -in filename.p12  -noout
+
+#MAC: sha256, Iteration 2048
+#MAC length: 32, salt length: 8
+#PKCS7 Encrypted data: PBES2, PBKDF2, AES-256-CBC, Iteration 2048, PRF hmacWithSHA256
+#Certificate bag
+#Certificate bag
+#PKCS7 Data
+#Shrouded Keybag: PBES2, PBKDF2, AES-256-CBC, Iteration 2048, PRF hmacWithSHA256
+#[jondruse@fedora]/tmp/KafkaSaslSslTestResource-7413796295108926048%
+
+
+
+

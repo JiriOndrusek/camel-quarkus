@@ -17,7 +17,6 @@
 package org.apache.camel.quarkus.kafka.ssl;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -28,7 +27,6 @@ import io.strimzi.test.container.StrimziKafkaContainer;
 import org.apache.camel.quarkus.test.support.kafka.KafkaTestResource;
 import org.apache.camel.quarkus.test.support.kafka.KafkaTestSupport;
 import org.apache.camel.util.CollectionHelper;
-import org.apache.commons.io.FileUtils;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.testcontainers.images.builder.Transferable;
 
@@ -45,15 +43,15 @@ public class KafkaSslTestResource extends KafkaTestResource {
     public Map<String, String> start() {
         try {
             configDir = Files.createTempDirectory("KafkaSaslSslTestResource-");
-            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            Stream.of(KAFKA_KEYSTORE_FILE, KAFKA_TRUSTSTORE_FILE)
-                    .forEach(fileName -> {
-                        try (InputStream in = classLoader.getResourceAsStream("config/" + fileName)) {
-                            Files.copy(in, configDir.resolve(fileName));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
+            //            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            //            Stream.of(KAFKA_KEYSTORE_FILE, KAFKA_TRUSTSTORE_FILE)
+            //                    .forEach(fileName -> {
+            //                        try (InputStream in = classLoader.getResourceAsStream("config/" + fileName)) {
+            //                            Files.copy(in, configDir.resolve(fileName));
+            //                        } catch (IOException e) {
+            //                            throw new RuntimeException(e);
+            //                        }
+            //                    });
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -83,7 +81,7 @@ public class KafkaSslTestResource extends KafkaTestResource {
         if (this.container != null) {
             try {
                 this.container.stop();
-                FileUtils.deleteDirectory(configDir.toFile());
+                //                FileUtils.deleteDirectory(configDir.toFile());
             } catch (Exception e) {
                 // Ignored
             }
