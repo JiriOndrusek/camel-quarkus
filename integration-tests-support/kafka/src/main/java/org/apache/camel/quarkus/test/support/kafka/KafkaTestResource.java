@@ -66,4 +66,9 @@ public class KafkaTestResource implements QuarkusTestResourceLifecycleManager {
         testInjector.injectIntoFields(container,
                 new TestInjector.AnnotatedAndMatchesType(InjectKafka.class, StrimziKafkaContainer.class));
     }
+
+    protected boolean isFips() {
+        return java.security.Security.getProvider("SunPKCS11-NSS-FIPS") != null;
+
+    }
 }
