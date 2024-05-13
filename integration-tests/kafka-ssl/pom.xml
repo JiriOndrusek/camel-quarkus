@@ -79,9 +79,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>me.escoffier.certs</groupId>
-            <artifactId>certificate-generator-junit5</artifactId>
-            <scope>test</scope>
+            <groupId>org.apache.camel.quarkus</groupId>
+            <artifactId>camel-quarkus-integration-tests-support-certificate</artifactId>
         </dependency>
     </dependencies>
 

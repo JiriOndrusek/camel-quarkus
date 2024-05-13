@@ -16,6 +16,7 @@
  */
 package org.apache.camel.quarkus.kafka.ssl;
 
+import java.lang.reflect.AnnotatedElement;
 import java.util.UUID;
 
 import io.quarkus.test.common.QuarkusTestResource;
@@ -24,13 +25,13 @@ import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import me.escoffier.certs.Format;
 import me.escoffier.certs.junit5.Certificate;
-import me.escoffier.certs.junit5.Certificates;
+import org.apache.camel.quarkus.test.support.certificate.TestCertificates;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 
-@Certificates(certificates = {
+@TestCertificates(certificates = {
         @Certificate(name = KafkaSslTestResource.KAFKA_HOSTNAME, formats = {
                 Format.PKCS12 }, password = KafkaSslTestResource.KAFKA_KEYSTORE_PASSWORD)
 }, baseDir = "target/certs")
@@ -40,6 +41,8 @@ public class KafkaSslTest {
 
     @Test
     void testKafkaBridge() {
+        AnnotatedElement ae;
+
         String body = UUID.randomUUID().toString();
 
         RestAssured.given()

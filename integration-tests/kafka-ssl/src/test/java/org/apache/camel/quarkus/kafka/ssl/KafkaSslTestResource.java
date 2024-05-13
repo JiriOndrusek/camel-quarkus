@@ -24,7 +24,6 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
 import io.strimzi.test.container.StrimziKafkaContainer;
 import org.apache.camel.quarkus.test.support.kafka.KafkaTestResource;
-import org.apache.camel.quarkus.test.support.kafka.KafkaTestSupport;
 import org.apache.camel.util.CollectionHelper;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.jboss.logging.Logger;
@@ -45,12 +44,16 @@ public class KafkaSslTestResource extends KafkaTestResource {
     private SSLKafkaContainer container;
     private GenericContainer j17container;
 
+    public static String getCn() {
+        return "test";
+    }
+
     @Override
     public Map<String, String> start() {
 
         //todo
-//        KafkaTestSupport.regenerateCertificatesForDockerHost(configDir, KAFKA_CERTIFICATE_SCRIPT, KAFKA_KEYSTORE_FILE,
-//                KAFKA_TRUSTSTORE_FILE);
+        //        KafkaTestSupport.regenerateCertificatesForDockerHost(configDir, KAFKA_CERTIFICATE_SCRIPT, KAFKA_KEYSTORE_FILE,
+        //                KAFKA_TRUSTSTORE_FILE);
 
         //if FIPS environment is present, custom container using J17 has to used because:
         // Password-based encryption support in FIPs mode was implemented in the Red Hat build of OpenJDK 17 update 4
