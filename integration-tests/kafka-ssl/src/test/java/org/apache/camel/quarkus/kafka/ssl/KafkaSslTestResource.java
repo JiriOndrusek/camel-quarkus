@@ -38,7 +38,7 @@ public class KafkaSslTestResource extends KafkaTestResource {
 
     @Override
     public Map<String, String> start() {
-        container = new SSLKafkaContainer(KAFKA_IMAGE_NAME);
+        container = new SSLKafkaContainer("custom-kafka:3.2.1.09");
         container.waitForRunning();
         container.start();
 
