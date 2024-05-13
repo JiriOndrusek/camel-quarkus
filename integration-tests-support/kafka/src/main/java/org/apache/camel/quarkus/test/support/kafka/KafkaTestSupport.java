@@ -66,31 +66,30 @@ public final class KafkaTestSupport {
             String keyStoreFile,
             String trustStoreFile) {
         String dockerHost = DockerClientFactory.instance().dockerHostIpAddress();
-        //        if (!dockerHost.equals("localhost") && !dockerHost.equals("127.0.0.1")) {
-        // Run certificate generation in a container in case the target platform does not have prerequisites like OpenSSL installed (E.g on Windows)
-        //            String imageName = ConfigProvider.getConfig().getValue("eclipse-temurin.container.image", String.class);
-        String imageName = "eclipse-temurin:17-jdk";
-        try (GenericContainer<?> container = new GenericContainer<>(imageName)) {
-            container.withCreateContainerCmdModifier(modifier -> {
-                modifier.withEntrypoint("/bin/bash");
-                modifier.withStdinOpen(true);
-            });
-            container.setWorkingDirectory("/");
-            container.start();
+        if (!dockerHost.equals("localhost") && !dockerHost.equals("127.0.0.1")) {
+            // Run certificate generation in a container in case the target platform does not have prerequisites like OpenSSL installed (E.g on Windows)
+            String imageName = ConfigProvider.getConfig().getValue("eclipse-temurin.container.image", String.class);
+            try (GenericContainer<?> container = new GenericContainer<>(imageName)) {
+                container.withCreateContainerCmdModifier(modifier -> {
+                    modifier.withEntrypoint("/bin/bash");
+                    modifier.withStdinOpen(true);
+                });
+                container.setWorkingDirectory("/");
+                container.start();
 
-            String host = container.getHost();
-            container.copyFileToContainer(
-                    MountableFile.forClasspathResource("config/" + certificateScript),
-                    "/" + certificateScript);
-            container.execInContainer("/bin/bash", "/" + certificateScript, host,
-                    "DNS:%s,IP:%s".formatted(host, host));
-            container.copyFileFromContainer("/" + keyStoreFile,
-                    configDir.resolve(keyStoreFile).toString());
-            container.copyFileFromContainer("/" + trustStoreFile,
-                    configDir.resolve(trustStoreFile).toString());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+                String host = container.getHost();
+                container.copyFileToContainer(
+                        MountableFile.forClasspathResource("config/" + certificateScript),
+                        "/" + certificateScript);
+                container.execInContainer("/bin/bash", "/" + certificateScript, host,
+                        "DNS:%s,IP:%s".formatted(host, host));
+                container.copyFileFromContainer("/" + keyStoreFile,
+                        configDir.resolve(keyStoreFile).toString());
+                container.copyFileFromContainer("/" + trustStoreFile,
+                        configDir.resolve(trustStoreFile).toString());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
-        //        }
     }
 }
