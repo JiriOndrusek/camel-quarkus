@@ -107,6 +107,10 @@ public class KafkaTestResource implements QuarkusTestResourceLifecycleManager {
     }
 
     private void startContainer(String imageName, Function<String, StrimziKafkaContainer> containerSupplier) {
+        System.out.println("**************************************************");
+        System.out.println("*****************" + imageName + "*********************");
+        System.out.println("**************************************************");
+
         container = containerSupplier.apply(imageName);
 
         /* Added container startup logging because of https://github.com/apache/camel-quarkus/issues/2461 */
