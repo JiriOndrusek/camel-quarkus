@@ -16,92 +16,53 @@
  */
 package org.apache.camel.quarkus.kafka.sasl;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.stream.Stream;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import io.strimzi.test.container.StrimziKafkaContainer;
+import org.apache.camel.quarkus.test.support.kafka.KafkaContainerProperties;
 import org.apache.camel.quarkus.test.support.kafka.KafkaTestResource;
-import org.apache.camel.quarkus.test.support.kafka.KafkaTestSupport;
 import org.apache.camel.util.CollectionHelper;
-import org.apache.commons.io.FileUtils;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.MountableFile;
 
 import static io.strimzi.test.container.StrimziZookeeperContainer.ZOOKEEPER_PORT;
 
 public class KafkaSaslSslTestResource extends KafkaTestResource {
-    private static final String KAFKA_KEYSTORE_FILE = "kafka-keystore.p12";
-    private static final String KAFKA_KEYSTORE_PASSWORD = "kafkas3cret";
-    private static final String KAFKA_KEYSTORE_TYPE = "PKCS12";
-    private static final String KAFKA_TRUSTSTORE_FILE = "kafka-truststore.p12";
-    private static final String KAFKA_CERTIFICATE_SCRIPT = "generate-certificates.sh";
-    private static Path configDir;
-    private SaslSslKafkaContainer container;
+    static final String KAFKA_KEYSTORE_PASSWORD = "Z_pkTh9xgZovK4t34cGB2o6afT4zZg3f";
+    static final String KAFKA_HOSTNAME = KafkaTestResource.KAFKA_HOSTNAME;
 
     @Override
     public Map<String, String> start() {
-        try {
-            configDir = Files.createTempDirectory("KafkaSaslSslTestResource-");
-            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            Stream.of("kafka_server_jaas.conf", KAFKA_KEYSTORE_FILE, KAFKA_TRUSTSTORE_FILE)
-                    .forEach(fileName -> {
-                        try (InputStream in = classLoader.getResourceAsStream("config/" + fileName)) {
-                            Files.copy(in, configDir.resolve(fileName));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        KafkaContainerProperties properties = start(name -> new SaslSslKafkaContainer(name, createProperties()));
 
-        KafkaTestSupport.regenerateCertificatesForDockerHost(configDir, KAFKA_CERTIFICATE_SCRIPT, KAFKA_KEYSTORE_FILE,
-                KAFKA_TRUSTSTORE_FILE);
-
-        container = new SaslSslKafkaContainer(KAFKA_IMAGE_NAME);
-        container.waitForRunning();
-        container.start();
+        Map<String, String> map = properties.toMap("camel.component.kafka");
 
         String jaasConfig = "org.apache.kafka.common.security.scram.ScramLoginModule required "
                 + "username=\"alice\" "
                 + "password=\"alice-secret\";";
 
-        return CollectionHelper.mapOf(
-                "camel.component.kafka.brokers", container.getBootstrapServers(),
+        map.putAll(CollectionHelper.mapOf(
                 "camel.component.kafka.sasl-mechanism", "SCRAM-SHA-512",
                 "camel.component.kafka.sasl-jaas-config", jaasConfig,
                 "camel.component.kafka.security-protocol", "SASL_SSL",
                 "camel.component.kafka.ssl-key-password", KAFKA_KEYSTORE_PASSWORD,
-                "camel.component.kafka.ssl-keystore-location", configDir.resolve(KAFKA_KEYSTORE_FILE).toString(),
                 "camel.component.kafka.ssl-keystore-password", KAFKA_KEYSTORE_PASSWORD,
-                "camel.component.kafka.ssl-keystore-type", KAFKA_KEYSTORE_TYPE,
-                "camel.component.kafka.ssl-truststore-location", configDir.resolve(KAFKA_TRUSTSTORE_FILE).toString(),
-                "camel.component.kafka.ssl-truststore-password", KAFKA_KEYSTORE_PASSWORD,
-                "camel.component.kafka.ssl-truststore-type", KAFKA_KEYSTORE_TYPE);
-    }
+                "camel.component.kafka.ssl-truststore-password", KAFKA_KEYSTORE_PASSWORD));
 
-    @Override
-    public void stop() {
-        if (this.container != null) {
-            try {
-                this.container.stop();
-                FileUtils.deleteDirectory(configDir.toFile());
-            } catch (Exception e) {
-                // Ignored
-            }
-        }
+        return map;
     }
 
     // KafkaContainer does not support SASL SSL OOTB so we need some customizations
     static final class SaslSslKafkaContainer extends StrimziKafkaContainer {
-        SaslSslKafkaContainer(final String dockerImageName) {
+        private KafkaContainerProperties kcp;
+
+        SaslSslKafkaContainer(final String dockerImageName, KafkaContainerProperties kcp) {
             super(dockerImageName);
+            this.kcp = kcp;
         }
 
         @Override
@@ -120,12 +81,12 @@ public class KafkaSaslSslTestResource extends KafkaTestResource {
                     Map.entry("zookeeper.sasl.enabled", "false"),
                     Map.entry("sasl.enabled.mechanisms", "SCRAM-SHA-512"),
                     Map.entry("sasl.mechanism.inter.broker.protocol", "SCRAM-SHA-512"),
-                    Map.entry("ssl.keystore.location", "/etc/kafka/secrets/" + KAFKA_KEYSTORE_FILE),
+                    Map.entry("ssl.keystore.location", "/etc/kafka/secrets/" + kcp.getSslKeystoreFileName()),
                     Map.entry("ssl.keystore.password", KAFKA_KEYSTORE_PASSWORD),
-                    Map.entry("ssl.keystore.type", KAFKA_KEYSTORE_TYPE),
-                    Map.entry("ssl.truststore.location", "/etc/kafka/secrets/" + KAFKA_TRUSTSTORE_FILE),
+                    Map.entry("ssl.keystore.type", kcp.getSslKeystoreType()),
+                    Map.entry("ssl.truststore.location", "/etc/kafka/secrets/" + kcp.getSslKeystoreFileName()),
                     Map.entry("ssl.truststore.password", KAFKA_KEYSTORE_PASSWORD),
-                    Map.entry("ssl.truststore.type", KAFKA_KEYSTORE_TYPE),
+                    Map.entry("ssl.truststore.type", kcp.getSslTruststoreType()),
                     Map.entry("ssl.endpoint.identification.algorithm", ""));
 
             withEnv("KAFKA_OPTS", "-Djava.security.auth.login.config=/etc/kafka/kafka_server_jaas.conf");
@@ -141,14 +102,11 @@ public class KafkaSaslSslTestResource extends KafkaTestResource {
                     MountableFile.forClasspathResource("config/kafka_server_jaas.conf"),
                     "/etc/kafka/kafka_server_jaas.conf");
 
-            Stream.of(KAFKA_KEYSTORE_FILE, KAFKA_TRUSTSTORE_FILE)
+            Stream.of(kcp.getSslKeystoreFileName(), kcp.getSslTruststoreFileName())
                     .forEach(keyStoreFile -> {
-                        try {
-                            copyFileToContainer(Transferable.of(Files.readAllBytes(configDir.resolve(keyStoreFile))),
-                                    "/etc/kafka/secrets/" + keyStoreFile);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
+                        copyFileToContainer(
+                                MountableFile.forHostPath(Path.of(KafkaTestResource.CERTS_BASEDIR).resolve(keyStoreFile)),
+                                "/etc/kafka/secrets/" + keyStoreFile);
                     });
 
             String setupUsersScript = "#!/bin/bash\n"

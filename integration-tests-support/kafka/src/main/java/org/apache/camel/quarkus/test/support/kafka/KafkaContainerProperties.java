@@ -8,21 +8,18 @@ import org.apache.kafka.clients.CommonClientConfigs;
 
 public class KafkaContainerProperties {
 
-    //    private String ssl_key_password;
-    private String sslKeystoreLocation;
-    //    private String ssl_keystore_password;
+    private String sslKeystoreFileName;
     private String sslKeystoreType;
-    private String sslTruststoreLocation;
-    //    private String ssl_truststore_password;
+    private String sslTruststoreFileName;
     private String sslTruststoreType;
     private String bootstrapServers;
 
-    public String getSslKeystoreLocation() {
-        return sslKeystoreLocation;
+    public String getSslKeystoreFileName() {
+        return sslKeystoreFileName;
     }
 
     public KafkaContainerProperties withSslKeystoreLocation(String sslKeystoreLocation) {
-        this.sslKeystoreLocation = sslKeystoreLocation;
+        this.sslKeystoreFileName = sslKeystoreLocation;
         return this;
     }
 
@@ -35,12 +32,12 @@ public class KafkaContainerProperties {
         return this;
     }
 
-    public String getSslTruststoreLocation() {
-        return sslTruststoreLocation;
+    public String getSslTruststoreFileName() {
+        return sslTruststoreFileName;
     }
 
     public KafkaContainerProperties withSslTruststoreLocation(String sslTruststoreLocation) {
-        this.sslTruststoreLocation = sslTruststoreLocation;
+        this.sslTruststoreFileName = sslTruststoreLocation;
         return this;
     }
 
@@ -67,10 +64,10 @@ public class KafkaContainerProperties {
                 "kafka." + CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, getBootstrapServers(),
                 prefix + ".brokers", getBootstrapServers(),
                 prefix + ".ssl-keystore-location",
-                Paths.get("target", "certs").resolve(getSslKeystoreLocation()).toString(),
+                Paths.get("target", "certs").resolve(getSslKeystoreFileName()).toString(),
                 prefix + ".ssl-keystore-type", getSslKeystoreType(),
                 prefix + ".ssl-truststore-location",
-                Paths.get("target", "certs").resolve(getSslTruststoreLocation()).toString(),
+                Paths.get("target", "certs").resolve(getSslTruststoreFileName()).toString(),
                 prefix + ".ssl-truststore-type", getSslTruststoreType());
     }
 

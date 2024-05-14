@@ -26,15 +26,16 @@ import io.restassured.path.json.JsonPath;
 import me.escoffier.certs.Format;
 import me.escoffier.certs.junit5.Certificate;
 import org.apache.camel.quarkus.test.support.certificate.TestCertificates;
+import org.apache.camel.quarkus.test.support.kafka.KafkaTestResource;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 
 @TestCertificates(certificates = {
-        @Certificate(name = KafkaSslTestResource.KAFKA_HOSTNAME, formats = {
+        @Certificate(name = KafkaTestResource.KAFKA_HOSTNAME, formats = {
                 Format.PKCS12 }, password = KafkaSslTestResource.KAFKA_KEYSTORE_PASSWORD)
-}, baseDir = "target/certs")
+}, baseDir = KafkaTestResource.CERTS_BASEDIR)
 @QuarkusTest
 @QuarkusTestResource(KafkaSslTestResource.class)
 public class KafkaSslTest {

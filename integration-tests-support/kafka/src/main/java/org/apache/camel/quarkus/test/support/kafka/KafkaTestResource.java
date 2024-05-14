@@ -35,8 +35,8 @@ public class KafkaTestResource implements QuarkusTestResourceLifecycleManager {
     protected static final String KAFKA_IMAGE_NAME = ConfigProvider.getConfig().getValue("kafka.container.image", String.class);
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaTestResource.class);
 
-    protected static final String KAFKA_HOSTNAME = "localhost";
-    protected static final String CERTS_BASEDIR = "target/certs";
+    public static final String KAFKA_HOSTNAME = "localhost";
+    public static final String CERTS_BASEDIR = "target/certs";
 
     private static final String KAFKA_KEYSTORE_FILE = KAFKA_HOSTNAME + "-keystore.p12";
     private static final String KAFKA_KEYSTORE_TYPE = "PKCS12";
@@ -45,19 +45,12 @@ public class KafkaTestResource implements QuarkusTestResourceLifecycleManager {
     private StrimziKafkaContainer container;
     private GenericContainer j17container;
 
-    private KafkaContainerProperties properties;
-
     @Override
     public Map<String, String> start() {
         LOGGER.info(TestcontainersConfiguration.getInstance().toString());
 
         try {
-            container = new StrimziKafkaContainer(KAFKA_IMAGE_NAME)
-                    /* Added container startup logging because of https://github.com/apache/camel-quarkus/issues/2461 */
-                    .withLogConsumer(frame -> System.out.print(frame.getUtf8String()))
-                    .waitForRunning();
-
-            container.start();
+            startContainer(KAFKA_IMAGE_NAME, name -> new StrimziKafkaContainer(name));
 
             return Collections.singletonMap("camel.component.kafka.brokers", container.getBootstrapServers());
         } catch (Exception e) {
@@ -100,7 +93,8 @@ public class KafkaTestResource implements QuarkusTestResourceLifecycleManager {
                     LOGGER.info("Custom image for kafka (%s) has been created.", customImageName);
 
                     //start kafka container again
-                    startContainer(customImageName, containerSupplier);;
+                    startContainer(customImageName, containerSupplier);
+                    ;
                 }
             }
         } else {
@@ -118,7 +112,7 @@ public class KafkaTestResource implements QuarkusTestResourceLifecycleManager {
         /* Added container startup logging because of https://github.com/apache/camel-quarkus/issues/2461 */
         container.withLogConsumer(frame -> System.out.print(frame.getUtf8String()))
                 .waitForRunning()
-               .start();
+                .start();
     }
 
     protected KafkaContainerProperties createProperties() {

@@ -16,7 +16,7 @@
  */
 package org.apache.camel.quarkus.kafka.ssl;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -32,12 +32,10 @@ public class KafkaSslTestResource extends KafkaTestResource {
     private static final Logger LOGGER = Logger.getLogger(KafkaSslTestResource.class);
 
     static final String KAFKA_KEYSTORE_PASSWORD = "Z_pkTh9xgZovK4t34cGB2o6afT4zZg0L";
-    static final String KAFKA_HOSTNAME = KafkaTestResource.KAFKA_HOSTNAME;
 
     @Override
     public Map<String, String> start() {
-        final KafkaContainerProperties defaultProperties = createProperties();
-        KafkaContainerProperties properties = start(name -> new SSLKafkaContainer(name, defaultProperties));
+        KafkaContainerProperties properties = start(name -> new SSLKafkaContainer(name, createProperties()));
 
         Map<String, String> map = properties.toMap("camel.component.kafka");
         map.putAll(CollectionHelper.mapOf(
@@ -72,10 +70,10 @@ public class KafkaSslTestResource extends KafkaTestResource {
             Map<String, String> config = Map.ofEntries(
                     Map.entry("inter.broker.listener.name", "BROKER1"),
                     Map.entry("listener.security.protocol.map", protocolMap),
-                    Map.entry("ssl.keystore.location", "/etc/kafka/secrets/" + kcp.getSslKeystoreLocation()),
+                    Map.entry("ssl.keystore.location", "/etc/kafka/secrets/" + kcp.getSslKeystoreFileName()),
                     Map.entry("ssl.keystore.password", KAFKA_KEYSTORE_PASSWORD),
                     Map.entry("ssl.keystore.type", kcp.getSslKeystoreType()),
-                    Map.entry("ssl.truststore.location", "/etc/kafka/secrets/" + kcp.getSslKeystoreLocation()),
+                    Map.entry("ssl.truststore.location", "/etc/kafka/secrets/" + kcp.getSslKeystoreFileName()),
                     Map.entry("ssl.truststore.password", KAFKA_KEYSTORE_PASSWORD),
                     Map.entry("ssl.truststore.type", kcp.getSslTruststoreType()),
                     Map.entry("ssl.endpoint.identification.algorithm", ""));
@@ -89,9 +87,10 @@ public class KafkaSslTestResource extends KafkaTestResource {
         protected void containerIsStarting(InspectContainerResponse containerInfo, boolean reused) {
             super.containerIsStarting(containerInfo, reused);
 
-            Stream.of(kcp.getSslKeystoreLocation(), kcp.getSslTruststoreLocation())
+            Stream.of(kcp.getSslKeystoreFileName(), kcp.getSslTruststoreFileName())
                     .forEach(keyStoreFile -> {
-                        copyFileToContainer(MountableFile.forHostPath(Paths.get("target", "certs").resolve(keyStoreFile)),
+                        copyFileToContainer(
+                                MountableFile.forHostPath(Path.of(KafkaTestResource.CERTS_BASEDIR).resolve(keyStoreFile)),
                                 "/etc/kafka/secrets/" + keyStoreFile);
                     });
         }
