@@ -78,6 +78,10 @@
             <artifactId>quarkus-junit4-mock</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.camel.quarkus</groupId>
+            <artifactId>camel-quarkus-integration-tests-support-certificate</artifactId>
+        </dependency>
     </dependencies>
 
     <profiles>
