@@ -72,12 +72,14 @@ public class KafkaSslTestResource extends KafkaTestResource {
                     Map.entry("listener.security.protocol.map", protocolMap),
                     Map.entry("ssl.keystore.location", "/etc/kafka/secrets/" + kcp.getSslKeystoreFileName()),
                     Map.entry("ssl.keystore.password", KAFKA_KEYSTORE_PASSWORD),
+                    Map.entry("kafka.root.logger.level", "DEBUG"),
                     Map.entry("ssl.keystore.type", kcp.getSslKeystoreType()),
                     Map.entry("ssl.truststore.location", "/etc/kafka/secrets/" + kcp.getSslKeystoreFileName()),
                     Map.entry("ssl.truststore.password", KAFKA_KEYSTORE_PASSWORD),
                     Map.entry("ssl.truststore.type", kcp.getSslTruststoreType()),
                     Map.entry("ssl.endpoint.identification.algorithm", ""));
 
+            withEnv("STRIMZI_TEST_ROOT_LOG_LEVEL", "DEBUG");
             withBrokerId(1);
             withKafkaConfigurationMap(config);
             withLogConsumer(frame -> System.out.print(frame.getUtf8String()));

@@ -26,6 +26,7 @@ import io.strimzi.test.container.StrimziKafkaContainer;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.ContainerFetchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
@@ -114,7 +115,11 @@ public class KafkaTestResource implements QuarkusTestResourceLifecycleManager {
         container = containerSupplier.apply(imageName);
 
         /* Added container startup logging because of https://github.com/apache/camel-quarkus/issues/2461 */
-        container.withLogConsumer(frame -> System.out.print(frame.getUtf8String()))
+        container.withLogConsumer(frame -> System.out.print("************" + frame.getUtf8String()))
+                .withClasspathResourceMapping("/log4j.properties", "/log4j.properties", BindMode.READ_WRITE)
+                //                .withEnv("LOG4J_CONFIG_FILE", "/log4j.properties").waitForRunning()
+                .withEnv("KAFKA_LOG4J_ROOT_LOGLEVEL", "DEBUG").waitForRunning()
+                .withEnv("KAFKA_LOG4J_OPTS", "-Dlog4j.configuration=file:/log4j.properties")
                 .waitForRunning()
                 .start();
     }

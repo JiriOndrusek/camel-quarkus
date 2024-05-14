@@ -32,7 +32,7 @@ import org.testcontainers.utility.MountableFile;
 import static io.strimzi.test.container.StrimziZookeeperContainer.ZOOKEEPER_PORT;
 
 public class KafkaSaslSslTestResource extends KafkaTestResource {
-    static final String KAFKA_KEYSTORE_PASSWORD = "Z_pkTh9xgZovK4t34cGB2o6afT4zZg3f";
+    static final String KAFKA_KEYSTORE_PASSWORD = "123456789123456789123456789123456789";
     static final String KAFKA_HOSTNAME = KafkaTestResource.KAFKA_HOSTNAME;
 
     @Override
