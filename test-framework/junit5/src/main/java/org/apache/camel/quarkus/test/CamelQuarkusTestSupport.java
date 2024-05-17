@@ -267,7 +267,7 @@ public class CamelQuarkusTestSupport extends CamelTestSupport
      * Method is not intended to be overridden.
      */
     @Override
-    protected final void doQuarkusCheck() {
+    protected final void assertUnsupported() {
         //can run on Quarkus
 
         //log warning in case that at least one RouteBuilder in the registry, it might mean, that unintentionally
