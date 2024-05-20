@@ -24,6 +24,9 @@ import java.util.Optional;
 
 public class FipsModeUtil {
 
+    private FipsModeUtil() {
+    }
+
     /**
      * Returns null if system is not in fips mode.
      * Returns Optional.empty if system is in fips mode and there is some provider containing "fips"

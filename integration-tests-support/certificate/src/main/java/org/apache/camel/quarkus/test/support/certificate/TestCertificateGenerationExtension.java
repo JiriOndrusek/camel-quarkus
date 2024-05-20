@@ -115,16 +115,7 @@ public class TestCertificateGenerationExtension implements BeforeAllCallback, Pa
     private Optional<String> resolveDockerHost() {
         String dockerHost = DockerClientFactory.instance().dockerHostIpAddress();
         if (!dockerHost.equals("localhost") && !dockerHost.equals("127.0.0.1")) {
-            String imageName = ConfigProvider.getConfig().getValue("eclipse-temurin.container.image", String.class);
-            try (GenericContainer<?> container = new GenericContainer<>(imageName)) {
-                container.withCreateContainerCmdModifier(modifier -> {
-                    modifier.withEntrypoint("/bin/bash");
-                });
-                container.start();
-
-                return Optional.of(container.getHost());
-
-            }
+            return Optional.of(dockerHost);
         }
         return Optional.empty();
     }
