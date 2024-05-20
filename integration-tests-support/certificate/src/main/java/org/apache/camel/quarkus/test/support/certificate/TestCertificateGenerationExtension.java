@@ -43,7 +43,7 @@ import org.testcontainers.DockerClientFactory;
  * based on docker host (required for usage with external docker host)
  * Therefore I created a new annotation 'TestCertificates' which would use this new extension.
  */
-public class TestCertificateGenerationExtension implements BeforeAllCallback, ParameterResolver {
+public class TestCertificateGenerationExtension implements BeforeAllCallback {
     private static final Logger LOGGER = Logger.getLogger(TestCertificateGenerationExtension.class);
 
     public static TestCertificateGenerationExtension getInstance(ExtensionContext extensionContext) {
@@ -113,15 +113,4 @@ public class TestCertificateGenerationExtension implements BeforeAllCallback, Pa
         return Optional.empty();
     }
 
-    @Override
-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
-            throws ParameterResolutionException {
-        throw new IllegalArgumentException("Not supported!");
-    }
-
-    @Override
-    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
-            throws ParameterResolutionException {
-        throw new IllegalArgumentException("Not supported!");
-    }
 }
