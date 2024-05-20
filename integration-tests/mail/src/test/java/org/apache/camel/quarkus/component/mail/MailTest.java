@@ -60,7 +60,7 @@ import static org.hamcrest.Matchers.is;
 @TestCertificates(certificates = {
         @Certificate(name = "greenmail", formats = {
                 Format.PKCS12 }, password = MailTestResource.KEYSTORE_PASSWORD)
-}, baseDir = CertificatesUtil.DEFAULT_CERTS_BASEDIR)
+}, baseDir = CertificatesUtil.DEFAULT_CERTS_BASEDIR, docker = true)
 @QuarkusTest
 @QuarkusTestResource(MailTestResource.class)
 public class MailTest {
