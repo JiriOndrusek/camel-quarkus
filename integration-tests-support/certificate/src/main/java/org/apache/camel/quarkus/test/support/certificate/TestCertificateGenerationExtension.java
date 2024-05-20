@@ -68,7 +68,7 @@ public class TestCertificateGenerationExtension implements BeforeAllCallback, Pa
 
         //cn and alternativeSubjectName might be different (to reflect docker host)
         Optional<String> cn = resolveDockerHost();
-        Optional<String> altSubName = cn.stream().map(h -> "DNS:%s,IP:%s".formatted(h, h)).findAny();
+        Optional<String> altSubName = cn.stream().map(h -> "IP:%s".formatted(h)).findAny();
 
         for (Certificate certificate : annotation.certificates()) {
             String baseDir = annotation.baseDir();
@@ -83,11 +83,6 @@ public class TestCertificateGenerationExtension implements BeforeAllCallback, Pa
                     .withCN(cn.orElse(certificate.cn()))
                     .withPassword(certificate.password().isEmpty() ? null : certificate.password())
                     .withDuration(Duration.ofDays(certificate.duration()));
-
-            if (cn.isPresent() && cn.get().equals(certificate.cn())) {
-                LOGGER.debugf("Used CN '%s' instead of '%s' because of docker host.", cn.get(), certificate.cn());
-                LOGGER.debugf("Added SubjectAlternativeName '%s'.", altSubName.get());
-            }
 
             if (altSubName.isPresent()) {
                 request.withSubjectAlternativeName(altSubName.get());
