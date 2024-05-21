@@ -30,7 +30,7 @@ import static org.hamcrest.CoreMatchers.is;
 
 @TestCertificates(certificates = {
         @Certificate(name = "ftp", formats = {
-                Format.PEM }, client = false, password = "password"),
+                Format.PEM }, password = "password"),
         @Certificate(name = "ftp", formats = {
                 Format.PKCS12 }, password = "password")
 }, baseDir = CertificatesUtil.DEFAULT_CERTS_BASEDIR)
