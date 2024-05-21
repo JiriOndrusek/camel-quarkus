@@ -145,7 +145,7 @@ public class LumberjackClientUtil {
         TrustManagersParameters trustManagersParameters = new TrustManagersParameters();
         KeyStoreParameters trustStore = new CustomKeyStoreParameters();
         trustStore.setPassword("changeit");
-        trustStore.setResource("ssl/keystore.jks");
+        trustStore.setResource("ssl/lumberjack-keystore.jks");
         trustManagersParameters.setKeyStore(trustStore);
         sslContextParameters.setTrustManagers(trustManagersParameters);
 
