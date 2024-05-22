@@ -39,8 +39,9 @@ public @interface TestCertificates {
 
     /**
      * The base directory in which certificates will be generated.
+     * Default value is `target/classes/certs`
      */
-    String baseDir();
+    String baseDir() default CertificatesUtil.DEFAULT_CERTS_BASEDIR;
 
     /**
      * The certificates to generate.
