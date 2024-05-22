@@ -52,4 +52,10 @@ public @interface TestCertificates {
      * Whether to replace the certificates if they already exist.
      */
     boolean replaceIfExists() default false;
+
+    /**
+     * Whether certificate is used in docker container. If so, the cn and subject alt name has to eqeal docker host
+     * (which might differ in case of external docker host)
+     */
+    boolean docker() default false;
 }
