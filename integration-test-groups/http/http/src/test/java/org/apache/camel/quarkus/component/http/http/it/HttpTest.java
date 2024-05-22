@@ -33,8 +33,7 @@ import static org.hamcrest.Matchers.not;
 
 @TestCertificates(certificates = {
         @Certificate(name = HttpTestResource.KEYSTORE_NAME, formats = {
-                Format.PKCS12 }, password = HttpTestResource.KEYSTORE_PASSWORD)
-}, baseDir = HttpTestResource.KEYSTORE_BASE_DIR)
+                Format.PKCS12 }, password = HttpTestResource.KEYSTORE_PASSWORD) })
 @QuarkusTest
 @QuarkusTestResource(HttpTestResource.class)
 public class HttpTest extends AbstractHttpTest {

@@ -27,7 +27,7 @@ import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.logging.Logger;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
-import org.testcontainers.images.builder.Transferable;
+import org.testcontainers.utility.MountableFile;
 
 public class MailTestResource implements QuarkusTestResourceLifecycleManager {
     private static final Logger LOG = Logger.getLogger(MailTestResource.class);
@@ -41,7 +41,8 @@ public class MailTestResource implements QuarkusTestResourceLifecycleManager {
     @Override
     public Map<String, String> start() {
         container = new GenericContainer<>(GREENMAIL_IMAGE_NAME)
-                .withCopyToContainer(Transferable.of(getCertificateStoreContent()), "/home/greenmail/greenmail.p12")
+                .withCopyToContainer(MountableFile.forClasspathResource("certs/greenmail-keystore.p12"),
+                        "/home/greenmail/greenmail.p12")
                 .withExposedPorts(MailProtocol.allPorts())
                 .waitingFor(new HttpWaitStrategy()
                         .forPort(MailProtocol.API.getPort())

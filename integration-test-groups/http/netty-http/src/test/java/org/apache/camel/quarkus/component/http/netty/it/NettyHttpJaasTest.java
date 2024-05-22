@@ -29,8 +29,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 @TestCertificates(certificates = {
         @Certificate(name = HttpTestResource.KEYSTORE_NAME, formats = {
-                Format.PKCS12 }, password = HttpTestResource.KEYSTORE_PASSWORD)
-}, baseDir = HttpTestResource.KEYSTORE_BASE_DIR)
+                Format.PKCS12 }, password = HttpTestResource.KEYSTORE_PASSWORD) })
 @QuarkusTest
 @QuarkusTestResource(NettyHttpJaasTestResource.class)
 public class NettyHttpJaasTest {
