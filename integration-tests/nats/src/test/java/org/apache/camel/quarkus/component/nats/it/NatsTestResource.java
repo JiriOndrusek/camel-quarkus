@@ -40,7 +40,8 @@ public class NatsTestResource implements QuarkusTestResourceLifecycleManager {
     private static final Logger LOG = LoggerFactory.getLogger(NatsTestResource.class);
     private static final String BASIC_AUTH_USERNAME = "admin";
     private static final String BASIC_AUTH_PASSWORD = "password";
-    private static final String NATS_IMAGE = ConfigProvider.getConfig().getValue("nats.container.image", String.class);
+    private static final String NATS_IMAGE = "docker.io/nats:2.10.14";
+//    private static final String NATS_IMAGE = ConfigProvider.getConfig().getValue("nats.container.image", String.class);
     private static final int NATS_SERVER_PORT = 4222;
     private static final String TOKEN_AUTH_TOKEN = "!admin23456";
 
