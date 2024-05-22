@@ -24,6 +24,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 
+//@TestCertificates(certificates = {
+//        @Certificate(name = "ftp", formats = {
+//                Format.PKCS12 }, password = "password") })
 @QuarkusTest
 @QuarkusTestResource(FtpTestResource.class)
 class FtpTest {
