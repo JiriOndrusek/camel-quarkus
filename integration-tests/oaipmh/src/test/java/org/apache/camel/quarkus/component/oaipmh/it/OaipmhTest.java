@@ -32,8 +32,7 @@ import static org.hamcrest.Matchers.is;
 
 @TestCertificates(certificates = {
         @Certificate(name = "oaipmh", formats = {
-                Format.PKCS12 }, password = MockOaipmhServer.PASSWORD)
-}, baseDir = "target/classes/ssl")
+                Format.PKCS12 }, password = MockOaipmhServer.PASSWORD) })
 @QuarkusTest
 @QuarkusTestResource(OaipmhTestResource.class)
 class OaipmhTest {

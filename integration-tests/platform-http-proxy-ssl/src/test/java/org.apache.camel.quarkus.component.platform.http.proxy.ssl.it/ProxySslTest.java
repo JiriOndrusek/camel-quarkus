@@ -30,8 +30,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 @TestCertificates(certificates = {
         @Certificate(name = "proxy-ssl", formats = {
-                Format.PKCS12 }, password = "changeit")
-}, baseDir = "target/classes/ssl")
+                Format.PKCS12 }, password = "changeit") })
 @QuarkusTest
 @QuarkusTestResource(PlatformHttpSSLTestResource.class)
 public class ProxySslTest {

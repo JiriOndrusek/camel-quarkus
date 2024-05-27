@@ -57,7 +57,7 @@ public class PahoResource {
     @Inject
     ConsumerTemplate consumerTemplate;
 
-    private static final String KEYSTORE_FILE = "ssl/paho-keystore.p12";
+    private static final String KEYSTORE_FILE = "certs/paho-keystore.p12";
     public static final String KEYSTORE_PASSWORD = "quarkus";
 
     @Path("/{protocol}/{queueName}")

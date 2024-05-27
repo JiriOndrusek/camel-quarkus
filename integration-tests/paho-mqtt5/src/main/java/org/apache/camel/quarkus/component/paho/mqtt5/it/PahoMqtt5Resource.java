@@ -68,7 +68,7 @@ public class PahoMqtt5Resource {
     @Inject
     ConsumerTemplate consumerTemplate;
 
-    private final String keystore = "ssl/paho-mqtt5-keystore.p12";
+    private final String keystore = "certs/paho-mqtt5-keystore.p12";
     public final static String KEYSTORE_PASSWORD = "quarkus";
 
     @Path("/{protocol}/{queueName}")

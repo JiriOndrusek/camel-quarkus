@@ -33,8 +33,7 @@ import static org.hamcrest.core.StringRegularExpression.matchesRegex;
 
 @TestCertificates(certificates = {
         @Certificate(name = "paho", formats = {
-                Format.PKCS12, Format.PEM }, password = PahoResource.KEYSTORE_PASSWORD)
-}, baseDir = "target/classes/ssl")
+                Format.PKCS12, Format.PEM }, password = PahoResource.KEYSTORE_PASSWORD) })
 @QuarkusTest
 @QuarkusTestResource(PahoTestResource.class)
 class PahoTest {

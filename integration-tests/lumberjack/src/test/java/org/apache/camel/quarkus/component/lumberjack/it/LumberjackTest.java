@@ -34,8 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @TestCertificates(certificates = {
         @Certificate(name = "lumberjack", formats = {
-                Format.JKS }, password = "changeit")
-}, baseDir = "target/classes/ssl")
+                Format.JKS }, password = "changeit") })
 @QuarkusTest
 @TestHTTPEndpoint(LumberjackResource.class)
 @QuarkusTestResource(LumberjackTestResource.class)

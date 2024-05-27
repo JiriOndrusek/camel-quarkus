@@ -91,7 +91,7 @@ public final class MockOaipmhServer {
         WireMockConfiguration config = wireMockConfig().extensions(transformer);
 
         config.httpsPort(httpsPort);
-        String keyStorePath = MockOaipmhServer.class.getResource("/ssl/oaipmh-keystore.p12").toExternalForm();
+        String keyStorePath = MockOaipmhServer.class.getResource("/certs/oaipmh-keystore.p12").toExternalForm();
         config.keystorePath(keyStorePath);
         config.keystorePassword(PASSWORD);
         config.keyManagerPassword(PASSWORD);

@@ -51,9 +51,9 @@ public class PahoTestResource implements QuarkusTestResourceLifecycleManager {
             container = new GenericContainer<>(IMAGE).withExposedPorts(TCP_PORT, WS_PORT, SSL_PORT)
                     .withClasspathResourceMapping("mosquitto.conf", "/mosquitto/config/mosquitto.conf", BindMode.READ_ONLY)
                     .withClasspathResourceMapping("password.conf", "/etc/mosquitto/password", BindMode.READ_ONLY)
-                    .withClasspathResourceMapping("ssl/paho-ca.crt", "/etc/mosquitto/certs/paho-ca.crt", BindMode.READ_ONLY)
-                    .withClasspathResourceMapping("ssl/paho.crt", "/etc/mosquitto/certs/paho.crt", BindMode.READ_ONLY)
-                    .withClasspathResourceMapping("ssl/paho.key", "/etc/mosquitto/certs/paho.key", BindMode.READ_ONLY);
+                    .withClasspathResourceMapping("certs/paho-ca.crt", "/etc/mosquitto/certs/paho-ca.crt", BindMode.READ_ONLY)
+                    .withClasspathResourceMapping("certs/paho.crt", "/etc/mosquitto/certs/paho.crt", BindMode.READ_ONLY)
+                    .withClasspathResourceMapping("certs/paho.key", "/etc/mosquitto/certs/paho.key", BindMode.READ_ONLY);
             container.withLogConsumer(new Slf4jLogConsumer(LOGGER))
                     .waitingFor(Wait.forLogMessage(".* mosquitto version .* running", 1)).waitingFor(Wait.forListeningPort());
 

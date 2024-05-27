@@ -31,8 +31,7 @@ import static org.hamcrest.core.Is.is;
 
 @TestCertificates(certificates = {
         @Certificate(name = "paho-mqtt5", formats = {
-                Format.PKCS12, Format.PEM }, password = PahoMqtt5Resource.KEYSTORE_PASSWORD)
-}, baseDir = "target/classes/ssl")
+                Format.PKCS12, Format.PEM }, password = PahoMqtt5Resource.KEYSTORE_PASSWORD) })
 @QuarkusTest
 @QuarkusTestResource(PahoMqtt5TestResource.class)
 class PahoMqtt5Test {
