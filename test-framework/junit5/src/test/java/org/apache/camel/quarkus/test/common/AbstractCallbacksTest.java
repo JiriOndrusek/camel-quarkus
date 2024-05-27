@@ -39,7 +39,6 @@ import org.apache.camel.quarkus.test.CamelQuarkusTestSupport;
 import org.apache.camel.util.StopWatch;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public abstract class AbstractCallbacksTest extends CamelQuarkusTestSupport {
@@ -48,7 +47,6 @@ public abstract class AbstractCallbacksTest extends CamelQuarkusTestSupport {
 
     public enum Callback {
         postTearDown,
-        doSetup,
         preSetup,
         postSetup,
         contextCreation,
@@ -67,12 +65,6 @@ public abstract class AbstractCallbacksTest extends CamelQuarkusTestSupport {
     public AbstractCallbacksTest(String testName, String afterClassTestName) {
         this.testName = testName;
         this.afterClassTestName = afterClassTestName;
-    }
-
-    @BeforeEach
-    protected void createTmpFiles() throws Exception {
-        createTmpFile(testName, Callback.doSetup);
-        createTmpFile(afterClassTestName, Callback.doSetup);
     }
 
     @Override

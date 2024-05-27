@@ -39,9 +39,6 @@ public class CallbacksPerTestFalse01Test extends AbstractCallbacksTest {
     protected static BiConsumer<Callback, Long> createAssertionConsumer() {
         return (callback, count) -> {
             switch (callback) {
-            case doSetup:
-                assertCount(3, count, callback, CallbacksPerTestFalse01Test.class.getSimpleName());
-                break;
             case contextCreation:
                 assertCount(3, count, callback, CallbacksPerTestFalse01Test.class.getSimpleName());
                 break;
