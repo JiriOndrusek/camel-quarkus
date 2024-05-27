@@ -36,15 +36,15 @@ import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.quarkus.test.CamelQuarkusTestSupport;
-import org.apache.camel.quarkus.test.junit5.patterns.DebugJUnit5Test;
 import org.apache.camel.util.StopWatch;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public abstract class AbstractCallbacksTest extends CamelQuarkusTestSupport {
 
-    private static final Logger LOG = Logger.getLogger(DebugJUnit5Test.class);
+    private static final Logger LOG = Logger.getLogger(AbstractCallbacksTest.class);
 
     public enum Callback {
         postTearDown,
@@ -69,6 +69,12 @@ public abstract class AbstractCallbacksTest extends CamelQuarkusTestSupport {
         this.afterClassTestName = afterClassTestName;
     }
 
+    @BeforeEach
+    protected void createTmpFiles() throws Exception {
+        createTmpFile(testName, Callback.doSetup);
+        createTmpFile(afterClassTestName, Callback.doSetup);
+    }
+
     @Override
     protected CamelContext createCamelContext() throws Exception {
         createTmpFile(testName, Callback.contextCreation);
@@ -81,13 +87,6 @@ public abstract class AbstractCallbacksTest extends CamelQuarkusTestSupport {
         createTmpFile(testName, Callback.preSetup);
         createTmpFile(afterClassTestName, Callback.preSetup);
         super.doPostSetup();
-    }
-
-    @Override
-    protected void doSetUp() throws Exception {
-        createTmpFile(testName, Callback.doSetup);
-        createTmpFile(afterClassTestName, Callback.doSetup);
-        super.doSetUp();
     }
 
     @Override
