@@ -7039,7 +7039,7 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-aop</artifactId>
-        <version>6.1.7</version>
+        <version>6.1.8</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -7054,7 +7054,7 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-expression</artifactId>
-        <version>6.1.7</version>
+        <version>6.1.8</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -7065,7 +7065,7 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-jdbc</artifactId>
-        <version>6.1.7</version>
+        <version>6.1.8</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -7080,7 +7080,7 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-jms</artifactId>
-        <version>6.1.7</version>
+        <version>6.1.8</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -7095,7 +7095,7 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-messaging</artifactId>
-        <version>6.1.7</version>
+        <version>6.1.8</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -7110,7 +7110,7 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-tx</artifactId>
-        <version>6.1.7</version>
+        <version>6.1.8</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
