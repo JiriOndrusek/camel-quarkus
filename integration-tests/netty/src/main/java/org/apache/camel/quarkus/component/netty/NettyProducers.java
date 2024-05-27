@@ -130,11 +130,11 @@ public class NettyProducers {
             @ConfigProperty(name = "keystore.type") Optional<String> keystoreType,
             @ConfigProperty(name = "keystore.provider") Optional<String> keystoreProvider) {
         KeyStoreParameters keystoreParameters = new KeyStoreParameters();
-        keystoreParameters.setResource("ssl/netty-keystore.p12");
+        keystoreParameters.setResource("certs/netty-keystore.p12");
         keystoreParameters.setPassword("changeit");
 
         KeyStoreParameters truststoreParameters = new KeyStoreParameters();
-        truststoreParameters.setResource("ssl/netty-truststore.p12");
+        truststoreParameters.setResource("certs/netty-truststore.p12");
         truststoreParameters.setPassword("changeit");
 
         TrustManagersParameters trustManagersParameters = new TrustManagersParameters();

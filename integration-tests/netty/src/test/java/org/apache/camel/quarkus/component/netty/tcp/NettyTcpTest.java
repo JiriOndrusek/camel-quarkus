@@ -30,8 +30,7 @@ import static org.hamcrest.Matchers.is;
 
 @TestCertificates(certificates = {
         @Certificate(name = "netty", formats = {
-                Format.PKCS12 }, password = "changeit")
-}, baseDir = "target/classes/ssl")
+                Format.PKCS12 }, password = "changeit") })
 @QuarkusTest
 @QuarkusTestResource(NettyTcpTestResource.class)
 class NettyTcpTest {

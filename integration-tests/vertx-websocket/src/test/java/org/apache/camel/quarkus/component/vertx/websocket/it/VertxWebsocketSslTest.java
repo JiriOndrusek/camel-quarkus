@@ -33,8 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @TestCertificates(certificates = {
         @Certificate(name = "vertx-websocket", formats = {
-                Format.PKCS12, Format.PEM }, password = "changeit")
-}, baseDir = "target/classes/ssl")
+                Format.PKCS12, Format.PEM }, password = "changeit") })
 @TestProfile(VertxWebsocketSslTestProfile.class)
 @QuarkusTest
 public class VertxWebsocketSslTest {
@@ -43,7 +42,7 @@ public class VertxWebsocketSslTest {
 
     @BeforeAll
     public static void beforeAll() {
-        RestAssured.trustStore("ssl/vertx-websocket-truststore.p12", "changeit");
+        RestAssured.trustStore("certs/vertx-websocket-truststore.p12", "changeit");
     }
 
     @Test
