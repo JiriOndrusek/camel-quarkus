@@ -292,7 +292,7 @@ jobs:
 
   functional-extension-tests:
     runs-on: ubuntu-latest
-    needs: initial-mvn-install
+    needs: native-tests:
     if: github.event_name != 'pull_request' || !contains(github.event.pull_request.labels.*.name, 'JVM')
     env:
       MAVEN_OPTS: -Xmx3000m
@@ -381,7 +381,7 @@ jobs:
 
   extensions-jvm-tests:
     runs-on: ubuntu-latest
-    needs: initial-mvn-install
+    needs: native-tests
     strategy:
       fail-fast: false
       matrix:
@@ -427,7 +427,7 @@ jobs:
   integration-tests-alternative-jdk:
     name: Integration Tests Alternative JDK 21 ${{matrix.name}}
     runs-on: ubuntu-latest
-    needs: initial-mvn-install
+    needs: native-tests
     if: github.event_name != 'pull_request' || !contains(github.event.pull_request.labels.*.name, 'JVM')
     strategy:
       fail-fast: false
@@ -478,7 +478,7 @@ jobs:
 
   integration-tests-alternative-platform:
     runs-on: ${{ matrix.os }}
-    needs: initial-mvn-install
+    needs: native-tests
     strategy:
       fail-fast: false
       matrix:
@@ -529,7 +529,7 @@ jobs:
 
   examples-tests:
     name: Examples Tests - ${{matrix.name}}
-    needs: initial-mvn-install
+    needs: native-tests
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request' || !contains(github.event.pull_request.labels.*.name, 'JVM')
     strategy:
