@@ -16,7 +16,6 @@
  */
 package org.apache.camel.quarkus.component.ldap.it;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -41,7 +40,7 @@ public class CustomSSLSocketFactory extends SSLSocketFactory {
 
     public CustomSSLSocketFactory() throws Exception {
         KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-        try (InputStream in = new FileInputStream(trustStoreFilename)) {
+        try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(trustStoreFilename)) {
             trustStore.load(in, trustStorePassword.toCharArray());
         }
 
