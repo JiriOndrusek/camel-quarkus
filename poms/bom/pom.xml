@@ -1779,7 +1779,7 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.camel</groupId>
-                <artifactId>camel-langchain4-chat</artifactId>
+                <artifactId>camel-langchain4j-chat</artifactId>
                 <version>${camel.version}</version>
             </dependency>
             <dependency>
