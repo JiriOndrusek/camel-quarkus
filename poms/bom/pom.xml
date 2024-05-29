@@ -1779,12 +1779,12 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.camel</groupId>
-                <artifactId>camel-langchain4j-core</artifactId>
+                <artifactId>camel-langchain4-chat</artifactId>
                 <version>${camel.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.camel</groupId>
-                <artifactId>camel-langchain4j-chat</artifactId>
+                <artifactId>camel-langchain4j-core</artifactId>
                 <version>${camel.version}</version>
                 <exclusions>
                     <exclusion>
