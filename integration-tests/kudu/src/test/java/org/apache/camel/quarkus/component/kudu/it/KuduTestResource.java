@@ -27,6 +27,8 @@ import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Ports;
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.apache.camel.util.CollectionHelper;
+import org.apache.kudu.client.HostAndPort;
+import org.apache.kudu.test.KuduTestHarness;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,23 +55,26 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
 //    private static final String KUDU_IMAGE = ConfigProvider.getConfig().getValue("kudu.container.image", String.class);
     private static final String KUDU_MASTER_NETWORK_ALIAS = "kudu-master";
 
-    private DockerComposeContainer composeContainer;
-    private GenericContainer<?> masterContainer;
-    private GenericContainer<?> tabletContainer;
+    private KuduTestHarness kuduTestHarness;
 
     @Override
     public Map<String, String> start() {
         LOG.info(TestcontainersConfiguration.getInstance().toString());
 
-        composeContainer = new DockerComposeContainer(new File(KuduTestResource.class.getResource("/docker-compose.yml").getFile()))
-                .withLogConsumer("kudu-master-1", new Slf4jLogConsumer(LOG))
-                .withLogConsumer("kudu-tserver-1", new Slf4jLogConsumer(LOG))
-                .withExposedService("kudu-master-1", KUDU_MASTER_RPC_PORT)
-                .withExposedService("kudu-master-1", KUDU_MASTER_HTTP_PORT);
-//                .withExposedService("kudu-tserver-1", KUDU_TABLET_RPC_PORT)
-//                .withExposedService("kudu-tserver-1", KUDU_TABLET_HTTP_PORT);
+//        composeContainer = new DockerComposeContainer(new File(KuduTestResource.class.getResource("/docker-compose.yml").getFile()))
+//                .withLogConsumer("kudu-master-1", new Slf4jLogConsumer(LOG))
+//                .withLogConsumer("kudu-tserver-1", new Slf4jLogConsumer(LOG))
+//                .withExposedService("kudu-master-1", KUDU_MASTER_RPC_PORT)
+//                .withExposedService("kudu-master-1", KUDU_MASTER_HTTP_PORT);
+////                .withExposedService("kudu-tserver-1", KUDU_TABLET_RPC_PORT)
+////                .withExposedService("kudu-tserver-1", KUDU_TABLET_HTTP_PORT);
+//
+//        composeContainer.start();
 
-        composeContainer.start();
+        kuduTestHarness = new KuduTestHarness();
+        try {
+            kuduTestHarness.before();
+
 
 
 //        Network kuduNetwork = Network.newNetwork();
@@ -122,14 +127,14 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
 //        tabletContainer.start();
 
         // Print interesting Kudu servers connectivity information
-        final String masterRpcAuthority =
-                composeContainer.getServiceHost("kudu-master-1", KUDU_MASTER_RPC_PORT) + ":" +
-                composeContainer.getServicePort("kudu-master-1", KUDU_MASTER_RPC_PORT);
+
+        HostAndPort masterHP = kuduTestHarness.findLeaderMasterServer();
+        final String masterRpcAuthority = masterHP.getAddress().toString();//getHost() + ":" + masterHP.getPort();
         LOG.info("Kudu master RPC accessible at " + masterRpcAuthority);
 
         final String masterHttpAuthority =
-                composeContainer.getServiceHost("kudu-master-1", KUDU_MASTER_HTTP_PORT) + ":" +
-                composeContainer.getServicePort("kudu-master-1", KUDU_MASTER_HTTP_PORT);
+                kuduTestHarness.getMasterServers().get(0).getHost() + ":" +
+                kuduTestHarness.getMasterServers().get(0).getPort();
         LOG.info("Kudu master HTTP accessible at " + masterHttpAuthority);
 //
 //        final String tServerRpcAuthority =
@@ -143,23 +148,35 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
 //        LOG.info("Kudu tablet server HTTP accessible at " + tServerHttpAuthority);
 
         return CollectionHelper.mapOf(
-                KUDU_AUTHORITY_CONFIG_KEY, masterRpcAuthority,
+                KUDU_AUTHORITY_CONFIG_KEY, kuduTestHarness.getMasterAddressesAsString(),
                 DOCKER_HOST, DockerClientFactory.instance().dockerHostIpAddress(),
-                MASTER_URL, masterRpcAuthority);
+                MASTER_URL, kuduTestHarness.getMasterAddressesAsString());
 //                        SERVER_URL, tServerRpcAuthority);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void stop() {
-        try {
-            if (composeContainer != null) {
-                composeContainer.stop();
+        if (kuduTestHarness != null) {
+            try {
+                if (kuduTestHarness != null) {
+                    kuduTestHarness.after();
+                }
+            } catch (Exception ex) {
+                LOG.error("An issue occurred while stopping the KuduTestResource", ex);
             }
-            if (tabletContainer != null) {
-                tabletContainer.stop();
-            }
-        } catch (Exception ex) {
-            LOG.error("An issue occurred while stopping the KuduTestResource", ex);
+        }
+    }
+
+    @Override
+    public void inject(Object testInstance) {
+        QuarkusTestResourceLifecycleManager.super.inject(testInstance);
+
+        if(testInstance instanceof KuduTest) {
+            ((KuduTest) testInstance).setClient(kuduTestHarness.getClient());
         }
     }
 }

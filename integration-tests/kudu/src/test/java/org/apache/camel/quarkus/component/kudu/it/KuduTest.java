@@ -24,6 +24,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.kudu.client.KuduClient;
 import org.apache.kudu.client.KuduException;
+import org.apache.kudu.test.KuduTestHarness;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.AfterAll;
@@ -31,6 +32,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.apache.camel.quarkus.component.kudu.it.KuduRoute.KUDU_AUTHORITY_CONFIG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -42,24 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @QuarkusTest
 class KuduTest {
     private static final Logger LOG = Logger.getLogger(KuduTest.class);
-    static KuduClient client;
-
-    @BeforeAll
-    static void setup() {
-        String authority = ConfigProvider.getConfig().getValue(KUDU_AUTHORITY_CONFIG_KEY, String.class);
-        client = new KuduClient.KuduClientBuilder(authority).build();
-    }
-
-    @AfterAll
-    static void afterAll() {
-        if (client != null) {
-            try {
-                client.close();
-            } catch (KuduException e) {
-                LOG.warn("Failed to close kudu client", e);
-            }
-        }
-    }
+    private KuduClient client;
 
     @BeforeEach
     void beforeEach() throws KuduException {
@@ -287,5 +272,9 @@ class KuduTest {
                         "[1].id", is("key2"),
                         "[1].name", is("John"),
                         "[1].age", is(40));
+    }
+
+    void setClient(KuduClient client) {
+        this.client = client;
     }
 }

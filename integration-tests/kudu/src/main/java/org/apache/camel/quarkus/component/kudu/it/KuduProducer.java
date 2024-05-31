@@ -22,7 +22,7 @@ public class KuduProducer {
     @Named("kuduMasterClient")
     public KuduClient produceKuduMasterClient() {
         KuduClient.KuduClientBuilder builder = new KuduClient.KuduClientBuilder(masterUrl);
-        //                .requireAuthentication(true);
+//                        .requireAuthentication(true);
 
         return builder.build();
     }

@@ -30,20 +30,20 @@ public class KuduRoute extends RouteBuilder {
 
         from("direct:create_table")
                 .toF(kuduMasterEndpointUriFormat, "create_table");
-//
-//        from("direct:insert")
-//                .toF(kuduEndpointUriFormat, "insert");
-//
-//        from("direct:update")
-//                .toF(kuduEndpointUriFormat, "update");
-//
-//        from("direct:upsert")
-//                .toF(kuduEndpointUriFormat, "upsert");
-//
-//        from("direct:delete")
-//                .toF(kuduEndpointUriFormat, "delete");
-//
-//        from("direct:scan")
-//                .toF(kuduEndpointUriFormat, "scan");
+
+        from("direct:insert")
+                .toF(kuduEndpointUriFormat, "insert");
+
+        from("direct:update")
+                .toF(kuduEndpointUriFormat, "update");
+
+        from("direct:upsert")
+                .toF(kuduEndpointUriFormat, "upsert");
+
+        from("direct:delete")
+                .toF(kuduEndpointUriFormat, "delete");
+
+        from("direct:scan")
+                .toF(kuduEndpointUriFormat, "scan");
     }
 }
