@@ -17,145 +17,127 @@
 
 package org.apache.camel.quarkus.component.kudu.it;
 
-import java.io.File;
 import java.util.Map;
-import java.util.function.Consumer;
 
-import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.HostConfig;
-import com.github.dockerjava.api.model.Ports;
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.apache.camel.util.CollectionHelper;
-import org.apache.kudu.client.HostAndPort;
+import org.apache.directory.server.annotations.CreateKdcServer;
+import org.apache.directory.server.annotations.CreateTransport;
+import org.apache.directory.server.core.DefaultDirectoryService;
+import org.apache.directory.server.core.annotations.ApplyLdifs;
+import org.apache.directory.server.core.api.DirectoryService;
+import org.apache.directory.server.core.factory.DSAnnotationProcessor;
+import org.apache.directory.server.core.factory.DefaultDirectoryServiceFactory;
+import org.apache.directory.server.kerberos.KerberosConfig;
+import org.apache.directory.server.kerberos.kdc.KdcServer;
+import org.apache.directory.server.protocol.shared.transport.TcpTransport;
+import org.apache.directory.server.protocol.shared.transport.UdpTransport;
 import org.apache.kudu.test.KuduTestHarness;
-import org.eclipse.microprofile.config.ConfigProvider;
+import org.apache.kudu.test.cluster.MiniKuduCluster;
+import org.junit.runner.Description;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.DockerComposeContainer;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.Network;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.utility.TestcontainersConfiguration;
 
 import static org.apache.camel.quarkus.component.kudu.it.KuduInfrastructureTestHelper.DOCKER_HOST;
-import static org.apache.camel.quarkus.component.kudu.it.KuduInfrastructureTestHelper.KUDU_TABLET_NETWORK_ALIAS;
 import static org.apache.camel.quarkus.component.kudu.it.KuduInfrastructureTestHelper.MASTER_URL;
 import static org.apache.camel.quarkus.component.kudu.it.KuduRoute.KUDU_AUTHORITY_CONFIG_KEY;
 
+
+@CreateKdcServer(
+        transports =
+                {
+                        @CreateTransport(protocol = "UDP", port = 6088),
+                        @CreateTransport(protocol = "TCP", port = 6088)
+                })
 public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
     private static final Logger LOG = LoggerFactory.getLogger(KuduTestResource.class);
-    private static final int KUDU_MASTER_RPC_PORT = 7051;
-    private static final int KUDU_MASTER_HTTP_PORT = 8051;
-    private static final int KUDU_TABLET_RPC_PORT = 7050;
-    private static final int KUDU_TABLET_HTTP_PORT = 8050;
-    private static final String KUDU_IMAGE = "docker.io/library/custom-kudu:1.17.09";
-//    private static final String KUDU_IMAGE = ConfigProvider.getConfig().getValue("kudu.container.image", String.class);
-    private static final String KUDU_MASTER_NETWORK_ALIAS = "kudu-master";
 
     private KuduTestHarness kuduTestHarness;
 
+    private static final String REALM = "EXAMPLE.COM";
+    private static final String PRINCIPAL = "kuduuser@EXAMPLE.COM";
+    private static final String KEYTAB_PATH = "/path/to/testuser.keytab";
+    private KdcServer kdcServer;
+    DirectoryService directoryService;
+
+
     @Override
     public Map<String, String> start() {
-        LOG.info(TestcontainersConfiguration.getInstance().toString());
 
-//        composeContainer = new DockerComposeContainer(new File(KuduTestResource.class.getResource("/docker-compose.yml").getFile()))
-//                .withLogConsumer("kudu-master-1", new Slf4jLogConsumer(LOG))
-//                .withLogConsumer("kudu-tserver-1", new Slf4jLogConsumer(LOG))
-//                .withExposedService("kudu-master-1", KUDU_MASTER_RPC_PORT)
-//                .withExposedService("kudu-master-1", KUDU_MASTER_HTTP_PORT);
-////                .withExposedService("kudu-tserver-1", KUDU_TABLET_RPC_PORT)
-////                .withExposedService("kudu-tserver-1", KUDU_TABLET_HTTP_PORT);
-//
-//        composeContainer.start();
+        MiniKuduCluster.MiniKuduClusterBuilder cb = new MiniKuduCluster.MiniKuduClusterBuilder()
+                .numMasterServers(1)
+                .numTabletServers(1);
+        cb.enableKerberos();
+        cb.principal("kuduuser");
 
-        kuduTestHarness = new KuduTestHarness();
+        kuduTestHarness = new KuduTestHarness(cb);
         try {
+            directoryService = startDirectoryService();
+
+            CreateKdcServer createKdcServer = KuduTestResource.class.getAnnotation(CreateKdcServer.class);
+            KerberosConfig kdcConfig = new KerberosConfig();
+            kdcConfig.setServicePrincipal(createKdcServer.kdcPrincipal());
+            kdcConfig.setPrimaryRealm(createKdcServer.primaryRealm());
+            kdcConfig.setMaximumTicketLifetime(createKdcServer.maxTicketLifetime());
+            kdcConfig.setMaximumRenewableLifetime(createKdcServer.maxRenewableLifetime());
+            KdcServer kdcServer = new KdcServer(kdcConfig);
+            kdcServer.setSearchBaseDn(createKdcServer.searchBaseDn());
+            kdcServer.setDirectoryService(directoryService);
+            kdcServer.addTransports(new UdpTransport("localhost", 6088));
+            kdcServer.addTransports(new TcpTransport("localhost", 6088, 3, 50));
+            kdcServer.start();
+
+            startKerberosServer();
+
             kuduTestHarness.before();
 
 
+            kuduTestHarness.kinit("kuduuser");
 
-//        Network kuduNetwork = Network.newNetwork();
-//
-//        // Setup the Kudu master server container
-//        masterContainer = new GenericContainer<>(KUDU_IMAGE)
-//                .withCommand("master")
-//                .withEnv("MASTER_ARGS", "--logtostderr" +
-//                        " --unlock_experimental_flags" +
-//                        " --unlock_unsafe_flags=true" +
-//                        " --rpc_authentication=required" +
-//                        " --rpc_ca_certificate_file=/home/kudu/kuduca.crt.pem" +
-//                        " --rpc_certificate_file=/home/kudu/master.crt.pem" +
-//                        " --rpc_private_key_file=/home/kudu/master.key.pem")
-//                .withExposedPorts(KUDU_MASTER_RPC_PORT, KUDU_MASTER_HTTP_PORT)
-//                .withNetwork(kuduNetwork)
-//                .withNetworkAliases(KUDU_MASTER_NETWORK_ALIAS)
-//                .withLogConsumer(new Slf4jLogConsumer(LOG))
-//                .waitingFor(Wait.forListeningPort());
-//        masterContainer.start();
-//
-//        // Force host name and port, so that the tablet container is accessible from KuduResource, KuduTest and KuduIT.
-//        Consumer<CreateContainerCmd> consumer = cmd -> {
-//            Ports portBindings = new Ports();
-//            portBindings.bind(ExposedPort.tcp(KUDU_TABLET_RPC_PORT), Ports.Binding.bindPort(KUDU_TABLET_RPC_PORT));
-//            portBindings.bind(ExposedPort.tcp(KUDU_TABLET_HTTP_PORT), Ports.Binding.bindPort(KUDU_TABLET_HTTP_PORT));
-//            HostConfig hostConfig = HostConfig.newHostConfig()
-//                    .withPortBindings(portBindings)
-//                    .withNetworkMode(kuduNetwork.getId());
-//            cmd.withHostName(KUDU_TABLET_NETWORK_ALIAS).withHostConfig(hostConfig);
-//        };
-//
-//        // Setup the Kudu tablet server container
-//        tabletContainer = new GenericContainer<>(KUDU_IMAGE)
-//                .withCommand("tserver")
-//                .withEnv("TSERVER_ARGS", "--logtostderr" +
-//                        " --unlock_experimental_flags" +
-//                        " --unlock_unsafe_flags=true" +
-//                        " --rpc_authentication=required" +
-//                        " --rpc_ca_certificate_file=/home/kudu/kuduca.crt.pem" +
-//                        " --rpc_certificate_file=/home/kudu/tserver.crt.pem" +
-//                        " --rpc_private_key_file=/home/kudu/tserver.key.pem")
-//                .withEnv("KUDU_MASTERS", KUDU_MASTER_NETWORK_ALIAS)
-//                .withExposedPorts(KUDU_TABLET_RPC_PORT, KUDU_TABLET_HTTP_PORT)
-//                .withNetwork(kuduNetwork)
-//                .withNetworkAliases(KUDU_TABLET_NETWORK_ALIAS)
-//                .withCreateContainerCmdModifier(consumer)
-//                .withLogConsumer(new Slf4jLogConsumer(LOG))
-//                .waitingFor(Wait.forListeningPort());
-//        tabletContainer.start();
+//            LOG.info("Kudu master RPC accessible at " + kuduTestHarness.getMasterAddressesAsString());
 
-        // Print interesting Kudu servers connectivity information
-
-        HostAndPort masterHP = kuduTestHarness.findLeaderMasterServer();
-        final String masterRpcAuthority = masterHP.getAddress().toString();//getHost() + ":" + masterHP.getPort();
-        LOG.info("Kudu master RPC accessible at " + masterRpcAuthority);
-
-        final String masterHttpAuthority =
-                kuduTestHarness.getMasterServers().get(0).getHost() + ":" +
-                kuduTestHarness.getMasterServers().get(0).getPort();
-        LOG.info("Kudu master HTTP accessible at " + masterHttpAuthority);
-//
-//        final String tServerRpcAuthority =
-//                composeContainer.getServiceHost("kudu-tserver-1", KUDU_TABLET_RPC_PORT) + ":" +
-//                composeContainer.getServicePort("kudu-tserver-1", KUDU_TABLET_RPC_PORT);
-//        LOG.info("Kudu tablet server RPC accessible at " + tServerRpcAuthority);
-//
-//        final String tServerHttpAuthority =
-//                composeContainer.getServiceHost("kudu-tserver-1", KUDU_TABLET_HTTP_PORT) + ":" +
-//                composeContainer.getServicePort("kudu-tserver-1", KUDU_TABLET_HTTP_PORT);
-//        LOG.info("Kudu tablet server HTTP accessible at " + tServerHttpAuthority);
-
-        return CollectionHelper.mapOf(
-                KUDU_AUTHORITY_CONFIG_KEY, kuduTestHarness.getMasterAddressesAsString(),
-                DOCKER_HOST, DockerClientFactory.instance().dockerHostIpAddress(),
-                MASTER_URL, kuduTestHarness.getMasterAddressesAsString());
-//                        SERVER_URL, tServerRpcAuthority);
+//            return CollectionHelper.mapOf(
+//                    KUDU_AUTHORITY_CONFIG_KEY, kuduTestHarness.getMasterAddressesAsString(),
+//                    DOCKER_HOST, DockerClientFactory.instance().dockerHostIpAddress(),
+//                    MASTER_URL, kuduTestHarness.getMasterAddressesAsString());
+            return CollectionHelper.mapOf(
+                    KUDU_AUTHORITY_CONFIG_KEY, "xx",
+                    DOCKER_HOST, "xxx",
+                    MASTER_URL, "xxx");
 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private DirectoryService startDirectoryService() throws Exception {
+        DefaultDirectoryServiceFactory dsf = new DefaultDirectoryServiceFactory();
+        dsf.init(KuduTestResource.class.getSimpleName());
+        return dsf.getDirectoryService();
+    }
+
+    private void startKerberosServer() throws Exception {
+//        directoryService = DirectoryServiceFactory.createDirectoryService("default");
+//        directoryService.getChangeLog().setEnabled(false);
+//        directoryService.setAllowAnonymousAccess(false);
+//        directoryService.startup();
+
+//        KerberosConfig config = new KerberosConfig();
+//        config.setServiceName("KDC Server");
+//        config.setSearchBaseDn("ou=system");
+//        config.setPrimaryRealm(REALM);
+//        config.setServicePrincipal("krbtgt/" + REALM + "@" + REALM);
+//        kdcServer = new KdcServer(config);
+//        kdcServer.addTransports(new UdpTransport(60088));
+//        kdcServer.setDirectoryService(directoryService);
+//        kdcServer.start();
+
+        // Add user principal
+        // Create a new user principal and generate keytab for it
+        // (You need to implement addPrincipal and generateKeytab methods based on your setup)
+//        addPrincipal(PRINCIPAL, "password");
+//        generateKeytab(PRINCIPAL, KEYTAB_PATH);
     }
 
     @Override
@@ -180,3 +162,5 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
         }
     }
 }
+
+

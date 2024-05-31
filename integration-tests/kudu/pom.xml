@@ -97,6 +97,55 @@
             <classifier>linux-x86_64</classifier>
             <scope>test</scope>
         </dependency>
+        <!-- ApacheDS Core todo limit to required deps only-->
+        <dependency>
+            <groupId>org.apache.directory.server</groupId>
+            <artifactId>apacheds-core</artifactId>
+            <version>2.0.0-M24</version>
+            <scope>test</scope>
+        </dependency>
+
+<!--        &lt;!&ndash; ApacheDS Kerberos &ndash;&gt;-->
+        <dependency>
+            <groupId>org.apache.directory.server</groupId>
+            <artifactId>apacheds-kerberos-test</artifactId>
+            <version>2.0.0-M24</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.directory.server</groupId>
+            <artifactId>apacheds-core-integ</artifactId>
+            <version>2.0.0-M24</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.directory.server</groupId>
+            <artifactId>apacheds-server-integ</artifactId>
+            <version>2.0.0-M24</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.directory.server</groupId>
+            <artifactId>apacheds-kerberos-test</artifactId>
+            <version>2.0.0-M24</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+
+<!--        &lt;!&ndash; ApacheDS Protocol Shared &ndash;&gt;-->
+        <dependency>
+            <groupId>org.apache.directory.server</groupId>
+            <artifactId>apacheds-protocol-shared</artifactId>
+            <version>2.0.0-M24</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-junit4-mock</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <profiles>

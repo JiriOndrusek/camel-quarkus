@@ -166,6 +166,7 @@
         <zookeeper.version>${zookeeper-version}</zookeeper.version>
 
         <!-- Test dependency versions (keep sorted alphabetically) -->
+        <apacheds.version>2.0.0.AM27</apacheds.version>
         <certificate.generator.version>0.6.0</certificate.generator.version>
         <consul-client.version>${consul-client-version}</consul-client.version>
         <ftpserver.version>${ftpserver-version}</ftpserver.version>
@@ -235,7 +236,6 @@
         <kafka.container.image>quay.io/strimzi-test-container/test-container:latest-kafka-3.2.1</kafka.container.image>
         <kafka-oauth.container.image>quay.io/strimzi/kafka:latest-kafka-3.7.0</kafka-oauth.container.image>
         <keycloak.container.image>quay.io/keycloak/keycloak:23.0.7</keycloak.container.image>
-        <kudu.container.image>docker.io/apache/kudu:1.17.0</kudu.container.image>
         <localstack.container.image>docker.io/localstack/localstack:3.3.0</localstack.container.image>
         <lra-coordinator.container.image>quay.io/jbosstm/lra-coordinator:7.0.1.Final-3.8.3</lra-coordinator.container.image>
         <minio.container.image>docker.io/minio/minio:RELEASE.2023-07-21T21-12-44Z</minio.container.image>

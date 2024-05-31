@@ -22,27 +22,85 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import org.apache.directory.server.annotations.CreateKdcServer;
+import org.apache.directory.server.annotations.CreateTransport;
+import org.apache.directory.server.core.annotations.ApplyLdifs;
+import org.apache.directory.server.core.annotations.ContextEntry;
+import org.apache.directory.server.core.annotations.CreateDS;
+import org.apache.directory.server.core.annotations.CreateIndex;
+import org.apache.directory.server.core.annotations.CreatePartition;
+import org.apache.directory.server.core.integ.FrameworkRunner;
+import org.apache.directory.server.core.kerberos.KeyDerivationInterceptor;
+import org.apache.directory.server.kerberos.kdc.AbstractKerberosITest;
 import org.apache.kudu.client.KuduClient;
 import org.apache.kudu.client.KuduException;
 import org.apache.kudu.test.KuduTestHarness;
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.logging.Logger;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.runner.RunWith;
 
-import static org.apache.camel.quarkus.component.kudu.it.KuduRoute.KUDU_AUTHORITY_CONFIG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+//@RunWith(FrameworkRunner.class)
+//@CreateDS(name = "Krb5LoginModuleTest-class",
+//        partitions =
+//                {
+//                        @CreatePartition(
+//                                name = "example",
+//                                suffix = "dc=example,dc=com",
+//                                contextEntry = @ContextEntry(
+//                                        entryLdif =
+//                                                "dn: dc=example,dc=com\n" +
+//                                                        "dc: example\n" +
+//                                                        "objectClass: top\n" +
+//                                                        "objectClass: domain\n\n"),
+//                                indexes =
+//                                        {
+//                                                @CreateIndex(attribute = "objectClass"),
+//                                                @CreateIndex(attribute = "dc"),
+//                                                @CreateIndex(attribute = "ou")
+//                                        })
+//                },
+//        additionalInterceptors =
+//                {
+//                        KeyDerivationInterceptor.class
+//                })
+////@CreateLdapServer(
+////        transports =
+////                {
+////                        @CreateTransport(protocol = "LDAP")
+////                },
+////        saslHost = "localhost",
+////        saslPrincipal = "ldap/localhost@EXAMPLE.COM",
+////        saslMechanisms =
+////                {
+////                        @SaslMechanism(name = SupportedSaslMechanisms.PLAIN, implClass = PlainMechanismHandler.class),
+////                        @SaslMechanism(name = SupportedSaslMechanisms.CRAM_MD5, implClass = CramMd5MechanismHandler.class),
+////                        @SaslMechanism(name = SupportedSaslMechanisms.DIGEST_MD5, implClass = DigestMd5MechanismHandler.class),
+////                        @SaslMechanism(name = SupportedSaslMechanisms.GSSAPI, implClass = GssapiMechanismHandler.class),
+////                        @SaslMechanism(name = SupportedSaslMechanisms.NTLM, implClass = NtlmMechanismHandler.class),
+////                        @SaslMechanism(name = SupportedSaslMechanisms.GSS_SPNEGO, implClass = NtlmMechanismHandler.class)
+////                })
+//@CreateKdcServer(
+//        transports =
+//                {
+//                        @CreateTransport(protocol = "UDP", port = 6088),
+//                        @CreateTransport(protocol = "TCP", port = 6088)
+//                })
+//@ApplyLdifs({
+//        "dn: ou=users,dc=example,dc=com",
+//        "objectClass: top",
+//        "objectClass: organizationalUnit",
+//        "ou: users"
+//})
 @QuarkusTestResource(KuduTestResource.class)
 @QuarkusTest
-class KuduTest {
+class KuduTest extends AbstractKerberosITest {
     private static final Logger LOG = Logger.getLogger(KuduTest.class);
     private KuduClient client;
 
@@ -71,6 +129,7 @@ class KuduTest {
     }
 
     @Test
+    @KuduTestHarness.EnableKerberos(principal = "kuduuser")
     void kuduCrud() throws KuduException {
         // Create
         RestAssured.given()

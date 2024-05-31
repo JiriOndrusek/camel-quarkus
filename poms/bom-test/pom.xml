@@ -294,7 +294,42 @@
                 <groupId>org.apache.kudu</groupId>
                 <artifactId>kudu-test-utils</artifactId>
                 <version>${kudu.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>junit</groupId>
+                        <artifactId>junit</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.google.code.findbugs</groupId>
+                        <artifactId>jsr305</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.logging.log4j</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
+            <!-- ApacheDS Core -->
+            <dependency>
+                <groupId>org.apache.directory.server</groupId>
+                <artifactId>apacheds-all</artifactId>
+<!--                <artifactId>apacheds-core</artifactId>-->
+                <version>${apacheds.version}</version>
+            </dependency>
+
+<!--            &lt;!&ndash; ApacheDS Kerberos &ndash;&gt;-->
+<!--            <dependency>-->
+<!--                <groupId>org.apache.directory.server</groupId>-->
+<!--                <artifactId>apacheds-kerberos</artifactId>-->
+<!--                <version>${apacheds.version}</version>-->
+<!--            </dependency>-->
+
+            <!-- ApacheDS Protocol Shared -->
+<!--            <dependency>-->
+<!--                <groupId>org.apache.directory.server</groupId>-->
+<!--                <artifactId>apacheds-protocol-shared</artifactId>-->
+<!--                <version>${apacheds.version}</version>-->
+<!--            </dependency>-->
             <dependency>
                 <groupId>org.apache.kudu</groupId>
                 <artifactId>kudu-binary</artifactId>

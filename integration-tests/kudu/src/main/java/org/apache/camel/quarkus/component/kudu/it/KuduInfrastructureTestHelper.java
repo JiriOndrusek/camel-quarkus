@@ -16,16 +16,7 @@
  */
 package org.apache.camel.quarkus.component.kudu.it;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.util.concurrent.ConcurrentHashMap;
-
-import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.event.Observes;
-import org.eclipse.microprofile.config.ConfigProvider;
-import org.jboss.logging.Logger;
 
 /**
  * In order to run Kudu integration tests, {@code KuduTest} and {@code KuduIT} should have access to:
@@ -66,35 +57,4 @@ public class KuduInfrastructureTestHelper {
     static final String KUDU_TABLET_NETWORK_ALIAS = "kudu-tserver";
     static final String DOCKER_HOST = "docker.host";
     static final String MASTER_URL = "master.url";
-    static final String SERVER_URL = "server.url";
-    private static final Logger LOG = Logger.getLogger(KuduInfrastructureTestHelper.class);
-
-//    void onStart(@Observes StartupEvent ev) {
-//        LOG.info("Attempting to override the kudu tablet server hostname resolution on application startup");
-//        KuduInfrastructureTestHelper.overrideTabletServerHostnameResolution();
-//    }
-
-    public static void overrideTabletServerHostnameResolution() {
-        try {
-            // Warm up the InetAddress cache
-            String dockerHost = ConfigProvider.getConfig().getValue("docker.host", String.class);
-            String tabletServerHostName = dockerHost.equals("localhost") || dockerHost.equals("127.0.0.1") ? "localhost"
-                    : KUDU_TABLET_NETWORK_ALIAS;
-            InetAddress.getByName(tabletServerHostName);
-            final Field cacheField = InetAddress.class.getDeclaredField("cache");
-            cacheField.setAccessible(true);
-            final Object cache = cacheField.get(null);
-            final Method get = ConcurrentHashMap.class.getMethod("get", Object.class);
-            final Object cachedAddresses = get.invoke(cache, tabletServerHostName);
-            if (cachedAddresses == null) {
-                throw new IllegalStateException("Unable to resolve host %s. Please add a host entry for %s %s"
-                        .formatted(tabletServerHostName, dockerHost, tabletServerHostName));
-            }
-
-            final Method put = ConcurrentHashMap.class.getMethod("put", Object.class, Object.class);
-            put.invoke(cache, KUDU_TABLET_NETWORK_ALIAS, cachedAddresses);
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to apply kudu tablet server hostname override", e);
-        }
-    }
 }
