@@ -1723,6 +1723,12 @@
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-langchain4j-core</artifactId>
         <version>4.7.0-SNAPSHOT</version>
+        <exclusions>
+          <exclusion>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
@@ -6599,6 +6605,16 @@
         <groupId>io.quarkiverse.jsch</groupId>
         <artifactId>quarkus-jsch-deployment</artifactId>
         <version>3.0.7</version>
+      </dependency>
+      <dependency>
+        <groupId>io.quarkiverse.langchain4j</groupId>
+        <artifactId>quarkus-langchain4j-core</artifactId>
+        <version>0.14.2</version>
+      </dependency>
+      <dependency>
+        <groupId>io.quarkiverse.langchain4j</groupId>
+        <artifactId>quarkus-langchain4j-core-deployment</artifactId>
+        <version>0.14.2</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.messaginghub</groupId>
