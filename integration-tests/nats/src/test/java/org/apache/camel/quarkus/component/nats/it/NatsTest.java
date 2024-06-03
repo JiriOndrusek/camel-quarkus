@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @TestCertificates(certificates = {
         @Certificate(name = "nats", formats = {
-                Format.PKCS12, Format.PEM }, password = "password") })
+                Format.PKCS12, Format.PEM }, password = "password") }, docker = true)
 @QuarkusTestResource(NatsTestResource.class)
 @QuarkusTest
 class NatsTest {
