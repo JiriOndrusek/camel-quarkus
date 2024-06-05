@@ -6237,7 +6237,7 @@
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>hapi-fhir-base</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>7.2.0</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>7.2.1</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <exclusions>
           <exclusion>
             <groupId>com.google.code.findbugs</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
@@ -6256,12 +6256,12 @@
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>hapi-fhir-client</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>7.2.0</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>7.2.1</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
       </dependency>
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>hapi-fhir-structures-dstu2.1</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>7.2.0</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>7.2.1</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <exclusions>
           <exclusion>
             <groupId>junit</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
@@ -6276,22 +6276,22 @@
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>hapi-fhir-structures-dstu3</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>7.2.0</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>7.2.1</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
       </dependency>
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>hapi-fhir-structures-hl7org-dstu2</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>7.2.0</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>7.2.1</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
       </dependency>
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>hapi-fhir-structures-r4</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>7.2.0</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>7.2.1</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
       </dependency>
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>hapi-fhir-structures-r5</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>7.2.0</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>7.2.1</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
       </dependency>
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
@@ -6378,7 +6378,7 @@
       <dependency>
         <groupId>com.google.cloud</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>google-cloud-pubsub</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>1.129.3</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>1.129.6</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <exclusions>
           <exclusion>
             <groupId>com.google.android</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
@@ -6508,6 +6508,11 @@
         <groupId>commons-cli</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>commons-cli</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <version>1.4</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+      </dependency>
+      <dependency>
+        <groupId>dev.langchain4j</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <artifactId>langchain4j</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>0.31.0</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
       </dependency>
       <dependency>
         <groupId>io.minio</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
@@ -7103,7 +7108,7 @@
       <dependency>
         <groupId>org.springframework.data</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <artifactId>spring-data-redis</artifactId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
-        <version>3.2.5</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
+        <version>3.3.0</version><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId><!-- org.apache.camel.quarkus:camel-quarkus-bom:${project.version} -->
@@ -8029,79 +8034,79 @@
         <version>12.0.8</version><!-- org.eclipse.jetty:jetty-bom:12.0.8 -->
       </dependency>
       <dependency>
-        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <artifactId>azure-core</artifactId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <version>1.48.0</version><!-- com.azure:azure-sdk-bom:1.2.23 -->
+        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <artifactId>azure-core</artifactId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <version>1.49.0</version><!-- com.azure:azure-sdk-bom:1.2.24 -->
       </dependency>
       <dependency>
-        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <artifactId>azure-core-amqp</artifactId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <version>2.9.3</version><!-- com.azure:azure-sdk-bom:1.2.23 -->
+        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <artifactId>azure-core-amqp</artifactId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <version>2.9.4</version><!-- com.azure:azure-sdk-bom:1.2.24 -->
       </dependency>
       <dependency>
-        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <artifactId>azure-cosmos</artifactId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <version>4.58.0</version><!-- com.azure:azure-sdk-bom:1.2.23 -->
+        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <artifactId>azure-cosmos</artifactId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <version>4.61.0</version><!-- com.azure:azure-sdk-bom:1.2.24 -->
       </dependency>
       <dependency>
-        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <artifactId>azure-identity</artifactId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <version>1.12.0</version><!-- com.azure:azure-sdk-bom:1.2.23 -->
+        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <artifactId>azure-identity</artifactId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <version>1.12.1</version><!-- com.azure:azure-sdk-bom:1.2.24 -->
       </dependency>
       <dependency>
-        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <artifactId>azure-json</artifactId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <version>1.1.0</version><!-- com.azure:azure-sdk-bom:1.2.23 -->
+        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <artifactId>azure-json</artifactId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <version>1.1.0</version><!-- com.azure:azure-sdk-bom:1.2.24 -->
       </dependency>
       <dependency>
-        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <artifactId>azure-messaging-eventhubs</artifactId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <version>5.18.3</version><!-- com.azure:azure-sdk-bom:1.2.23 -->
+        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <artifactId>azure-messaging-eventhubs</artifactId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <version>5.18.4</version><!-- com.azure:azure-sdk-bom:1.2.24 -->
       </dependency>
       <dependency>
-        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <artifactId>azure-messaging-eventhubs-checkpointstore-blob</artifactId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <version>1.19.3</version><!-- com.azure:azure-sdk-bom:1.2.23 -->
+        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <artifactId>azure-messaging-eventhubs-checkpointstore-blob</artifactId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <version>1.19.4</version><!-- com.azure:azure-sdk-bom:1.2.24 -->
       </dependency>
       <dependency>
-        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <artifactId>azure-messaging-servicebus</artifactId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <version>7.16.0</version><!-- com.azure:azure-sdk-bom:1.2.23 -->
+        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <artifactId>azure-messaging-servicebus</artifactId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <version>7.17.0</version><!-- com.azure:azure-sdk-bom:1.2.24 -->
       </dependency>
       <dependency>
-        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <artifactId>azure-security-keyvault-secrets</artifactId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <version>4.8.2</version><!-- com.azure:azure-sdk-bom:1.2.23 -->
+        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <artifactId>azure-security-keyvault-secrets</artifactId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <version>4.8.3</version><!-- com.azure:azure-sdk-bom:1.2.24 -->
       </dependency>
       <dependency>
-        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <artifactId>azure-storage-blob</artifactId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <version>12.25.4</version><!-- com.azure:azure-sdk-bom:1.2.23 -->
+        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <artifactId>azure-storage-blob</artifactId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <version>12.26.0</version><!-- com.azure:azure-sdk-bom:1.2.24 -->
       </dependency>
       <dependency>
-        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <artifactId>azure-storage-common</artifactId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <version>12.24.4</version><!-- com.azure:azure-sdk-bom:1.2.23 -->
+        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <artifactId>azure-storage-common</artifactId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <version>12.25.0</version><!-- com.azure:azure-sdk-bom:1.2.24 -->
       </dependency>
       <dependency>
-        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <artifactId>azure-storage-file-datalake</artifactId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <version>12.18.4</version><!-- com.azure:azure-sdk-bom:1.2.23 -->
+        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <artifactId>azure-storage-file-datalake</artifactId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <version>12.19.0</version><!-- com.azure:azure-sdk-bom:1.2.24 -->
       </dependency>
       <dependency>
-        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <artifactId>azure-storage-internal-avro</artifactId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <version>12.10.4</version><!-- com.azure:azure-sdk-bom:1.2.23 -->
+        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <artifactId>azure-storage-internal-avro</artifactId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <version>12.11.0</version><!-- com.azure:azure-sdk-bom:1.2.24 -->
       </dependency>
       <dependency>
-        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <artifactId>azure-storage-queue</artifactId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <version>12.20.4</version><!-- com.azure:azure-sdk-bom:1.2.23 -->
+        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <artifactId>azure-storage-queue</artifactId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <version>12.21.0</version><!-- com.azure:azure-sdk-bom:1.2.24 -->
       </dependency>
       <dependency>
-        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <artifactId>azure-xml</artifactId><!-- com.azure:azure-sdk-bom:1.2.23 -->
-        <version>1.0.0</version><!-- com.azure:azure-sdk-bom:1.2.23 -->
+        <groupId>com.azure</groupId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <artifactId>azure-xml</artifactId><!-- com.azure:azure-sdk-bom:1.2.24 -->
+        <version>1.0.0</version><!-- com.azure:azure-sdk-bom:1.2.24 -->
       </dependency>
       <dependency>
         <groupId>com.datastax.oss</groupId><!-- com.datastax.oss.quarkus:cassandra-quarkus-bom:1.2.0 -->

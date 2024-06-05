@@ -32,10 +32,25 @@ public class DebugTest extends CamelQuarkusTestSupport {
 
     private static final Logger LOG = Logger.getLogger(DebugTest.class);
 
+    private TestDebugBreakpoint testDebugBreakpoint;
+
+    @Override
+    public void doPreSetup() throws Exception {
+        super.doPreSetup();
+
+        camelContextConfiguration()
+                .withBreakpoint(createBreakpoint());
+    }
+
+    protected DebugBreakpoint createBreakpoint() {
+        testDebugBreakpoint = new TestDebugBreakpoint();
+        return testDebugBreakpoint;
+    }
     @Override
     public boolean isUseAdviceWith() {
         return true;
     }
+
 
     // START SNIPPET: e1
     @Override
@@ -97,8 +112,4 @@ public class DebugTest extends CamelQuarkusTestSupport {
     }
     // END SNIPPET: e2
 
-    @Override
-    protected DebugBreakpoint createBreakpoint() {
-        return new TestDebugBreakpoint();
-    }
 }
