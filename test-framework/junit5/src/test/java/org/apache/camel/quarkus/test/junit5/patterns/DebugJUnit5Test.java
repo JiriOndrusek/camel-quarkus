@@ -36,6 +36,20 @@ public class DebugJUnit5Test extends CamelQuarkusTestSupport {
 
     private static final Logger LOG = Logger.getLogger(DebugJUnit5Test.class);
 
+    private TestDebugBreakpoint testDebugBreakpoint;
+
+    @Override
+    public void doPreSetup() throws Exception {
+        super.doPreSetup();
+
+        camelContextConfiguration()
+                .withBreakpoint(createBreakpoint());
+    }
+
+    protected DebugBreakpoint createBreakpoint() {
+        testDebugBreakpoint = new TestDebugBreakpoint();
+        return testDebugBreakpoint;
+    }
     // START SNIPPET: e1
     @Override
     public boolean isUseDebugger() {
@@ -94,8 +108,4 @@ public class DebugJUnit5Test extends CamelQuarkusTestSupport {
     }
     // END SNIPPET: e2
 
-    @Override
-    protected DebugBreakpoint createBreakpoint() {
-        return new TestDebugBreakpoint();
-    }
 }

@@ -27,7 +27,6 @@ import io.quarkus.test.junit.callback.QuarkusTestMethodContext;
 import jakarta.inject.Inject;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Route;
-import org.apache.camel.Service;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.ModelCamelContext;
 import org.apache.camel.model.RouteDefinition;
@@ -85,6 +84,13 @@ public class CamelQuarkusTestSupport extends CamelTestSupport
      * Set of routes, which were created by routeBuilder. This set is used by some callbacks.
      */
     Set<String> createdRoutes;
+
+    public CamelQuarkusTestSupport() {
+        super(new ContextNotStoppingManagerFactory());
+
+        //CQ starts and stops context with the application start/stop
+        testConfiguration().withAutoStartContext(false);
+    }
 
     //------------------------ quarkus callbacks ---------------
 
@@ -353,14 +359,6 @@ public class CamelQuarkusTestSupport extends CamelTestSupport
             createdRoutes = allRoutes;
         }
         super.doPostSetup();
-    }
-
-    /**
-     * Internal disablement of the context stop functionality.
-     */
-    @Override
-    protected final void doStopCamelContext(CamelContext context, Service camelContextService) {
-        //don't stop
     }
 
     /**

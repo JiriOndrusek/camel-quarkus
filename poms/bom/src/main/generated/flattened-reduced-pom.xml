@@ -6280,7 +6280,7 @@
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId>
         <artifactId>hapi-fhir-base</artifactId>
-        <version>7.2.0</version>
+        <version>7.2.1</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.code.findbugs</groupId>
@@ -6299,12 +6299,12 @@
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId>
         <artifactId>hapi-fhir-client</artifactId>
-        <version>7.2.0</version>
+        <version>7.2.1</version>
       </dependency>
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId>
         <artifactId>hapi-fhir-structures-dstu2.1</artifactId>
-        <version>7.2.0</version>
+        <version>7.2.1</version>
         <exclusions>
           <exclusion>
             <groupId>junit</groupId>
@@ -6319,22 +6319,22 @@
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId>
         <artifactId>hapi-fhir-structures-dstu3</artifactId>
-        <version>7.2.0</version>
+        <version>7.2.1</version>
       </dependency>
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId>
         <artifactId>hapi-fhir-structures-hl7org-dstu2</artifactId>
-        <version>7.2.0</version>
+        <version>7.2.1</version>
       </dependency>
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId>
         <artifactId>hapi-fhir-structures-r4</artifactId>
-        <version>7.2.0</version>
+        <version>7.2.1</version>
       </dependency>
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId>
         <artifactId>hapi-fhir-structures-r5</artifactId>
-        <version>7.2.0</version>
+        <version>7.2.1</version>
       </dependency>
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId>
@@ -6421,7 +6421,7 @@
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>google-cloud-pubsub</artifactId>
-        <version>1.129.3</version>
+        <version>1.129.6</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.android</groupId>
@@ -6551,6 +6551,11 @@
         <groupId>commons-cli</groupId>
         <artifactId>commons-cli</artifactId>
         <version>1.4</version>
+      </dependency>
+      <dependency>
+        <groupId>dev.langchain4j</groupId>
+        <artifactId>langchain4j</artifactId>
+        <version>0.31.0</version>
       </dependency>
       <dependency>
         <groupId>io.minio</groupId>
@@ -7146,7 +7151,7 @@
       <dependency>
         <groupId>org.springframework.data</groupId>
         <artifactId>spring-data-redis</artifactId>
-        <version>3.2.5</version>
+        <version>3.3.0</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -8074,22 +8079,22 @@
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-core</artifactId>
-        <version>1.48.0</version>
+        <version>1.49.0</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-core-amqp</artifactId>
-        <version>2.9.3</version>
+        <version>2.9.4</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-cosmos</artifactId>
-        <version>4.58.0</version>
+        <version>4.61.0</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-identity</artifactId>
-        <version>1.12.0</version>
+        <version>1.12.1</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
@@ -8099,47 +8104,47 @@
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-messaging-eventhubs</artifactId>
-        <version>5.18.3</version>
+        <version>5.18.4</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-messaging-eventhubs-checkpointstore-blob</artifactId>
-        <version>1.19.3</version>
+        <version>1.19.4</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-messaging-servicebus</artifactId>
-        <version>7.16.0</version>
+        <version>7.17.0</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-security-keyvault-secrets</artifactId>
-        <version>4.8.2</version>
+        <version>4.8.3</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-storage-blob</artifactId>
-        <version>12.25.4</version>
+        <version>12.26.0</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-storage-common</artifactId>
-        <version>12.24.4</version>
+        <version>12.25.0</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-storage-file-datalake</artifactId>
-        <version>12.18.4</version>
+        <version>12.19.0</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-storage-internal-avro</artifactId>
-        <version>12.10.4</version>
+        <version>12.11.0</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-storage-queue</artifactId>
-        <version>12.20.4</version>
+        <version>12.21.0</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
