@@ -1781,6 +1781,12 @@
                 <groupId>org.apache.camel</groupId>
                 <artifactId>camel-langchain4j-chat</artifactId>
                 <version>${camel.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>dev.langchain4j</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.camel</groupId>
@@ -6649,11 +6655,6 @@
                 <groupId>commons-lang</groupId>
                 <artifactId>commons-lang</artifactId>
                 <version>${commons-lang.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>dev.langchain4j</groupId>
-                <artifactId>langchain4j</artifactId>
-                <version>${langchain4j-version}</version>
             </dependency>
             <dependency>
                 <groupId>io.dropwizard.metrics</groupId>
