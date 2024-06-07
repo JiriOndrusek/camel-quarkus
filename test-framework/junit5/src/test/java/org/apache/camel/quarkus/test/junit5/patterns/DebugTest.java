@@ -46,11 +46,11 @@ public class DebugTest extends CamelQuarkusTestSupport {
         testDebugBreakpoint = new TestDebugBreakpoint();
         return testDebugBreakpoint;
     }
+
     @Override
     public boolean isUseAdviceWith() {
         return true;
     }
-
 
     // START SNIPPET: e1
     @Override
