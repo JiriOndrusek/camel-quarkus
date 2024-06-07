@@ -36,7 +36,9 @@ public class BeforeEachCallback implements QuarkusTestBeforeEachCallback {
             try {
                 testInstance.internalBeforeEach(mockContext);
                 testInstance.internalBeforeAll(mockContext);
+                testInstance.doPreSetup();
                 testInstance.setUp();
+                testInstance.doPostSetup();
                 testInstance.doBeforeEach(context);
             } catch (Exception e) {
                 throw new RuntimeException(e);

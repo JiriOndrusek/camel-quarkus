@@ -17,11 +17,8 @@
 package org.apache.camel.quarkus.test.junit5.patterns;
 
 import io.quarkus.test.junit.QuarkusTest;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.quarkus.test.CamelQuarkusTestSupport;
 import org.apache.camel.test.junit5.DebugBreakpoint;
 import org.jboss.logging.Logger;
@@ -59,15 +56,15 @@ public class DebugTest extends CamelQuarkusTestSupport {
         return true;
     }
 
-    @Override
-    protected void debugBefore(
-            Exchange exchange, Processor processor, ProcessorDefinition<?> definition, String id, String shortName) {
-        // this method is invoked before we are about to enter the given
-        // processor
-        // from your Java editor you can just add a breakpoint in the code line
-        // below
-        LOG.info("Before " + definition + " with body " + exchange.getIn().getBody());
-    }
+//    @Override
+//    protected void debugBefore(
+//            Exchange exchange, Processor processor, ProcessorDefinition<?> definition, String id, String shortName) {
+//        // this method is invoked before we are about to enter the given
+//        // processor
+//        // from your Java editor you can just add a breakpoint in the code line
+//        // below
+//        LOG.info("Before " + definition + " with body " + exchange.getIn().getBody());
+//    }
     // END SNIPPET: e1
 
     @Test
