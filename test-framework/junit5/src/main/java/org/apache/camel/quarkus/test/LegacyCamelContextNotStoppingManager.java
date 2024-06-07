@@ -30,7 +30,8 @@ import org.apache.camel.test.junit5.TestExecutionConfiguration;
  */
 public class LegacyCamelContextNotStoppingManager extends LegacyCamelContextManager {
 
-    public LegacyCamelContextNotStoppingManager(TestExecutionConfiguration testConfigurationBuilder, CamelContextConfiguration camelContextConfiguration) {
+    public LegacyCamelContextNotStoppingManager(TestExecutionConfiguration testConfigurationBuilder,
+            CamelContextConfiguration camelContextConfiguration) {
         super(testConfigurationBuilder, camelContextConfiguration);
     }
 

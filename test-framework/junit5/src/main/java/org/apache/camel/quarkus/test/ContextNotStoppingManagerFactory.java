@@ -35,12 +35,13 @@ public class ContextNotStoppingManagerFactory extends ContextManagerFactory {
     }
 
     @Override
-    public CamelContextManager createContextManager(ContextManagerFactory.Type type, TestExecutionConfiguration testConfiguration, CamelContextConfiguration contextConfiguration) {
+    public CamelContextManager createContextManager(ContextManagerFactory.Type type,
+            TestExecutionConfiguration testConfiguration, CamelContextConfiguration contextConfiguration) {
         return switch (type) {
-            case BEFORE_ALL:
-                yield new LegacyCamelContextNotStoppingManager(testConfiguration, contextConfiguration);
-            case BEFORE_EACH:
-                yield new TransientCamelContextNotStoppingManager(testConfiguration, contextConfiguration);
+        case BEFORE_ALL:
+            yield new LegacyCamelContextNotStoppingManager(testConfiguration, contextConfiguration);
+        case BEFORE_EACH:
+            yield new TransientCamelContextNotStoppingManager(testConfiguration, contextConfiguration);
         };
     }
 }
