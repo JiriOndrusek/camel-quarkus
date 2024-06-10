@@ -26,7 +26,7 @@ import org.apache.camel.test.junit5.TransientCamelContextManager;
 public class TransientCamelContextNotStoppingManager extends TransientCamelContextManager {
 
     public TransientCamelContextNotStoppingManager(TestExecutionConfiguration testConfigurationBuilder,
-           CamelContextConfiguration camelContextConfiguration) {
+            CamelContextConfiguration camelContextConfiguration) {
         super(testConfigurationBuilder, camelContextConfiguration);
     }
 

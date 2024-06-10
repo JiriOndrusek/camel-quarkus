@@ -92,8 +92,8 @@ public class CamelQuarkusTestSupport extends AbstractTestSupport
 
     private static final Logger LOG = LoggerFactory.getLogger(CamelQuarkusTestSupport.class);
 
-//    @RegisterExtension
-//    protected CamelTestSupport camelTestSupportExtension = this;
+    //    @RegisterExtension
+    //    protected CamelTestSupport camelTestSupportExtension = this;
 
     private final StopWatch watch = new StopWatch();
     private String currentTestName;
@@ -119,7 +119,7 @@ public class CamelQuarkusTestSupport extends AbstractTestSupport
                 .withJMX(useJmx())
                 .withUseRouteBuilder(isUseRouteBuilder())
                 .withDumpRouteCoverage(isDumpRouteCoverage())
-                        .withAutoStartContext(false);
+                .withAutoStartContext(false);
 
         contextConfiguration()
                 .withCustomCamelContextSupplier(this::camelContextSupplier)
@@ -137,11 +137,11 @@ public class CamelQuarkusTestSupport extends AbstractTestSupport
     }
 
     CustomCamelContextConfiguration contextConfiguration() {
-        return (CustomCamelContextConfiguration)camelContextConfiguration;
+        return (CustomCamelContextConfiguration) camelContextConfiguration;
     }
 
     CustomTestExecutionConfiguration testConfigurationBuilder() {
-        return (CustomTestExecutionConfiguration)testConfigurationBuilder;
+        return (CustomTestExecutionConfiguration) testConfigurationBuilder;
     }
 
     //------------------------ quarkus callbacks ---------------
@@ -211,7 +211,7 @@ public class CamelQuarkusTestSupport extends AbstractTestSupport
      */
     @Override
     public CamelContext context() {
-       return this.context;
+        return this.context;
     }
 
     @Deprecated(since = "4.7.0")
@@ -260,7 +260,8 @@ public class CamelQuarkusTestSupport extends AbstractTestSupport
         long time = watch.taken();
 
         if (isRouteCoverageEnabled()) {
-            ExtensionHelper.testEndFooter(getClass(), currentTestName, time, new RouteCoverageDumperExtension((ModelCamelContext) context));
+            ExtensionHelper.testEndFooter(getClass(), currentTestName, time,
+                    new RouteCoverageDumperExtension((ModelCamelContext) context));
         } else {
             ExtensionHelper.testEndFooter(getClass(), currentTestName, time);
         }
@@ -290,7 +291,6 @@ public class CamelQuarkusTestSupport extends AbstractTestSupport
         // noop
     }
 
-
     /**
      * Factory method which derived classes can use to create a {@link RouteBuilder} to define the routes for testing
      */
@@ -315,7 +315,6 @@ public class CamelQuarkusTestSupport extends AbstractTestSupport
         return new RoutesBuilder[] { createRouteBuilder() };
     }
 
-
     void internalAfterAll(QuarkusTestContext context, ExtensionContext extensionContext) {
         try {
             if (!testConfiguration().isCreateCamelContextPerClass()) {
@@ -329,8 +328,8 @@ public class CamelQuarkusTestSupport extends AbstractTestSupport
     }
 
     void internalBeforeAll(ExtensionContext context) {
-        final boolean perClassPresent
-                = context.getTestInstanceLifecycle().filter(lc -> lc.equals(TestInstance.Lifecycle.PER_CLASS)).isPresent();
+        final boolean perClassPresent = context.getTestInstanceLifecycle()
+                .filter(lc -> lc.equals(TestInstance.Lifecycle.PER_CLASS)).isPresent();
         if (perClassPresent) {
             LOG.trace("Creating a legacy context manager for {}", context.getDisplayName());
             testConfigurationBuilder().withCustomCreateCamelContextPerClass(perClassPresent);

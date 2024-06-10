@@ -25,6 +25,6 @@ public final class CustomTestExecutionConfiguration extends TestExecutionConfigu
     }
 
     CustomTestExecutionConfiguration withCustomCreateCamelContextPerClass(boolean createCamelContextPerClass) {
-        return (CustomTestExecutionConfiguration)super.withCreateCamelContextPerClass(createCamelContextPerClass);
+        return (CustomTestExecutionConfiguration) super.withCreateCamelContextPerClass(createCamelContextPerClass);
     }
 }
