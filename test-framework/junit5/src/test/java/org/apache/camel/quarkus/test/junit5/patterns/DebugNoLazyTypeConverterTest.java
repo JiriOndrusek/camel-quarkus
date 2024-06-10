@@ -46,6 +46,7 @@ public class DebugNoLazyTypeConverterTest extends CamelQuarkusTestSupport {
         testDebugBreakpoint = new TestDebugBreakpoint();
         return testDebugBreakpoint;
     }
+
     // START SNIPPET: e1
     @Override
     public boolean isUseDebugger() {
