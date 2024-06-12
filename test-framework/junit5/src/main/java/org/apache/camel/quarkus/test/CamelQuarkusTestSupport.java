@@ -242,6 +242,16 @@ public class CamelQuarkusTestSupport extends AbstractTestSupport
         contextManager.createCamelContext(this);
         context = contextManager.context();
 
+        //log warning in case that at least one RouteBuilder in the registry, it might mean, that unintentionally
+        // RouteBuilders are shared across or that RouteBuilder is created with @Produces
+        if (isUseRouteBuilder() && !context.getRegistry().findByType(RouteBuilder.class).isEmpty()) {
+            LOG.warn(
+                    "Test with `true` in `isUserRouteBuilder' and `RouteBuilder` detected in the context registry. " +
+                            "All tests will share this routeBuilder from the registry. This is usually not intended. " +
+                            "If `@Produces` is used to create such a RouteBuilder, please refactor the code " +
+                            "by overriding the method `createRouteBuilder()` instead.");
+        }
+
         doPostSetup();
 
         // only start timing after all the setup
@@ -317,7 +327,10 @@ public class CamelQuarkusTestSupport extends AbstractTestSupport
 
     void internalAfterAll(QuarkusTestContext context, ExtensionContext extensionContext) {
         try {
-            if (!testConfiguration().isCreateCamelContextPerClass()) {
+            if (testConfiguration().isCreateCamelContextPerClass()) {
+                //call all clear and release methods, stop is not called as it is disabled on the camelContextManagers
+                contextManager.stop();
+            } else {
                 doPostTearDown();
             }
             cleanupResources();
