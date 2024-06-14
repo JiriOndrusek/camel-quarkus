@@ -172,6 +172,6 @@ public class PubnubResource {
             configuration.setReconnectionPolicy(PNReconnectionPolicy.LINEAR);
         }
 
-        return new PubNub(configuration);
+        return PubNub.create(configuration);
     }
 }
