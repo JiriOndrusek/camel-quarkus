@@ -31,7 +31,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@DisabledIfFipsMode //https://github.com/apache/camel-quarkus/issues/6088
+//@DisabledIfFipsMode //https://github.com/apache/camel-quarkus/issues/6088
 @QuarkusTest
 class CryptoTest {
 
