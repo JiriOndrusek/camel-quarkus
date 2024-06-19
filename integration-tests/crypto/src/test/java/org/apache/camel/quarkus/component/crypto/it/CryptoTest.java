@@ -18,6 +18,7 @@ package org.apache.camel.quarkus.component.crypto.it;
 
 import java.nio.charset.StandardCharsets;
 
+import io.quarkus.logging.Log;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import org.apache.camel.quarkus.test.DisabledIfFipsMode;
@@ -37,9 +38,11 @@ class CryptoTest {
 
     @ParameterizedTest
     @ValueSource(booleans = { false, true })
-    public void signAndVerifySignature() {
+    public void signAndVerifySignature(boolean raw) {
+        Log.infof("Starting test with parameter `%s`", raw);
         // Encrypt message
         byte[] signatureBytes = RestAssured.given()
+                .body(raw)
                 .post("/crypto/signature/sign")
                 .then()
                 .statusCode(200)

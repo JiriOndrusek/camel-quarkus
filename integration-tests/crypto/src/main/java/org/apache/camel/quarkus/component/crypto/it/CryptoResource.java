@@ -23,6 +23,7 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
 
+import io.quarkus.logging.Log;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.ws.rs.Consumes;
@@ -53,6 +54,7 @@ public class CryptoResource {
     @POST
     public byte[] sign(@QueryParam("raw") boolean raw) {
         final String endpoint = "direct:sign" + (raw ? "-raw" : "");
+        Log.infof("Sending request to '%s`", endpoint);
         Exchange exchange = producerTemplate.request(endpoint, new Processor() {
             @Override
             public void process(Exchange exchange) throws Exception {
