@@ -28,16 +28,15 @@ import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.ShutdownContextBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeReinitializedClassBuildItem;
-import io.quarkus.security.deployment.BouncyCastleProviderBuildItem;
 import org.apache.camel.quarkus.support.bouncycastle.BouncyCastleRecorder;
 import org.jboss.jandex.IndexView;
 
 public class BouncyCastleSupportProcessor {
 
-    @BuildStep
-    void produceBouncyCastleProvider(BuildProducer<BouncyCastleProviderBuildItem> bouncyCastleProvider) {
-        bouncyCastleProvider.produce(new BouncyCastleProviderBuildItem());
-    }
+    //    @BuildStep
+    //    void produceBouncyCastleProvider(BuildProducer<BouncyCastleProviderBuildItem> bouncyCastleProvider) {
+    //        bouncyCastleProvider.produce(new BouncyCastleProviderBuildItem(true));
+    //    }
 
     @BuildStep
     ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
