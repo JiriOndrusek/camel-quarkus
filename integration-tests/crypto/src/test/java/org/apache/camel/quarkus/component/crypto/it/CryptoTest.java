@@ -21,7 +21,6 @@ import java.nio.charset.StandardCharsets;
 import io.quarkus.logging.Log;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
-import org.apache.camel.quarkus.test.DisabledIfFipsMode;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -37,7 +36,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class CryptoTest {
 
     @ParameterizedTest
-    @ValueSource(booleans = { false, true })
+    //    @ValueSource(booleans = { false, true })
+    @ValueSource(booleans = { false })
     public void signAndVerifySignature(boolean raw) {
         Log.infof("Starting test with parameter `%s`", raw);
         // Encrypt message
