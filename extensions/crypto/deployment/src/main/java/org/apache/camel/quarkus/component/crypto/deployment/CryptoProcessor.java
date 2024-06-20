@@ -55,12 +55,12 @@ class CryptoProcessor {
 
                     // When using integrity packet, CFB mode is reachable
                     String cfbTransformation = algorithmName + "/CFB/NoPadding";
-                    LOG.debugf(format, cfbTransformation);
+                    LOG.infof(format, cfbTransformation);
                     cipherTransformations.add(cfbTransformation);
 
                     // When NOT using integrity packet, OpenPGPCFB mode is reachable
                     String openPgpCfbTransformation = algorithmName + "/OpenPGPCFB/NoPadding";
-                    LOG.debugf(format, openPgpCfbTransformation);
+                    LOG.infof(format, openPgpCfbTransformation);
                     cipherTransformations.add(openPgpCfbTransformation);
                 }
             } catch (IllegalArgumentException | IllegalAccessException e) {
