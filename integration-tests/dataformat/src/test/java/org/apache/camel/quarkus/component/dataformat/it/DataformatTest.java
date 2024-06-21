@@ -99,9 +99,6 @@ class DataformatTest {
 
     static String toFormatedLocalDateTime(ZonedDateTime zonedDateTime) {
         String result = zonedDateTime.format(DateTimeFormatter.ofPattern("yyyyMMdd'T'hhmmss"));
-        if (zonedDateTime.getZone().getId().equals("Etc/UTC")) {
-            result += "Z";
-        }
         return result;
     }
 
