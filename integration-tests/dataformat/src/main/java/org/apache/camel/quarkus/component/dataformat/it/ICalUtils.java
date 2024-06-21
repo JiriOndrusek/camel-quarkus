@@ -17,12 +17,10 @@
 package org.apache.camel.quarkus.component.dataformat.it;
 
 import java.net.URI;
-import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 
 import net.fortuna.ical4j.model.Calendar;
-import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.TimeZoneRegistry;
 import net.fortuna.ical4j.model.TimeZoneRegistryFactory;
 import net.fortuna.ical4j.model.component.VEvent;
@@ -49,8 +47,8 @@ public class ICalUtils {
         // Create the event
         VEvent meeting = new VEvent();
         meeting.replace(new DtStamp(Instant.ofEpochMilli(0)));
-        meeting.add(new DtStart(toDateTime(start, registry).toInstant()));
-        meeting.add(new DtEnd(toDateTime(end, registry).toInstant()));
+        meeting.add(new DtStart(start));
+        meeting.add(new DtEnd(end));
         meeting.add(new Summary(summary));
 
         // add timezone info..
@@ -74,10 +72,6 @@ public class ICalUtils {
         // Add the event and print
         icsCalendar.add(meeting);
         return icsCalendar;
-    }
-
-    static DateTime toDateTime(ZonedDateTime zonedDateTime, TimeZoneRegistry registry) {
-        return new DateTime(zonedDateTime.toInstant().toEpochMilli());
     }
 
 }
