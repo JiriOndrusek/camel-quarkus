@@ -38,6 +38,10 @@
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-support-bouncycastle-deployment</artifactId>
         </dependency>
+<!--        <dependency>
+            <groupId>org.apache.camel.quarkus</groupId>
+            <artifactId>camel-quarkus-crypto</artifactId>
+        </dependency>-->
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-crypto</artifactId>
@@ -61,5 +65,64 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- default profile which is adding bc -->
+<!--        <profile>-->
+<!--            <id>bc</id>-->
+<!--            <activation>-->
+<!--                <property>-->
+<!--                    <name>!nobc</name>-->
+<!--                </property>-->
+<!--            </activation>-->
+<!--            <dependencies>-->
+<!--                <dependency>-->
+<!--                    <groupId>org.apache.camel.quarkus</groupId>-->
+<!--                    <artifactId>camel-quarkus-support-bouncycastle-deployment</artifactId>-->
+<!--                </dependency>-->
+<!--                <dependency>-->
+<!--                    <groupId>org.apache.camel.quarkus</groupId>-->
+<!--                    <artifactId>camel-quarkus-crypto</artifactId>-->
+<!--                </dependency>-->
+<!--            </dependencies>-->
+<!--        </profile>-->
+
+<!--        &lt;!&ndash; profile for creating a artifact with classifier bcfips &ndash;&gt;-->
+<!--        <profile>-->
+<!--            <id>bcfips</id>-->
+<!--            <activation>-->
+<!--                <property>-->
+<!--                    <name>!nobcfips</name>-->
+<!--                </property>-->
+<!--            </activation>-->
+<!--            <dependencies>-->
+<!--                <dependency>-->
+<!--                    <groupId>org.apache.camel.quarkus</groupId>-->
+<!--                    <artifactId>camel-quarkus-crypto</artifactId>-->
+<!--                    <classifier>bcfips</classifier>-->
+<!--                </dependency>-->
+<!--            </dependencies>-->
+<!--            <build>-->
+<!--                <plugins>-->
+<!--                    <plugin>-->
+<!--                        <groupId>org.apache.maven.plugins</groupId>-->
+<!--                        <artifactId>maven-jar-plugin</artifactId>-->
+<!--                        <executions>-->
+<!--                            <execution>-->
+<!--                                <id>fips-jar</id>-->
+<!--                                <goals>-->
+<!--                                    <goal>jar</goal>-->
+<!--                                </goals>-->
+<!--                                <configuration>-->
+<!--                                    <classifier>bcfips</classifier>-->
+<!--                                </configuration>-->
+<!--                            </execution>-->
+<!--                        </executions>-->
+<!--                    </plugin>-->
+<!--                </plugins>-->
+<!--            </build>-->
+
+<!--        </profile>-->
+    </profiles>
 
 </project>
