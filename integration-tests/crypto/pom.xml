@@ -34,6 +34,16 @@
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-crypto</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>*</artifactId>
+                    <groupId>org.bouncycastle</groupId>
+                </exclusion>
+<!--                <exclusion>-->
+<!--                    <artifactId>camel-quarkus-support-bouncycastle</artifactId>-->
+<!--                    <groupId>org.apache.camel.quarkus</groupId>-->
+<!--                </exclusion>-->
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
@@ -42,6 +52,14 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-resteasy</artifactId>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>io.quarkus</groupId>-->
+<!--            <artifactId>quarkus-security</artifactId>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bc-fips</artifactId>
         </dependency>
 
         <!-- test dependencies -->
