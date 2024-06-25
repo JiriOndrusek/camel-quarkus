@@ -257,6 +257,14 @@
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker-qual</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -6521,6 +6529,11 @@
         <version>3.6.0</version>
       </dependency>
       <dependency>
+        <groupId>com.squareup.okio</groupId>
+        <artifactId>okio-jvm</artifactId>
+        <version>3.6.0</version>
+      </dependency>
+      <dependency>
         <groupId>com.squareup.retrofit2</groupId>
         <artifactId>converter-jackson</artifactId>
         <version>2.9.0</version>
@@ -6983,6 +6996,16 @@
       </dependency>
       <dependency>
         <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlin-scripting-compiler-embeddable</artifactId>
+        <version>2.0.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlin-scripting-compiler-impl-embeddable</artifactId>
+        <version>2.0.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jetbrains.kotlin</groupId>
         <artifactId>kotlin-scripting-jvm</artifactId>
         <version>2.0.0</version>
       </dependency>
@@ -6990,6 +7013,11 @@
         <groupId>org.jetbrains.kotlin</groupId>
         <artifactId>kotlin-scripting-jvm-host</artifactId>
         <version>2.0.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jetbrains.kotlinx</groupId>
+        <artifactId>kotlinx-serialization-core-jvm</artifactId>
+        <version>1.4.0</version>
       </dependency>
       <dependency>
         <groupId>org.kiwiproject</groupId>
@@ -7832,6 +7860,11 @@
       </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
+        <artifactId>url-connection-client</artifactId>
+        <version>2.25.60</version>
+      </dependency>
+      <dependency>
+        <groupId>software.amazon.awssdk</groupId>
         <artifactId>utils</artifactId>
         <version>2.25.60</version>
       </dependency>
@@ -7873,6 +7906,11 @@
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>firehose</artifactId>
+        <version>2.25.60</version>
+      </dependency>
+      <dependency>
+        <groupId>software.amazon.awssdk</groupId>
+        <artifactId>glue</artifactId>
         <version>2.25.60</version>
       </dependency>
       <dependency>
