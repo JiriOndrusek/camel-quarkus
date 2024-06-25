@@ -25,12 +25,15 @@ import javax.crypto.KeyGenerator;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.crypto.DigitalSignatureConstants;
 import org.apache.camel.converter.crypto.CryptoDataFormat;
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 public class CryptoRoutes extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-
+        String provider = ConfigProvider.getConfig()
+                .getOptionalValue("quarkus.security.security-providers", String.class).orElse("SUN");
         // Crypto component using raw keys
         final KeyPair keys = getKeyPair();
         from("direct:sign-raw")
@@ -41,12 +44,14 @@ public class CryptoRoutes extends RouteBuilder {
                 .setHeader(DigitalSignatureConstants.SIGNATURE_PUBLIC_KEY_OR_CERT, constant(keys.getPublic()))
                 .to("crypto:verify:raw");
 
+
+
         // Crypto component using keys from a keystore
         from("direct:sign")
-                .to("crypto:sign:basic?privateKey=#myPrivateKey&algorithm=SHA1withDSA&provider=SUN&secureRandom=#customSecureRandom");
+                .toF("crypto:sign:basic?privateKey=#myPrivateKey&algorithm=SHA1withDSA&provider=%s&secureRandom=#customSecureRandom", provider);
 
         from("direct:verify")
-                .to("crypto:verify:basic?publicKey=#myPublicKey&algorithm=SHA1withDSA&provider=SUN&secureRandom=#customSecureRandom");
+                .toF("crypto:verify:basic?publicKey=#myPublicKey&algorithm=SHA1withDSA&provider=%s&secureRandom=#customSecureRandom", provider);
 
         // Crypto data format
         CryptoDataFormat cryptoDataFormat = getCryptoDataFormat();
