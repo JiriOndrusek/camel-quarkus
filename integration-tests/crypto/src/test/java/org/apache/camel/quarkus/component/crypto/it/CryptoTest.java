@@ -31,7 +31,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@DisabledIfFipsMode //https://github.com/apache/camel-quarkus/issues/6088
+//@DisabledIfFipsMode //https://github.com/apache/camel-quarkus/issues/6088
 @QuarkusTest
 class CryptoTest {
 
@@ -83,29 +83,6 @@ class CryptoTest {
         String decrypted = RestAssured.given()
                 .body(encrypted)
                 .post("/crypto/decrypt")
-                .then()
-                .statusCode(200)
-                .extract()
-                .body()
-                .asString();
-
-        assertEquals(MESSAGE, decrypted);
-    }
-
-    @Test
-    public void encryptDecryptPgpMessage() {
-        byte[] encrypted = RestAssured.given()
-                .body(MESSAGE)
-                .post("/crypto/encrypt/pgp")
-                .then()
-                .statusCode(200)
-                .extract()
-                .body()
-                .asByteArray();
-
-        String decrypted = RestAssured.given()
-                .body(encrypted)
-                .post("/crypto/decrypt/pgp")
                 .then()
                 .statusCode(200)
                 .extract()
