@@ -55,13 +55,6 @@ public class CryptoRoutes extends RouteBuilder {
 
         from("direct:unmarshal")
                 .unmarshal(cryptoDataFormat);
-
-        // PGP data format
-        from("direct:marshalPgp")
-                .marshal().pgp("pubring.pgp", "sdude@nowhere.net", "sdude");
-
-        from("direct:unmarshalPgp")
-                .unmarshal().pgp("secring.pgp", "sdude@nowhere.net", "sdude");
     }
 
     private CryptoDataFormat getCryptoDataFormat() throws NoSuchAlgorithmException {
