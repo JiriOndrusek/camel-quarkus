@@ -40,7 +40,7 @@ public class BouncyCastleSupportProcessor {
 
     //------------------- NO FIPS ---------------------------------
 
-    @BuildStep(onlyIfNot = FipsProviderConfigured.class)
+    @BuildStep(onlyIfNot = BcProviderConfigured.class)
     void produceBouncyCastleProvider(BuildProducer<BouncyCastleProviderBuildItem> bouncyCastleProvider) {
         //register BC if there is no FIP provider in securityConfiguration
         bouncyCastleProvider.produce(new BouncyCastleProviderBuildItem());
@@ -68,15 +68,9 @@ public class BouncyCastleSupportProcessor {
     }
 
     @BuildStep(onlyIfNot = FipsProviderConfigured.class)
-    IndexDependencyBuildItem registerBCDependencyForIndex() {
-        return new IndexDependencyBuildItem("org.bouncycastle", "bcprov-jdk18on");
-    }
-
-    @BuildStep(onlyIfNot = FipsProviderConfigured.class)
     void secureRandomConfiguration(BuildProducer<RuntimeReinitializedClassBuildItem> reinitialized) {
         reinitialized.produce(new RuntimeReinitializedClassBuildItem("java.security.SecureRandom"));
     }
-
 
     //------------------------ FIPS ----------------------------
 
@@ -88,15 +82,20 @@ public class BouncyCastleSupportProcessor {
         excludeDependencies.produce(new ExcludeDependencyBuildItem("org.bouncycastle", "bcutil-jdk18on"));
     }
 
+    @BuildStep(onlyIf = FipsProviderConfigured.class)
+    IndexDependencyBuildItem registerBCDependencyForIndex() {
+        return new IndexDependencyBuildItem("org.bouncycastle", "bcprov-jdk18on");
+    }
+
     // -------------------------- both ----------------------------
     @BuildStep(onlyIfNot = FipsProviderConfigured.class)
     @Record(ExecutionTime.STATIC_INIT)
     public void registerBouncyCastleProvider(List<CipherTransformationBuildItem> cipherTransformations,
-                                             BouncyCastleRecorder recorder,
-                                             ShutdownContextBuildItem shutdownContextBuildItem) {
+            BouncyCastleRecorder recorder,
+            ShutdownContextBuildItem shutdownContextBuildItem) {
         List<String> allCipherTransformations = cipherTransformations.stream()
                 .flatMap(c -> c.getCipherTransformations().stream()).collect(Collectors.toList());
-        sou
+        System.out.println(">>>>>>>>>>>>>" + allCipherTransformations.stream().collect(Collectors.joining(",")));
         recorder.registerBouncyCastleProvider(allCipherTransformations, shutdownContextBuildItem);
     }
 
@@ -111,6 +110,21 @@ public class BouncyCastleSupportProcessor {
 
             return securityConfig.securityProviders().orElse(Collections.emptySet()).stream()
                     .filter(p -> p.toLowerCase().contains("fips")).findAny().isPresent();
+
+        }
+    }
+
+    /**
+     * Indicates whether BC* provider is registered via quarkus.security.
+     */
+    public static final class BcProviderConfigured implements BooleanSupplier {
+        SecurityConfig securityConfig;
+
+        @Override
+        public boolean getAsBoolean() {
+
+            return securityConfig.securityProviders().orElse(Collections.emptySet()).stream()
+                    .filter(p -> p.toLowerCase().contains("bc")).findAny().isPresent();
 
         }
     }
