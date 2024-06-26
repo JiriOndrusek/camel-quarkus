@@ -16,35 +16,43 @@
  */
 package org.apache.camel.quarkus.support.bouncycastle.deployment;
 
-import java.util.Set;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.BooleanSupplier;
+import java.util.stream.Collectors;
 
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.annotations.ExecutionTime;
+import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
+import io.quarkus.deployment.builditem.ExcludeDependencyBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
+import io.quarkus.deployment.builditem.ShutdownContextBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeReinitializedClassBuildItem;
 import io.quarkus.security.deployment.BouncyCastleProviderBuildItem;
 import io.quarkus.security.deployment.SecurityConfig;
+import org.apache.camel.quarkus.support.bouncycastle.BouncyCastleRecorder;
 import org.jboss.jandex.IndexView;
 
 public class BouncyCastleSupportProcessor {
 
-    SecurityConfig security;
+    //------------------- NO FIPS ---------------------------------
 
-    @BuildStep
+    @BuildStep(onlyIfNot = FipsProviderConfigured.class)
     void produceBouncyCastleProvider(BuildProducer<BouncyCastleProviderBuildItem> bouncyCastleProvider) {
-        //if FIPS provider is NOT registered, register BC
-        Set<String> providers = security.securityProviders().orElse(Set.of());
-        for (String providerName : providers) {
-            if (providerName.toLowerCase().contains("fips")) {
-                return;
-            }
-        }
+        //register BC if there is no FIP provider in securityConfiguration
         bouncyCastleProvider.produce(new BouncyCastleProviderBuildItem());
     }
 
-    @BuildStep
+    @BuildStep(onlyIfNot = FipsProviderConfigured.class)
+    void excludeBcFips(BuildProducer<ExcludeDependencyBuildItem> excludeDependencies) {
+        //exclude BCFIPS in no-fips environment
+        excludeDependencies.produce(new ExcludeDependencyBuildItem("org.bouncycastle", "bc-fips"));
+    }
+
+    @BuildStep(onlyIfNot = FipsProviderConfigured.class)
     ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
         IndexView index = combinedIndex.getIndex();
 
@@ -59,24 +67,52 @@ public class BouncyCastleSupportProcessor {
         return ReflectiveClassBuildItem.builder(dtos).build();
     }
 
-    @BuildStep
+    @BuildStep(onlyIfNot = FipsProviderConfigured.class)
     IndexDependencyBuildItem registerBCDependencyForIndex() {
         return new IndexDependencyBuildItem("org.bouncycastle", "bcprov-jdk18on");
     }
 
-    @BuildStep
+    @BuildStep(onlyIfNot = FipsProviderConfigured.class)
     void secureRandomConfiguration(BuildProducer<RuntimeReinitializedClassBuildItem> reinitialized) {
         reinitialized.produce(new RuntimeReinitializedClassBuildItem("java.security.SecureRandom"));
     }
 
-    // required for native without fips
-    //    @BuildStep
-    //    @Record(ExecutionTime.STATIC_INIT)
-    //    public void registerBouncyCastleProvider(List<CipherTransformationBuildItem> cipherTransformations,
-    //            BouncyCastleRecorder recorder,
-    //            ShutdownContextBuildItem shutdownContextBuildItem) {
-    //        List<String> allCipherTransformations = cipherTransformations.stream()
-    //                .flatMap(c -> c.getCipherTransformations().stream()).collect(Collectors.toList());
-    //        recorder.registerBouncyCastleProvider(allCipherTransformations, shutdownContextBuildItem);
-    //    }
+
+    //------------------------ FIPS ----------------------------
+
+    @BuildStep(onlyIf = FipsProviderConfigured.class)
+    void excludeBc(BuildProducer<ExcludeDependencyBuildItem> excludeDependencies) {
+        //exclude BCFIPS in no-fips environment
+        excludeDependencies.produce(new ExcludeDependencyBuildItem("org.bouncycastle", "bcpkix-jdk18on"));
+        excludeDependencies.produce(new ExcludeDependencyBuildItem("org.bouncycastle", "bcbcprov-jdk18on"));
+        excludeDependencies.produce(new ExcludeDependencyBuildItem("org.bouncycastle", "bcutil-jdk18on"));
+    }
+
+    // -------------------------- both ----------------------------
+    @BuildStep(onlyIfNot = FipsProviderConfigured.class)
+    @Record(ExecutionTime.STATIC_INIT)
+    public void registerBouncyCastleProvider(List<CipherTransformationBuildItem> cipherTransformations,
+                                             BouncyCastleRecorder recorder,
+                                             ShutdownContextBuildItem shutdownContextBuildItem) {
+        List<String> allCipherTransformations = cipherTransformations.stream()
+                .flatMap(c -> c.getCipherTransformations().stream()).collect(Collectors.toList());
+        sou
+        recorder.registerBouncyCastleProvider(allCipherTransformations, shutdownContextBuildItem);
+    }
+
+    /**
+     * Indicates whether FIPS provider is registered via quarkus.security.
+     */
+    public static final class FipsProviderConfigured implements BooleanSupplier {
+        SecurityConfig securityConfig;
+
+        @Override
+        public boolean getAsBoolean() {
+
+            return securityConfig.securityProviders().orElse(Collections.emptySet()).stream()
+                    .filter(p -> p.toLowerCase().contains("fips")).findAny().isPresent();
+
+        }
+    }
+
 }

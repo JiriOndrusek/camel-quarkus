@@ -16,33 +16,19 @@
  */
 package org.apache.camel.quarkus.component.crypto.pgp.it;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import org.apache.camel.ProducerTemplate;
+import org.apache.camel.builder.RouteBuilder;
 
-@Path("/crypto-pgp")
-@ApplicationScoped
-public class CryptoPgpResource {
+public class CryptoPgpRoutes extends RouteBuilder {
 
-    public static final String MESSAGE = "Hello Camel Quarkus Crypto";
+    @Override
+    public void configure() throws Exception {
 
-    @Inject
-    ProducerTemplate producerTemplate;
+        // PGP data format
+        from("direct:marshalPgp")
+                .marshal().pgp("pubring.pgp", "sdude@nowhere.net", "sdude");
 
-    @Path("/encrypt/pgp")
-    @POST
-    public byte[] encryptPgpPayload(String payload) {
-        return producerTemplate.requestBody("direct:marshalPgp", payload, byte[].class);
+        from("direct:unmarshalPgp")
+                .unmarshal().pgp("secring.pgp", "sdude@nowhere.net", "sdude");
     }
 
-    @Path("/decrypt/pgp")
-    @POST
-    @Produces(MediaType.TEXT_PLAIN)
-    public String decryptPayload(byte[] payload) {
-        return producerTemplate.requestBody("direct:unmarshalPgp", payload, String.class);
-    }
 }
