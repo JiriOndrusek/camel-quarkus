@@ -35,10 +35,10 @@
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-crypto</artifactId>
             <exclusions>
-                <exclusion>
-                    <artifactId>*</artifactId>
-                    <groupId>org.bouncycastle</groupId>
-                </exclusion>
+<!--                <exclusion>-->
+<!--                    <artifactId>*</artifactId>-->
+<!--                    <groupId>org.bouncycastle</groupId>-->
+<!--                </exclusion>-->
 <!--                <exclusion>-->
 <!--                    <artifactId>camel-quarkus-support-bouncycastle</artifactId>-->
 <!--                    <groupId>org.apache.camel.quarkus</groupId>-->
@@ -76,6 +76,11 @@
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-integration-test-support</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-junit5-internal</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

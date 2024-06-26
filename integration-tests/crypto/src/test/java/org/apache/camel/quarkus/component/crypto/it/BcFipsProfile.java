@@ -16,11 +16,15 @@
  */
 package org.apache.camel.quarkus.component.crypto.it;
 
-import io.quarkus.test.junit.QuarkusTest;
-import org.apache.camel.quarkus.test.DisabledIfFipsMode;
+import java.util.Collections;
+import java.util.Map;
 
-@DisabledIfFipsMode //todo close https://github.com/apache/camel-quarkus/issues/6088
-@QuarkusTest
-class CryptoTest extends AbstractCryptoTest {
+import io.quarkus.test.junit.QuarkusTestProfile;
 
+public class BcFipsProfile implements QuarkusTestProfile {
+
+    @Override
+    public Map<String, String> getConfigOverrides() {
+        return Collections.singletonMap("quarkus.security.security-providers", "BCFIPS");
+    }
 }

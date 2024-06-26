@@ -16,9 +16,13 @@
  */
 package org.apache.camel.quarkus.component.crypto.it;
 
-import io.quarkus.test.junit.QuarkusIntegrationTest;
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
+import org.apache.camel.quarkus.test.EnabledIfFipsMode;
 
-@QuarkusIntegrationTest
-class CryptoFipsIT extends CryptoFipsTest {
+@EnabledIfFipsMode
+@QuarkusTest
+@TestProfile(BcFipsProfile.class)
+class CryptoBcFipsTest extends CryptoTest {
 
 }
