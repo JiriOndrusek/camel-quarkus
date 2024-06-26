@@ -18,29 +18,34 @@ package org.apache.camel.quarkus.component.crypto.pgp.it;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
-
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.apache.camel.quarkus.component.crypto.pgp.it.CryptoPgpResource.MESSAGE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 class CryptoPgpTest {
 
     @Test
-    public void test() {
-        final String msg = java.util.UUID.randomUUID().toString().replace("-", "");
-        RestAssured.given() //
-                .contentType(ContentType.TEXT)
-                .body(msg)
-                .post("/crypto-pgp/post") //
+    public void encryptDecryptPgpMessage() {
+        byte[] encrypted = RestAssured.given()
+                .body(MESSAGE)
+                .post("/crypto-pgp/encrypt/pgp")
                 .then()
-                .statusCode(201);
+                .statusCode(200)
+                .extract()
+                .body()
+                .asByteArray();
 
-        Assertions.fail("Add some assertions to " + getClass().getName());
-
-        RestAssured.get("/crypto-pgp/get")
+        String decrypted = RestAssured.given()
+                .body(encrypted)
+                .post("/crypto-pgp/decrypt/pgp")
                 .then()
-                .statusCode(200);
+                .statusCode(200)
+                .extract()
+                .body()
+                .asString();
+
+        assertEquals(MESSAGE, decrypted);
     }
-
 }
