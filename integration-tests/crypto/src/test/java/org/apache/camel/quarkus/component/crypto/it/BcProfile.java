@@ -21,10 +21,10 @@ import java.util.Map;
 
 import io.quarkus.test.junit.QuarkusTestProfile;
 
-public class FipsProfile implements QuarkusTestProfile {
+public class BcProfile implements QuarkusTestProfile {
 
     @Override
     public Map<String, String> getConfigOverrides() {
-        return Collections.singletonMap("quarkus.security.security-providers", "BCFIPS");
+        return Collections.singletonMap("quarkus.security.security-providers", "BC");
     }
 }
