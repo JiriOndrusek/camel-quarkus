@@ -27,7 +27,6 @@ import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.ExcludeDependencyBuildItem;
-import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.ShutdownContextBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeReinitializedClassBuildItem;
@@ -44,12 +43,6 @@ public class BouncyCastleSupportProcessor {
     void produceBouncyCastleProvider(BuildProducer<BouncyCastleProviderBuildItem> bouncyCastleProvider) {
         //register BC if there is no FIP provider in securityConfiguration
         bouncyCastleProvider.produce(new BouncyCastleProviderBuildItem());
-    }
-
-    @BuildStep(onlyIfNot = FipsProviderConfigured.class)
-    void excludeBcFips(BuildProducer<ExcludeDependencyBuildItem> excludeDependencies) {
-        //exclude BCFIPS in no-fips environment
-        excludeDependencies.produce(new ExcludeDependencyBuildItem("org.bouncycastle", "bc-fips"));
     }
 
     @BuildStep(onlyIfNot = FipsProviderConfigured.class)
@@ -80,11 +73,6 @@ public class BouncyCastleSupportProcessor {
         excludeDependencies.produce(new ExcludeDependencyBuildItem("org.bouncycastle", "bcpkix-jdk18on"));
         excludeDependencies.produce(new ExcludeDependencyBuildItem("org.bouncycastle", "bcbcprov-jdk18on"));
         excludeDependencies.produce(new ExcludeDependencyBuildItem("org.bouncycastle", "bcutil-jdk18on"));
-    }
-
-    @BuildStep(onlyIf = FipsProviderConfigured.class)
-    IndexDependencyBuildItem registerBCDependencyForIndex() {
-        return new IndexDependencyBuildItem("org.bouncycastle", "bcprov-jdk18on");
     }
 
     // -------------------------- both ----------------------------

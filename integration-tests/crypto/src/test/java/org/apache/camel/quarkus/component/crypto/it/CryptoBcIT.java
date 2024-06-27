@@ -17,7 +17,9 @@
 package org.apache.camel.quarkus.component.crypto.it;
 
 import io.quarkus.test.junit.QuarkusIntegrationTest;
+import org.apache.camel.quarkus.test.DisabledIfFipsMode;
 
+@DisabledIfFipsMode
 @QuarkusIntegrationTest
 class CryptoBcIT extends CryptoBcTest {
 
