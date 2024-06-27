@@ -27,6 +27,7 @@ import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.ExcludeDependencyBuildItem;
+import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.ShutdownContextBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeReinitializedClassBuildItem;
@@ -52,12 +53,6 @@ public class BouncyCastleSupportProcessor {
         return ReflectiveClassBuildItem.builder(dtos).build();
     }
 
-    @BuildStep()
-    ReflectiveClassBuildItem registerForReflection() {
-
-        return ReflectiveClassBuildItem.builder("org.apache.camel.impl.debugger.DebuggerJmxConnectorService").build();
-    }
-
     @BuildStep(onlyIfNot = FipsProviderConfigured.class)
     void secureRandomConfiguration(BuildProducer<RuntimeReinitializedClassBuildItem> reinitialized) {
         reinitialized.produce(new RuntimeReinitializedClassBuildItem("java.security.SecureRandom"));
@@ -81,14 +76,13 @@ public class BouncyCastleSupportProcessor {
             ShutdownContextBuildItem shutdownContextBuildItem) {
         List<String> allCipherTransformations = cipherTransformations.stream()
                 .flatMap(c -> c.getCipherTransformations().stream()).collect(Collectors.toList());
-        System.out.println(">>>>>>>>>>>>>" + allCipherTransformations.stream().collect(Collectors.joining(",")));
         recorder.registerBouncyCastleProvider(allCipherTransformations, shutdownContextBuildItem);
     }
 
     /**
      * Indicates whether FIPS provider is registered via quarkus.security.
      */
-    public static final class FipsProviderConfigured implements BooleanSupplier {
+    static final class FipsProviderConfigured implements BooleanSupplier {
         SecurityConfig securityConfig;
 
         @Override
@@ -103,7 +97,7 @@ public class BouncyCastleSupportProcessor {
     /**
      * Indicates whether BC* provider is registered via quarkus.security.
      */
-    public static final class BcProviderConfigured implements BooleanSupplier {
+    static final class BcProviderConfigured implements BooleanSupplier {
         SecurityConfig securityConfig;
 
         @Override
