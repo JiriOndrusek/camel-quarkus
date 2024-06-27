@@ -26,6 +26,6 @@ import org.apache.camel.quarkus.test.EnabledIfFipsMode;
 @QuarkusTest
 @TestProfile(CryptoBcFipsProfile.class)
 @Typed(CryptoBcFipsTest.class) //to avoid jakarta.enterprise.inject.AmbiguousResolutionException
-class CryptoBcFipsTest extends CryptoTest {
+class CryptoBcFipsTest extends AbstractCryptoTest {
 
 }
