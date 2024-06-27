@@ -37,13 +37,6 @@ import org.jboss.jandex.IndexView;
 public class BouncyCastleSupportProcessor {
 
     //------------------- NO FIPS ---------------------------------
-
-    //    @BuildStep(onlyIfNot = BcProviderConfigured.class)
-    //    void produceBouncyCastleProvider(BuildProducer<BouncyCastleProviderBuildItem> bouncyCastleProvider) {
-    //        //register BC if there is no FIP provider in securityConfiguration
-    //        bouncyCastleProvider.produce(new BouncyCastleProviderBuildItem());
-    //    }
-
     @BuildStep(onlyIfNot = FipsProviderConfigured.class)
     ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
         IndexView index = combinedIndex.getIndex();
@@ -111,7 +104,7 @@ public class BouncyCastleSupportProcessor {
         public boolean getAsBoolean() {
 
             return securityConfig.securityProviders().orElse(Collections.emptySet()).stream()
-                    .filter(p -> p.toLowerCase().contains("bc")).findAny().isPresent();
+                    .filter(p -> p.toLowerCase().startsWith("bc")).findAny().isPresent();
 
         }
     }
