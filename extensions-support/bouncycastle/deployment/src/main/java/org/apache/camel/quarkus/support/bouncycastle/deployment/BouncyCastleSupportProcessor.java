@@ -53,6 +53,25 @@ public class BouncyCastleSupportProcessor {
         return ReflectiveClassBuildItem.builder(dtos).build();
     }
 
+    @BuildStep()
+    ReflectiveClassBuildItem registerForReflectionjmx(CombinedIndexBuildItem combinedIndex) {
+        IndexView index = combinedIndex.getIndex();
+
+        String[] dtos = index.getKnownClasses().stream()
+                .map(ci -> ci.name().toString())
+                .filter(n -> n.startsWith("org.apache.camel.impl.debugger"))
+                .sorted()
+                .peek(b -> System.out.println("------" + b))
+                .toArray(String[]::new);
+
+        return ReflectiveClassBuildItem.builder(dtos).build();
+    }
+
+    @BuildStep
+    void addDependencies(BuildProducer<IndexDependencyBuildItem> indexDependency) {
+        indexDependency.produce(new IndexDependencyBuildItem("org.apache.camel", "camel-base-engine"));
+    }
+
     @BuildStep(onlyIfNot = FipsProviderConfigured.class)
     void secureRandomConfiguration(BuildProducer<RuntimeReinitializedClassBuildItem> reinitialized) {
         reinitialized.produce(new RuntimeReinitializedClassBuildItem("java.security.SecureRandom"));
