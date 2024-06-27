@@ -52,6 +52,12 @@ public class BouncyCastleSupportProcessor {
         return ReflectiveClassBuildItem.builder(dtos).build();
     }
 
+    @BuildStep()
+    ReflectiveClassBuildItem registerForReflection() {
+
+        return ReflectiveClassBuildItem.builder("org.apache.camel.impl.debugger.DebuggerJmxConnectorService").build();
+    }
+
     @BuildStep(onlyIfNot = FipsProviderConfigured.class)
     void secureRandomConfiguration(BuildProducer<RuntimeReinitializedClassBuildItem> reinitialized) {
         reinitialized.produce(new RuntimeReinitializedClassBuildItem("java.security.SecureRandom"));
