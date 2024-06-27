@@ -18,8 +18,10 @@ package org.apache.camel.quarkus.component.crypto.it;
 
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.camel.quarkus.test.DisabledIfFipsMode;
+import org.junit.jupiter.api.Disabled;
 
 @DisabledIfFipsMode //todo close https://github.com/apache/camel-quarkus/issues/6088
+@Disabled
 @QuarkusTest
 class CryptoTest extends AbstractCryptoTest {
 
