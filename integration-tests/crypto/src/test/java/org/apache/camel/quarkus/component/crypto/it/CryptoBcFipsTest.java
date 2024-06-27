@@ -18,11 +18,14 @@ package org.apache.camel.quarkus.component.crypto.it;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
+import jakarta.enterprise.inject.Typed;
+import org.apache.camel.quarkus.component.crypto.it.profiles.CryptoBcFipsProfile;
 import org.apache.camel.quarkus.test.EnabledIfFipsMode;
 
 @EnabledIfFipsMode
 @QuarkusTest
-@TestProfile(BcFipsProfile.class)
+@TestProfile(CryptoBcFipsProfile.class)
+@Typed(CryptoBcFipsTest.class) //to avoid jakarta.enterprise.inject.AmbiguousResolutionException
 class CryptoBcFipsTest extends CryptoTest {
 
 }

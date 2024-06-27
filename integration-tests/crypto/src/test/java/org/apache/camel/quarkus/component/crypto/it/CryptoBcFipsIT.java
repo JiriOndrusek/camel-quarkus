@@ -16,15 +16,9 @@
  */
 package org.apache.camel.quarkus.component.crypto.it;
 
-import java.util.Collections;
-import java.util.Map;
+import io.quarkus.test.junit.QuarkusIntegrationTest;
 
-import io.quarkus.test.junit.QuarkusTestProfile;
+@QuarkusIntegrationTest
+class CryptoBcFipsIT extends CryptoBcFipsTest {
 
-public class BcFipsProfile implements QuarkusTestProfile {
-
-    @Override
-    public Map<String, String> getConfigOverrides() {
-        return Collections.singletonMap("quarkus.security.security-providers", "BCFIPS");
-    }
 }
