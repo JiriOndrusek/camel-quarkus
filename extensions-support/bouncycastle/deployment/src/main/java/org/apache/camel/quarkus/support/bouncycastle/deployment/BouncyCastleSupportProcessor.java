@@ -30,7 +30,6 @@ import io.quarkus.deployment.builditem.ExcludeDependencyBuildItem;
 import io.quarkus.deployment.builditem.ShutdownContextBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeReinitializedClassBuildItem;
-import io.quarkus.security.deployment.BouncyCastleProviderBuildItem;
 import io.quarkus.security.deployment.SecurityConfig;
 import org.apache.camel.quarkus.support.bouncycastle.BouncyCastleRecorder;
 import org.jboss.jandex.IndexView;
@@ -39,11 +38,11 @@ public class BouncyCastleSupportProcessor {
 
     //------------------- NO FIPS ---------------------------------
 
-    @BuildStep(onlyIfNot = BcProviderConfigured.class)
-    void produceBouncyCastleProvider(BuildProducer<BouncyCastleProviderBuildItem> bouncyCastleProvider) {
-        //register BC if there is no FIP provider in securityConfiguration
-        bouncyCastleProvider.produce(new BouncyCastleProviderBuildItem());
-    }
+    //    @BuildStep(onlyIfNot = BcProviderConfigured.class)
+    //    void produceBouncyCastleProvider(BuildProducer<BouncyCastleProviderBuildItem> bouncyCastleProvider) {
+    //        //register BC if there is no FIP provider in securityConfiguration
+    //        bouncyCastleProvider.produce(new BouncyCastleProviderBuildItem());
+    //    }
 
     @BuildStep(onlyIfNot = FipsProviderConfigured.class)
     ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
