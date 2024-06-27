@@ -9,6 +9,6 @@ public class CryptoBcFipsProfile implements QuarkusTestProfile {
 
     @Override
     public Map<String, String> getConfigOverrides() {
-        return Map.of("quarkus.security.security-providers", "BCFIPS", "camel.main.jmxEnabled", "false");
+        return Map.of("quarkus.security.security-providers", "BCFIPS");
     }
 }
