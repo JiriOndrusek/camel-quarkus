@@ -125,7 +125,7 @@
         <module>jcache</module>
         <module>jdbc-grouped</module>
         <module>jfr</module>
-        <module>jira</module>
+<!--        <module>jira</module>-->
         <module>jms-artemis-client</module>
         <module>jms-ibmmq-client</module>
         <module>jms-qpid-amqp-client</module>
