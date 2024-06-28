@@ -30,6 +30,7 @@ import io.quarkus.deployment.builditem.ExcludeDependencyBuildItem;
 import io.quarkus.deployment.builditem.ShutdownContextBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeReinitializedClassBuildItem;
+import io.quarkus.logging.Log;
 import io.quarkus.security.deployment.BouncyCastleProviderBuildItem;
 import io.quarkus.security.deployment.SecurityConfig;
 import org.apache.camel.quarkus.support.bouncycastle.BouncyCastleRecorder;
@@ -91,7 +92,6 @@ public class BouncyCastleSupportProcessor {
 
         @Override
         public boolean getAsBoolean() {
-
             return securityConfig.securityProviders().orElse(Collections.emptySet()).stream()
                     .filter(p -> p.toLowerCase().contains("fips")).findAny().isPresent();
 
@@ -106,7 +106,9 @@ public class BouncyCastleSupportProcessor {
 
         @Override
         public boolean getAsBoolean() {
-
+            Log.info(">>>>>>>>>>>>>>>>>>>>>>>.Registered providers: "
+                    + securityConfig.securityProviders().orElse(Collections.emptySet()).stream()
+                            .collect(Collectors.joining(",")));
             return securityConfig.securityProviders().orElse(Collections.emptySet()).stream()
                     .filter(p -> p.toLowerCase().startsWith("bc")).findAny().isPresent();
 

@@ -72,6 +72,9 @@
                     <name>!fips</name>
                 </property>
             </activation>
+            <properties>
+                <cq.security-provider>BC</cq.security-provider>
+            </properties>
             <dependencies>
                 <dependency>
                     <groupId>org.apache.camel.quarkus</groupId>
@@ -86,9 +89,6 @@
                     <name>fips</name>
                 </property>
             </activation>
-            <properties>
-                <cq.security-provider-property>quarkus.security.security-providers=BCFIPS</cq.security-provider-property>
-            </properties>
             <!-- Excludes BC and adds bc-fips -->
             <dependencies>
                 <dependency>
@@ -106,6 +106,27 @@
                     <artifactId>bc-fips</artifactId>
                 </dependency>
             </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <quarkus.test.arg-line>-Dcq.security-provider=$BCFIPS</quarkus.test.arg-line>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
         <profile>
             <id>native</id>
