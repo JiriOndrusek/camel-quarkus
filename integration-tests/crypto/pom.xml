@@ -30,6 +30,27 @@
     <name>Camel Quarkus :: Integration Tests :: Crypto (JCE)</name>
     <description>Integration tests for Camel Quarkus Crypto (JCE) extension</description>
 
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <!-- Required to do not alter crypto.jks -->
+                <configuration>
+                    <nonFilteredFileExtensions>
+                        <nonFilteredFileExtension>jks</nonFilteredFileExtension>
+                    </nonFilteredFileExtensions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
@@ -63,18 +84,14 @@
         </dependency>
     </dependencies>
 
-
     <profiles>
         <profile>
-            <id>nonfips</id>
+            <id>no-fips</id>
             <activation>
                 <property>
                     <name>!fips</name>
                 </property>
             </activation>
-            <properties>
-                <cq.security-provider>BC</cq.security-provider>
-            </properties>
             <dependencies>
                 <dependency>
                     <groupId>org.apache.camel.quarkus</groupId>
@@ -89,6 +106,9 @@
                     <name>fips</name>
                 </property>
             </activation>
+            <properties>
+                <cq-security-provider>BCFIPS</cq-security-provider>
+            </properties>
             <!-- Excludes BC and adds bc-fips -->
             <dependencies>
                 <dependency>
@@ -106,27 +126,6 @@
                     <artifactId>bc-fips</artifactId>
                 </dependency>
             </dependencies>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-failsafe-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>integration-test</goal>
-                                    <goal>verify</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <systemPropertyVariables>
-                                <quarkus.test.arg-line>-Dcq.security-provider=$BCFIPS</quarkus.test.arg-line>
-                            </systemPropertyVariables>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
         <profile>
             <id>native</id>

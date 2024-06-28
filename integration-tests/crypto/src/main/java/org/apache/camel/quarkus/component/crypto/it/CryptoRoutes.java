@@ -34,7 +34,7 @@ public class CryptoRoutes extends RouteBuilder {
         String provider = ConfigProvider.getConfig()
                 .getOptionalValue("quarkus.security.security-providers", String.class).orElse("SUN");
         // Crypto component using raw keys
-        final KeyPair keys = getKeyPair();
+        final KeyPair keys = KeyPairGenerator.getInstance("RSA").generateKeyPair();
         from("direct:sign-raw")
                 .setHeader(DigitalSignatureConstants.SIGNATURE_PRIVATE_KEY, constant(keys.getPrivate()))
                 .to("crypto:sign:raw");
@@ -64,10 +64,6 @@ public class CryptoRoutes extends RouteBuilder {
     private CryptoDataFormat getCryptoDataFormat() throws NoSuchAlgorithmException {
         KeyGenerator generator = KeyGenerator.getInstance("DES");
         return new CryptoDataFormat("DES", generator.generateKey());
-    }
-
-    private KeyPair getKeyPair() throws NoSuchAlgorithmException {
-        return KeyPairGenerator.getInstance("RSA").generateKeyPair();
     }
 
 }
