@@ -86,6 +86,9 @@
                     <name>fips</name>
                 </property>
             </activation>
+            <properties>
+                <cq.security-provider-property>quarkus.security.security-providers=BCFIPS</cq.security-provider-property>
+            </properties>
             <!-- Excludes BC and adds bc-fips -->
             <dependencies>
                 <dependency>

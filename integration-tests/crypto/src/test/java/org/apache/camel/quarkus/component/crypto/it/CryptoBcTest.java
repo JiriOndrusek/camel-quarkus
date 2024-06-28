@@ -19,12 +19,16 @@ package org.apache.camel.quarkus.component.crypto.it;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import jakarta.enterprise.inject.Typed;
-import org.apache.camel.quarkus.component.crypto.it.profiles.CryptoBcFipsProfile;
+import org.apache.camel.quarkus.test.DisabledIfFipsMode;
 
-//@EnabledIfFipsMode
+/**
+ * Test using property quarkus.security.security-providers=BC
+ * (there is no native IT for this test, because the security-provider can not be changed via profile in the native)
+ */
+@DisabledIfFipsMode
 @QuarkusTest
-@TestProfile(CryptoBcFipsProfile.class)
-@Typed(CryptoBcFipsTest.class) //to avoid jakarta.enterprise.inject.AmbiguousResolutionException
-class CryptoBcFipsTest extends AbstractCryptoTest {
+@TestProfile(CryptoBcProfile.class)
+@Typed(CryptoBcTest.class) //to avoid jakarta.enterprise.inject.AmbiguousResolutionException
+class CryptoBcTest extends CryptoTest {
 
 }

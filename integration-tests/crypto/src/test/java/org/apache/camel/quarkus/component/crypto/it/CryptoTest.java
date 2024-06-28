@@ -14,27 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.crypto.deployment;
+package org.apache.camel.quarkus.component.crypto.it;
 
-import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.builditem.ExtensionSslNativeSupportBuildItem;
-import io.quarkus.deployment.builditem.FeatureBuildItem;
-import org.jboss.logging.Logger;
+import io.quarkus.test.junit.QuarkusTest;
 
-class CryptoProcessor {
-
-    private static final Logger LOG = Logger.getLogger(CryptoProcessor.class);
-
-    private static final String FEATURE = "camel-crypto";
-
-    @BuildStep
-    FeatureBuildItem feature() {
-        return new FeatureBuildItem(FEATURE);
-    }
-
-    @BuildStep
-    ExtensionSslNativeSupportBuildItem activeNativeSSLSupport() {
-        return new ExtensionSslNativeSupportBuildItem(FEATURE);
-    }
+@QuarkusTest
+class CryptoTest extends AbstractCryptoTest {
 
 }

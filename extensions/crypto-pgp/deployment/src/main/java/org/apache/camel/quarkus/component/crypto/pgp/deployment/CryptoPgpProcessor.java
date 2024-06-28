@@ -16,8 +16,16 @@
  */
 package org.apache.camel.quarkus.component.crypto.pgp.deployment;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.logging.Log;
+import org.apache.camel.quarkus.support.bouncycastle.deployment.CipherTransformationBuildItem;
+import org.bouncycastle.bcpg.SymmetricKeyAlgorithmTags;
+import org.bouncycastle.openpgp.PGPUtil;
 
 class CryptoPgpProcessor {
 
@@ -26,5 +34,32 @@ class CryptoPgpProcessor {
     @BuildStep
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
+    }
+
+    @BuildStep
+    CipherTransformationBuildItem registerReachableCipherTransformations() {
+        List<String> cipherTransformations = new ArrayList<>();
+        for (Field field : SymmetricKeyAlgorithmTags.class.getDeclaredFields()) {
+            try {
+                String algorithmName = PGPUtil.getSymmetricCipherName(field.getInt(null));
+                if (algorithmName != null) {
+                    String format = "Adding transformation '%s' to the CipherTransformationBuildItem produced by camel-quarkus-crypto";
+
+                    // When using integrity packet, CFB mode is reachable
+                    String cfbTransformation = algorithmName + "/CFB/NoPadding";
+                    Log.debugf(format, cfbTransformation);
+                    cipherTransformations.add(cfbTransformation);
+
+                    // When NOT using integrity packet, OpenPGPCFB mode is reachable
+                    String openPgpCfbTransformation = algorithmName + "/OpenPGPCFB/NoPadding";
+                    Log.debugf(format, openPgpCfbTransformation);
+                    cipherTransformations.add(openPgpCfbTransformation);
+                }
+            } catch (IllegalArgumentException | IllegalAccessException e) {
+                // Ignoring inaccessible and non integer fields
+            }
+        }
+
+        return new CipherTransformationBuildItem(cipherTransformations);
     }
 }

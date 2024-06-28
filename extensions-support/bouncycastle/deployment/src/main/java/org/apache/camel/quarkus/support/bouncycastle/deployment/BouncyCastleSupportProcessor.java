@@ -27,18 +27,35 @@ import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.ExcludeDependencyBuildItem;
-import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.ShutdownContextBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeReinitializedClassBuildItem;
+import io.quarkus.security.deployment.BouncyCastleProviderBuildItem;
 import io.quarkus.security.deployment.SecurityConfig;
 import org.apache.camel.quarkus.support.bouncycastle.BouncyCastleRecorder;
 import org.jboss.jandex.IndexView;
 
 public class BouncyCastleSupportProcessor {
 
-    //------------------- NO FIPS ---------------------------------
-    @BuildStep(onlyIfNot = FipsProviderConfigured.class)
+    SecurityConfig securityConfig;
+
+    @BuildStep(onlyIfNot = BcProviderConfigured.class) //register BC only if no BC* provider is registered
+    void produceBouncyCastleProvider(BuildProducer<BouncyCastleProviderBuildItem> bouncyCastleProvider) {
+        //register BC if there is no BC or BCFIPS provider in securityConfiguration
+        bouncyCastleProvider.produce(new BouncyCastleProviderBuildItem());
+    }
+
+    @BuildStep()
+    @Record(ExecutionTime.STATIC_INIT)
+    public void registerBouncyCastleProvider(List<CipherTransformationBuildItem> cipherTransformations,
+            BouncyCastleRecorder recorder,
+            ShutdownContextBuildItem shutdownContextBuildItem) {
+        List<String> allCipherTransformations = cipherTransformations.stream()
+                .flatMap(c -> c.getCipherTransformations().stream()).collect(Collectors.toList());
+        recorder.registerBouncyCastleProvider(allCipherTransformations, shutdownContextBuildItem);
+    }
+
+    @BuildStep()
     ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
         IndexView index = combinedIndex.getIndex();
 
@@ -53,49 +70,17 @@ public class BouncyCastleSupportProcessor {
         return ReflectiveClassBuildItem.builder(dtos).build();
     }
 
-    @BuildStep()
-    ReflectiveClassBuildItem registerForReflectionjmx(CombinedIndexBuildItem combinedIndex) {
-        IndexView index = combinedIndex.getIndex();
-
-        String[] dtos = index.getKnownClasses().stream()
-                .map(ci -> ci.name().toString())
-                .filter(n -> n.startsWith("org.apache.camel.impl.debugger"))
-                .sorted()
-                .peek(b -> System.out.println("------" + b))
-                .toArray(String[]::new);
-
-        return ReflectiveClassBuildItem.builder(dtos).build();
-    }
-
-    @BuildStep
-    void addDependencies(BuildProducer<IndexDependencyBuildItem> indexDependency) {
-        indexDependency.produce(new IndexDependencyBuildItem("org.apache.camel", "camel-base-engine"));
-    }
-
     @BuildStep(onlyIfNot = FipsProviderConfigured.class)
     void secureRandomConfiguration(BuildProducer<RuntimeReinitializedClassBuildItem> reinitialized) {
         reinitialized.produce(new RuntimeReinitializedClassBuildItem("java.security.SecureRandom"));
     }
 
-    //------------------------ FIPS ----------------------------
-
     @BuildStep(onlyIf = FipsProviderConfigured.class)
     void excludeBc(BuildProducer<ExcludeDependencyBuildItem> excludeDependencies) {
-        //exclude BCFIPS in no-fips environment
+        //exclude BC in FIPS environment
         excludeDependencies.produce(new ExcludeDependencyBuildItem("org.bouncycastle", "bcpkix-jdk18on"));
         excludeDependencies.produce(new ExcludeDependencyBuildItem("org.bouncycastle", "bcbcprov-jdk18on"));
         excludeDependencies.produce(new ExcludeDependencyBuildItem("org.bouncycastle", "bcutil-jdk18on"));
-    }
-
-    // -------------------------- both ----------------------------
-    @BuildStep(onlyIfNot = FipsProviderConfigured.class)
-    @Record(ExecutionTime.STATIC_INIT)
-    public void registerBouncyCastleProvider(List<CipherTransformationBuildItem> cipherTransformations,
-            BouncyCastleRecorder recorder,
-            ShutdownContextBuildItem shutdownContextBuildItem) {
-        List<String> allCipherTransformations = cipherTransformations.stream()
-                .flatMap(c -> c.getCipherTransformations().stream()).collect(Collectors.toList());
-        recorder.registerBouncyCastleProvider(allCipherTransformations, shutdownContextBuildItem);
     }
 
     /**
