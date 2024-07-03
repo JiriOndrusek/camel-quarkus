@@ -21,7 +21,6 @@ import java.util.stream.Stream;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
-import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import org.jboss.logging.Logger;
 
@@ -41,10 +40,5 @@ class Aws2KinesisProcessor {
                 "software.amazon.kinesis.lifecycle.ShutdownTask")
                 .map(RuntimeInitializedClassBuildItem::new)
                 .forEach(runtimeInitializedClass::produce);
-    }
-
-    @BuildStep
-    void build(BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
-        reflectiveClass.produce(ReflectiveClassBuildItem.builder("javax.xml.bind.DatatypeConverter").build());
     }
 }
