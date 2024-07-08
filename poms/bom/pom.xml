@@ -1808,11 +1808,33 @@
                 <groupId>org.apache.camel</groupId>
                 <artifactId>camel-langchain4j-chat</artifactId>
                 <version>${camel.version}</version>
+                <!-- Required until quarkus upgrades to the same version of langchain4j -->
+                <exclusions>
+                    <exclusion>
+                        <artifactId>langchain4j-core</artifactId>
+                        <groupId>dev.langchain4j</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>langchain4j</artifactId>
+                        <groupId>dev.langchain4j</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.camel</groupId>
                 <artifactId>camel-langchain4j-core</artifactId>
                 <version>${camel.version}</version>
+                <!-- Required until quarkus upgrades to the same version of langchain4j -->
+                <exclusions>
+                    <exclusion>
+                        <artifactId>langchain4j-core</artifactId>
+                        <groupId>dev.langchain4j</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>langchain4j</artifactId>
+                        <groupId>dev.langchain4j</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.camel</groupId>

@@ -1745,11 +1745,31 @@
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-langchain4j-chat</artifactId>
         <version>4.7.0-SNAPSHOT</version>
+        <exclusions>
+          <exclusion>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-langchain4j-core</artifactId>
         <version>4.7.0-SNAPSHOT</version>
+        <exclusions>
+          <exclusion>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
