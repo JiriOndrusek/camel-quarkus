@@ -43,6 +43,15 @@
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-langchain4j-embeddings</artifactId>
         </dependency>
+        <!-- until quarkus langchain4j.version is the same as camel one -->
+        <dependency>
+            <artifactId>langchain4j-core</artifactId>
+            <groupId>dev.langchain4j</groupId>
+        </dependency>
+        <dependency>
+            <artifactId>langchain4j</artifactId>
+            <groupId>dev.langchain4j</groupId>
+        </dependency>
     </dependencies>
 
     <build>
