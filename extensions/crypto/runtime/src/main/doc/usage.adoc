@@ -2,12 +2,22 @@
 
 When running the `crypto` extension on FIPS enabled system any FIPS-compliant Java Security Provider (such as BC-FIPS) has to be used
 
-* Add dependency wih BouncyCastle implementation for FIPS systems. For example
+* Add dependency wih BouncyCastle implementation for FIPS systems. In case of BCFIP, please add BCFIPS dependency and support extension for bouncycastle
 ```
 <dependency>
     <groupId>org.bouncycastle</groupId>
     <artifactId>bc-fips</artifactId>
 </dependency>
+<dependency>
+    <groupId>org.apache.camel.quarkus</groupId>
+    <artifactId>camel-quarkus-support-bouncycastle</artifactId>
+</dependency>
 ```
+
+* Register BCFIPS provider (see the guide) by adding following property into aspplication.properties
+```
+quarkus.security.security-providers=BCFIPS
+```
+
 
 

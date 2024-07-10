@@ -48,6 +48,10 @@ public class CryptoRoutes extends RouteBuilder {
                 .toF("crypto:sign:basic?privateKey=#myPrivateKey&algorithm=SHA1withDSA&provider=%s&secureRandom=#customSecureRandom",
                         provider);
 
+        System.out.println("--------------------------");
+        System.out.println("----- " + provider + "-----");
+        System.out.println("--------------------------");
+
         from("direct:verify")
                 .toF("crypto:verify:basic?publicKey=#myPublicKey&algorithm=SHA1withDSA&provider=%s&secureRandom=#customSecureRandom",
                         provider);

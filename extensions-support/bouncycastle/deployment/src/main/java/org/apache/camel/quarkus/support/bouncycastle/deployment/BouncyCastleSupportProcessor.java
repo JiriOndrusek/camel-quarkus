@@ -107,7 +107,6 @@ public class BouncyCastleSupportProcessor {
         public boolean getAsBoolean() {
             return securityConfig.securityProviders().orElse(Collections.emptySet()).stream()
                     .filter(p -> p.toLowerCase().startsWith("bc")).findAny().isPresent();
-
         }
     }
 
