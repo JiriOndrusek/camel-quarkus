@@ -1597,25 +1597,25 @@
                 <artifactId>camel-jgroups-raft</artifactId>
                 <version>${camel.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.apache.camel</groupId>
-                <artifactId>camel-jira</artifactId>
-                <version>${camel.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.checkerframework</groupId>
-                        <artifactId>checker-qual</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-beans</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>org.apache.camel</groupId>-->
+<!--                <artifactId>camel-jira</artifactId>-->
+<!--                <version>${camel.version}</version>-->
+<!--                <exclusions>-->
+<!--                    <exclusion>-->
+<!--                        <groupId>commons-logging</groupId>-->
+<!--                        <artifactId>commons-logging</artifactId>-->
+<!--                    </exclusion>-->
+<!--                    <exclusion>-->
+<!--                        <groupId>org.checkerframework</groupId>-->
+<!--                        <artifactId>checker-qual</artifactId>-->
+<!--                    </exclusion>-->
+<!--                    <exclusion>-->
+<!--                        <groupId>org.springframework</groupId>-->
+<!--                        <artifactId>spring-beans</artifactId>-->
+<!--                    </exclusion>-->
+<!--                </exclusions>-->
+<!--            </dependency>-->
             <dependency>
                 <groupId>org.apache.camel</groupId>
                 <artifactId>camel-jms</artifactId>
@@ -4478,16 +4478,16 @@
                 <artifactId>camel-quarkus-jgroups-raft-deployment</artifactId>
                 <version>${camel-quarkus.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.apache.camel.quarkus</groupId>
-                <artifactId>camel-quarkus-jira</artifactId>
-                <version>${camel-quarkus.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.camel.quarkus</groupId>
-                <artifactId>camel-quarkus-jira-deployment</artifactId>
-                <version>${camel-quarkus.version}</version>
-            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>org.apache.camel.quarkus</groupId>-->
+<!--                <artifactId>camel-quarkus-jira</artifactId>-->
+<!--                <version>${camel-quarkus.version}</version>-->
+<!--            </dependency>-->
+<!--            <dependency>-->
+<!--                <groupId>org.apache.camel.quarkus</groupId>-->
+<!--                <artifactId>camel-quarkus-jira-deployment</artifactId>-->
+<!--                <version>${camel-quarkus.version}</version>-->
+<!--            </dependency>-->
             <dependency>
                 <groupId>org.apache.camel.quarkus</groupId>
                 <artifactId>camel-quarkus-jms</artifactId>
@@ -7632,18 +7632,18 @@
             </plugin>
         </plugins>
     </build>
-    <repositories>
-        <repository>
-            <!-- Has to be here, otherwise, the the flatten-bom mojo is not able to resolve jira-client and its transitives -->
-            <id>atlassian</id>
-            <url>https://packages.atlassian.com/maven-external/</url>
-            <name>atlassian exteranl repo</name>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-    </repositories>
+<!--    <repositories>-->
+<!--        <repository>-->
+<!--            &lt;!&ndash; Has to be here, otherwise, the the flatten-bom mojo is not able to resolve jira-client and its transitives &ndash;&gt;-->
+<!--            <id>atlassian</id>-->
+<!--            <url>https://packages.atlassian.com/maven-external/</url>-->
+<!--            <name>atlassian exteranl repo</name>-->
+<!--            <snapshots>-->
+<!--                <enabled>false</enabled>-->
+<!--            </snapshots>-->
+<!--            <releases>-->
+<!--                <enabled>true</enabled>-->
+<!--            </releases>-->
+<!--        </repository>-->
+<!--    </repositories>-->
 </project>
