@@ -1,16 +1,6 @@
 === FIPS
 
-When running `crypto` extension on FIPS enabled system the BC-FIPS has to be utilized.
-
-* Exclude all `bc*` dependencies. Example:
-```
-<exclusions>
-    <exclusion>
-        <artifactId>*</artifactId>
-        <groupId>org.bouncycastle</groupId>
-    </exclusion>
-</exclusions>
-```
+When running the `crypto` extension on FIPS enabled system any FIPS-compliant Java Security Provider (such as BC-FIPS) has to be used
 
 * Add dependency wih BouncyCastle implementation for FIPS systems. For example
 ```

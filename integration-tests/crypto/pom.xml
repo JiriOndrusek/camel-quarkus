@@ -99,18 +99,7 @@
             <properties>
                 <cq-security-provider>BCFIPS</cq-security-provider>
             </properties>
-            <!-- Excludes BC and adds bc-fips -->
             <dependencies>
-                <dependency>
-                    <groupId>org.apache.camel.quarkus</groupId>
-                    <artifactId>camel-quarkus-crypto</artifactId>
-                    <exclusions>
-                        <exclusion>
-                            <groupId>org.bouncycastle</groupId>
-                            <artifactId>*</artifactId>
-                        </exclusion>
-                    </exclusions>
-                </dependency>
                 <dependency>
                     <groupId>org.bouncycastle</groupId>
                     <artifactId>bc-fips</artifactId>
