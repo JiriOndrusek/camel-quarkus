@@ -697,6 +697,12 @@
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-crypto</artifactId>
         <version>4.7.0-SNAPSHOT</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>

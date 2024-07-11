@@ -26,7 +26,6 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
-import io.quarkus.deployment.builditem.ExcludeDependencyBuildItem;
 import io.quarkus.deployment.builditem.ShutdownContextBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeReinitializedClassBuildItem;
@@ -39,7 +38,7 @@ public class BouncyCastleSupportProcessor {
 
     SecurityConfig securityConfig;
 
-    @BuildStep(onlyIfNot = BcProviderConfigured.class) //register BC only if no BC* provider is registered
+    @BuildStep(onlyIfNot = BcProviderConfigured.class)
     void produceBouncyCastleProvider(BuildProducer<BouncyCastleProviderBuildItem> bouncyCastleProvider) {
         //register BC if there is no BC or BCFIPS provider in securityConfiguration
         bouncyCastleProvider.produce(new BouncyCastleProviderBuildItem());
@@ -75,14 +74,6 @@ public class BouncyCastleSupportProcessor {
         reinitialized.produce(new RuntimeReinitializedClassBuildItem("java.security.SecureRandom"));
     }
 
-    @BuildStep(onlyIf = FipsProviderConfigured.class)
-    void excludeBc(BuildProducer<ExcludeDependencyBuildItem> excludeDependencies) {
-        //exclude BC in FIPS environment
-        excludeDependencies.produce(new ExcludeDependencyBuildItem("org.bouncycastle", "bcpkix-jdk18on"));
-        excludeDependencies.produce(new ExcludeDependencyBuildItem("org.bouncycastle", "bcbcprov-jdk18on"));
-        excludeDependencies.produce(new ExcludeDependencyBuildItem("org.bouncycastle", "bcutil-jdk18on"));
-    }
-
     /**
      * Indicates whether FIPS provider is registered via quarkus.security.
      */
@@ -107,7 +98,6 @@ public class BouncyCastleSupportProcessor {
         public boolean getAsBoolean() {
             return securityConfig.securityProviders().orElse(Collections.emptySet()).stream()
                     .filter(p -> p.toLowerCase().startsWith("bc")).findAny().isPresent();
-
         }
     }
 
