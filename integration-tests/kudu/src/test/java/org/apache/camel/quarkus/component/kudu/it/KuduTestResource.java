@@ -34,6 +34,9 @@ import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.apache.camel.quarkus.component.kudu.it.kerby.KerbyServer;
 import org.apache.camel.util.CollectionHelper;
 import org.apache.kerby.kerberos.kerb.KrbException;
+import org.apache.kudu.client.HostAndPort;
+import org.apache.kudu.test.KuduTestHarness;
+import org.apache.kudu.test.cluster.MiniKuduCluster;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +49,7 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 
 import static org.apache.camel.quarkus.component.kudu.it.KuduInfrastructureTestHelper.DOCKER_HOST;
 import static org.apache.camel.quarkus.component.kudu.it.KuduInfrastructureTestHelper.KUDU_TABLET_NETWORK_ALIAS;
+import static org.apache.camel.quarkus.component.kudu.it.KuduInfrastructureTestHelper.MASTER_URL;
 import static org.apache.camel.quarkus.component.kudu.it.KuduRoute.KUDU_AUTHORITY_CONFIG_KEY;
 
 public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
@@ -64,11 +68,11 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
 
     private File tmpDir;
 
+    private KuduTestHarness kuduTestHarness;
+
     @Override
     public Map<String, String> start() {
         LOG.info(TestcontainersConfiguration.getInstance().toString());
-
-        Network kuduNetwork = Network.newNetwork();
 
         try {
             //create tmp dir for kerberos server
@@ -104,66 +108,40 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
         } catch (IOException | KrbException e) {
             throw new RuntimeException(e);
         }
-        // Setup the Kudu master server container
-        masterContainer = new GenericContainer<>(KUDU_IMAGE)
-                .withCommand("master")
-                //                .withEnv("MASTER_ARGS", "--unlock_unsafe_flags=true")
-                .withExposedPorts(KUDU_MASTER_RPC_PORT, KUDU_MASTER_HTTP_PORT)
-                .withEnv("MASTER_ARGS", "--unlock_unsafe_flags=true " +
-                        "--rpc_authentication=required " +
-                        "--keytab_file=" + Path.of(tmpDir.getAbsolutePath(), "keytab").toFile().getAbsolutePath())
-                .withNetwork(kuduNetwork)
-                .withNetworkAliases(KUDU_MASTER_NETWORK_ALIAS)
-                .withLogConsumer(new Slf4jLogConsumer(LOG))
-                .waitingFor(Wait.forListeningPort());
-        masterContainer.start();
 
-        // Force host name and port, so that the tablet container is accessible from KuduResource, KuduTest and KuduIT.
-        Consumer<CreateContainerCmd> consumer = cmd -> {
-            Ports portBindings = new Ports();
-            portBindings.bind(ExposedPort.tcp(KUDU_TABLET_RPC_PORT), Ports.Binding.bindPort(KUDU_TABLET_RPC_PORT));
-            portBindings.bind(ExposedPort.tcp(KUDU_TABLET_HTTP_PORT), Ports.Binding.bindPort(KUDU_TABLET_HTTP_PORT));
-            HostConfig hostConfig = HostConfig.newHostConfig()
-                    .withPortBindings(portBindings)
-                    .withNetworkMode(kuduNetwork.getId());
-            cmd.withHostName(KUDU_TABLET_NETWORK_ALIAS).withHostConfig(hostConfig);
-        };
+        kuduTestHarness = new KuduTestHarness(new MiniKuduCluster.MiniKuduClusterBuilder().enableKerberos());
+        try {
+            kuduTestHarness.before();
 
-        // Setup the Kudu tablet server container
-        tabletContainer = new GenericContainer<>(KUDU_IMAGE)
-                .withCommand("tserver")
-                //                .withEnv("TSERVER_ARGS", "--unlock_unsafe_flags=true")
-                .withEnv("TSERVER_ARGS", "--unlock_unsafe_flags=true " +
-                        "--rpc_authentication=required " +
-                        "--keytab_file=" + Path.of(tmpDir.getAbsolutePath(), "keytab").toFile().getAbsolutePath())
-                .withEnv("KUDU_MASTERS", KUDU_MASTER_NETWORK_ALIAS)
-                .withExposedPorts(KUDU_TABLET_RPC_PORT, KUDU_TABLET_HTTP_PORT)
-                .withNetwork(kuduNetwork)
-                .withNetworkAliases(KUDU_TABLET_NETWORK_ALIAS)
-                .withCreateContainerCmdModifier(consumer)
-                .withLogConsumer(new Slf4jLogConsumer(LOG))
-                .waitingFor(Wait.forListeningPort());
-        tabletContainer.start();
+            kuduTestHarness.kinit("testuser");
 
-        // Print interesting Kudu servers connectivity information
-        final String masterRpcAuthority = masterContainer.getHost() + ":"
-                + masterContainer.getMappedPort(KUDU_MASTER_RPC_PORT);
+            HostAndPort masterHP = kuduTestHarness.findLeaderMasterServer();
+            final String masterRpcAuthority = masterHP.getAddress().toString();//getHost() + ":" + masterHP.getPort();
+            LOG.info("Kudu master RPC accessible at " + masterRpcAuthority);
 
-        LOG.info("Kudu master RPC accessible at " + masterRpcAuthority);
-        final String masterHttpAuthority = masterContainer.getHost() + ":"
-                + masterContainer.getMappedPort(KUDU_MASTER_HTTP_PORT);
-        LOG.info("Kudu master HTTP accessible at " + masterHttpAuthority);
-        final String tServerRpcAuthority = tabletContainer.getHost() + ":"
-                + tabletContainer.getMappedPort(KUDU_TABLET_RPC_PORT);
-        LOG.info("Kudu tablet server RPC accessible at " + tServerRpcAuthority);
-        final String tServerHttpAuthority = tabletContainer.getHost() + ":"
-                + tabletContainer.getMappedPort(KUDU_TABLET_HTTP_PORT);
-        LOG.info("Kudu tablet server HTTP accessible at " + tServerHttpAuthority);
+            final String masterHttpAuthority =
+                    kuduTestHarness.getMasterServers().get(0).getHost() + ":" +
+                            kuduTestHarness.getMasterServers().get(0).getPort();
 
-        return CollectionHelper.mapOf(
-                KUDU_AUTHORITY_CONFIG_KEY, masterRpcAuthority,
-                DOCKER_HOST, DockerClientFactory.instance().dockerHostIpAddress());
+            LOG.info("Kudu master HTTP accessible at " + masterHttpAuthority);
+            final String tServerRpcAuthority = tabletContainer.getHost() + ":"
+                    + tabletContainer.getMappedPort(KUDU_TABLET_RPC_PORT);
+            LOG.info("Kudu tablet server RPC accessible at " + tServerRpcAuthority);
+            final String tServerHttpAuthority = tabletContainer.getHost() + ":"
+                    + tabletContainer.getMappedPort(KUDU_TABLET_HTTP_PORT);
+            LOG.info("Kudu tablet server HTTP accessible at " + tServerHttpAuthority);
+
+            return CollectionHelper.mapOf(
+                    KUDU_AUTHORITY_CONFIG_KEY, kuduTestHarness.getMasterAddressesAsString(),
+                    DOCKER_HOST, DockerClientFactory.instance().dockerHostIpAddress(),
+                    MASTER_URL, kuduTestHarness.getMasterAddressesAsString());
+            //                        SERVER_URL, tServerRpcAuthority);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
+
 
     @Override
     public void stop() {

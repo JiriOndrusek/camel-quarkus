@@ -333,6 +333,17 @@
                 <version>${kerby.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.apache.kudu</groupId>
+                <artifactId>kudu-test-utils</artifactId>
+                <version>${kudu.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.kudu</groupId>
+                <artifactId>kudu-binary</artifactId>
+                <version>${kudu.version}</version>
+                <classifier>linux-x86_64</classifier>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.pdfbox</groupId>
                 <artifactId>pdfbox</artifactId>
                 <version>${pdfbox.version}</version>
