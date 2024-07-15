@@ -47,7 +47,7 @@ class KuduTest {
     @BeforeAll
     static void setup() {
         String authority = ConfigProvider.getConfig().getValue(KUDU_AUTHORITY_CONFIG_KEY, String.class);
-        client = new KuduClient.KuduClientBuilder(authority).build();
+        client = new KuduClient.KuduClientBuilder(authority).requireAuthentication(true).build();
     }
 
     @AfterAll
