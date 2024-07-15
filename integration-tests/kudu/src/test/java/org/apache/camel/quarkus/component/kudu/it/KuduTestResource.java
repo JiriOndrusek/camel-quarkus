@@ -42,6 +42,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import static org.apache.camel.quarkus.component.kudu.it.KuduInfrastructureTestHelper.DOCKER_HOST;
@@ -99,7 +100,8 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
             //start kerby
             kdcServer = new KerbyServer();
             kdcServer.startServer(tmpDir.getAbsolutePath());
-            kdcServer.createPrincipal(tmpDir.getAbsolutePath(), "testuser", "testpassword");
+            kdcServer.createPrincipal("kudu-master", "kudu/kudu-master.example.com@EXAMPLE.COM", "changeit");
+            kdcServer.createPrincipal("kudu-tserver", "kukudu/kudu-tserver.example.com@EXAMPLE.COM", "changeit");
 
         } catch (IOException | KrbException e) {
             throw new RuntimeException(e);
@@ -107,11 +109,14 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
         // Setup the Kudu master server container
         masterContainer = new GenericContainer<>(KUDU_IMAGE)
                 .withCommand("master")
-                //                .withEnv("MASTER_ARGS", "--unlock_unsafe_flags=true")
+                //                                .withEnv("MASTER_ARGS", "--unlock_unsafe_flags=true")
+                .withCopyToContainer(MountableFile.forClasspathResource("kudu-master"),
+                        "/home/kudu/kudu-master")
                 .withExposedPorts(KUDU_MASTER_RPC_PORT, KUDU_MASTER_HTTP_PORT)
                 .withEnv("MASTER_ARGS", "--unlock_unsafe_flags=true " +
                         "--rpc_authentication=required " +
-                        "--keytab_file=" + Path.of(tmpDir.getAbsolutePath(), "keytab").toFile().getAbsolutePath())
+                        "--keytab_file=/home/kudu/kudu-master" +
+                        "--stderrthreshold=0")
                 .withNetwork(kuduNetwork)
                 .withNetworkAliases(KUDU_MASTER_NETWORK_ALIAS)
                 .withLogConsumer(new Slf4jLogConsumer(LOG))
@@ -132,10 +137,15 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
         // Setup the Kudu tablet server container
         tabletContainer = new GenericContainer<>(KUDU_IMAGE)
                 .withCommand("tserver")
-                //                .withEnv("TSERVER_ARGS", "--unlock_unsafe_flags=true")
+                //                                .withEnv("TSERVER_ARGS", "--unlock_unsafe_flags=true")
+                .withCopyToContainer(MountableFile.forClasspathResource("kudu-tserver"),
+                        "/home/kudu/kudu-tserver")
+                .withExposedPorts(KUDU_MASTER_RPC_PORT, KUDU_MASTER_HTTP_PORT)
                 .withEnv("TSERVER_ARGS", "--unlock_unsafe_flags=true " +
                         "--rpc_authentication=required " +
-                        "--keytab_file=" + Path.of(tmpDir.getAbsolutePath(), "keytab").toFile().getAbsolutePath())
+                        "--keytab_file=/home/kudu/kudu-tserver" +
+                        "--stderrthreshold=0")
+                .withExposedPorts(KUDU_MASTER_RPC_PORT, KUDU_MASTER_HTTP_PORT)
                 .withEnv("KUDU_MASTERS", KUDU_MASTER_NETWORK_ALIAS)
                 .withExposedPorts(KUDU_TABLET_RPC_PORT, KUDU_TABLET_HTTP_PORT)
                 .withNetwork(kuduNetwork)

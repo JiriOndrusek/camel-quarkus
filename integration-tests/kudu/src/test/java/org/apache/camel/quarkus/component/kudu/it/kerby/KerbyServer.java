@@ -2,6 +2,7 @@ package org.apache.camel.quarkus.component.kudu.it.kerby;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import org.apache.kerby.kerberos.kerb.KrbException;
 import org.apache.kerby.kerberos.kerb.server.SimpleKdcServer;
@@ -25,7 +26,8 @@ public class KerbyServer {
         }
     }
 
-    public void createPrincipal(String workDir, String principal, String password) throws KrbException {
-        kdcServer.createAndExportPrincipals(new File(workDir, "keytab"), principal, password);
+    public void createPrincipal(String name, String principal, String password) throws KrbException {
+        kdcServer.createPrincipal(principal, password);
+        kdcServer.exportPrincipal(principal, Path.of(kdcServer.getClass().getResource("/").getFile(), name).toFile());
     }
 }
