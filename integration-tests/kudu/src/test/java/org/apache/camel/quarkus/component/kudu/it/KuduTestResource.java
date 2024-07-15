@@ -42,7 +42,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import static org.apache.camel.quarkus.component.kudu.it.KuduInfrastructureTestHelper.DOCKER_HOST;
@@ -107,16 +106,20 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
             throw new RuntimeException(e);
         }
         // Setup the Kudu master server container
-        masterContainer = new GenericContainer<>(KUDU_IMAGE)
+        String dockerImageName = "docker.io/library/c_kudu:1.17.02";
+//        String dockerImageName = KUDU_IMAGE;
+        masterContainer = new GenericContainer<>(dockerImageName)
                 .withCommand("master")
-                //                                .withEnv("MASTER_ARGS", "--unlock_unsafe_flags=true")
-                .withCopyToContainer(MountableFile.forClasspathResource("kudu-master"),
-                        "/home/kudu/kudu-master")
                 .withExposedPorts(KUDU_MASTER_RPC_PORT, KUDU_MASTER_HTTP_PORT)
+//                                                .withEnv("MASTER_ARGS", "--unlock_unsafe_flags=true")
                 .withEnv("MASTER_ARGS", "--unlock_unsafe_flags=true " +
                         "--rpc_authentication=required " +
-                        "--keytab_file=/home/kudu/kudu-master" +
-                        "--stderrthreshold=0")
+                        "--keytab_file=/home/kudu/kudu-master " +
+                        "--allow_world_readable_credentials=true " + //https://kudu.apache.org/docs/prior_release_notes.html
+                        "--stderrthreshold=0 " +
+                        "--principal=kudu/kudu-master.example.com@EXAMPLE.COM")
+//                .withEnv("ENV KUDU_MASTER_PRINCIPAL", "kudu/kudu-master.example.com@EXAMPLE.COM")
+//                //                .withCommand("chmod", "0640", "/home/kudu/kudu-master")
                 .withNetwork(kuduNetwork)
                 .withNetworkAliases(KUDU_MASTER_NETWORK_ALIAS)
                 .withLogConsumer(new Slf4jLogConsumer(LOG))
@@ -135,16 +138,20 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
         };
 
         // Setup the Kudu tablet server container
-        tabletContainer = new GenericContainer<>(KUDU_IMAGE)
+        tabletContainer = new GenericContainer<>(dockerImageName)
                 .withCommand("tserver")
                 //                                .withEnv("TSERVER_ARGS", "--unlock_unsafe_flags=true")
-                .withCopyToContainer(MountableFile.forClasspathResource("kudu-tserver"),
-                        "/home/kudu/kudu-tserver")
+                //                .withCopyToContainer(MountableFile.forClasspathResource("kudu-tserver"),
+                //                        "/home/kudu/kudu-tserver")
                 .withExposedPorts(KUDU_MASTER_RPC_PORT, KUDU_MASTER_HTTP_PORT)
                 .withEnv("TSERVER_ARGS", "--unlock_unsafe_flags=true " +
                         "--rpc_authentication=required " +
-                        "--keytab_file=/home/kudu/kudu-tserver" +
-                        "--stderrthreshold=0")
+                        "--keytab_file=/home/kudu/kudu-tserver " +
+                        "--allow_world_readable_credentials=true " + //https://kudu.apache.org/docs/prior_release_notes.html
+                        "--stderrthreshold=0 " +
+                        "--principal=")
+                .withEnv("ENV KUDU_TSERVER_PRINCIPAL", "kudu/kudu-tserver.example.com@EXAMPLE.COM")
+                //                .withCommand("chmod", "0640", "/home/kudu/kudu-tserver")
                 .withExposedPorts(KUDU_MASTER_RPC_PORT, KUDU_MASTER_HTTP_PORT)
                 .withEnv("KUDU_MASTERS", KUDU_MASTER_NETWORK_ALIAS)
                 .withExposedPorts(KUDU_TABLET_RPC_PORT, KUDU_TABLET_HTTP_PORT)
@@ -153,7 +160,7 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
                 .withCreateContainerCmdModifier(consumer)
                 .withLogConsumer(new Slf4jLogConsumer(LOG))
                 .waitingFor(Wait.forListeningPort());
-        tabletContainer.start();
+//        tabletContainer.start();
 
         // Print interesting Kudu servers connectivity information
         final String masterRpcAuthority = masterContainer.getHost() + ":"
