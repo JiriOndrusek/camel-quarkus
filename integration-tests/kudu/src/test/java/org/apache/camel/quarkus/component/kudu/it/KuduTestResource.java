@@ -17,6 +17,12 @@
 
 package org.apache.camel.quarkus.component.kudu.it;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -25,7 +31,9 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Ports;
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
+import org.apache.camel.quarkus.component.kudu.it.kerby.KerbyServer;
 import org.apache.camel.util.CollectionHelper;
+import org.apache.kerby.kerberos.kerb.KrbException;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,17 +60,58 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
     private GenericContainer<?> masterContainer;
     private GenericContainer<?> tabletContainer;
 
+    private KerbyServer kdcServer;
+
+    private File tmpDir;
+
     @Override
     public Map<String, String> start() {
         LOG.info(TestcontainersConfiguration.getInstance().toString());
 
         Network kuduNetwork = Network.newNetwork();
 
+        try {
+            //create tmp dir for kerberos server
+            tmpDir = Files.createTempDirectory("camel-quarkus-kudu-test").toFile();
+
+            Path path = Paths.get(tmpDir.getAbsolutePath()).resolve("krb5.conf");
+            if (!path.toFile().exists()) {
+                Files.createFile(path);
+            }
+
+            String content = "" +
+                    "[libdefaults]\n" +
+                    "    default_realm = EXAMPLE.COM\n" +
+                    "    udp_preference_limit = 1\n" +
+                    "\n" +
+                    "[realms]\n" +
+                    "    EXAMPLE.COM = {\n" +
+                    "        kdc = localhost:60088\n" +
+                    "        admin_server = localhost:60088\n" +
+                    "    }\n" +
+                    "\n" +
+                    "[domain_realm]\n" +
+                    "    .example.com = EXAMPLE.COM\n" +
+                    "    example.com = EXAMPLE.COM";
+
+            Files.write(path, content.getBytes());
+
+            //start kerby
+            kdcServer = new KerbyServer();
+            kdcServer.startServer(tmpDir.getAbsolutePath());
+            kdcServer.createPrincipal(tmpDir.getAbsolutePath(), "testuser", "testpassword");
+
+        } catch (IOException | KrbException e) {
+            throw new RuntimeException(e);
+        }
         // Setup the Kudu master server container
         masterContainer = new GenericContainer<>(KUDU_IMAGE)
                 .withCommand("master")
-                .withEnv("MASTER_ARGS", "--unlock_unsafe_flags=true")
+                //                .withEnv("MASTER_ARGS", "--unlock_unsafe_flags=true")
                 .withExposedPorts(KUDU_MASTER_RPC_PORT, KUDU_MASTER_HTTP_PORT)
+                .withEnv("MASTER_ARGS", "--unlock_unsafe_flags=true " +
+                        "--rpc_authentication=required " +
+                        "--keytab_file=" + Path.of(tmpDir.getAbsolutePath(), "keytab").toFile().getAbsolutePath())
                 .withNetwork(kuduNetwork)
                 .withNetworkAliases(KUDU_MASTER_NETWORK_ALIAS)
                 .withLogConsumer(new Slf4jLogConsumer(LOG))
@@ -83,7 +132,10 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
         // Setup the Kudu tablet server container
         tabletContainer = new GenericContainer<>(KUDU_IMAGE)
                 .withCommand("tserver")
-                .withEnv("TSERVER_ARGS", "--unlock_unsafe_flags=true")
+                //                .withEnv("TSERVER_ARGS", "--unlock_unsafe_flags=true")
+                .withEnv("TSERVER_ARGS", "--unlock_unsafe_flags=true " +
+                        "--rpc_authentication=required " +
+                        "--keytab_file=" + Path.of(tmpDir.getAbsolutePath(), "keytab").toFile().getAbsolutePath())
                 .withEnv("KUDU_MASTERS", KUDU_MASTER_NETWORK_ALIAS)
                 .withExposedPorts(KUDU_TABLET_RPC_PORT, KUDU_TABLET_HTTP_PORT)
                 .withNetwork(kuduNetwork)
@@ -124,6 +176,22 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
             }
         } catch (Exception ex) {
             LOG.error("An issue occurred while stopping the KuduTestResource", ex);
+        }
+
+        try {
+            if (kdcServer != null) {
+                kdcServer.stopServer();
+            }
+
+            if (tmpDir != null && tmpDir.exists()) {
+                Files.walk(tmpDir.toPath())
+                        .sorted(Comparator.reverseOrder())
+                        .map(Path::toFile)
+                        .forEach(File::delete);
+            }
+        } catch (KrbException | IOException ex) {
+            LOG.error(String.format("An issue occurred while stopping the KerbyServer. Tmp folder '%s' was not deleted.",
+                    tmpDir.getAbsolutePath()), ex);
         }
     }
 }
