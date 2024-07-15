@@ -32,7 +32,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.apache.camel.quarkus.component.kudu.it.KuduRoute.KUDU_AUTHORITY_CONFIG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -46,7 +45,7 @@ class KuduTest {
 
     @BeforeAll
     static void setup() {
-        String authority = ConfigProvider.getConfig().getValue(KUDU_AUTHORITY_CONFIG_KEY, String.class);
+        String authority = ConfigProvider.getConfig().getValue(KuduRoute.KUDU_AUTHORITY_CONFIG_KEY, String.class);
         client = new KuduClient.KuduClientBuilder(authority)/*.requireAuthentication(true)*/.build();
     }
 

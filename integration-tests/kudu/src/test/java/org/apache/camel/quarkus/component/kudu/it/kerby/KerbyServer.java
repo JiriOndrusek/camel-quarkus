@@ -15,7 +15,7 @@ public class KerbyServer {
         kdcServer.setWorkDir(new File(workDir));
         kdcServer.setKdcHost("localhost");
         kdcServer.setKdcRealm("EXAMPLE.COM");
-        kdcServer.setKdcPort(60088); // Non-standard port to avoid conflicts
+        kdcServer.setAllowUdp(false);
         kdcServer.init();
         kdcServer.start();
     }
@@ -28,6 +28,6 @@ public class KerbyServer {
 
     public void createPrincipal(String name, String principal, String password) throws KrbException {
         kdcServer.createPrincipal(principal, password);
-        kdcServer.exportPrincipal(principal, Path.of(kdcServer.getClass().getResource("/").getFile(), name).toFile());
+        kdcServer.exportPrincipal(principal, Path.of(kdcServer.getClass().getResource("/kerby").getFile(), name).toFile());
     }
 }
