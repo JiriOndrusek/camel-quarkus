@@ -17,6 +17,11 @@
 
 package org.apache.camel.quarkus.component.kudu.it;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -25,7 +30,9 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Ports;
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
+import org.apache.camel.quarkus.component.kudu.it.kerby.KerbyServer;
 import org.apache.camel.util.CollectionHelper;
+import org.apache.kerby.kerberos.kerb.KrbException;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +41,9 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.utility.MountableFile;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 import static org.apache.camel.quarkus.component.kudu.it.KuduInfrastructureTestHelper.DOCKER_HOST;
 import static org.apache.camel.quarkus.component.kudu.it.KuduInfrastructureTestHelper.KUDU_TABLET_NETWORK_ALIAS;
@@ -51,18 +61,64 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
     private GenericContainer<?> masterContainer;
     private GenericContainer<?> tabletContainer;
 
+    private KerbyServer kdcServer;
+
+    private String kerbyDir;
+
     @Override
     public Map<String, String> start() {
         Network kuduNetwork = Network.newNetwork();
 
-        // Setup the Kudu master server container
-        masterContainer = new GenericContainer<>(KUDU_IMAGE)
+        try {
+            //create tmp dir for kerberos server
+            kerbyDir = getClass().getResource("/kerby").getFile();
+
+            //start kerby
+            kdcServer = new KerbyServer();
+            kdcServer.startServer(kerbyDir);
+
+            kdcServer.createPrincipal("kudu/user@EXAMPLE.COM", "changeit");
+            kdcServer.createPrincipal("localhost@EXAMPLE.COM", "changeit");
+            kdcServer.createPrincipal("kudu/localhost@EXAMPLE.COM", "changeit");
+            kdcServer.createPrincipal("kudu@EXAMPLE.COM", "changeit");
+            kdcServer.createPrincipal("kudu/" + KUDU_MASTER_NETWORK_ALIAS + "@EXAMPLE.COM",
+                    "changeit"); //equivalent to hostname of container
+            kdcServer.createPrincipal("kudu/" + KUDU_TABLET_NETWORK_ALIAS + "@EXAMPLE.COM",
+                    "changeit");
+            kdcServer.exportPrincipals("principals.keytab");
+
+            //replace "localhost" in krb5.conf with ip address
+            Path path = Path.of(getClass().getResource("/kerby/krb5.conf").getFile());
+            Charset charset = StandardCharsets.UTF_8;
+
+            String content = new String(Files.readAllBytes(path), charset);
+            content = content.replaceAll("localhost", IpAddressHelper.getHost4Address());
+            //            content = content.replaceAll("default_realm = EXAMPLE.COM",
+            //                    "default_realm = EXAMPLE.COM\n   allow_weak_crypto = true");
+            Files.write(path, content.getBytes(charset));
+
+        } catch (IOException | KrbException e) {
+            throw new RuntimeException(e);
+        }
+
+        masterContainer = new GenericContainer<>(new ImageFromDockerfile()
+                .withDockerfile(Path.of(this.getClass().getResource("/kerby/Dockerfile").getFile())))
                 .withCommand("master")
-                .withEnv("MASTER_ARGS", "--unlock_unsafe_flags=true")
                 .withExposedPorts(KUDU_MASTER_RPC_PORT, KUDU_MASTER_HTTP_PORT)
+                .withEnv("MASTER_ARGS", "--unlock_unsafe_flags=true " +
+                        "--rpc_authentication=required " +
+                        "--use_system_auth_to_local=true " +
+                        "--keytab_file=/home/kudu/principals.keytab " +
+                        "--allow_world_readable_credentials=true " + //https://kudu.apache.org/docs/prior_release_notes.html
+                        "--stderrthreshold=0 ")
+                .withCopyToContainer(MountableFile.forClasspathResource("kerby/krb5.conf"),
+                        "/etc/krb5.conf")
                 .withNetwork(kuduNetwork)
                 .withNetworkAliases(KUDU_MASTER_NETWORK_ALIAS)
                 .withLogConsumer(new Slf4jLogConsumer(LOG))
+                .withCreateContainerCmdModifier(cmd -> {
+                    cmd.withHostName(KUDU_MASTER_NETWORK_ALIAS);
+                })
                 .waitingFor(Wait.forListeningPort());
         masterContainer.start();
 
@@ -78,9 +134,19 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
         };
 
         // Setup the Kudu tablet server container
-        tabletContainer = new GenericContainer<>(KUDU_IMAGE)
+        tabletContainer = new GenericContainer<>(new ImageFromDockerfile()
+                .withDockerfile(Path.of(this.getClass().getResource("/kerby/Dockerfile").getFile())))
                 .withCommand("tserver")
-                .withEnv("TSERVER_ARGS", "--unlock_unsafe_flags=true")
+                .withExposedPorts(KUDU_MASTER_RPC_PORT, KUDU_MASTER_HTTP_PORT)
+                .withEnv("TSERVER_ARGS", "--unlock_unsafe_flags=true " +
+                        "--rpc_authentication=required " +
+                        "--use_system_auth_to_local=true " +
+                        "--keytab_file=/home/kudu/principals.keytab " +
+                        "--allow_world_readable_credentials=true " + //https://kudu.apache.org/docs/prior_release_notes.html
+                        "--stderrthreshold=0 ")
+                .withCopyToContainer(MountableFile.forClasspathResource("kerby/krb5.conf"),
+                        "/etc/krb5.conf")
+                .withExposedPorts(KUDU_MASTER_RPC_PORT, KUDU_MASTER_HTTP_PORT)
                 .withEnv("KUDU_MASTERS", KUDU_MASTER_NETWORK_ALIAS)
                 .withExposedPorts(KUDU_TABLET_RPC_PORT, KUDU_TABLET_HTTP_PORT)
                 .withNetwork(kuduNetwork)
@@ -93,6 +159,13 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
         // Print interesting Kudu servers connectivity information
         final String masterRpcAuthority = masterContainer.getHost() + ":"
                 + masterContainer.getMappedPort(KUDU_MASTER_RPC_PORT);
+        //        final String masterRpcAuthority;
+        //        try {
+        //            masterRpcAuthority = IpAddressHelper.getHost4Address() + ":"
+        //                         + masterContainer.getMappedPort(KUDU_MASTER_RPC_PORT);
+        //        } catch (SocketException e) {
+        //            throw new RuntimeException(e);
+        //        }
 
         LOG.info("Kudu master RPC accessible at " + masterRpcAuthority);
         final String masterHttpAuthority = masterContainer.getHost() + ":"
@@ -121,6 +194,14 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
             }
         } catch (Exception ex) {
             LOG.error("An issue occurred while stopping the KuduTestResource", ex);
+        }
+
+        try {
+            if (kdcServer != null) {
+                kdcServer.stopServer();
+            }
+        } catch (KrbException ex) {
+            LOG.error("An issue occurred while stopping the KerbyServer.", ex);
         }
     }
 }

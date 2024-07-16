@@ -64,6 +64,7 @@ import org.jboss.logging.Logger;
 public class KuduInfrastructureTestHelper {
 
     static final String KUDU_TABLET_NETWORK_ALIAS = "kudu-tserver";
+    static final String KUDU_MASTER_NETWORK_ALIAS = "kudu-master";
     static final String DOCKER_HOST = "docker.host";
     private static final Logger LOG = Logger.getLogger(KuduInfrastructureTestHelper.class);
 

@@ -1,0 +1,122 @@
+[INFO] Running org.apache.camel.quarkus.component.kudu.it.KuduTest
+2024-07-16 10:49:49,011 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (pool-3-thread-1) TestcontainersConfiguration(userProperties={docker.client.strategy=org.testcontainers.dockerclient.RootlessDockerClientProviderStrategy, testcontainers.reuse.enable=false}, classpathProperties={}, environment={PATH=/home/jondruse/.jbang/bin:/home/jondruse/.jbang/bin:/home/jondruse/.sdkman/candidates/quarkus/current/bin:/home/jondruse/.sdkman/candidates/mvnd/current/bin:/home/jondruse/.sdkman/candidates/jbang/current/bin:/home/jondruse/.sdkman/candidates/java/current/bin:/home/jondruse/.sdkman/candidates/groovy/current/bin:/home/jondruse/.local/bin:/home/jondruse/bin:/home/jondruse/dev/crc/crc-linux-2.10.2-amd64_4_11_7/:/home/jondruse/dev/graal/graalvm-ee-java17-22.3.2/bin:/home/jondruse/dev/maven/apache-maven-3.9.2//bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/var/lib/snapd/snap/bin, IMSETTINGS_MODULE=none, XAUTHORITY=/run/lightdm/jondruse/xauthority, HISTCONTROL=ignoredups, XMODIFIERS=@im=none, GDMSESSION=cinnamon, XDG_DATA_DIRS=/home/jondruse/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share:/usr/share:/var/lib/snapd/desktop, DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus, TERMINATOR_DBUS_PATH=/net/tenshu/Terminator2, XDG_ACTIVATION_TOKEN=cinnamon/Terminator/6795-0-localhost.localdomain_TIME244191, XDG_CURRENT_DESKTOP=X-Cinnamon, MAVEN_HOME=/home/jondruse/dev/maven/apache-maven-3.9.2, MAIL=/var/spool/mail/jondruse, QUARKUS_HOME=/home/jondruse/.sdkman/candidates/quarkus/current, SSH_AGENT_PID=6580, COLORTERM=truecolor, SDKMAN_DIR=/home/jondruse/.sdkman, GRAALVM_HOME=/home/jondruse/dev/graal/graalvm-ee-java17-22.3.2/, SESSION_MANAGER=local/unix:@/tmp/.ICE-unix/6343,unix/unix:/tmp/.ICE-unix/6343, LOGNAME=jondruse, PWD=/home/jondruse/git/community/camel-quarkus/integration-tests/kudu, GJS_DEBUG_TOPICS=JS ERROR;JS LOG, LESSOPEN=||/usr/bin/lesspipe.sh %s, SHELL=/bin/bash, GIO_LAUNCHED_DESKTOP_FILE=/usr/share/applications/terminator.desktop, SDKMAN_CANDIDATES_API=https://api.sdkman.io/2, OLDPWD=/home/jondruse/git/community/camel-quarkus/integration-tests/kudu, GNOME_DESKTOP_SESSION_ID=this-is-deprecated, XDG_SESSION_PATH=/org/freedesktop/DisplayManager/Session0, DEBUGINFOD_URLS=https://debuginfod.fedoraproject.org/ , IMSETTINGS_INTEGRATE_DESKTOP=yes, MVND_HOME=/home/jondruse/.sdkman/candidates/mvnd/current, LS_COLORS=rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=01;37;41:su=37;41:sg=30;43:ca=00:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.avif=01;35:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=01;36:*.au=01;36:*.flac=01;36:*.m4a=01;36:*.mid=01;36:*.midi=01;36:*.mka=01;36:*.mp3=01;36:*.mpc=01;36:*.ogg=01;36:*.ra=01;36:*.wav=01;36:*.oga=01;36:*.opus=01;36:*.spx=01;36:*.xspf=01;36:*~=00;90:*#=00;90:*.bak=00;90:*.crdownload=00;90:*.dpkg-dist=00;90:*.dpkg-new=00;90:*.dpkg-old=00;90:*.dpkg-tmp=00;90:*.old=00;90:*.orig=00;90:*.part=00;90:*.rej=00;90:*.rpmnew=00;90:*.rpmorig=00;90:*.rpmsave=00;90:*.swp=00;90:*.tmp=00;90:*.ucf-dist=00;90:*.ucf-new=00;90:*.ucf-old=00;90:, XDG_SESSION_DESKTOP=cinnamon, SHLVL=1, QT_IM_MODULE=xim, HISTSIZE=30, JAVA_HOME=/home/jondruse/.sdkman/candidates/java/current, JBANG_HOME=/home/jondruse/.sdkman/candidates/jbang/current, TERM=xterm-256color, XDG_SEAT_PATH=/org/freedesktop/DisplayManager/Seat0, LANG=en_US.UTF-8, XDG_SESSION_ID=3, MOZ_GMP_PATH=/usr/lib64/mozilla/plugins/gmp-gmpopenh264/system-installed, XDG_SESSION_TYPE=x11, DISPLAY=:0, GROOVY_HOME=/home/jondruse/.sdkman/candidates/groovy/current, CINNAMON_VERSION=6.0.4, MAVEN_CMD_LINE_ARGS= clean test -f integration-tests/kudu, _=/home/jondruse/.sdkman/candidates/java/17.0.9-tem/bin/java, XDG_SESSION_CLASS=user, SDKMAN_CANDIDATES_DIR=/home/jondruse/.sdkman/candidates, GTK3_MODULES=xapp-gtk3-module, CVS_RSH=ssh, XDG_GREETER_DATA_DIR=/var/lib/lightdm-data/jondruse, TERMINATOR_DBUS_NAME=net.tenshu.Terminator21a9d5db22c73a993ff0b42f64b396873, DESKTOP_SESSION=cinnamon, MAVEN_PROJECTBASEDIR=/home/jondruse/git/community/camel-quarkus, SDKMAN_PLATFORM=linuxx64, USER=jondruse, GIO_LAUNCHED_DESKTOP_FILE_PID=7703, VTE_VERSION=7602, GJS_DEBUG_OUTPUT=stderr, TERMINATOR_UUID=urn:uuid:dba5350d-11fd-454f-9203-efacfbc826fe, XDG_SEAT=seat0, SSH_AUTH_SOCK=/run/user/1000/keyring/ssh, EDITOR=/usr/bin/nano, HOSTNAME=fedora, KDEDIRS=/usr, XDG_RUNTIME_DIR=/run/user/1000, XDG_VTNR=1, HOME=/home/jondruse})
+2024-07-16 10:49:49,158 INFO  [org.tes.ima.PullPolicy] (pool-3-thread-1) Image pull policy will be performed by: DefaultPullPolicy()
+2024-07-16 10:49:49,159 INFO  [org.tes.uti.ImageNameSubstitutor] (pool-3-thread-1) Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+2024-07-16 10:49:49,302 INFO  [org.tes.doc.DockerClientProviderStrategy] (pool-3-thread-1) Loaded org.testcontainers.dockerclient.RootlessDockerClientProviderStrategy from ~/.testcontainers.properties, will try it first
+2024-07-16 10:49:49,468 INFO  [org.tes.doc.DockerClientProviderStrategy] (pool-3-thread-1) Found Docker environment with Rootless Docker accessed via Unix socket (/run/user/1000/docker.sock)
+2024-07-16 10:49:49,469 INFO  [org.tes.DockerClientFactory] (pool-3-thread-1) Docker host IP address is localhost
+2024-07-16 10:49:49,482 INFO  [org.tes.DockerClientFactory] (pool-3-thread-1) Connected to docker: 
+  Server Version: 26.1.4
+  API Version: 1.45
+  Operating System: Fedora Linux 40 (Forty)
+  Total Memory: 31844 MB
+2024-07-16 10:49:49,518 INFO  [tc.tes.7.0] (pool-3-thread-1) Creating container for image: testcontainers/ryuk:0.7.0
+2024-07-16 10:49:49,625 INFO  [tc.tes.7.0] (pool-3-thread-1) Container testcontainers/ryuk:0.7.0 is starting: 69ca735d1237d8563ddfcc65260ecfb47c505d2eeaa285d3eb749c3f5e02fff4
+2024-07-16 10:49:49,885 INFO  [tc.tes.7.0] (pool-3-thread-1) Container testcontainers/ryuk:0.7.0 started in PT0.367383641S
+2024-07-16 10:49:49,889 INFO  [org.tes.uti.RyukResourceReaper] (pool-3-thread-1) Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+2024-07-16 10:49:49,889 INFO  [org.tes.DockerClientFactory] (pool-3-thread-1) Checking the system...
+2024-07-16 10:49:49,890 INFO  [org.tes.DockerClientFactory] (pool-3-thread-1) ✔︎ Docker server version should be at least 1.6.0
+2024-07-16 10:49:49,926 INFO  [org.tes.ima.bui.ImageFromDockerfile] (pool-3-thread-1) Pre-emptively checking local images for 'apache/kudu:1.17.0', referenced via a Dockerfile. If not available, it will be pulled.
+2024-07-16 10:49:49,941 INFO  [org.tes.ima.bui.ImageFromDockerfile] (pool-3-thread-1) Transferred 0 bytes to Docker daemon
+2024-07-16 10:49:57,042 INFO  [tc.localhost/testcontainers/nws6tv9cav7cryxf:latest] (pool-3-thread-1) Creating container for image: localhost/testcontainers/nws6tv9cav7cryxf:latest
+2024-07-16 10:49:57,130 INFO  [tc.localhost/testcontainers/nws6tv9cav7cryxf:latest] (pool-3-thread-1) Container localhost/testcontainers/nws6tv9cav7cryxf:latest is starting: c1c7a1b9882b38f63b25f0d7a6fd8f42db016f9e40654d905cfd2cadd78796e6
+2024-07-16 10:49:57,371 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: W20240716 08:49:57.368649     1 flags.cc:413] Enabled unsafe flag: --use_hybrid_clock=false
+2024-07-16 10:49:57,371 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: W20240716 08:49:57.370051     1 flags.cc:413] Enabled unsafe flag: --allow_world_readable_credentials=true
+2024-07-16 10:49:57,373 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: I20240716 08:49:57.372818     1 master_runner.cc:381] Master server non-default flags:
+2024-07-16 10:49:57,373 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: --use_hybrid_clock=false
+2024-07-16 10:49:57,373 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: --fs_data_dirs=/var/lib/kudu/master
+2024-07-16 10:49:57,373 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: --fs_wal_dir=/var/lib/kudu/master
+2024-07-16 10:49:57,373 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: --hive_metastore_kerberos_principal=kudu/kudu-master.example.com@EXAMPLE.COM
+2024-07-16 10:49:57,373 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: --keytab_file=/home/kudu/kudu-master
+2024-07-16 10:49:57,373 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: --principal=kudu/kudu-master.example.com@EXAMPLE.COM
+2024-07-16 10:49:57,374 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: --use_system_auth_to_local=false
+2024-07-16 10:49:57,374 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: --allow_world_readable_credentials=true
+2024-07-16 10:49:57,374 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: --rpc_authentication=required
+2024-07-16 10:49:57,374 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: --webserver_doc_root=/opt/kudu/www
+2024-07-16 10:49:57,374 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: --heap_profile_path=/tmp/kudu.1
+2024-07-16 10:49:57,374 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: --unlock_unsafe_flags=true
+2024-07-16 10:49:57,374 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: --stderrthreshold=0
+2024-07-16 10:49:57,374 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: 
+2024-07-16 10:49:57,375 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: Master server version:
+2024-07-16 10:49:57,375 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: kudu 1.17.0
+2024-07-16 10:49:57,375 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: revision a3cd1ef13
+2024-07-16 10:49:57,375 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: build type RELEASE
+2024-07-16 10:49:57,375 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: built by None at 08 Sep 2023 09:41:27 UTC on localhost
+2024-07-16 10:49:57,375 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: I20240716 08:49:57.373451     1 minidump.cc:246] Setting minidump size limit to 20M
+2024-07-16 10:49:57,375 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: I20240716 08:49:57.373795     1 env_posix.cc:2189] Not raising this process' open files per process limit of 524288; it is already as high as it can go
+2024-07-16 10:49:57,375 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: I20240716 08:49:57.373994     1 file_cache.cc:492] Constructed file cache file cache with capacity 209714
+2024-07-16 10:49:57,521 INFO  [org.apa.ker.ker.ker.ser.req.AsRequest] (pool-4-thread-1) AS_REQ ISSUE: authtime 1721119797517,kudu/kudu-master.example.com@EXAMPLE.COM for krbtgt/EXAMPLE.COM@EXAMPLE.COM
+2024-07-16 10:49:57,537 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: I20240716 08:49:57.535707     1 init.cc:364] Logged in from keytab as kudu/kudu-master.example.com@EXAMPLE.COM (short username kudu)
+2024-07-16 10:49:57,537 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: I20240716 08:49:57.537215     1 webserver.cc:408] Webserver started at http://0.0.0.0:8051/ using document root /opt/kudu/www and password file <none>
+2024-07-16 10:49:57,537 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: I20240716 08:49:57.537346     1 fs_manager.cc:337] Metadata directory not provided
+2024-07-16 10:49:57,538 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: I20240716 08:49:57.537422     1 fs_manager.cc:343] Using write-ahead log directory (fs_wal_dir) as metadata directory
+2024-07-16 10:49:57,538 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: I20240716 08:49:57.537539     1 server_base.cc:767] This appears to be a new deployment of Kudu; creating new FS layout
+2024-07-16 10:49:57,543 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: I20240716 08:49:57.542924     1 fs_manager.cc:773] Generated new instance metadata in path /var/lib/kudu/master/instance:
+2024-07-16 10:49:57,543 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: uuid: "f24017d9f47547fdb30d4ce8075a2675"
+2024-07-16 10:49:57,543 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: format_stamp: "Formatted at 2024-07-16 08:49:57 on c1c7a1b9882b"
+2024-07-16 10:49:57,547 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: I20240716 08:49:57.547644     1 fs_manager.cc:653] Time spent creating directory manager: real 0.004s	user 0.000s	sys 0.000s
+2024-07-16 10:49:57,548 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: W20240716 08:49:57.548658     1 env_posix.cc:2237] Path /var/lib/kudu/master has permissions 755 which are less restrictive than current umask value 077: resetting permissions to 700
+2024-07-16 10:49:57,549 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: I20240716 08:49:57.548936    32 log_block_manager.cc:3175] Time spent loading block containers with low live blocks: real 0.000s	user 0.000s	sys 0.000s
+2024-07-16 10:49:57,549 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: I20240716 08:49:57.549036     1 fs_manager.cc:551] Time spent opening block manager: real 0.000s	user 0.000s	sys 0.000s
+2024-07-16 10:49:57,549 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: I20240716 08:49:57.549082     1 fs_manager.cc:579] Opened local filesystem: /var/lib/kudu/master
+2024-07-16 10:49:57,549 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: uuid: "f24017d9f47547fdb30d4ce8075a2675"
+2024-07-16 10:49:57,549 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: format_stamp: "Formatted at 2024-07-16 08:49:57 on c1c7a1b9882b"
+2024-07-16 10:49:57,549 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: I20240716 08:49:57.549135     1 fs_report.cc:352] FS layout report
+2024-07-16 10:49:57,549 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: --------------------
+2024-07-16 10:49:57,549 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: wal directory: /var/lib/kudu/master
+2024-07-16 10:49:57,550 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: metadata directory: /var/lib/kudu/master
+2024-07-16 10:49:57,550 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: 1 data directories: /var/lib/kudu/master/data
+2024-07-16 10:49:57,550 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: Total live blocks: 0
+2024-07-16 10:49:57,550 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: Total live bytes: 0
+2024-07-16 10:49:57,550 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: Total live bytes (after alignment): 0
+2024-07-16 10:49:57,550 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: Total number of LBM containers: 0 (0 full)
+2024-07-16 10:49:57,550 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: Did not check for missing blocks
+2024-07-16 10:49:57,550 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: Did not check for orphaned blocks
+2024-07-16 10:49:57,550 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: Total full LBM containers with extra space: 0 (0 repaired)
+2024-07-16 10:49:57,551 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: Total full LBM container extra space in bytes: 0 (0 repaired)
+2024-07-16 10:49:57,551 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: Total incomplete LBM containers: 0 (0 repaired)
+2024-07-16 10:49:57,551 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: Total LBM partial records: 0 (0 repaired)
+2024-07-16 10:49:57,643 INFO  [org.apa.cam.qua.com.kud.it.KuduTestResource] (docker-java-stream-1058483022) STDERR: Runtime error: GSSAPI/Kerberos not properly configured: No key table entry found matching kudu/c1c7a1b9882b@
+2024-07-16 10:49:57,653 WARN  [org.tes.con.wai.int.InternalCommandPortListeningCheck] (testcontainers-wait-0) An exception while executing the internal check: Container.ExecResult(exitCode=137, stdout=/proc/net/tcp:   1: 00000000:1F73 00000000:0000 0A 00000000:00000000 00:00000000 00000000  1000        0 1327284 1 000000008ef950a4 100 0 0 10 0                   
+, stderr=/bin/sh: 1: nc: not found
+/bin/bash: connect: Connection refused
+/bin/bash: /dev/tcp/localhost/8051: Connection refused
+/bin/sh: 1: nc: not found
+/bin/bash: connect: Connection refused
+/bin/bash: /dev/tcp/localhost/8051: Connection refused
+/bin/sh: 1: nc: not found
+/bin/bash: connect: Connection refused
+/bin/bash: /dev/tcp/localhost/7051: Connection refused
+)
+2024-07-16 10:49:57,654 INFO  [tc.localhost/testcontainers/nws6tv9cav7cryxf:latest] (pool-3-thread-1) Container localhost/testcontainers/nws6tv9cav7cryxf:latest started in PT0.612744967S
+2024-07-16 10:49:58,525 INFO  [org.apa.ker.ker.ker.ser.imp.DefaultInternalKdcServerImpl] (main) Default Internal kdc server stopped.
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 14.10 s <<< FAILURE! -- in org.apache.camel.quarkus.component.kudu.it.KuduTest
+[ERROR] org.apache.camel.quarkus.component.kudu.it.KuduTest -- Time elapsed: 14.10 s <<< ERROR!
+java.lang.RuntimeException: java.lang.RuntimeException: Unable to start Quarkus test resource class org.apache.camel.quarkus.component.kudu.it.KuduTestResource
+	at io.quarkus.test.junit.QuarkusTestExtension.throwBootFailureException(QuarkusTestExtension.java:642)
+	at io.quarkus.test.junit.QuarkusTestExtension.interceptBeforeAllMethod(QuarkusTestExtension.java:710)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	Suppressed: java.lang.NullPointerException: Cannot invoke "io.quarkus.bootstrap.app.RunningQuarkusApplication.getClassLoader()" because "io.quarkus.test.junit.QuarkusTestExtension.runningQuarkusApplication" is null
+		at io.quarkus.test.junit.QuarkusTestExtension.runExtensionMethod(QuarkusTestExtension.java:919)
+		at io.quarkus.test.junit.QuarkusTestExtension.runExtensionMethod(QuarkusTestExtension.java:911)
+		at io.quarkus.test.junit.QuarkusTestExtension.interceptAfterAllMethod(QuarkusTestExtension.java:905)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+		at java.base/java.util.Collections$UnmodifiableCollection.forEach(Collections.java:1092)
+		... 1 more
+Caused by: java.lang.RuntimeException: Unable to start Quarkus test resource class org.apache.camel.quarkus.component.kudu.it.KuduTestResource
+	at io.quarkus.test.common.TestResourceManager$TestResourceEntryRunnable.run(TestResourceManager.java:506)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(CompletableFuture.java:1804)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: java.lang.NullPointerException: Cannot invoke "org.testcontainers.containers.GenericContainer.start()" because "this.tabletContainer" is null
+	at org.apache.camel.quarkus.component.kudu.it.KuduTestResource.start(KuduTestResource.java:147)
+	at io.quarkus.test.common.TestResourceManager$TestResourceEntryRunnable.run(TestResourceManager.java:500)
+	... 4 more
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Errors: 
+[ERROR]   KuduTest » Runtime java.lang.RuntimeException: Unable to start Quarkus test resource class org.apache.camel.quarkus.component.kudu.it.KuduTestResource
+[INFO] 

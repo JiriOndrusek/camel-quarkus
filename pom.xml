@@ -191,6 +191,7 @@
         <htmlunit-driver.version>4.13.0</htmlunit-driver.version>
         <microsoft.graph.version>6.48.0</microsoft.graph.version>
         <microsoft.graph.auth.version>0.3.0</microsoft.graph.auth.version>
+        <kerby.version>2.0.3</kerby.version><!-- Kudu -->
         <pdfbox.version>${pdfbox-version}</pdfbox.version>
         <sshd.version>2.12.1</sshd.version><!-- @sync io.quarkus:quarkus-bom:${quarkus.version} dep:org.apache.sshd:sshd-common -->
         <unboundid-ldapsdk.version>7.0.3</unboundid-ldapsdk.version>
