@@ -78,9 +78,9 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
             //start kerby
             kdcServer = new KerbyServer();
             kdcServer.startServer(kerbyDir);
-            kdcServer.createAndExportPrincipals("kudu-master", "kudu/kudu-master.example.com@EXAMPLE.COM", "changeit");
-            kdcServer.createAndExportPrincipals("host-master", "kudu/host-master@EXAMPLE.COM", "changeit"); //equivalent to hostname of container
-            kdcServer.createAndExportPrincipals("kudu-tserver", "kudu/kudu-tserver.example.com@EXAMPLE.COM", "changeit");
+            kdcServer.createAndExportPrincipals(KUDU_MASTER_NETWORK_ALIAS, "kudu/" + KUDU_MASTER_NETWORK_ALIAS + "@EXAMPLE.COM", "changeit"); //equivalent to hostname of container
+            kdcServer.createAndExportPrincipals(KUDU_TABLET_NETWORK_ALIAS,  "kudu/" + KUDU_TABLET_NETWORK_ALIAS + "@EXAMPLE.COM", "changeit");
+            kdcServer.createAndExportPrincipals("kudu-user",  "kudu/user@EXAMPLE.COM", "changeit");
 
             //replace "localhost" in krb5.conf with ip address
             Path path = Path.of(getClass().getResource("/kerby/krb5.conf").getFile());
@@ -100,21 +100,17 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
                 .withExposedPorts(KUDU_MASTER_RPC_PORT, KUDU_MASTER_HTTP_PORT)
                 .withEnv("MASTER_ARGS", "--unlock_unsafe_flags=true " +
                         "--rpc_authentication=required " +
-                        "--keytab_file=/home/kudu/host-master " +
-//                        "--hive_metastore_kerberos_principal=kudu/kudu-master.example.com@EXAMPLE.COM " +
-                        "--use_system_auth_to_local=false " +
+                        "--keytab_file=/home/kudu/" + KUDU_MASTER_NETWORK_ALIAS + " " +
                         "--allow_world_readable_credentials=true " + //https://kudu.apache.org/docs/prior_release_notes.html
                         "--stderrthreshold=0 "
-//                        "--principal=kudu/kudu-master.example.com@EXAMPLE.COM" //host-name is used by default
                 )
                 .withCopyToContainer(MountableFile.forClasspathResource("kerby/krb5.conf"),
-//                .withCopyToContainer(MountableFile.forClasspathResource("krb5.conf"),
                         "/etc/krb5.conf")
                 .withNetwork(kuduNetwork)
                 .withNetworkAliases(KUDU_MASTER_NETWORK_ALIAS)
                 .withLogConsumer(new Slf4jLogConsumer(LOG))
                 .withCreateContainerCmdModifier(cmd -> {
-                    cmd.withHostName("host-master");
+                    cmd.withHostName(KUDU_TABLET_NETWORK_ALIAS);
                 })
                 .waitingFor(Wait.forListeningPort());
         masterContainer.start();
@@ -131,17 +127,17 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
         };
 
         // Setup the Kudu tablet server container
-        masterContainer = new GenericContainer<>(new ImageFromDockerfile()
+        tabletContainer = new GenericContainer<>(new ImageFromDockerfile()
                 .withDockerfile(Path.of(this.getClass().getResource("/kerby/Dockerfile").getFile())))
                 .withCommand("tserver")
                 .withExposedPorts(KUDU_MASTER_RPC_PORT, KUDU_MASTER_HTTP_PORT)
                 .withEnv("TSERVER_ARGS", "--unlock_unsafe_flags=true " +
                         "--rpc_authentication=required " +
-                        "--keytab_file=/home/kudu/kudu-tserver " +
+                        "--keytab_file=/home/kudu/" + KUDU_TABLET_NETWORK_ALIAS + " " +
                         "--allow_world_readable_credentials=true " + //https://kudu.apache.org/docs/prior_release_notes.html
-                        "--stderrthreshold=0 " +
-                        "--principal=kudu/kudu-tserver.example.com@EXAMPLE.COM")
-                .withEnv("ENV KUDU_TSERVER_PRINCIPAL", "kudu/kudu-tserver.example.com@EXAMPLE.COM")
+                        "--stderrthreshold=0 ")
+                .withCopyToContainer(MountableFile.forClasspathResource("kerby/krb5.conf"),
+                        "/etc/krb5.conf")
                 .withExposedPorts(KUDU_MASTER_RPC_PORT, KUDU_MASTER_HTTP_PORT)
                 .withEnv("KUDU_MASTERS", KUDU_MASTER_NETWORK_ALIAS)
                 .withExposedPorts(KUDU_TABLET_RPC_PORT, KUDU_TABLET_HTTP_PORT)
