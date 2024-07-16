@@ -16,12 +16,20 @@
  */
 package org.apache.camel.quarkus.component.kudu.it;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import org.apache.camel.quarkus.component.kudu.it.kerby.KerbyClient;
+import org.apache.kerby.kerberos.kerb.type.ticket.KrbTicket;
+import org.apache.kerby.kerberos.kerb.type.ticket.TgtTicket;
+import org.apache.kerby.kerberos.kerb.type.ticket.Ticket;
+import org.apache.kudu.client.Client;
 import org.apache.kudu.client.KuduClient;
 import org.apache.kudu.client.KuduException;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -32,7 +40,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.apache.camel.quarkus.component.kudu.it.KuduRoute.KUDU_AUTHORITY_CONFIG_KEY;
+import javax.security.auth.Subject;
+import javax.security.auth.kerberos.KerberosTicket;
+import javax.security.auth.login.AppConfigurationEntry;
+import javax.security.auth.login.Configuration;
+import javax.security.auth.login.LoginContext;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -46,8 +59,33 @@ class KuduTest {
 
     @BeforeAll
     static void setup() {
-        String authority = ConfigProvider.getConfig().getValue(KUDU_AUTHORITY_CONFIG_KEY, String.class);
-        client = new KuduClient.KuduClientBuilder(authority).build();
+        String authority = ConfigProvider.getConfig().getValue(KuduRoute.KUDU_AUTHORITY_CONFIG_KEY, String.class);
+        client = new KuduClient.KuduClientBuilder(authority).requireAuthentication(true).build();
+        // Obtain Kerberos credentials programmatically
+        TgtTicket ticket = null;
+        try {
+            ticket = new KerbyClient(KuduTest.class.getResource("/kerby").getFile()).authenticate("kudu/user", "changeit");
+
+            Configuration.setConfiguration(new Configuration() {
+                @Override
+                public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
+                    Map<String, String> options = new HashMap<>();
+                    options.put("debug", "true");
+                    return new AppConfigurationEntry[] { new AppConfigurationEntry("com.sun.security.auth.module.Krb5LoginModule",
+                            AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, options) };
+                }
+            });
+            LoginContext lc = new LoginContext("kerberos", new NamePasswordCbHandler("kudu/user@EXAMPLE.COM", "changeit".toCharArray()));
+            lc.login();
+            Subject subj = lc.getSubject();
+            Set<Object> privateCredentials = subj.getPrivateCredentials();
+            assertEquals(1, privateCredentials.size());
+            KerberosTicket kt = (KerberosTicket) privateCredentials.iterator().next();
+
+            client.importAuthenticationCredentials(kt.getEncoded());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @AfterAll

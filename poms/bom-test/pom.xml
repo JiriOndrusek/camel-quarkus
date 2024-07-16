@@ -300,6 +300,43 @@
                 <artifactId>ftplet-api</artifactId>
                 <version>${ftpserver.version}</version>
             </dependency>
+            <!-- kerby (Java minimal kerberos) -->
+            <dependency>
+                <groupId>org.apache.kerby</groupId>
+                <artifactId>kerb-client</artifactId>
+                <version>${kerby.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.kerby</groupId>
+                <artifactId>kerby-kdc</artifactId>
+                <version>${kerby.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.kerby</groupId>
+                <artifactId>kerb-simplekdc</artifactId>
+                <version>${kerby.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.wildfly.client</groupId>
+                        <artifactId>wildfly-client-config</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.kerby</groupId>
+                <artifactId>kerb-client</artifactId>
+                <version>${kerby.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.kerby</groupId>
+                <artifactId>token-provider</artifactId>
+                <version>${kerby.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.kerby</groupId>
+                <artifactId>kerb-client</artifactId>
+                <version>${kerby.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.pdfbox</groupId>
                 <artifactId>pdfbox</artifactId>
