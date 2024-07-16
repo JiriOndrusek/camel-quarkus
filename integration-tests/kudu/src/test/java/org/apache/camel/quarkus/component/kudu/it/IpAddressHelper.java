@@ -16,14 +16,6 @@
  */
 package org.apache.camel.quarkus.component.kudu.it;
 
-import io.quarkus.runtime.StartupEvent;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.event.Observes;
-import org.eclipse.microprofile.config.ConfigProvider;
-import org.jboss.logging.Logger;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -32,16 +24,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class IpAddressHelper {
 
-
-    public static String  getHost4Address() throws SocketException {
-        List<Inet4Address> inet4 = getInet4Addresses();
-        return !inet4.isEmpty()
-                ? inet4.get(0).getHostAddress()
-                : null;
+    public static String getHost4Address() throws SocketException {
+//        List<Inet4Address> inet4 = getInet4Addresses();
+//        return !inet4.isEmpty()
+//                ? inet4.get(0).getHostAddress()
+//                : null;
+                return "192.168.2.150";
     }
 
     private static List<Inet4Address> getInet4Addresses() throws SocketException {
@@ -52,7 +43,7 @@ public class IpAddressHelper {
             Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
             for (InetAddress inetAddress : Collections.list(inetAddresses)) {
                 if (inetAddress instanceof Inet4Address && !inetAddress.isLoopbackAddress()) {
-                    ret.add((Inet4Address)inetAddress);
+                    ret.add((Inet4Address) inetAddress);
                 }
             }
         }

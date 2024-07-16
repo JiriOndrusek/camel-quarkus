@@ -2,7 +2,6 @@ package org.apache.camel.quarkus.component.kudu.it.kerby;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.nio.file.Path;
 
 import org.apache.camel.quarkus.component.kudu.it.IpAddressHelper;
@@ -17,8 +16,8 @@ public class KerbyServer {
         kdcServer.setWorkDir(new File(workDir));
         kdcServer.setKdcHost(IpAddressHelper.getHost4Address());
         kdcServer.setKdcRealm("EXAMPLE.COM");
-//        kdcServer.setKdcUdpPort(10089);
-//        kdcServer.setKdcTcpPort(35202);
+//        kdcServer.setKdcUdpPort(35201);
+//        kdcServer.setKdcTcpPort(35201);
         kdcServer.init();
         kdcServer.start();
     }
@@ -29,8 +28,12 @@ public class KerbyServer {
         }
     }
 
-    public void createPrincipal(String name, String principal, String password) throws KrbException {
+    public void createPrincipal(String principal, String password) throws KrbException {
         kdcServer.createPrincipal(principal, password);
-        kdcServer.exportPrincipal(principal, Path.of(kdcServer.getClass().getResource("/kerby").getFile(), name).toFile());
+    }
+
+    public void createAndExportPrincipals(String name, String principal, String password) throws KrbException {
+        kdcServer.createPrincipal(principal, password);
+        kdcServer.exportPrincipal(principal, Path.of(getClass().getResource("/kerby").getFile(), name).toFile());
     }
 }
