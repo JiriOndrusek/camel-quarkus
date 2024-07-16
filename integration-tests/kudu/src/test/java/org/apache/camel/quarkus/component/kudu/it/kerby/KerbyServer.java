@@ -17,8 +17,8 @@ public class KerbyServer {
         kdcServer.setWorkDir(new File(workDir));
         kdcServer.setKdcHost(IpAddressHelper.getHost4Address());
         kdcServer.setKdcRealm("EXAMPLE.COM");
-        kdcServer.setKdcUdpPort(10089);
-        kdcServer.setKdcTcpPort(35202);
+//        kdcServer.setKdcUdpPort(10089);
+//        kdcServer.setKdcTcpPort(35202);
         kdcServer.init();
         kdcServer.start();
     }

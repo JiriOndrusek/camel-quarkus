@@ -18,6 +18,9 @@
 package org.apache.camel.quarkus.component.kudu.it;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -68,19 +71,27 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
 
         Network kuduNetwork = Network.newNetwork();
 
-                try {
-                    //create tmp dir for kerberos server
-                    kerbyDir = getClass().getResource("/kerby").getFile();
+        try {
+            //create tmp dir for kerberos server
+            kerbyDir = getClass().getResource("/kerby").getFile();
 
-                    //start kerby
-                    kdcServer = new KerbyServer();
-                    kdcServer.startServer(kerbyDir);
-                    kdcServer.createPrincipal("kudu-master", "kudu/kudu-master.example.com@EXAMPLE.COM", "changeit");
-                    kdcServer.createPrincipal("kudu-tserver", "kudu/kudu-tserver.example.com@EXAMPLE.COM", "changeit");
+            //start kerby
+            kdcServer = new KerbyServer();
+            kdcServer.startServer(kerbyDir);
+            kdcServer.createPrincipal("kudu-master", "kudu/kudu-master.example.com@EXAMPLE.COM", "changeit");
+            kdcServer.createPrincipal("kudu-tserver", "kudu/kudu-tserver.example.com@EXAMPLE.COM", "changeit");
 
-                } catch (IOException | KrbException e) {
-                    throw new RuntimeException(e);
-                }
+            //replace "localhost" in krb5.conf with ip address
+            Path path = Path.of(getClass().getResource("/kerby/krb5.conf").getFile());
+            Charset charset = StandardCharsets.UTF_8;
+
+            String content = new String(Files.readAllBytes(path), charset);
+            content = content.replaceAll("localhost", IpAddressHelper.getHost4Address());
+            Files.write(path, content.getBytes(charset));
+
+        } catch (IOException | KrbException e) {
+            throw new RuntimeException(e);
+        }
 
         masterContainer = new GenericContainer<>(new ImageFromDockerfile()
                 .withDockerfile(Path.of(this.getClass().getResource("/kerby/Dockerfile").getFile())))
@@ -94,7 +105,7 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
                                         "--allow_world_readable_credentials=true " + //https://kudu.apache.org/docs/prior_release_notes.html
                                         "--stderrthreshold=0 " +
                                         "--principal=kudu/kudu-master.example.com@EXAMPLE.COM")
-                .withCopyToContainer(MountableFile.forClasspathResource("krb5.conf"),
+                .withCopyToContainer(MountableFile.forClasspathResource("kerby/krb5.conf"),
                         "/etc/krb5.conf")
                 .withNetwork(kuduNetwork)
                 .withNetworkAliases(KUDU_MASTER_NETWORK_ALIAS)
