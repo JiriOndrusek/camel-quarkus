@@ -39,6 +39,7 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import static org.apache.camel.quarkus.component.kudu.it.KuduInfrastructureTestHelper.DOCKER_HOST;
@@ -67,30 +68,34 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
 
         Network kuduNetwork = Network.newNetwork();
 
-        try {
-            //create tmp dir for kerberos server
-            kerbyDir = getClass().getResource("/kerby").getFile();
+                try {
+                    //create tmp dir for kerberos server
+                    kerbyDir = getClass().getResource("/kerby").getFile();
 
-            //start kerby
-            kdcServer = new KerbyServer();
-            kdcServer.startServer(kerbyDir);
-            kdcServer.createPrincipal("kudu-master", "kudu/kudu-master.example.com@EXAMPLE.COM", "changeit");
-            kdcServer.createPrincipal("kudu-tserver", "kudu/kudu-tserver.example.com@EXAMPLE.COM", "changeit");
+                    //start kerby
+                    kdcServer = new KerbyServer();
+                    kdcServer.startServer(kerbyDir);
+                    kdcServer.createPrincipal("kudu-master", "kudu/kudu-master.example.com@EXAMPLE.COM", "changeit");
+                    kdcServer.createPrincipal("kudu-tserver", "kudu/kudu-tserver.example.com@EXAMPLE.COM", "changeit");
 
-        } catch (IOException | KrbException e) {
-            throw new RuntimeException(e);
-        }
+                } catch (IOException | KrbException e) {
+                    throw new RuntimeException(e);
+                }
 
         masterContainer = new GenericContainer<>(new ImageFromDockerfile()
                 .withDockerfile(Path.of(this.getClass().getResource("/kerby/Dockerfile").getFile())))
                 .withCommand("master")
                 .withExposedPorts(KUDU_MASTER_RPC_PORT, KUDU_MASTER_HTTP_PORT)
                 .withEnv("MASTER_ARGS", "--unlock_unsafe_flags=true " +
-                        "--rpc_authentication=required " +
-                        "--keytab_file=/home/kudu/kudu-master " +
-                        "--allow_world_readable_credentials=true " + //https://kudu.apache.org/docs/prior_release_notes.html
-                        "--stderrthreshold=0 " +
-                        "--principal=kudu/kudu-master.example.com@EXAMPLE.COM")
+                                        "--rpc_authentication=required " +
+                                        "--keytab_file=/home/kudu/kudu-master " +
+                                        "--hive_metastore_kerberos_principal=kudu/kudu-master.example.com@EXAMPLE.COM " +
+                                        "--use_system_auth_to_local=false " +
+                                        "--allow_world_readable_credentials=true " + //https://kudu.apache.org/docs/prior_release_notes.html
+                                        "--stderrthreshold=0 " +
+                                        "--principal=kudu/kudu-master.example.com@EXAMPLE.COM")
+                .withCopyToContainer(MountableFile.forClasspathResource("krb5.conf"),
+                        "/etc/krb5.conf")
                 .withNetwork(kuduNetwork)
                 .withNetworkAliases(KUDU_MASTER_NETWORK_ALIAS)
                 .withLogConsumer(new Slf4jLogConsumer(LOG))

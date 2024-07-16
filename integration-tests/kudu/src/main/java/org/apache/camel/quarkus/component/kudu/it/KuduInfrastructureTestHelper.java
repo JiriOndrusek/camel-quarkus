@@ -21,7 +21,9 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.concurrent.ConcurrentHashMap;
 
+import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.logging.Logger;
 
@@ -65,10 +67,10 @@ public class KuduInfrastructureTestHelper {
     static final String DOCKER_HOST = "docker.host";
     private static final Logger LOG = Logger.getLogger(KuduInfrastructureTestHelper.class);
 
-    //    void onStart(@Observes StartupEvent ev) {
-    //        LOG.info("Attempting to override the kudu tablet server hostname resolution on application startup");
-    //        KuduInfrastructureTestHelper.overrideTabletServerHostnameResolution();
-    //    }
+        void onStart(@Observes StartupEvent ev) {
+            LOG.info("Attempting to override the kudu tablet server hostname resolution on application startup");
+            KuduInfrastructureTestHelper.overrideTabletServerHostnameResolution();
+        }
 
     public static void overrideTabletServerHostnameResolution() {
         try {

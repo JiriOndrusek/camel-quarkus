@@ -2,8 +2,10 @@ package org.apache.camel.quarkus.component.kudu.it.kerby;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.nio.file.Path;
 
+import org.apache.camel.quarkus.component.kudu.it.IpAddressHelper;
 import org.apache.kerby.kerberos.kerb.KrbException;
 import org.apache.kerby.kerberos.kerb.server.SimpleKdcServer;
 
@@ -13,9 +15,10 @@ public class KerbyServer {
     public void startServer(String workDir) throws KrbException, IOException {
         kdcServer = new SimpleKdcServer();
         kdcServer.setWorkDir(new File(workDir));
-        kdcServer.setKdcHost("localhost");
+        kdcServer.setKdcHost(IpAddressHelper.getHost4Address());
         kdcServer.setKdcRealm("EXAMPLE.COM");
-        kdcServer.setAllowUdp(false);
+        kdcServer.setKdcUdpPort(10089);
+        kdcServer.setKdcTcpPort(35202);
         kdcServer.init();
         kdcServer.start();
     }
