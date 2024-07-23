@@ -29,7 +29,10 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import me.escoffier.certs.Format;
+import me.escoffier.certs.junit5.Certificate;
 import org.apache.camel.component.splunk.ProducerType;
+import org.apache.camel.quarkus.test.support.certificate.TestCertificates;
 import org.apache.camel.quarkus.test.support.splunk.SplunkConstants;
 import org.apache.camel.quarkus.test.support.splunk.SplunkTestResource;
 import org.eclipse.microprofile.config.Config;
@@ -42,6 +45,9 @@ import org.testcontainers.shaded.org.awaitility.Awaitility;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.is;
 
+@TestCertificates(certificates = {
+        @Certificate(name = "splunk", formats = {
+                Format.PEM, Format.PKCS12 }, password = "password") })
 @QuarkusTest
 @QuarkusTestResource(SplunkTestResource.class)
 class SplunkTest {
