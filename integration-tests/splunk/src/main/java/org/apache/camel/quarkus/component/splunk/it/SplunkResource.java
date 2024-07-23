@@ -41,6 +41,9 @@ import org.apache.camel.component.splunk.SplunkComponent;
 import org.apache.camel.component.splunk.SplunkConfiguration;
 import org.apache.camel.component.splunk.event.SplunkEvent;
 import org.apache.camel.quarkus.test.support.splunk.SplunkConstants;
+import org.apache.camel.support.jsse.KeyManagersParameters;
+import org.apache.camel.support.jsse.KeyStoreParameters;
+import org.apache.camel.support.jsse.SSLContextParameters;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @Path("/splunk")
@@ -69,6 +72,7 @@ public class SplunkResource {
     SplunkComponent splunk() {
         SplunkComponent component = new SplunkComponent();
         component.setSplunkConfigurationFactory(parameters -> new SplunkConfiguration());
+        component.setSslContextParameters(createServerSSLContextParameters());
         return component;
     }
 
@@ -80,16 +84,16 @@ public class SplunkResource {
 
         if ("savedSearch".equals(mapName)) {
             url = String.format(
-                    "splunk://savedsearch?username=admin&password=changeit&scheme=http&host=%s&port=%d&delay=500&initEarliestTime=-10m&savedsearch=%s",
+                    "splunk://savedsearch?scheme=https&host=%s&port=%d&delay=500&initEarliestTime=-10m&savedsearch=%s",
                     host, port, SAVED_SEARCH_NAME);
         } else if ("normalSearch".equals(mapName)) {
             url = String.format(
-                    "splunk://normal?username=admin&password=changeit&scheme=http&host=%s&port=%d&delay=5000&initEarliestTime=-10s&search="
+                    "splunk://normal?scheme=https&host=%s&port=%d&delay=5000&initEarliestTime=-10s&search="
                             + "search sourcetype=\"SUBMIT\" | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
                     host, port);
         } else {
             url = String.format(
-                    "splunk://realtime?username=admin&password=changeit&scheme=http&host=%s&port=%d&delay=3000&initEarliestTime=rt-10s&latestTime=RAW(rt+40s)&search="
+                    "splunk://realtime?scheme=https&host=%s&port=%d&delay=3000&initEarliestTime=rt-10s&latestTime=RAW(rt+40s)&search="
                             + "search sourcetype=\"STREAM\" | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
                     host, port, ProducerType.STREAM.name());
         }
@@ -138,13 +142,13 @@ public class SplunkResource {
         String url;
         if (ProducerType.TCP == ProducerType.valueOf(producerType)) {
             url = String.format(
-                    "splunk:%s?raw=%b&username=admin&password=changeit&scheme=http&host=%s&port=%d&index=%s&sourceType=%s&source=%s&tcpReceiverLocalPort=%d&tcpReceiverPort=%d",
+                    "splunk:%s?raw=%b&scheme=https&host=%s&port=%d&index=%s&sourceType=%s&source=%s&tcpReceiverLocalPort=%d&tcpReceiverPort=%d",
                     producerType.toLowerCase(), !(message instanceof SplunkEvent), host, port, index, producerType, SOURCE,
                     SplunkConstants.TCP_PORT, tcpPort);
 
         } else {
             url = String.format(
-                    "splunk:%s?raw=%b&scheme=http&host=%s&port=%d&index=%s&sourceType=%s&source=%s",
+                    "splunk:%s?raw=%b&scheme=https&host=%s&port=%d&index=%s&sourceType=%s&source=%s",
                     producerType.toLowerCase(), !(message instanceof SplunkEvent), host, port, index, producerType, SOURCE);
         }
         final String response = producerTemplate.requestBody(url, message, String.class);
@@ -152,5 +156,24 @@ public class SplunkResource {
                 .created(new URI("https://camel.apache.org/"))
                 .entity(response)
                 .build();
+    }
+
+    /**
+     * Creates SSL Context Parameters for the server
+     *
+     * @return
+     */
+    public SSLContextParameters createServerSSLContextParameters() {
+        SSLContextParameters sslContextParameters = new SSLContextParameters();
+
+        KeyManagersParameters keyManagersParameters = new KeyManagersParameters();
+        KeyStoreParameters keyStore = new KeyStoreParameters();
+        keyStore.setPassword("password");
+        keyStore.setResource("certs/splunk-truststore.p12");
+        keyManagersParameters.setKeyPassword("password");
+        keyManagersParameters.setKeyStore(keyStore);
+        sslContextParameters.setKeyManagers(keyManagersParameters);
+
+        return sslContextParameters;
     }
 }

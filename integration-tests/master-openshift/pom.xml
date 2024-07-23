@@ -163,7 +163,7 @@
                                 <phase>integration-test</phase>
                                 <configuration>
                                     <systemPropertyVariables>
-                                        <quarkus.runner>${quarkus.runner}</quarkus.runner>
+                                        <quarkus.runner>${project.build.directory}/quarkus-app/quarkus-run.jar</quarkus.runner>
                                     </systemPropertyVariables>
                                     <environmentVariables>
                                         <!-- Fake KubernetesClusterService so it assumes being run from a pod named leader  -->
