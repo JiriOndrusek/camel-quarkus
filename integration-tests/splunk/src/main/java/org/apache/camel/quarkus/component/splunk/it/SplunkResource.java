@@ -27,7 +27,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -48,8 +47,6 @@ import org.apache.camel.support.jsse.KeyStoreParameters;
 import org.apache.camel.support.jsse.SSLContextParameters;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import javax.net.ssl.SSLContext;
-
 @Path("/splunk")
 @ApplicationScoped
 public class SplunkResource {
@@ -63,15 +60,15 @@ public class SplunkResource {
     @Inject
     ConsumerTemplate consumerTemplate;
 
-//    @ConfigProperty(name = SplunkConstants.PARAM_REMOTE_HOST)
-//    String host;
-    String host = "localhost";
+    @ConfigProperty(name = SplunkConstants.PARAM_REMOTE_HOST)
+    String host;
+    //    String host = "localhost";
 
-//    @ConfigProperty(name = SplunkConstants.PARAM_REMOTE_PORT)
-//    Integer port;
-    Integer port = 32878;
+    @ConfigProperty(name = SplunkConstants.PARAM_REMOTE_PORT)
+    Integer port;
+    //    Integer port = 32878;
 
-//    @ConfigProperty(name = SplunkConstants.PARAM_TCP_PORT)
+    //    @ConfigProperty(name = SplunkConstants.PARAM_TCP_PORT)
     Integer tcpPort;
 
     @Inject
@@ -178,9 +175,9 @@ public class SplunkResource {
 
         KeyManagersParameters keyManagersParameters = new KeyManagersParameters();
         KeyStoreParameters keyStore = new KeyStoreParameters();
-        keyStore.setPassword("password");
-        keyStore.setResource("certs/splunk-truststore.p12");
-        keyManagersParameters.setKeyPassword("password");
+        keyStore.setPassword("changeit");
+        keyStore.setResource("/certs/splunk-truststore.p12");
+        keyManagersParameters.setKeyPassword("changeit");
         keyManagersParameters.setKeyStore(keyStore);
         sslContextParameters.setKeyManagers(keyManagersParameters);
 

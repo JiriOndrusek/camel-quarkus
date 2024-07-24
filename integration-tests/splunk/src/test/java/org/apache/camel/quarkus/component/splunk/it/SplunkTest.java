@@ -25,7 +25,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import io.quarkus.test.common.QuarkusTestResource;
+import javax.net.ssl.SSLContext;
+
+import io.quarkus.test.common.WithTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -33,31 +35,24 @@ import me.escoffier.certs.Format;
 import me.escoffier.certs.junit5.Certificate;
 import org.apache.camel.component.splunk.ProducerType;
 import org.apache.camel.quarkus.test.support.certificate.TestCertificates;
-import org.apache.camel.quarkus.test.support.splunk.SplunkConstants;
-import org.apache.camel.quarkus.test.support.splunk.SplunkTestResource;
 import org.apache.camel.support.jsse.KeyManagersParameters;
 import org.apache.camel.support.jsse.KeyStoreParameters;
 import org.apache.camel.support.jsse.SSLContextParameters;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.org.apache.commons.lang3.RandomStringUtils;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 
-import javax.net.ssl.SSLContext;
-
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.is;
 
-//@TestCertificates(certificates = {
-//        @Certificate(name = "splunk", formats = {
-//                Format.PEM, Format.PKCS12 }, password = "password") })
+@TestCertificates(certificates = {
+        @Certificate(name = "splunk", formats = {
+                Format.PEM, Format.PKCS12 }, password = "changeit") })
 @QuarkusTest
-//@QuarkusTestResource(SplunkTestResource.class)
+@WithTestResource(SplunkTestResource.class)
 class SplunkTest {
 
     private static SSLContext sslContext;
@@ -68,7 +63,7 @@ class SplunkTest {
         KeyManagersParameters keyManagersParameters = new KeyManagersParameters();
         KeyStoreParameters keyStore = new KeyStoreParameters();
         keyStore.setPassword("password");
-        keyStore.setResource("truststore-from-server.jks");
+        keyStore.setResource("tmp/truststore-from-server.jks");
         keyManagersParameters.setKeyPassword("password");
         keyManagersParameters.setKeyStore(keyStore);
         sslContextParameters.setKeyManagers(keyManagersParameters);
@@ -76,10 +71,10 @@ class SplunkTest {
         return sslContextParameters;
     }
 
-//    @BeforeEach
-//    public void before() throws InterruptedException {
-//        TimeUnit.HOURS.sleep(5);
-//    }
+    //    @BeforeEach
+    //    public void before() throws InterruptedException {
+    //        TimeUnit.HOURS.sleep(5);
+    //    }
 
     @Test
     public void testNormalSearchWithSubmitWithRawData() {

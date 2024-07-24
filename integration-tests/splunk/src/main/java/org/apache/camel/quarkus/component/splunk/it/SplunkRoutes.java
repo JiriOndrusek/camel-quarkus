@@ -16,44 +16,37 @@
  */
 package org.apache.camel.quarkus.component.splunk.it;
 
-import jakarta.inject.Named;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.splunk.SplunkComponent;
-import org.apache.camel.support.jsse.KeyManagersParameters;
-import org.apache.camel.support.jsse.KeyStoreParameters;
-import org.apache.camel.support.jsse.SSLContextParameters;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-
-import javax.net.ssl.SSLContext;
 
 public class SplunkRoutes extends RouteBuilder {
-
-    @Named("splunk-global-ssl")
-    SplunkComponent splunkGlobalSsl() throws IllegalAccessException, NoSuchFieldException, InstantiationException {
-        final SplunkComponent splunkComponent = new SplunkComponent();
-        splunkComponent.setCamelContext(getContext());
-        splunkComponent.setUseGlobalSslContextParameters(true);
-        splunkComponent.setSslContextParameters(createServerSSLContextParameters());
-        return splunkComponent;
-    }
-    /**
-     * Creates SSL Context Parameters for the server
-     *
-     * @return
-     */
-    public SSLContextParameters createServerSSLContextParameters() {
-        SSLContextParameters sslContextParameters = new SSLContextParameters();
-
-        KeyManagersParameters keyManagersParameters = new KeyManagersParameters();
-        KeyStoreParameters keyStore = new KeyStoreParameters();
-        keyStore.setPassword("password");
-        keyStore.setResource("truststore-from-server.jks");
-        keyManagersParameters.setKeyPassword("password");
-        keyManagersParameters.setKeyStore(keyStore);
-        sslContextParameters.setKeyManagers(keyManagersParameters);
-        sslContextParameters.setSecureSocketProtocol("TLSv1.2");
-        return sslContextParameters;
-    }
+    //
+    //    @Named("splunk-global-ssl")
+    //    SplunkComponent splunkGlobalSsl() throws IllegalAccessException, NoSuchFieldException, InstantiationException {
+    //        final SplunkComponent splunkComponent = new SplunkComponent();
+    //        splunkComponent.setCamelContext(getContext());
+    //        splunkComponent.setUseGlobalSslContextParameters(true);
+    //        splunkComponent.setSslContextParameters(createServerSSLContextParameters());
+    //        return splunkComponent;
+    //    }
+    //
+    //    /**
+    //     * Creates SSL Context Parameters for the server
+    //     *
+    //     * @return
+    //     */
+    //    public SSLContextParameters createServerSSLContextParameters() {
+    //        SSLContextParameters sslContextParameters = new SSLContextParameters();
+    //
+    //        KeyManagersParameters keyManagersParameters = new KeyManagersParameters();
+    //        KeyStoreParameters keyStore = new KeyStoreParameters();
+    //        keyStore.setPassword("password");
+    //        keyStore.setResource("tmp/truststore-from-server.jks");
+    //        keyManagersParameters.setKeyPassword("password");
+    //        keyManagersParameters.setKeyStore(keyStore);
+    //        sslContextParameters.setKeyManagers(keyManagersParameters);
+    //        sslContextParameters.setSecureSocketProtocol("TLSv1.2");
+    //        return sslContextParameters;
+    //    }
 
     @Override
     public void configure() throws Exception {
