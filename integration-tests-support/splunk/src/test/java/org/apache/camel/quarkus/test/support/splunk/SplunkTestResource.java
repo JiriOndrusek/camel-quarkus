@@ -26,7 +26,6 @@ import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.MountableFile;
 
@@ -43,8 +42,16 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
 
     private GenericContainer<?> container;
 
+    private boolean ssl;
+
+    @Override
+    public void init(Map<String, String> initArgs) {
+        ssl = Boolean.parseBoolean(initArgs.getOrDefault("ssl", "false"));
+    }
+
     @Override
     public Map<String, String> start() {
+
         try {
             container = new GenericContainer<>(SPLUNK_IMAGE_NAME)
                     .withExposedPorts(REMOTE_PORT, SplunkConstants.TCP_PORT, WEB_PORT, HEC_PORT)
@@ -53,47 +60,42 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
                     .withEnv("SPLUNK_HEC_TOKEN", HEC_TOKEN)
                     .withEnv("SPLUNK_LICENSE_URI", "Free")
                     .withEnv("TZ", TimeZone.getDefault().getID())
-                    .withLogConsumer(new Slf4jLogConsumer(LOG))
-                    .withCopyToContainer(MountableFile.forClasspathResource("certs/splunk.crt"),
-                            "/tmp/defaults/server.pem")
-                    .withCopyToContainer(MountableFile.forClasspathResource("certs/splunk-ca.crt"),
-                            "/tmp/defaults/cacert.pem")
+                    //                    .withLogConsumer(new Slf4jLogConsumer(LOG))
                     .waitingFor(
                             Wait.forLogMessage(".*Ansible playbook complete.*\\n", 1)
                                     .withStartupTimeout(Duration.ofMinutes(5)));
+
+            if (ssl) {
+                container.withCopyToContainer(MountableFile.forClasspathResource("certs/splunk.crt"),
+                        "/tmp/defaults/server.pem")
+                        .withCopyToContainer(MountableFile.forClasspathResource("certs/splunk-ca.crt"),
+                                "/tmp/defaults/cacert.pem");
+            }
+
+            LOG.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.");
+            LOG.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.");
+            LOG.info(">>>>>>>>>>> starting with ssl: " + ssl + ">>>>>>>>>.");
+            LOG.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.");
+            LOG.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.");
 
             container.start();
 
             container.execInContainer("sudo", "sed", "-i", "s/allowRemoteLogin=requireSetPassword/allowRemoteLogin=always/",
                     "/opt/splunk/etc/system/default/server.conf");
-            //            container.execInContainer("sudo", "sed", "-i", "s/enableSplunkdSSL = true/enableSplunkdSSL = false/",
-            //                    "/opt/splunk/etc/system/default/server.conf");
             container.execInContainer("sudo", "sed", "-i", "s/minFreeSpace = 5000/minFreeSpace = 100/",
                     "/opt/splunk/etc/system/default/server.conf");
-            //            container.copyFileFromContainer("/opt/splunk/etc/auth/server.pem",
-            //                    Path.of(getClass().getResource("/").getFile()).resolve("server.pem").toFile().getPath());
 
-            //ssl
-            //            container.withCopyToContainer(MountableFile.forClasspathResource("certs/splunk.crt"),
-            //                    "//opt/splunk/etc/auth/splunk.crt");
-            //            container.withCopyToContainer(MountableFile.forClasspathResource("certs/splunk-ca.crt"),
-            //                    "//opt/splunk/etc/auth/splunk-ca.crt");
-            //            container.execInContainer("sudo", "sed", "-i",
-            //                    "s,serverCert = $SPLUNK_HOME\\/etc\\/auth\\/server.pem,serverCert = $SPLUNK_HOME\\/etc\\/auth\\/splunk.crt",
-            //                    "/opt/splunk/etc/system/default/server.conf");
-            //            container.execInContainer("sudo", "sed", "-i",
-            //                    "s,caCertFile = $SPLUNK_HOME\\/etc\\/auth\\/cacert.pem,caCertFile = $SPLUNK_HOME\\/etc\\/auth\\/splunk-ca.crt",
-            //                    "/opt/splunk/etc/system/default/server.conf");
-
-            //            container.copyFileFromContainer("/opt/splunk/etc/auth/cacert.pem",
-            //                    Path.of(getClass().getResource("/").getFile()).resolve("cacert.pem").toFile().getPath());
-
-            container.execInContainer("sudo", "sed", "-i",
-                    "s,serverCert = $SPLUNK_HOME\\/etc\\/auth\\/server.pem,serverCert =  \\/tmp\\/defaults\\/server.pem",
-                    "/opt/splunk/etc/system/default/server.conf");
-            container.execInContainer("sudo", "sed", "-i",
-                    "s,caCertFile = $SPLUNK_HOME\\/etc\\/auth\\/cacert.pem,caCertFile = \\/tmp\\/defaults\\/cacert.pem",
-                    "/opt/splunk/etc/system/default/server.conf");
+            if (ssl) {
+                container.execInContainer("sudo", "sed", "-i",
+                        "s,serverCert = $SPLUNK_HOME\\/etc\\/auth\\/server.pem,serverCert =  \\/tmp\\/defaults\\/server.pem",
+                        "/opt/splunk/etc/system/default/server.conf");
+                container.execInContainer("sudo", "sed", "-i",
+                        "s,caCertFile = $SPLUNK_HOME\\/etc\\/auth\\/cacert.pem,caCertFile = \\/tmp\\/defaults\\/cacert.pem",
+                        "/opt/splunk/etc/system/default/server.conf");
+            } else {
+                container.execInContainer("sudo", "sed", "-i", "s/enableSplunkdSSL = true/enableSplunkdSSL = false/",
+                        "/opt/splunk/etc/system/default/server.conf");
+            }
 
             container.execInContainer("sudo", "microdnf", "--nodocs", "update", "tzdata");//install tzdata package so we can specify tz other than UTC
 
@@ -104,13 +106,17 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
 
             String splunkHost = container.getHost();
 
+            String paramRemotePort = ssl ? SplunkSslConstants.PARAM_REMOTE_PORT : SplunkConstants.PARAM_REMOTE_PORT;
+            String paramHecPort = ssl ? SplunkSslConstants.PARAM_HEC_PORT : SplunkConstants.PARAM_HEC_PORT;
+            String paramTcpPort = ssl ? SplunkSslConstants.PARAM_TCP_PORT : SplunkConstants.PARAM_TCP_PORT;
+
             Map<String, String> m = Map.of(
                     SplunkConstants.PARAM_REMOTE_HOST, splunkHost,
-                    SplunkConstants.PARAM_TCP_PORT, container.getMappedPort(SplunkConstants.TCP_PORT).toString(),
+                    paramTcpPort, container.getMappedPort(SplunkConstants.TCP_PORT).toString(),
                     SplunkConstants.PARAM_HEC_TOKEN, HEC_TOKEN,
                     SplunkConstants.PARAM_TEST_INDEX, TEST_INDEX,
-                    SplunkConstants.PARAM_REMOTE_PORT, container.getMappedPort(REMOTE_PORT).toString(),
-                    SplunkConstants.PARAM_HEC_PORT, container.getMappedPort(HEC_PORT).toString());
+                    paramRemotePort, container.getMappedPort(REMOTE_PORT).toString(),
+                    paramHecPort, container.getMappedPort(HEC_PORT).toString());
 
             String banner = StringUtils.repeat("*", 50);
             LOG.info(banner);

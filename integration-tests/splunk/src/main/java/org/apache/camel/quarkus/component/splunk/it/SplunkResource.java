@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -34,7 +35,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.splunk.ProducerType;
@@ -42,10 +42,12 @@ import org.apache.camel.component.splunk.SplunkComponent;
 import org.apache.camel.component.splunk.SplunkConfiguration;
 import org.apache.camel.component.splunk.event.SplunkEvent;
 import org.apache.camel.quarkus.test.support.splunk.SplunkConstants;
+import org.apache.camel.quarkus.test.support.splunk.SplunkSslConstants;
 import org.apache.camel.support.jsse.KeyManagersParameters;
 import org.apache.camel.support.jsse.KeyStoreParameters;
 import org.apache.camel.support.jsse.SSLContextParameters;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jetbrains.annotations.NotNull;
 
 @Path("/splunk")
 @ApplicationScoped
@@ -62,20 +64,31 @@ public class SplunkResource {
 
     @ConfigProperty(name = SplunkConstants.PARAM_REMOTE_HOST)
     String host;
-    //    String host = "localhost";
 
     @ConfigProperty(name = SplunkConstants.PARAM_REMOTE_PORT)
-    Integer port;
-    //    Integer port = 32820;
+    Optional<Integer> port;
 
-    //    @ConfigProperty(name = SplunkConstants.PARAM_TCP_PORT)
-    Integer tcpPort;
+    @ConfigProperty(name = SplunkSslConstants.PARAM_REMOTE_PORT)
+    Optional<Integer> sslPort;
 
-    @Inject
-    CamelContext camelContext;
+    @ConfigProperty(name = SplunkConstants.PARAM_TCP_PORT)
+    Optional<Integer> tcpPort;
 
+    @ConfigProperty(name = SplunkSslConstants.PARAM_TCP_PORT)
+    Optional<Integer> tcpSslPort;
+
+    @Produces
     @Named
     SplunkComponent splunk() {
+        SplunkComponent component = new SplunkComponent();
+        component.setSplunkConfigurationFactory(parameters -> new SplunkConfiguration());
+
+        return component;
+    }
+
+    @Produces
+    @Named("splunk-ssl")
+    SplunkComponent splunkSsl() {
         SplunkComponent component = new SplunkComponent();
         component.setSslContextParameters(createServerSSLContextParameters());
         component.setSplunkConfigurationFactory(parameters -> new SplunkConfiguration());
@@ -83,26 +96,37 @@ public class SplunkResource {
         return component;
     }
 
+    @Path("/ssl/results/{name}")
+    @POST
+    public String resultsSsl(@PathParam("name") String mapName) {
+        return results(true, mapName);
+    }
+
     @Path("/results/{name}")
     @POST
-    public String results(@PathParam("name") String mapName) throws Exception {
+    public String results(@PathParam("name") String mapName) {
+        return results(false, mapName);
+    }
+
+    private String results(boolean ssl, String mapName) {
         String url;
         int count = 3;
 
         if ("savedSearch".equals(mapName)) {
             url = String.format(
-                    "splunk://savedsearch?username=admin&password=changeit&scheme=https&host=%s&port=%d&delay=500&initEarliestTime=-10m&savedsearch=%s",
-                    host, port, SAVED_SEARCH_NAME);
+                    "%s://savedsearch?username=admin&password=changeit&scheme=%s&host=%s&port=%d&delay=500&initEarliestTime=-10m&savedsearch=%s",
+                    getComponent(ssl), ssl ? "https" : "http", host, sslPort.orElseGet(() -> port.get()), SAVED_SEARCH_NAME);
         } else if ("normalSearch".equals(mapName)) {
             url = String.format(
-                    "splunk://normal?username=admin&password=changeit&scheme=https&host=%s&port=%d&delay=5000&initEarliestTime=-10s&search="
+                    "%s://normal?username=admin&password=changeit&scheme=%s&host=%s&port=%d&delay=5000&initEarliestTime=-10s&search="
                             + "search sourcetype=\"SUBMIT\" | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
-                    host, port);
+                    getComponent(ssl), ssl ? "https" : "http", host, sslPort.orElseGet(() -> port.get()));
         } else {
             url = String.format(
-                    "splunk://realtime?username=admin&password=changeit&scheme=https&host=%s&port=%d&delay=3000&initEarliestTime=rt-10s&latestTime=RAW(rt+40s)&search="
+                    "%s://realtime?username=admin&password=changeit&scheme=%s&host=%s&port=%d&delay=3000&initEarliestTime=rt-10s&latestTime=RAW(rt+40s)&search="
                             + "search sourcetype=\"STREAM\" | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
-                    host, port, ProducerType.STREAM.name());
+                    getComponent(ssl), ssl ? "https" : "http", host, sslPort.orElseGet(() -> port.get()),
+                    ProducerType.STREAM.name());
         }
 
         List<SplunkEvent> events = new LinkedList<>();
@@ -124,6 +148,21 @@ public class SplunkResource {
         return result.toString();
     }
 
+    private static @NotNull String getComponent(boolean ssl) {
+        String component = ssl ? "splunk-ssl" : "splunk";
+        return component;
+    }
+
+    @Path("/ssl/write/{producerType}")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response writeSsl(Map<String, String> message,
+            @PathParam("producerType") String producerType,
+            @QueryParam("index") String index) throws URISyntaxException {
+        return write(true, message, producerType, index);
+    }
+
     @Path("/write/{producerType}")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -131,8 +170,15 @@ public class SplunkResource {
     public Response write(Map<String, String> message,
             @PathParam("producerType") String producerType,
             @QueryParam("index") String index) throws URISyntaxException {
+        return write(false, message, producerType, index);
+    }
+
+    private Response write(boolean ssl, Map<String, String> message,
+            String producerType,
+            String index) throws URISyntaxException {
+
         if (message.containsKey("_rawData")) {
-            return writeRaw(message.get("_rawData"), producerType, index);
+            return writeRaw(ssl, message.get("_rawData"), producerType, index);
         }
 
         SplunkEvent se = new SplunkEvent();
@@ -140,23 +186,31 @@ public class SplunkResource {
             se.addPair(e.getKey(), e.getValue());
         }
 
-        return writeRaw(se, producerType, index);
+        return writeRaw(ssl, se, producerType, index);
     }
 
-    private Response writeRaw(Object message,
+    private Response writeRaw(boolean ssl, Object message,
             String producerType,
             String index) throws URISyntaxException {
+
         String url;
         if (ProducerType.TCP == ProducerType.valueOf(producerType)) {
             url = String.format(
-                    "splunk:%s?raw=%b&username=admin&password=changeit&scheme=https&host=%s&port=%d&index=%s&sourceType=%s&source=%s&tcpReceiverLocalPort=%d&tcpReceiverPort=%d",
-                    producerType.toLowerCase(), !(message instanceof SplunkEvent), host, port, index, producerType, SOURCE,
-                    SplunkConstants.TCP_PORT, tcpPort);
+                    "%s:%s?raw=%b&username=admin&password=changeit&scheme=%s&host=%s&port=%d&index=%s&sourceType=%s&source=%s&tcpReceiverLocalPort=%d&tcpReceiverPort=%d",
+                    getComponent(ssl), producerType.toLowerCase(), !(message instanceof SplunkEvent), ssl ? "https" : "http",
+                    host, sslPort.orElseGet(() -> port.get()), index,
+                    producerType,
+                    SOURCE,
+                    SplunkConstants.TCP_PORT, tcpSslPort.orElseGet(() -> tcpPort.get()));
 
         } else {
             url = String.format(
-                    "splunk:%s?raw=%b&scheme=https&host=%s&port=%d&index=%s&sourceType=%s&source=%s",
-                    producerType.toLowerCase(), !(message instanceof SplunkEvent), host, port, index, producerType, SOURCE);
+                    "%s:%s?raw=%b&scheme=%s&host=%s&port=%d&index=%s&sourceType=%s&source=%s",
+                    getComponent(ssl), producerType.toLowerCase(), !(message instanceof SplunkEvent), ssl ? "https" : "http",
+                    host,
+                    sslPort.orElseGet(() -> port.get()), index,
+                    producerType,
+                    SOURCE);
         }
         final String response = producerTemplate.requestBody(url, message, String.class);
         return Response
@@ -166,7 +220,7 @@ public class SplunkResource {
     }
 
     /**
-     * Creates SSL Context Parameters for the server
+     * Creates SSL Context Parameters for the component
      *
      * @return
      */
@@ -180,6 +234,7 @@ public class SplunkResource {
         keyManagersParameters.setKeyPassword("password");
         keyManagersParameters.setKeyStore(keyStore);
         sslContextParameters.setKeyManagers(keyManagersParameters);
+        sslContextParameters.setSecureSocketProtocol("TLSv1.2");
 
         return sslContextParameters;
     }

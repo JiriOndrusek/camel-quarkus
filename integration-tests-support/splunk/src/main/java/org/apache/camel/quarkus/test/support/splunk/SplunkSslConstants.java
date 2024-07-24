@@ -14,19 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.splunk.it;
+package org.apache.camel.quarkus.test.support.splunk;
 
-import io.quarkus.test.common.ResourceArg;
-import io.quarkus.test.common.WithTestResource;
-import io.quarkus.test.junit.QuarkusTest;
-import org.apache.camel.quarkus.test.support.splunk.SplunkTestResource;
+public final class SplunkSslConstants {
 
-@QuarkusTest
-@WithTestResource(value = SplunkTestResource.class, initArgs = {
-        @ResourceArg(name = "ssl", value = "false") })
-class SplunkTest extends AbstractSplunkTest {
+    public static final String PARAM_HEC_PORT = "org.apache.camel.quarkus.component.splunk.ssl.hec.it.SplunkHecResource_hecPort";
+    public static final String PARAM_HEC_TOKEN = "org.apache.camel.quarkus.component.splunk.ssl.hec.it.SplunkHecResource_hecToken";
+    public static final String PARAM_REMOTE_PORT = "org.apache.camel.quarkus.component.splunk.ssl.hec.it.SplunkHecResource_remotePort";
+    public static final String PARAM_TCP_PORT = "org.apache.camel.quarkus.component.splunk.ssl.it.SplunkResource_tcpPort";
 
-    SplunkTest() {
-        super(false);
+    private SplunkSslConstants() {
+        // Utility class
     }
 }
