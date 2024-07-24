@@ -27,6 +27,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -34,6 +35,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.splunk.ProducerType;
@@ -45,6 +47,8 @@ import org.apache.camel.support.jsse.KeyManagersParameters;
 import org.apache.camel.support.jsse.KeyStoreParameters;
 import org.apache.camel.support.jsse.SSLContextParameters;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import javax.net.ssl.SSLContext;
 
 @Path("/splunk")
 @ApplicationScoped
@@ -59,20 +63,26 @@ public class SplunkResource {
     @Inject
     ConsumerTemplate consumerTemplate;
 
-    @ConfigProperty(name = SplunkConstants.PARAM_REMOTE_HOST)
-    String host;
+//    @ConfigProperty(name = SplunkConstants.PARAM_REMOTE_HOST)
+//    String host;
+    String host = "localhost";
 
-    @ConfigProperty(name = SplunkConstants.PARAM_REMOTE_PORT)
-    Integer port;
+//    @ConfigProperty(name = SplunkConstants.PARAM_REMOTE_PORT)
+//    Integer port;
+    Integer port = 32878;
 
-    @ConfigProperty(name = SplunkConstants.PARAM_TCP_PORT)
+//    @ConfigProperty(name = SplunkConstants.PARAM_TCP_PORT)
     Integer tcpPort;
+
+    @Inject
+    CamelContext camelContext;
 
     @Named
     SplunkComponent splunk() {
         SplunkComponent component = new SplunkComponent();
-        component.setSplunkConfigurationFactory(parameters -> new SplunkConfiguration());
         component.setSslContextParameters(createServerSSLContextParameters());
+        component.setSplunkConfigurationFactory(parameters -> new SplunkConfiguration());
+
         return component;
     }
 
@@ -84,16 +94,16 @@ public class SplunkResource {
 
         if ("savedSearch".equals(mapName)) {
             url = String.format(
-                    "splunk://savedsearch?scheme=https&host=%s&port=%d&delay=500&initEarliestTime=-10m&savedsearch=%s",
+                    "splunk://savedsearch?username=admin&password=changeit&scheme=https&host=%s&port=%d&delay=500&initEarliestTime=-10m&savedsearch=%s",
                     host, port, SAVED_SEARCH_NAME);
         } else if ("normalSearch".equals(mapName)) {
             url = String.format(
-                    "splunk://normal?scheme=https&host=%s&port=%d&delay=5000&initEarliestTime=-10s&search="
+                    "splunk://normal?username=admin&password=changeit&scheme=https&host=%s&port=%d&delay=5000&initEarliestTime=-10s&search="
                             + "search sourcetype=\"SUBMIT\" | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
                     host, port);
         } else {
             url = String.format(
-                    "splunk://realtime?scheme=https&host=%s&port=%d&delay=3000&initEarliestTime=rt-10s&latestTime=RAW(rt+40s)&search="
+                    "splunk://realtime?username=admin&password=changeit&scheme=https&host=%s&port=%d&delay=3000&initEarliestTime=rt-10s&latestTime=RAW(rt+40s)&search="
                             + "search sourcetype=\"STREAM\" | rex field=_raw \"Name: (?<name>.*) From: (?<from>.*)\"",
                     host, port, ProducerType.STREAM.name());
         }
@@ -142,7 +152,7 @@ public class SplunkResource {
         String url;
         if (ProducerType.TCP == ProducerType.valueOf(producerType)) {
             url = String.format(
-                    "splunk:%s?raw=%b&scheme=https&host=%s&port=%d&index=%s&sourceType=%s&source=%s&tcpReceiverLocalPort=%d&tcpReceiverPort=%d",
+                    "splunk:%s?raw=%b&username=admin&password=changeit&scheme=https&host=%s&port=%d&index=%s&sourceType=%s&source=%s&tcpReceiverLocalPort=%d&tcpReceiverPort=%d",
                     producerType.toLowerCase(), !(message instanceof SplunkEvent), host, port, index, producerType, SOURCE,
                     SplunkConstants.TCP_PORT, tcpPort);
 
