@@ -22,9 +22,6 @@ import org.apache.camel.component.splunk.SplunkComponent;
 import org.apache.camel.support.jsse.KeyManagersParameters;
 import org.apache.camel.support.jsse.KeyStoreParameters;
 import org.apache.camel.support.jsse.SSLContextParameters;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-
-import javax.net.ssl.SSLContext;
 
 public class SplunkRoutes extends RouteBuilder {
 
@@ -36,6 +33,7 @@ public class SplunkRoutes extends RouteBuilder {
         splunkComponent.setSslContextParameters(createServerSSLContextParameters());
         return splunkComponent;
     }
+
     /**
      * Creates SSL Context Parameters for the server
      *
