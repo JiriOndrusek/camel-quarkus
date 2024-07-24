@@ -16,11 +16,9 @@
  */
 package org.apache.camel.quarkus.test.support.splunk;
 
-import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Map;
 import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.apache.commons.lang3.StringUtils;
@@ -30,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.MountableFile;
 
 public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
 
@@ -55,6 +54,10 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
                     .withEnv("SPLUNK_LICENSE_URI", "Free")
                     .withEnv("TZ", TimeZone.getDefault().getID())
                     .withLogConsumer(new Slf4jLogConsumer(LOG))
+                    .withCopyToContainer(MountableFile.forClasspathResource("certs/splunk.crt"),
+                            "/tmp/defaults/server.pem")
+                    .withCopyToContainer(MountableFile.forClasspathResource("certs/splunk-ca.crt"),
+                            "/tmp/defaults/cacert.pem")
                     .waitingFor(
                             Wait.forLogMessage(".*Ansible playbook complete.*\\n", 1)
                                     .withStartupTimeout(Duration.ofMinutes(5)));
@@ -67,8 +70,8 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
             //                    "/opt/splunk/etc/system/default/server.conf");
             container.execInContainer("sudo", "sed", "-i", "s/minFreeSpace = 5000/minFreeSpace = 100/",
                     "/opt/splunk/etc/system/default/server.conf");
-            container.copyFileFromContainer("/opt/splunk/etc/auth/server.pem",
-                    Path.of(getClass().getResource("/").getFile()).resolve("server.pem").toFile().getPath());
+            //            container.copyFileFromContainer("/opt/splunk/etc/auth/server.pem",
+            //                    Path.of(getClass().getResource("/").getFile()).resolve("server.pem").toFile().getPath());
 
             //ssl
             //            container.withCopyToContainer(MountableFile.forClasspathResource("certs/splunk.crt"),
@@ -82,8 +85,15 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
             //                    "s,caCertFile = $SPLUNK_HOME\\/etc\\/auth\\/cacert.pem,caCertFile = $SPLUNK_HOME\\/etc\\/auth\\/splunk-ca.crt",
             //                    "/opt/splunk/etc/system/default/server.conf");
 
-            container.copyFileFromContainer("/opt/splunk/etc/auth/cacert.pem",
-                    Path.of(getClass().getResource("/").getFile()).resolve("cacert.pem").toFile().getPath());
+            //            container.copyFileFromContainer("/opt/splunk/etc/auth/cacert.pem",
+            //                    Path.of(getClass().getResource("/").getFile()).resolve("cacert.pem").toFile().getPath());
+
+            container.execInContainer("sudo", "sed", "-i",
+                    "s,serverCert = $SPLUNK_HOME\\/etc\\/auth\\/server.pem,serverCert =  \\/tmp\\/defaults\\/server.pem",
+                    "/opt/splunk/etc/system/default/server.conf");
+            container.execInContainer("sudo", "sed", "-i",
+                    "s,caCertFile = $SPLUNK_HOME\\/etc\\/auth\\/cacert.pem,caCertFile = \\/tmp\\/defaults\\/cacert.pem",
+                    "/opt/splunk/etc/system/default/server.conf");
 
             container.execInContainer("sudo", "microdnf", "--nodocs", "update", "tzdata");//install tzdata package so we can specify tz other than UTC
 

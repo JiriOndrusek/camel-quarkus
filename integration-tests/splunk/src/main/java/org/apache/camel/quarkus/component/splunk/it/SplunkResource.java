@@ -45,6 +45,7 @@ import org.apache.camel.quarkus.test.support.splunk.SplunkConstants;
 import org.apache.camel.support.jsse.KeyManagersParameters;
 import org.apache.camel.support.jsse.KeyStoreParameters;
 import org.apache.camel.support.jsse.SSLContextParameters;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @Path("/splunk")
 @ApplicationScoped
@@ -59,13 +60,13 @@ public class SplunkResource {
     @Inject
     ConsumerTemplate consumerTemplate;
 
-    //    @ConfigProperty(name = SplunkConstants.PARAM_REMOTE_HOST)
-    //    String host;
-    String host = "localhost";
+    @ConfigProperty(name = SplunkConstants.PARAM_REMOTE_HOST)
+    String host;
+    //    String host = "localhost";
 
-    //    @ConfigProperty(name = SplunkConstants.PARAM_REMOTE_PORT)
-    //    Integer port;
-    Integer port = 32820;
+    @ConfigProperty(name = SplunkConstants.PARAM_REMOTE_PORT)
+    Integer port;
+    //    Integer port = 32820;
 
     //    @ConfigProperty(name = SplunkConstants.PARAM_TCP_PORT)
     Integer tcpPort;
@@ -175,7 +176,7 @@ public class SplunkResource {
         KeyManagersParameters keyManagersParameters = new KeyManagersParameters();
         KeyStoreParameters keyStore = new KeyStoreParameters();
         keyStore.setPassword("password");
-        keyStore.setResource("/truststore-from-server.jks");
+        keyStore.setResource("/certs/splunk-truststore.p12");
         keyManagersParameters.setKeyPassword("password");
         keyManagersParameters.setKeyStore(keyStore);
         sslContextParameters.setKeyManagers(keyManagersParameters);
