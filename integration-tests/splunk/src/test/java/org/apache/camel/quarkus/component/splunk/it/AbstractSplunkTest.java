@@ -29,11 +29,11 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.component.splunk.ProducerType;
 import org.apache.camel.quarkus.test.support.splunk.SplunkConstants;
-import org.apache.camel.quarkus.test.support.splunk.SplunkSslConstants;
 import org.apache.camel.quarkus.test.support.splunk.SplunkTestResource;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.org.apache.commons.lang3.RandomStringUtils;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
@@ -47,6 +47,13 @@ abstract class AbstractSplunkTest {
 
     AbstractSplunkTest(boolean ssl) {
         this.ssl = ssl;
+    }
+
+    @BeforeEach
+    public void reintitializeComponent() {
+        //the spluk client is created by the component with knowledge of schema https/https
+        //we need to reset client because the client might be created with the wrong schema for the current test
+        RestAssured.get("/splunk/reinitializeComponent").then().statusCode(204);
     }
 
     @Test
@@ -82,7 +89,7 @@ abstract class AbstractSplunkTest {
         RestAssured.given()
                 .relaxedHTTPSValidation()
                 .baseUri(urlPrefix + config.getValue(SplunkConstants.PARAM_REMOTE_HOST, String.class))
-                .port(config.getValue(ssl ? SplunkSslConstants.PARAM_REMOTE_PORT : SplunkConstants.PARAM_REMOTE_PORT,
+                .port(config.getValue(SplunkConstants.PARAM_REMOTE_PORT,
                         Integer.class))
                 .contentType(ContentType.JSON)
                 .param("name", SplunkResource.SAVED_SEARCH_NAME)

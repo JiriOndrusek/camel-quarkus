@@ -16,7 +16,6 @@
  */
 package org.apache.camel.quarkus.component.splunk.it;
 
-import jakarta.inject.Named;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.splunk.SplunkComponent;
 import org.apache.camel.support.jsse.KeyManagersParameters;
@@ -25,7 +24,9 @@ import org.apache.camel.support.jsse.SSLContextParameters;
 
 public class SplunkRoutes extends RouteBuilder {
 
-    @Named("splunk-global-ssl")
+    //    conf
+
+    //    @Named("splunk-global-ssl")
     SplunkComponent splunkGlobalSsl() throws IllegalAccessException, NoSuchFieldException, InstantiationException {
         final SplunkComponent splunkComponent = new SplunkComponent();
         splunkComponent.setCamelContext(getContext());
@@ -55,6 +56,6 @@ public class SplunkRoutes extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-
+        //        getContext().addComponent("splunk-ssl", splunkGlobalSsl());
     }
 }
