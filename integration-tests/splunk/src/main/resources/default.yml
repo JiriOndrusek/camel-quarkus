@@ -1,7 +1,0 @@
-splunk:
-  allowRemoteLogin: "always"
-  minFreeSpace: 100
-  enableSplunkdSSL: true
-  serverCert: "/tmp/defaults/server.pem"
-  sslPassword: "changeit"
-  caCertFile: "/tmp/defaults/cacert.pem"

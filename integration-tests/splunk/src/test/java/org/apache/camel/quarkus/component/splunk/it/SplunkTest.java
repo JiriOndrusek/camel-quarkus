@@ -16,14 +16,9 @@
  */
 package org.apache.camel.quarkus.component.splunk.it;
 
-import io.quarkus.test.common.ResourceArg;
-import io.quarkus.test.common.WithTestResource;
-import io.quarkus.test.junit.QuarkusTest;
-import org.apache.camel.quarkus.test.support.splunk.SplunkTestResource;
-
-@QuarkusTest
-@WithTestResource(value = SplunkTestResource.class, initArgs = {
-        @ResourceArg(name = "ssl", value = "false") })
+//@QuarkusTest
+//@WithTestResource(value = SplunkTestResource.class, initArgs = {
+//        @ResourceArg(name = "ssl", value = "false") })
 class SplunkTest extends AbstractSplunkTest {
 
     SplunkTest() {

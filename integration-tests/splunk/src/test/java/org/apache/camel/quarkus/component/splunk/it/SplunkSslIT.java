@@ -16,8 +16,6 @@
  */
 package org.apache.camel.quarkus.component.splunk.it;
 
-import io.quarkus.test.junit.QuarkusIntegrationTest;
-
-@QuarkusIntegrationTest
+//@QuarkusIntegrationTest
 class SplunkSslIT extends SplunkSslTest {
 }

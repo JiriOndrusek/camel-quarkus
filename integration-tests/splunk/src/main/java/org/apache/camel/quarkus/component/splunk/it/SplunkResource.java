@@ -21,7 +21,6 @@ import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -38,14 +37,10 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
-import org.apache.camel.Endpoint;
-import org.apache.camel.Producer;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.splunk.ProducerType;
 import org.apache.camel.component.splunk.SplunkComponent;
 import org.apache.camel.component.splunk.SplunkConfiguration;
-import org.apache.camel.component.splunk.SplunkEndpoint;
-import org.apache.camel.component.splunk.SplunkProducer;
 import org.apache.camel.component.splunk.event.SplunkEvent;
 import org.apache.camel.quarkus.test.support.splunk.SplunkConstants;
 import org.apache.camel.support.jsse.KeyManagersParameters;
@@ -93,14 +88,12 @@ public class SplunkResource {
     @Path("/reinitializeComponent")
     @GET
     public void reinitializeComponent() {
-        //        ensureSslComponentExistence();
         camelContext.removeComponent("splunk");
     }
 
     @Path("/ssl/results/{name}")
     @POST
     public String resultsSsl(@PathParam("name") String mapName) {
-        ensureSslComponentExistence();
         return results(true, mapName);
     }
 
@@ -162,7 +155,6 @@ public class SplunkResource {
     public Response writeSsl(Map<String, String> message,
             @PathParam("producerType") String producerType,
             @QueryParam("index") String index) throws URISyntaxException {
-        ensureSslComponentExistence();
         return write(true, message, producerType, index);
     }
 
@@ -233,70 +225,12 @@ public class SplunkResource {
         KeyManagersParameters keyManagersParameters = new KeyManagersParameters();
         KeyStoreParameters keyStore = new KeyStoreParameters();
         keyStore.setPassword("password");
-        keyStore.setResource("/certs/splunk-truststore.p12");
+        keyStore.setResource("/localhost.jks");
         keyManagersParameters.setKeyPassword("password");
         keyManagersParameters.setKeyStore(keyStore);
         sslContextParameters.setKeyManagers(keyManagersParameters);
         sslContextParameters.setSecureSocketProtocol("TLSv1.2");
 
         return sslContextParameters;
-    }
-
-    //todo register in better way
-    private void ensureSslComponentExistence() {
-        //        if(camelContext.getComponent("splunk-ssl") == null) {
-        //            SplunkComponent component = new SslSplunkComponent();
-        //            component.setSplunkConfigurationFactory(parameters -> new SplunkConfiguration());
-        //            camelContext.addComponent("splunk-ssl", component);
-        //        }
-    }
-
-    static final class SslSplunkComponent extends SplunkComponent {
-
-        public SslSplunkComponent() {
-            super();
-
-            setSplunkConfigurationFactory(parameters -> new SplunkConfiguration());
-
-        }
-
-        protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
-            SplunkConfiguration configuration = getSplunkConfigurationFactory().parseMap(parameters);
-            SplunkEndpoint answer = new SslSplunkEndpoint(uri, this, configuration);
-            setProperties(answer, parameters);
-            configuration.setName(remaining);
-            answer.setSslContextParameters(createServerSSLContextParameters());
-            return answer;
-        }
-
-    }
-
-    static final class SslSplunkEndpoint extends SplunkEndpoint {
-        private static final Pattern SPLUNK_SCHEMA_PATTERN = Pattern.compile("splunk-ssl:(//)*");
-        private static final Pattern SPLUNK_OPTIONS_PATTER = Pattern.compile("\\?.*");
-
-        public SslSplunkEndpoint(String uri, SplunkComponent component, SplunkConfiguration configuration) {
-            super(uri, component, configuration);
-        }
-
-        @Override
-        public Producer createProducer() throws Exception {
-            String[] uriSplit = splitUri(getEndpointUri());
-            if (uriSplit.length > 0) {
-                ProducerType producerType = ProducerType.fromUri(uriSplit[0]);
-                return new SplunkProducer(this, producerType);
-            }
-            throw new IllegalArgumentException(
-                    "Cannot create any producer with uri " + getEndpointUri()
-                            + ". A producer type was not provided (or an incorrect pairing was used).");
-        }
-
-        private static String[] splitUri(String uri) {
-            uri = SPLUNK_SCHEMA_PATTERN.matcher(uri).replaceAll("");
-            uri = SPLUNK_OPTIONS_PATTER.matcher(uri).replaceAll("");
-
-            return uri.split("/");
-        }
-
     }
 }

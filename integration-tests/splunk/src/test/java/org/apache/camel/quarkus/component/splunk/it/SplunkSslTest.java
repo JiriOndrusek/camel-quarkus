@@ -19,14 +19,13 @@ package org.apache.camel.quarkus.component.splunk.it;
 import io.quarkus.test.common.ResourceArg;
 import io.quarkus.test.common.WithTestResource;
 import io.quarkus.test.junit.QuarkusTest;
-import me.escoffier.certs.Format;
-import me.escoffier.certs.junit5.Certificate;
-import org.apache.camel.quarkus.test.support.certificate.TestCertificates;
 import org.apache.camel.quarkus.test.support.splunk.SplunkTestResource;
 
-@TestCertificates(certificates = {
-        @Certificate(name = "splunk", formats = {
-                Format.PEM, Format.PKCS12 }, password = "password") })
+//@TestCertificates(certificates = {
+//        @Certificate(name = "splunk", formats = {
+//                Format.PEM, Format.PKCS12 }, password = "password"),
+//        @Certificate(name = "wrong", formats = {
+//                Format.PKCS12 }, password = "password") })
 @QuarkusTest
 @WithTestResource(value = SplunkTestResource.class, initArgs = {
         @ResourceArg(name = "ssl", value = "true") })

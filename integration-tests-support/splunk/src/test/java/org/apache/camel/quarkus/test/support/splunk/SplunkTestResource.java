@@ -66,9 +66,9 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
                                     .withStartupTimeout(Duration.ofMinutes(5)));
 
             if (ssl) {
-                container.withCopyToContainer(MountableFile.forClasspathResource("certs/splunk.crt"),
+                container.withCopyToContainer(MountableFile.forClasspathResource("localhost.pem"),
                         "/tmp/defaults/server.pem")
-                        .withCopyToContainer(MountableFile.forClasspathResource("certs/splunk-ca.crt"),
+                        .withCopyToContainer(MountableFile.forClasspathResource("splunkca.pem"),
                                 "/tmp/defaults/cacert.pem");
             }
 
