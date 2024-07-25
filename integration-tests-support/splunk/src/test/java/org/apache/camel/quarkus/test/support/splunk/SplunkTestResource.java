@@ -106,17 +106,13 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
 
             String splunkHost = container.getHost();
 
-            String paramRemotePort = ssl ? SplunkSslConstants.PARAM_REMOTE_PORT : SplunkConstants.PARAM_REMOTE_PORT;
-            String paramHecPort = ssl ? SplunkSslConstants.PARAM_HEC_PORT : SplunkConstants.PARAM_HEC_PORT;
-            String paramTcpPort = ssl ? SplunkSslConstants.PARAM_TCP_PORT : SplunkConstants.PARAM_TCP_PORT;
-
             Map<String, String> m = Map.of(
                     SplunkConstants.PARAM_REMOTE_HOST, splunkHost,
-                    paramTcpPort, container.getMappedPort(SplunkConstants.TCP_PORT).toString(),
+                    SplunkConstants.PARAM_TCP_PORT, container.getMappedPort(SplunkConstants.TCP_PORT).toString(),
                     SplunkConstants.PARAM_HEC_TOKEN, HEC_TOKEN,
                     SplunkConstants.PARAM_TEST_INDEX, TEST_INDEX,
-                    paramRemotePort, container.getMappedPort(REMOTE_PORT).toString(),
-                    paramHecPort, container.getMappedPort(HEC_PORT).toString());
+                    SplunkConstants.PARAM_REMOTE_PORT, container.getMappedPort(REMOTE_PORT).toString(),
+                    SplunkConstants.PARAM_HEC_PORT, container.getMappedPort(HEC_PORT).toString());
 
             String banner = StringUtils.repeat("*", 50);
             LOG.info(banner);
