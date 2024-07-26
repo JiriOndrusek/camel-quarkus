@@ -25,16 +25,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import io.quarkus.test.common.WithTestResource;
-import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.component.splunk.ProducerType;
 import org.apache.camel.quarkus.test.support.splunk.SplunkConstants;
-import org.apache.camel.quarkus.test.support.splunk.SplunkTestResource;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.org.apache.commons.lang3.RandomStringUtils;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
@@ -42,13 +40,26 @@ import org.testcontainers.shaded.org.awaitility.Awaitility;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.is;
 
-@QuarkusTest
-@WithTestResource(SplunkTestResource.class)
-class SplunkTest {
+abstract class AbstractSplunkTest {
+
+    private final boolean ssl;
+
+    AbstractSplunkTest(boolean ssl) {
+        this.ssl = ssl;
+    }
+
+    @BeforeEach
+    public void reintitializeComponent() throws InterruptedException {
+        TimeUnit.HOURS.sleep(5);
+        //the spluk client is created by the component with knowledge of schema https/https
+        //we need to reset client because the client might be created with the wrong schema for the current test
+        RestAssured.get("/splunk/reinitializeComponent").then().statusCode(204);
+    }
 
     @Test
     public void testNormalSearchWithSubmitWithRawData() {
         String suffix = "_normalSearchOfSubmit";
+        String restUrl = ssl ? "/splunk/ssl/results/normalSearch" : "/splunk/results/normalSearch";
 
         write(suffix, ProducerType.SUBMIT, 0, true);
 
@@ -57,7 +68,7 @@ class SplunkTest {
 
                     String result = RestAssured.given()
                             .contentType(ContentType.TEXT)
-                            .post("/splunk/results/normalSearch")
+                            .post(restUrl)
                             .then()
                             .statusCode(200)
                             .extract().asString();
@@ -71,11 +82,15 @@ class SplunkTest {
     @Test
     public void testSavedSearchWithTcp() throws InterruptedException {
         String suffix = "_SavedSearchOfTcp";
+        String urlPrefix = ssl ? "https://" : "http://";
+        String restUrl = ssl ? "/splunk/ssl/results/savedSearch" : "/splunk/results/savedSearch";
         //create saved search
         Config config = ConfigProvider.getConfig();
         RestAssured.given()
-                .baseUri("http://" + config.getValue(SplunkConstants.PARAM_REMOTE_HOST, String.class))
-                .port(config.getValue(SplunkConstants.PARAM_REMOTE_PORT, Integer.class))
+                .relaxedHTTPSValidation()
+                .baseUri(urlPrefix + config.getValue(SplunkConstants.PARAM_REMOTE_HOST, String.class))
+                .port(config.getValue(SplunkConstants.PARAM_REMOTE_PORT,
+                        Integer.class))
                 .contentType(ContentType.JSON)
                 .param("name", SplunkResource.SAVED_SEARCH_NAME)
                 .param("disabled", "0")
@@ -94,7 +109,7 @@ class SplunkTest {
                 () -> {
                     String result = RestAssured.given()
                             .contentType(ContentType.TEXT)
-                            .post("/splunk/results/savedSearch")
+                            .post(restUrl)
                             .then()
                             .statusCode(200)
                             .extract().asString();
@@ -108,6 +123,7 @@ class SplunkTest {
     @Test
     public void testStreamForRealtime() throws InterruptedException, ExecutionException {
         String suffix = "_RealtimeSearchOfStream";
+        String restUrl = ssl ? "/splunk/ssl/results/realtimeSearch" : "/splunk/results/realtimeSearch";
         //there is a buffer for stream writing, therefore about 1MB of data has to be written into Splunk
 
         //data are written in separated thread
@@ -127,7 +143,7 @@ class SplunkTest {
 
                         String result = RestAssured.given()
                                 .contentType(ContentType.TEXT)
-                                .post("/splunk/results/realtimeSearch")
+                                .post(restUrl)
                                 .then()
                                 .statusCode(200)
                                 .extract().asString();
@@ -142,11 +158,12 @@ class SplunkTest {
     }
 
     private void write(String suffix, ProducerType producerType, int lengthOfRandomString, boolean raw) {
+        String restUrl = ssl ? "/splunk/ssl/write/" : "/splunk/write/";
         Consumer<Map<String, String>> write = data -> RestAssured.given()
                 .contentType(ContentType.JSON)
                 .queryParam("index", SplunkTestResource.TEST_INDEX)
                 .body(data)
-                .post("/splunk/write/" + producerType.name())
+                .post(restUrl + producerType.name())
                 .then()
                 .statusCode(201)
                 .body(Matchers.containsString(expectedResult(data)));
