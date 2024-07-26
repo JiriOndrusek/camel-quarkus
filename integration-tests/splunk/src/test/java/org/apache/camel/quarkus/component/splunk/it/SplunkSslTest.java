@@ -16,8 +16,19 @@
  */
 package org.apache.camel.quarkus.component.splunk.it;
 
-import io.quarkus.test.junit.QuarkusIntegrationTest;
+import io.quarkus.test.common.ResourceArg;
+import io.quarkus.test.common.WithTestResource;
+import io.quarkus.test.junit.QuarkusTest;
 
-@QuarkusIntegrationTest
-class SplunkIT extends SplunkTest {
+//@TestCertificates(certificates = {
+//        @Certificate(name = "splunk", formats = {
+//                Format.JKS, Format.PEM }, password = "changeit") })
+@QuarkusTest
+@WithTestResource(value = SplunkTestResource.class, initArgs = {
+        @ResourceArg(name = "ssl", value = "true") })
+class SplunkSslTest extends AbstractSplunkTest {
+
+    SplunkSslTest() {
+        super(true);
+    }
 }

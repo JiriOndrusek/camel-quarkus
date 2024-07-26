@@ -1,0 +1,42 @@
+Container.ExecResult(exitCode=0, stdout=Stopping splunkd...
+Shutting down.  Please wait, as this may take a few minutes.
+.........
+Stopping splunk helpers...
+
+Done.
+
+Splunk> Another one.
+
+Checking prerequisites...
+	Checking http port [8000]: open
+	Checking mgmt port [8089]: open
+	Checking appserver port [127.0.0.1:8065]: open
+	Checking kvstore port [8191]: open
+	Checking configuration... Done.
+	Checking critical directories...	Done
+	Checking indexes...
+		Validated: _audit _configtracker _dsappevent _dsclient _dsphonehome _internal _introspection _metrics _metrics_rollup _telemetry _thefishbucket history main summary
+	Done
+	Checking filesystem compatibility...  Done
+	Checking conf files for problems...
+	Done
+	Checking default conf files for edits...
+	Validating installed files against hashes from '/opt/splunk/splunk-9.2.0-1fff88043d5f-linux-2.6-x86_64-manifest'
+	All installed files intact.
+	Done
+All preliminary checks passed.
+
+Starting splunk server daemon (splunkd)...  
+Done
+
+
+Waiting for web server at http://127.0.0.1:8000 to be available........................................... Done
+
+
+If you get stuck, we're here to help.  
+Look for answers here: http://docs.splunk.com
+
+The Splunk web interface is at http://099137611f57:8000
+
+, stderr=PYTHONHTTPSVERIFY is set to 0 in splunk-launch.conf disabling certificate validation for the httplib and urllib libraries shipped with the embedded Python interpreter; must be set to "1" for increased security
+)

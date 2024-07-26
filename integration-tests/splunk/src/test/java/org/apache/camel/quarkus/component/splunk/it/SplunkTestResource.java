@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.test.support.splunk;
+package org.apache.camel.quarkus.component.splunk.it;
 
 import java.nio.file.Path;
 import java.time.Duration;
@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
+import org.apache.camel.quarkus.test.support.splunk.SplunkConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
@@ -70,12 +71,18 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
                                     .withStartupTimeout(Duration.ofMinutes(5)));
 
             if (ssl) {
-                container.withCopyToContainer(MountableFile.forClasspathResource("certs/localhost.crt"),
-                        "/tmp/defaults/server.pem")
+                //how to combine server.pem
+                //openssl pkcs12 -export -out combined.p12 -inkey private.key -in certificate.crt -certfile ca-cert.crt
+                //openssl pkcs12 -in combined.p12 -out combined.pem -nodes
+
+                //                ..verification openssl s_client -showcerts -connect localhost:32835
+                //                https://blog.packagecloud.io/solve-unable-to-find-valid-certification-path-to-requested-target/
+                container.withCopyToContainer(MountableFile.forClasspathResource("keytool/combined.pem"),
+                        "/opt/splunk/etc/auth/mycerts/myServerCert.pem")
                         //                        .withCopyToContainer(MountableFile.forClasspathResource("ssh_default.conf"),
                         //                                "/opt/splunk/etc/system/local/server.conf")
-                        .withCopyToContainer(MountableFile.forClasspathResource("certs/localhost-ca.crt"),
-                                "/tmp/defaults/cacert.pem");
+                        .withCopyToContainer(MountableFile.forClasspathResource("keytool/splunkca.pem"),
+                                "/opt/splunk/etc/auth/mycerts/cacert.pem");
                 //                        .withCreateContainerCmdModifier(cmd -> {
                 //                            cmd.
                 //                        })
@@ -87,6 +94,20 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
             LOG.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.");
             LOG.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.");
             container.start();
+
+            //I'm getting this issue when using local.conf https://community.splunk.com/t5/Splunk-Enterprise-Security/Getting-error-0906D06C-PEM-routines-PEM-read-bio-no-start-line/m-p/560349
+            LOG.info("****************** changing config *************************");
+            LOG.info("****************** changing config *************************");
+
+            //modify local conf according to https://docs.splunk.com/Documentation/Splunk/9.2.0/Security/ConfigTLSCertsS2S
+            //remove password
+            container.copyFileToContainer(MountableFile.forClasspathResource("local_server.conf"),
+                    "/opt/splunk/etc/system/local/server.conf");
+            //copy conf from the container to see the result
+            container.copyFileFromContainer("/opt/splunk/etc/system/local/server.conf",
+                    Path.of(getClass().getResource("/").getPath()).resolve("local_server.conf").toFile()
+                            .getAbsolutePath());
+
             container.execInContainer("sudo", "sed", "-i", "s/allowRemoteLogin=requireSetPassword/allowRemoteLogin=always/",
                     "/opt/splunk/etc/system/local/server.conf");
             container.execInContainer("sudo", "sed", "-i", "s/minFreeSpace = 5000/minFreeSpace = 100/",
@@ -108,6 +129,9 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
                 container.copyFileFromContainer("/opt/splunk/etc/auth/server.pem",
                         Path.of(getClass().getResource("/").getPath()).resolve("server_from_container.pem").toFile()
                                 .getAbsolutePath());
+                container.copyFileFromContainer("/opt/splunk/etc/system/local/server.conf",
+                        Path.of(getClass().getResource("/").getPath()).resolve("local_server.conf").toFile()
+                                .getAbsolutePath());
 
             } else {
                 asserExecResult(
@@ -118,11 +142,14 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
 
             container.execInContainer("sudo", "microdnf", "--nodocs", "update", "tzdata");//install tzdata package so we can specify tz other than UTC
 
-            //            container.execInContainer("sudo", "./bin/splunk", "restart");
+            LOG.info("****************** restarting *************************");
+            asserExecResult(container.execInContainer("sudo", "./bin/splunk", "restart"), "splunk restart");
 
+            /*
             container.execInContainer("sudo", "./bin/splunk", "add", "index", TEST_INDEX);
             container.execInContainer("sudo", "./bin/splunk", "add", "tcp", String.valueOf(SplunkConstants.TCP_PORT),
                     "-sourcetype", "TCP");
+             */
 
             //            //final conf file is copyied from the container for the manual verification purposes
             //            container.copyFileFromContainer("/opt/splunk/etc/system/default/server.conf",
