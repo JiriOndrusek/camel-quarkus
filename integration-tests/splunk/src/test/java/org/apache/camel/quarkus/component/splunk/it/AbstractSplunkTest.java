@@ -50,7 +50,7 @@ abstract class AbstractSplunkTest {
 
     @BeforeEach
     public void reintitializeComponent() throws InterruptedException {
-        TimeUnit.HOURS.sleep(5);
+        //        TimeUnit.HOURS.sleep(5);
         //the spluk client is created by the component with knowledge of schema https/https
         //we need to reset client because the client might be created with the wrong schema for the current test
         RestAssured.get("/splunk/reinitializeComponent").then().statusCode(204);
