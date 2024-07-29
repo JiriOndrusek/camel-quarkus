@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.MountableFile;
 
@@ -46,14 +45,20 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
     private GenericContainer<?> container;
 
     private boolean ssl;
+    private String localhostPemPath;
+    private String caPemPath;
 
     @Override
     public void init(Map<String, String> initArgs) {
         ssl = Boolean.parseBoolean(initArgs.getOrDefault("ssl", "false"));
+        localhostPemPath = initArgs.get("localhost_pem");
+        caPemPath = initArgs.get("ca_pem");
     }
 
     @Override
     public Map<String, String> start() {
+
+        String banner = StringUtils.repeat("*", 50);
 
         try {
             container = new GenericContainer<>(SPLUNK_IMAGE_NAME)
@@ -64,51 +69,40 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
                     .withEnv("SPLUNK_LICENSE_URI", "Free")
                     .withEnv("SPLUNK_USER", "root")//does not work
                     .withEnv("TZ", TimeZone.getDefault().getID())
-                    .withLogConsumer(new Slf4jLogConsumer(LOG))
+                    //                    .withLogConsumer(new Slf4jLogConsumer(LOG))
                     .waitingFor(
                             Wait.forLogMessage(".*Ansible playbook complete.*\\n", 1)
                                     .withStartupTimeout(Duration.ofMinutes(5)));
 
             if (ssl) {
-                container.withCopyToContainer(MountableFile.forClasspathResource("certs/localhost.crt"),
-                        "/tmp/defaults/server.pem")
-                        //                        .withCopyToContainer(MountableFile.forClasspathResource("ssh_default.conf"),
-                        //                                "/opt/splunk/etc/system/local/server.conf")
-                        .withCopyToContainer(MountableFile.forClasspathResource("certs/localhost-ca.crt"),
-                                "/tmp/defaults/cacert.pem");
-                //                        .withCreateContainerCmdModifier(cmd -> {
-                //                            cmd.
-                //                        })
+                container.withCopyToContainer(MountableFile.forClasspathResource(localhostPemPath),
+                        "/opt/splunk/etc/auth/mycerts/myServerCert.pem")
+                        .withCopyToContainer(MountableFile.forClasspathResource(caPemPath),
+                                "/opt/splunk/etc/auth/mycerts/cacert.pem");
             }
 
-            LOG.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.");
-            LOG.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.");
-            LOG.info(">>>>>>>>>>> starting with ssl: " + ssl + ">>>>>>>>>.");
-            LOG.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.");
-            LOG.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.");
+            LOG.debug(banner);
+            LOG.debug("Starting splunk server with ssl: " + ssl);
             container.start();
-            container.execInContainer("sudo", "sed", "-i", "s/allowRemoteLogin=requireSetPassword/allowRemoteLogin=always/",
+
+            container.copyFileToContainer(MountableFile.forClasspathResource("local_server.conf"),
                     "/opt/splunk/etc/system/local/server.conf");
+            container.copyFileToContainer(MountableFile.forClasspathResource("local_inputs.conf"),
+                    "/opt/splunk/etc/system/local/inputs.conf");
+
+            container.copyFileToContainer(MountableFile.forClasspathResource("local_server.conf"),
+                    "/opt/splunk/etc/system/local/server.conf");
+            container.copyFileToContainer(MountableFile.forClasspathResource("local_inputs.conf"),
+                    "/opt/splunk/etc/system/local/inputs.conf");
+
             container.execInContainer("sudo", "sed", "-i", "s/minFreeSpace = 5000/minFreeSpace = 100/",
                     "/opt/splunk/etc/system/local/server.conf");
 
             if (ssl) {
-                //                asserExecResult(container.execInContainer("sudo", "sed", "-i",
-                //                        "s,serverCert = $SPLUNK_HOME\\/etc\\/auth\\/server.pem,serverCert = \\/tmp\\/defaults\\/server.pem,",
-                //                        "/opt/splunk/etc/system/default/server.conf"), "sed (serverCert)");
-                //
-                //                asserExecResult(container.execInContainer("sudo", "sed", "-i",
-                //                        "s,caCertFile = $SPLUNK_HOME\\/etc\\/auth\\/cacert.pem,caCertFile = \\/tmp\\/defaults\\/cacert.pem,",
-                //                        "/opt/splunk/etc/system/default/server.conf"), "sed (cacertfile)");
-
-                //export pems from the splunk
-                container.copyFileFromContainer("/opt/splunk/etc/auth/cacert.pem",
-                        Path.of(getClass().getResource("/").getPath()).resolve("cacert_from_container.pem").toFile()
+                //copy configuration for troubleshooting
+                container.copyFileFromContainer("/opt/splunk/etc/system/local/server.conf",
+                        Path.of(getClass().getResource("/").getPath()).resolve("local_server_from_container.conf").toFile()
                                 .getAbsolutePath());
-                container.copyFileFromContainer("/opt/splunk/etc/auth/server.pem",
-                        Path.of(getClass().getResource("/").getPath()).resolve("server_from_container.pem").toFile()
-                                .getAbsolutePath());
-
             } else {
                 asserExecResult(
                         container.execInContainer("sudo", "sed", "-i", "s/enableSplunkdSSL = true/enableSplunkdSSL = false/",
@@ -118,15 +112,12 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
 
             container.execInContainer("sudo", "microdnf", "--nodocs", "update", "tzdata");//install tzdata package so we can specify tz other than UTC
 
-            //            container.execInContainer("sudo", "./bin/splunk", "restart");
+            LOG.debug(banner);
+            LOG.debug("Restarting splunk server.");
 
             container.execInContainer("sudo", "./bin/splunk", "add", "index", TEST_INDEX);
             container.execInContainer("sudo", "./bin/splunk", "add", "tcp", String.valueOf(SplunkConstants.TCP_PORT),
                     "-sourcetype", "TCP");
-
-            //            //final conf file is copyied from the container for the manual verification purposes
-            //            container.copyFileFromContainer("/opt/splunk/etc/system/default/server.conf",
-            //                    Path.of(getClass().getResource("/").getPath()).resolve("server.conf").toFile().getAbsolutePath());
 
             String splunkHost = container.getHost();
 
@@ -138,11 +129,11 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
                     SplunkConstants.PARAM_REMOTE_PORT, container.getMappedPort(REMOTE_PORT).toString(),
                     SplunkConstants.PARAM_HEC_PORT, container.getMappedPort(HEC_PORT).toString());
 
-            String banner = StringUtils.repeat("*", 50);
             LOG.info(banner);
             LOG.info(String.format("Splunk UI running on: http://%s:%d", splunkHost, container.getMappedPort(WEB_PORT)));
-            LOG.info(m.toString());
             LOG.info(banner);
+            LOG.debug(m.toString());
+            LOG.debug(banner);
 
             return m;
 

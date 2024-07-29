@@ -29,11 +29,13 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.component.splunk.ProducerType;
 import org.apache.camel.quarkus.test.support.splunk.SplunkConstants;
+import org.apache.camel.quarkus.test.support.splunk.SplunkTestResource;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.testcontainers.shaded.org.apache.commons.lang3.RandomStringUtils;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 
@@ -46,6 +48,10 @@ abstract class AbstractSplunkTest {
 
     AbstractSplunkTest(boolean ssl) {
         this.ssl = ssl;
+    }
+
+    boolean isSecured() {
+        return ssl;
     }
 
     @BeforeEach
@@ -80,6 +86,7 @@ abstract class AbstractSplunkTest {
     }
 
     @Test
+    @DisabledIf("isSecured") //requires more splunk configuration possible inputs.conf, see i.e. https://community.splunk.com/t5/Getting-Data-In/How-to-set-up-SSL-TLS-for-the-Splunk-indexer/m-p/649693
     public void testSavedSearchWithTcp() throws InterruptedException {
         String suffix = "_SavedSearchOfTcp";
         String urlPrefix = ssl ? "https://" : "http://";
@@ -121,6 +128,7 @@ abstract class AbstractSplunkTest {
     }
 
     @Test
+    @DisabledIf("isSecured")
     public void testStreamForRealtime() throws InterruptedException, ExecutionException {
         String suffix = "_RealtimeSearchOfStream";
         String restUrl = ssl ? "/splunk/ssl/results/realtimeSearch" : "/splunk/results/realtimeSearch";
