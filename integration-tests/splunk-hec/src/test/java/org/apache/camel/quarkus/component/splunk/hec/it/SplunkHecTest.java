@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 import org.testcontainers.shaded.org.hamcrest.core.StringContains;
 
+//https://www.ibm.com/docs/en/z-logdata-analytics/5.1.0?topic=subscribers-configuring-tls-splunk-hec
 @QuarkusTest
 @QuarkusTestResource(SplunkTestResource.class)
 class SplunkHecTest {

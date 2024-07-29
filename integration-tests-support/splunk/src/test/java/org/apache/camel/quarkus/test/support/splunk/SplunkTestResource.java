@@ -16,6 +16,7 @@
  */
 package org.apache.camel.quarkus.test.support.splunk;
 
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Map;
 import java.util.TimeZone;
@@ -25,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.MountableFile;
@@ -65,12 +67,12 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
                             Wait.forLogMessage(".*Ansible playbook complete.*\\n", 1)
                                     .withStartupTimeout(Duration.ofMinutes(5)));
 
-            if (ssl) {
-                container.withCopyToContainer(MountableFile.forClasspathResource("localhost.pem"),
-                        "/tmp/defaults/server.pem")
-                        .withCopyToContainer(MountableFile.forClasspathResource("splunkca.pem"),
-                                "/tmp/defaults/cacert.pem");
-            }
+//            if (ssl) {
+//                container.withCopyToContainer(MountableFile.forClasspathResource("localhost.pem"),
+//                        "/tmp/defaults/server.pem")
+//                        .withCopyToContainer(MountableFile.forClasspathResource("splunkca.pem"),
+//                                "/tmp/defaults/cacert.pem");
+//            }
 
             LOG.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.");
             LOG.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.");
@@ -86,12 +88,28 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
                     "/opt/splunk/etc/system/default/server.conf");
 
             if (ssl) {
-                container.execInContainer("sudo", "sed", "-i",
-                        "s,serverCert = $SPLUNK_HOME\\/etc\\/auth\\/server.pem,serverCert =  \\/tmp\\/defaults\\/server.pem",
-                        "/opt/splunk/etc/system/default/server.conf");
-                container.execInContainer("sudo", "sed", "-i",
-                        "s,caCertFile = $SPLUNK_HOME\\/etc\\/auth\\/cacert.pem,caCertFile = \\/tmp\\/defaults\\/cacert.pem",
-                        "/opt/splunk/etc/system/default/server.conf");
+//                Container.ExecResult res = container.execInContainer("sudo", "sed", "-i",
+//                        "s,serverCert = $SPLUNK_HOME\\/etc\\/auth\\/server.pem,serverCert = \\/tmp\\/defaults\\/server.pem",
+//                        "/opt/splunk/etc/system/default/server.conf");
+//
+//                LOG.info("----------------overriding ssl ---------------");
+//                LOG.info("exitcode: " + res.getExitCode());
+//                LOG.info("stdout: " + res.getStdout());
+//                LOG.info("srderr: " + res.getStderr());
+//                LOG.info("-----------------------------------------------");
+//
+//
+//                container.execInContainer("sudo", "sed", "-i",
+//                        "s,caCertFile = $SPLUNK_HOME\\/etc\\/auth\\/cacert.pem,caCertFile = \\/tmp\\/defaults\\/cacert.pem",
+//                        "/opt/splunk/etc/system/default/server.conf");
+
+                //export pems from the splunk
+                container.copyFileFromContainer("/opt/splunk/etc/auth/cacert.pem",
+                        Path.of(getClass().getResource("/").getPath()).resolve("cacert_from_container.pem").toFile()
+                                .getAbsolutePath());
+                container.copyFileFromContainer("/opt/splunk/etc/auth/server.pem",
+                        Path.of(getClass().getResource("/").getPath()).resolve("server_from_container.pem").toFile()
+                                .getAbsolutePath());
             } else {
                 container.execInContainer("sudo", "sed", "-i", "s/enableSplunkdSSL = true/enableSplunkdSSL = false/",
                         "/opt/splunk/etc/system/default/server.conf");

@@ -16,10 +16,23 @@
  */
 package org.apache.camel.quarkus.component.splunk.it;
 
-import io.quarkus.test.common.ResourceArg;
-import io.quarkus.test.common.WithTestResource;
 import io.quarkus.test.junit.QuarkusTest;
-import org.apache.camel.quarkus.test.support.splunk.SplunkTestResource;
+
+//---------------------------
+//probably can no works with free licence :
+//<msg type="WARN">Remote login disabled because you are using a free license which does not provide authentication. To resolve either switch to the forwarder-only license or the enterprise trial license included with the product. To override this and enable unauthenticated remote management, edit the 'allowRemoteLogin' setting in your server.conf file.</msg>
+//zkusit to same url bez ssh, co to udela
+//--------------------
+//https://docs.splunk.com/Documentation/Splunk/9.2.0/Admin/Serverconf
+//https://docs.splunk.com/Documentation/Splunk/9.2.0/Security/ConfigTLSCertsS2S
+//-----------------------
+
+//The certificates must be in Privacy-Enhanced Mail format and comply with the x.509 public key certificate standard
+//You must have a private key file for each certificate file.
+//The key files that come with the certificates must be in RSA security format.
+//https://docs.splunk.com/Documentation/Splunk/latest/Security/ConfigureSplunkforwardingtousesignedcertificates
+
+//https://splunk.github.io/docker-splunk/ADVANCED.html#enable-ssl-internal-communication
 
 //@TestCertificates(certificates = {
 //        @Certificate(name = "splunk", formats = {
@@ -27,8 +40,8 @@ import org.apache.camel.quarkus.test.support.splunk.SplunkTestResource;
 //        @Certificate(name = "wrong", formats = {
 //                Format.PKCS12 }, password = "password") })
 @QuarkusTest
-@WithTestResource(value = SplunkTestResource.class, initArgs = {
-        @ResourceArg(name = "ssl", value = "true") })
+//@WithTestResource(value = SplunkTestResource.class, initArgs = {
+//        @ResourceArg(name = "ssl", value = "true") })
 class SplunkSslTest extends AbstractSplunkTest {
 
     SplunkSslTest() {

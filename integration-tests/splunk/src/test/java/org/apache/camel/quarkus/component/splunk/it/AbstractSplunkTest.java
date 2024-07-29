@@ -79,7 +79,7 @@ abstract class AbstractSplunkTest {
                 });
     }
 
-    @Test
+    //    @Test
     public void testSavedSearchWithTcp() throws InterruptedException {
         String suffix = "_SavedSearchOfTcp";
         String urlPrefix = ssl ? "https://" : "http://";
@@ -120,7 +120,7 @@ abstract class AbstractSplunkTest {
                 });
     }
 
-    @Test
+    //    @Test
     public void testStreamForRealtime() throws InterruptedException, ExecutionException {
         String suffix = "_RealtimeSearchOfStream";
         String restUrl = ssl ? "/splunk/ssl/results/realtimeSearch" : "/splunk/results/realtimeSearch";

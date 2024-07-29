@@ -1,0 +1,576 @@
+07-25 16:01:57,381 INFO  [org.tes.DockerClientFactory] (pool-3-thread-1) Checking the system...
+2024-07-25 16:01:57,382 INFO  [org.tes.DockerClientFactory] (pool-3-thread-1) ✔︎ Docker server version should be at least 1.6.0
+2024-07-25 16:01:57,389 INFO  [tc.doc.io/.2.0] (pool-3-thread-1) Creating container for image: docker.io/splunk/splunk:9.2.0
+2024-07-25 16:01:57,436 INFO  [tc.doc.io/.2.0] (pool-3-thread-1) Container docker.io/splunk/splunk:9.2.0 is starting: de0cec86c021197b6d3fe61efa597ac381c2e9456d496f3eab0af7aff940237b
+2024-07-25 16:01:58,102 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [DEPRECATION WARNING]: Ansible will require Python 3.8 or newer on the
+2024-07-25 16:01:58,103 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: controller starting with Ansible 2.12. Current version: 3.7.16 (default, Feb  6
+2024-07-25 16:01:58,103 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR:  2024, 06:59:22) [GCC 8.5.0 20210514 (Red Hat 8.5.0-20)]. This feature will be
+2024-07-25 16:01:58,103 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: removed from ansible-core in version 2.12. Deprecation warnings can be disabled
+2024-07-25 16:01:58,104 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR:  by setting deprecation_warnings=False in ansible.cfg.
+2024-07-25 16:01:58,822 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [DEPRECATION WARNING]: COMMAND_WARNINGS option, the command warnings feature is
+2024-07-25 16:01:58,822 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR:  being removed. This feature will be removed from ansible-core in version 2.14.
+2024-07-25 16:01:58,822 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR:  Deprecation warnings can be disabled by setting deprecation_warnings=False in
+2024-07-25 16:01:58,823 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: ansible.cfg.
+2024-07-25 16:01:58,823 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [DEPRECATION WARNING]: [defaults]callback_whitelist option, normalizing names
+2024-07-25 16:01:58,823 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to new standard, use callbacks_enabled instead. This feature will be removed
+2024-07-25 16:01:58,823 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: from ansible-core in version 2.15. Deprecation warnings can be disabled by
+2024-07-25 16:01:58,823 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: setting deprecation_warnings=False in ansible.cfg.
+2024-07-25 16:01:59,464 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:01:59,464 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: PLAY [Run default Splunk provisioning] *****************************************
+2024-07-25 16:01:59,595 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:01:59 +0200 (0:00:00.133)       0:00:00.133 *********
+2024-07-25 16:02:01,978 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:01,979 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [Gathering Facts] *********************************************************
+2024-07-25 16:02:01,979 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:02,004 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:02 +0200 (0:00:02.409)       0:00:02.542 *********
+2024-07-25 16:02:02,047 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:02 +0200 (0:00:00.042)       0:00:02.585 *********
+2024-07-25 16:02:02,063 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:02,064 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [Provision role] **********************************************************
+2024-07-25 16:02:02,136 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:02 +0200 (0:00:00.088)       0:00:02.674 *********
+2024-07-25 16:02:02,143 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:02,144 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : include_tasks] *******************************************
+2024-07-25 16:02:02,166 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/get_facts.yml for localhost
+2024-07-25 16:02:02,189 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:02 +0200 (0:00:00.053)       0:00:02.727 *********
+2024-07-25 16:02:02,233 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:02,234 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Set privilege escalation user] ***************************
+2024-07-25 16:02:02,234 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:02,245 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:02 +0200 (0:00:00.056)       0:00:02.783 *********
+2024-07-25 16:02:02,446 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:02,447 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:02,447 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:02,447 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:02,634 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:02,634 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Check for scloud] ****************************************
+2024-07-25 16:02:02,635 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:02,646 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:02 +0200 (0:00:00.400)       0:00:03.184 *********
+2024-07-25 16:02:02,675 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:02 +0200 (0:00:00.028)       0:00:03.213 *********
+2024-07-25 16:02:02,697 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:02 +0200 (0:00:00.022)       0:00:03.235 *********
+2024-07-25 16:02:02,804 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:02,804 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:02,804 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:02,804 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:03,016 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:03,016 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Check for existing installation] *************************
+2024-07-25 16:02:03,016 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:03,027 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:03 +0200 (0:00:00.330)       0:00:03.566 *********
+2024-07-25 16:02:03,071 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:03,071 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Set splunk install fact] *********************************
+2024-07-25 16:02:03,071 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:03,086 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:03 +0200 (0:00:00.057)       0:00:03.623 *********
+2024-07-25 16:02:03,193 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:03,193 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:03,193 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:03,193 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:03,380 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:03,381 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Check for existing splunk secret] ************************
+2024-07-25 16:02:03,381 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:03,392 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:03 +0200 (0:00:00.307)       0:00:03.931 *********
+2024-07-25 16:02:03,434 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:03,434 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Set first run fact] **************************************
+2024-07-25 16:02:03,435 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:03,446 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:03 +0200 (0:00:00.053)       0:00:03.984 *********
+2024-07-25 16:02:03,454 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:03,454 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Set splunk_build_type fact] ******************************
+2024-07-25 16:02:03,468 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/get_facts_build_type.yml for localhost
+2024-07-25 16:02:03,489 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:03 +0200 (0:00:00.042)       0:00:04.027 *********
+2024-07-25 16:02:03,513 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:03 +0200 (0:00:00.024)       0:00:04.051 *********
+2024-07-25 16:02:03,547 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:03 +0200 (0:00:00.034)       0:00:04.086 *********
+2024-07-25 16:02:03,579 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:03 +0200 (0:00:00.031)       0:00:04.117 *********
+2024-07-25 16:02:03,614 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:03 +0200 (0:00:00.034)       0:00:04.152 *********
+2024-07-25 16:02:03,645 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:03 +0200 (0:00:00.031)       0:00:04.183 *********
+2024-07-25 16:02:03,662 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:03,662 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Set target version fact] *********************************
+2024-07-25 16:02:03,676 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/get_facts_target_version.yml for localhost
+2024-07-25 16:02:03,699 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:03 +0200 (0:00:00.054)       0:00:04.238 *********
+2024-07-25 16:02:03,728 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:03 +0200 (0:00:00.028)       0:00:04.266 *********
+2024-07-25 16:02:03,757 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:03 +0200 (0:00:00.028)       0:00:04.295 *********
+2024-07-25 16:02:03,786 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:03 +0200 (0:00:00.029)       0:00:04.324 *********
+2024-07-25 16:02:04,017 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:04,018 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:04,018 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:04,018 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:04,212 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:04,212 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Find manifests] ******************************************
+2024-07-25 16:02:04,212 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:04,224 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:04 +0200 (0:00:00.438)       0:00:04.763 *********
+2024-07-25 16:02:04,275 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:04,275 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Set current version fact] ********************************
+2024-07-25 16:02:04,276 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:04,289 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:04 +0200 (0:00:00.064)       0:00:04.827 *********
+2024-07-25 16:02:04,338 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:04,339 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Setting upgrade fact] ************************************
+2024-07-25 16:02:04,339 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:04,350 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:04 +0200 (0:00:00.061)       0:00:04.889 *********
+2024-07-25 16:02:04,393 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:04,393 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Setting indexer cluster fact from config] ****************
+2024-07-25 16:02:04,394 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:04,409 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:04 +0200 (0:00:00.058)       0:00:04.947 *********
+2024-07-25 16:02:04,451 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:04,451 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Setting search head cluster fact from config] ************
+2024-07-25 16:02:04,451 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:04,462 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:04 +0200 (0:00:00.053)       0:00:05.001 *********
+2024-07-25 16:02:04,487 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:04 +0200 (0:00:00.023)       0:00:05.024 *********
+2024-07-25 16:02:04,522 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:04 +0200 (0:00:00.036)       0:00:05.060 *********
+2024-07-25 16:02:04,557 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:04 +0200 (0:00:00.034)       0:00:05.095 *********
+2024-07-25 16:02:04,565 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:04,566 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Detect service name] *************************************
+2024-07-25 16:02:04,583 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/get_facts_service_name.yml for localhost
+2024-07-25 16:02:04,609 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:04 +0200 (0:00:00.051)       0:00:05.147 *********
+2024-07-25 16:02:04,652 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:04,652 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Setting service_name fact from config] *******************
+2024-07-25 16:02:04,653 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:04,665 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:04 +0200 (0:00:00.056)       0:00:05.203 *********
+2024-07-25 16:02:04,703 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:04 +0200 (0:00:00.037)       0:00:05.241 *********
+2024-07-25 16:02:04,732 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:04 +0200 (0:00:00.029)       0:00:05.270 *********
+2024-07-25 16:02:04,762 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:04 +0200 (0:00:00.029)       0:00:05.300 *********
+2024-07-25 16:02:04,792 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:04 +0200 (0:00:00.030)       0:00:05.330 *********
+2024-07-25 16:02:04,822 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:04 +0200 (0:00:00.030)       0:00:05.360 *********
+2024-07-25 16:02:04,860 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:04,860 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : include_tasks] *******************************************
+2024-07-25 16:02:04,875 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/change_splunk_directory_owner.yml for localhost
+2024-07-25 16:02:04,904 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:04 +0200 (0:00:00.081)       0:00:05.442 *********
+2024-07-25 16:02:07,198 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:07,198 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Update Splunk directory owner] ***************************
+2024-07-25 16:02:07,198 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:07,210 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:07 +0200 (0:00:02.305)       0:00:07.748 *********
+2024-07-25 16:02:07,228 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:07,228 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : include_tasks] *******************************************
+2024-07-25 16:02:07,240 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/update_etc.yml for localhost
+2024-07-25 16:02:07,269 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:07 +0200 (0:00:00.059)       0:00:07.808 *********
+2024-07-25 16:02:07,378 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:07,378 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:07,378 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:07,378 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:07,571 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:07,571 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Check if /sbin/updateetc.sh exists] **********************
+2024-07-25 16:02:07,571 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:07,582 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:07 +0200 (0:00:00.312)       0:00:08.120 *********
+2024-07-25 16:02:07,811 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:07,812 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:07,812 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:07,812 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:08,695 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:08,696 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Update /opt/splunk/etc] **********************************
+2024-07-25 16:02:08,696 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: changed: [localhost]
+2024-07-25 16:02:08,710 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:08 +0200 (0:00:01.127)       0:00:09.248 *********
+2024-07-25 16:02:08,757 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:08 +0200 (0:00:00.046)       0:00:09.295 *********
+2024-07-25 16:02:08,813 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:08 +0200 (0:00:00.056)       0:00:09.351 *********
+2024-07-25 16:02:08,838 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:08 +0200 (0:00:00.024)       0:00:09.376 *********
+2024-07-25 16:02:08,883 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:08 +0200 (0:00:00.045)       0:00:09.421 *********
+2024-07-25 16:02:08,892 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:08,892 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : include_tasks] *******************************************
+2024-07-25 16:02:08,906 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/remove_first_login.yml for localhost
+2024-07-25 16:02:08,940 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:08 +0200 (0:00:00.057)       0:00:09.478 *********
+2024-07-25 16:02:09,055 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:09,055 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:09,055 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:09,055 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:09,258 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:09,258 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Create .ui_login] ****************************************
+2024-07-25 16:02:09,258 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: changed: [localhost]
+2024-07-25 16:02:09,270 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:09 +0200 (0:00:00.329)       0:00:09.808 *********
+2024-07-25 16:02:09,299 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:09 +0200 (0:00:00.029)       0:00:09.838 *********
+2024-07-25 16:02:09,307 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:09,308 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : include_tasks] *******************************************
+2024-07-25 16:02:09,320 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/set_splunk_secret.yml for localhost
+2024-07-25 16:02:09,355 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:09 +0200 (0:00:00.055)       0:00:09.893 *********
+2024-07-25 16:02:09,386 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:09 +0200 (0:00:00.030)       0:00:09.924 *********
+2024-07-25 16:02:09,409 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:09 +0200 (0:00:00.023)       0:00:09.947 *********
+2024-07-25 16:02:09,416 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:09,417 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : include_tasks] *******************************************
+2024-07-25 16:02:09,451 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/enable_admin_auth.yml for localhost
+2024-07-25 16:02:09,485 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:09 +0200 (0:00:00.075)       0:00:10.023 *********
+2024-07-25 16:02:09,593 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:09,594 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:09,594 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:09,594 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:09,878 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:09,878 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Hash the password] ***************************************
+2024-07-25 16:02:09,878 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: changed: [localhost]
+2024-07-25 16:02:09,890 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:09 +0200 (0:00:00.405)       0:00:10.428 *********
+2024-07-25 16:02:10,138 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:10,138 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:10,138 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:10,139 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:10,334 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:10,335 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Generate user-seed.conf (Linux)] *************************
+2024-07-25 16:02:10,335 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: changed: [localhost] => (item=USERNAME)
+2024-07-25 16:02:10,609 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: changed: [localhost] => (item=HASHED_PASSWORD)
+2024-07-25 16:02:10,624 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:10 +0200 (0:00:00.733)       0:00:11.162 *********
+2024-07-25 16:02:10,672 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:10 +0200 (0:00:00.047)       0:00:11.210 *********
+2024-07-25 16:02:10,732 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:10 +0200 (0:00:00.059)       0:00:11.270 *********
+2024-07-25 16:02:10,773 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:10 +0200 (0:00:00.041)       0:00:11.311 *********
+2024-07-25 16:02:10,815 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:10 +0200 (0:00:00.041)       0:00:11.353 *********
+2024-07-25 16:02:10,837 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:10 +0200 (0:00:00.022)       0:00:11.375 *********
+2024-07-25 16:02:10,845 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:10,845 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : include_tasks] *******************************************
+2024-07-25 16:02:10,857 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/pre_splunk_start_commands.yml for localhost
+2024-07-25 16:02:10,895 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:10 +0200 (0:00:00.057)       0:00:11.433 *********
+2024-07-25 16:02:10,926 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:10 +0200 (0:00:00.031)       0:00:11.464 *********
+2024-07-25 16:02:10,939 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:10,939 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : include_tasks] *******************************************
+2024-07-25 16:02:10,952 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/enable_s2s.yml for localhost
+2024-07-25 16:02:10,988 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:10 +0200 (0:00:00.062)       0:00:11.527 *********
+2024-07-25 16:02:11,035 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:11 +0200 (0:00:00.046)       0:00:11.574 *********
+2024-07-25 16:02:11,075 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:11,076 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : include_tasks] *******************************************
+2024-07-25 16:02:11,127 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/s2s/configure_splunktcp.yml for localhost
+2024-07-25 16:02:11,143 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:11 +0200 (0:00:00.108)       0:00:11.682 *********
+2024-07-25 16:02:11,295 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:11,296 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:11,296 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:11,296 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:11,512 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:11,513 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Enable splunktcp input] **********************************
+2024-07-25 16:02:11,513 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: changed: [localhost]
+2024-07-25 16:02:11,525 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:11 +0200 (0:00:00.381)       0:00:12.063 *********
+2024-07-25 16:02:11,642 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:11,642 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:11,643 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:11,643 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:11,837 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:11,838 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Remove splunktcp-ssl input] ******************************
+2024-07-25 16:02:11,838 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: changed: [localhost]
+2024-07-25 16:02:11,850 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:11 +0200 (0:00:00.325)       0:00:12.388 *********
+2024-07-25 16:02:11,956 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:11,956 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:11,957 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:11,957 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:12,160 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:12,160 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Remove input SSL settings] *******************************
+2024-07-25 16:02:12,161 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: changed: [localhost]
+2024-07-25 16:02:12,173 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:12 +0200 (0:00:00.322)       0:00:12.711 *********
+2024-07-25 16:02:12,279 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:12,279 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:12,279 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:12,280 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:12,485 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:12,485 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Reset root CA] *******************************************
+2024-07-25 16:02:12,485 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:12,497 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:12 +0200 (0:00:00.324)       0:00:13.035 *********
+2024-07-25 16:02:12,515 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:12,516 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : include_tasks] *******************************************
+2024-07-25 16:02:12,529 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/trigger_restart.yml for localhost
+2024-07-25 16:02:12,545 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:12 +0200 (0:00:00.047)       0:00:13.083 *********
+2024-07-25 16:02:12,554 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:12,554 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : include_tasks] *******************************************
+2024-07-25 16:02:12,568 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/get_splunk_status.yml for localhost
+2024-07-25 16:02:12,582 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:12 +0200 (0:00:00.036)       0:00:13.120 *********
+2024-07-25 16:02:12,596 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:12,596 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Restrict permissions on splunk.key for Status] ***********
+2024-07-25 16:02:12,610 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/restrict_permissions.yml for localhost => (item=/opt/splunk/var/lib/splunk/kvstore/mongo/splunk.key)
+2024-07-25 16:02:12,625 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:12 +0200 (0:00:00.043)       0:00:13.164 *********
+2024-07-25 16:02:12,732 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:12,733 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:12,733 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:12,733 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:12,938 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:12,939 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Check if /opt/splunk/var/lib/splunk/kvstore/mongo/splunk.key exists] ***
+2024-07-25 16:02:12,939 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:12,952 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:12 +0200 (0:00:00.326)       0:00:13.491 *********
+2024-07-25 16:02:12,975 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:12 +0200 (0:00:00.022)       0:00:13.513 *********
+2024-07-25 16:02:13,101 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:13,102 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:13,103 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:13,104 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:14,833 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:14,834 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Get Splunk status] ***************************************
+2024-07-25 16:02:14,834 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:14,846 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:14 +0200 (0:00:01.870)       0:00:15.384 *********
+2024-07-25 16:02:14,958 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:14,958 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:14,958 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:14,959 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:15,155 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:15,155 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Trigger restart] *****************************************
+2024-07-25 16:02:15,155 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:15,167 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:15 +0200 (0:00:00.321)       0:00:15.705 *********
+2024-07-25 16:02:15,197 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:15 +0200 (0:00:00.029)       0:00:15.735 *********
+2024-07-25 16:02:15,240 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:15 +0200 (0:00:00.043)       0:00:15.779 *********
+2024-07-25 16:02:15,248 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:15,249 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : include_tasks] *******************************************
+2024-07-25 16:02:15,263 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/set_mgmt_port.yml for localhost
+2024-07-25 16:02:15,304 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:15 +0200 (0:00:00.063)       0:00:15.842 *********
+2024-07-25 16:02:15,416 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:15,416 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:15,416 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:15,417 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:15,607 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:15,608 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Set mgmt port] *******************************************
+2024-07-25 16:02:15,608 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: changed: [localhost]
+2024-07-25 16:02:15,622 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:15 +0200 (0:00:00.317)       0:00:16.160 *********
+2024-07-25 16:02:15,640 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:15,640 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : include_tasks] *******************************************
+2024-07-25 16:02:15,658 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/../handlers/restart_splunk.yml for localhost
+2024-07-25 16:02:15,671 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:15 +0200 (0:00:00.049)       0:00:16.209 *********
+2024-07-25 16:02:15,778 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:15,778 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:15,778 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:15,779 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:34,996 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:34,997 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Restart the splunkd service - Via CLI] *******************
+2024-07-25 16:02:34,997 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: changed: [localhost]
+2024-07-25 16:02:35,010 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:35 +0200 (0:00:19.338)       0:00:35.548 *********
+2024-07-25 16:02:35,041 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:35 +0200 (0:00:00.030)       0:00:35.579 *********
+2024-07-25 16:02:35,071 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:35 +0200 (0:00:00.029)       0:00:35.609 *********
+2024-07-25 16:02:35,310 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:35,311 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:35,311 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:35,311 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:35,523 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:35,524 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Wait for splunkd management port] ************************
+2024-07-25 16:02:35,524 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:35,536 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:35 +0200 (0:00:00.464)       0:00:36.074 *********
+2024-07-25 16:02:35,559 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:35 +0200 (0:00:00.023)       0:00:36.097 *********
+2024-07-25 16:02:35,603 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:35 +0200 (0:00:00.044)       0:00:36.141 *********
+2024-07-25 16:02:35,648 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:35 +0200 (0:00:00.044)       0:00:36.186 *********
+2024-07-25 16:02:35,698 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:35 +0200 (0:00:00.050)       0:00:36.236 *********
+2024-07-25 16:02:35,708 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:35,708 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : include_tasks] *******************************************
+2024-07-25 16:02:35,728 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/enable_splunkd_ssl.yml for localhost
+2024-07-25 16:02:35,767 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:35 +0200 (0:00:00.069)       0:00:36.305 *********
+2024-07-25 16:02:35,882 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:35,882 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:35,882 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:35,882 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:36,073 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:36,073 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Enable Splunkd SSL] **************************************
+2024-07-25 16:02:36,073 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:36,085 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:36 +0200 (0:00:00.318)       0:00:36.624 *********
+2024-07-25 16:02:36,108 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:36 +0200 (0:00:00.022)       0:00:36.646 *********
+2024-07-25 16:02:36,135 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:36 +0200 (0:00:00.026)       0:00:36.673 *********
+2024-07-25 16:02:36,161 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:36 +0200 (0:00:00.026)       0:00:36.700 *********
+2024-07-25 16:02:36,184 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:36 +0200 (0:00:00.023)       0:00:36.723 *********
+2024-07-25 16:02:36,234 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:36 +0200 (0:00:00.049)       0:00:36.772 *********
+2024-07-25 16:02:36,285 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:36 +0200 (0:00:00.050)       0:00:36.823 *********
+2024-07-25 16:02:36,310 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:36 +0200 (0:00:00.025)       0:00:36.848 *********
+2024-07-25 16:02:36,319 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:36,319 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : include_tasks] *******************************************
+2024-07-25 16:02:36,336 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/start_splunk.yml for localhost
+2024-07-25 16:02:36,383 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:36 +0200 (0:00:00.073)       0:00:36.922 *********
+2024-07-25 16:02:36,392 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:36,392 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : include_tasks] *******************************************
+2024-07-25 16:02:36,434 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/get_splunk_status.yml for localhost
+2024-07-25 16:02:36,448 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:36 +0200 (0:00:00.064)       0:00:36.986 *********
+2024-07-25 16:02:36,460 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:36,461 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Restrict permissions on splunk.key for Status] ***********
+2024-07-25 16:02:36,474 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/restrict_permissions.yml for localhost => (item=/opt/splunk/var/lib/splunk/kvstore/mongo/splunk.key)
+2024-07-25 16:02:36,489 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:36 +0200 (0:00:00.041)       0:00:37.027 *********
+2024-07-25 16:02:36,599 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:36,599 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:36,599 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:36,599 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:36,791 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:36,791 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Check if /opt/splunk/var/lib/splunk/kvstore/mongo/splunk.key exists] ***
+2024-07-25 16:02:36,792 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:36,805 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:36 +0200 (0:00:00.315)       0:00:37.343 *********
+2024-07-25 16:02:36,914 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:36,914 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:36,915 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:36,915 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:37,115 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:37,116 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Restrict permissions on /opt/splunk/var/lib/splunk/kvstore/mongo/splunk.key] ***
+2024-07-25 16:02:37,116 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:37,128 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:37 +0200 (0:00:00.322)       0:00:37.666 *********
+2024-07-25 16:02:37,242 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:37,243 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:37,243 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:37,243 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:37,476 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:37,476 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Get Splunk status] ***************************************
+2024-07-25 16:02:37,477 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:37,489 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:37 +0200 (0:00:00.361)       0:00:38.028 *********
+2024-07-25 16:02:37,523 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:37 +0200 (0:00:00.033)       0:00:38.062 *********
+2024-07-25 16:02:37,556 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:37 +0200 (0:00:00.032)       0:00:38.094 *********
+2024-07-25 16:02:37,577 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:37 +0200 (0:00:00.021)       0:00:38.116 *********
+2024-07-25 16:02:37,599 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:37 +0200 (0:00:00.021)       0:00:38.137 *********
+2024-07-25 16:02:37,623 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:37 +0200 (0:00:00.024)       0:00:38.161 *********
+2024-07-25 16:02:37,730 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:37,730 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:37,730 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:37,730 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:37,936 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:37,936 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Wait for splunkd management port] ************************
+2024-07-25 16:02:37,936 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:37,948 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:37 +0200 (0:00:00.324)       0:00:38.486 *********
+2024-07-25 16:02:37,959 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:37 +0200 (0:00:00.011)       0:00:38.498 *********
+2024-07-25 16:02:37,967 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:37,968 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : include_tasks] *******************************************
+2024-07-25 16:02:37,981 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/set_certificate_prefix.yml for localhost
+2024-07-25 16:02:38,033 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:38 +0200 (0:00:00.072)       0:00:38.570 *********
+2024-07-25 16:02:38,290 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:38,290 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:38,290 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:38,290 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:38,789 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:38,789 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Test basic https endpoint] *******************************
+2024-07-25 16:02:38,790 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:38,801 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:38 +0200 (0:00:00.769)       0:00:39.340 *********
+2024-07-25 16:02:38,848 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:38,848 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Set url prefix for future REST calls] ********************
+2024-07-25 16:02:38,849 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:38,860 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:38 +0200 (0:00:00.059)       0:00:39.399 *********
+2024-07-25 16:02:38,868 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:38,869 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : include_tasks] *******************************************
+2024-07-25 16:02:38,881 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/clean_user_seed.yml for localhost
+2024-07-25 16:02:38,931 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:38 +0200 (0:00:00.070)       0:00:39.469 *********
+2024-07-25 16:02:39,039 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:39,040 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:39,040 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:39,040 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:39,244 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:39,244 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Remove user-seed.conf] ***********************************
+2024-07-25 16:02:39,245 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:39,256 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:39 +0200 (0:00:00.325)       0:00:39.795 *********
+2024-07-25 16:02:39,264 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:39,265 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : include_tasks] *******************************************
+2024-07-25 16:02:39,280 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/add_splunk_license.yml for localhost
+2024-07-25 16:02:39,331 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:39 +0200 (0:00:00.074)       0:00:39.869 *********
+2024-07-25 16:02:39,374 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:39,374 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Initialize licenses array] *******************************
+2024-07-25 16:02:39,374 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:39,386 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:39 +0200 (0:00:00.055)       0:00:39.924 *********
+2024-07-25 16:02:39,439 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:39,439 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Determine available licenses] ****************************
+2024-07-25 16:02:39,439 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost] => (item=Free)
+2024-07-25 16:02:39,453 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:39 +0200 (0:00:00.067)       0:00:39.992 *********
+2024-07-25 16:02:39,496 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:39,496 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Apply licenses] ******************************************
+2024-07-25 16:02:39,511 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/apply_licenses.yml for localhost => (item=Free)
+2024-07-25 16:02:39,526 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:39 +0200 (0:00:00.073)       0:00:40.065 *********
+2024-07-25 16:02:39,556 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:39,556 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : include_tasks] *******************************************
+2024-07-25 16:02:39,569 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/licenses/enable_free_license.yml for localhost
+2024-07-25 16:02:39,584 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:39 +0200 (0:00:00.057)       0:00:40.122 *********
+2024-07-25 16:02:39,693 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:39,693 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:39,694 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:39,694 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:40,218 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:40,219 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Check current license group] *****************************
+2024-07-25 16:02:40,219 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:40,231 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:40 +0200 (0:00:00.647)       0:00:40.770 *********
+2024-07-25 16:02:40,348 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:40,348 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:40,348 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:40,348 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:40,851 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:40,852 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_common : Activate free license] ***********************************
+2024-07-25 16:02:40,852 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:40,865 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:40 +0200 (0:00:00.633)       0:00:41.403 *********
+2024-07-25 16:02:40,905 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:40 +0200 (0:00:00.040)       0:00:41.443 *********
+2024-07-25 16:02:40,928 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:40 +0200 (0:00:00.022)       0:00:41.466 *********
+2024-07-25 16:02:40,977 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:40 +0200 (0:00:00.049)       0:00:41.515 *********
+2024-07-25 16:02:41,002 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:41 +0200 (0:00:00.024)       0:00:41.540 *********
+2024-07-25 16:02:41,014 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:41 +0200 (0:00:00.012)       0:00:41.552 *********
+2024-07-25 16:02:41,071 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:41 +0200 (0:00:00.056)       0:00:41.609 *********
+2024-07-25 16:02:41,080 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:41,080 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_standalone : include_tasks] ***************************************
+2024-07-25 16:02:41,095 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_standalone/tasks/../../splunk_common/tasks/set_as_hec_receiver.yml for localhost
+2024-07-25 16:02:41,116 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:41 +0200 (0:00:00.044)       0:00:41.654 *********
+2024-07-25 16:02:41,272 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:41,272 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:41,272 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:41,272 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:41,833 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:41,833 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_standalone : Setup global HEC] ************************************
+2024-07-25 16:02:41,834 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:41,845 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:41 +0200 (0:00:00.729)       0:00:42.383 *********
+2024-07-25 16:02:41,989 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:41,989 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:41,989 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:41,989 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:42,495 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:42,495 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_standalone : Get existing HEC token] ******************************
+2024-07-25 16:02:42,495 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:02:42,507 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:42 +0200 (0:00:00.662)       0:00:43.045 *********
+2024-07-25 16:02:42,538 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:42 +0200 (0:00:00.031)       0:00:43.077 *********
+2024-07-25 16:02:42,693 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:42,694 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:42,694 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:42,695 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:43,251 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:43,252 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_standalone : Update HEC token configuration] **********************
+2024-07-25 16:02:43,252 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: changed: [localhost]
+2024-07-25 16:02:43,264 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:43 +0200 (0:00:00.725)       0:00:43.802 *********
+2024-07-25 16:02:43,293 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:43 +0200 (0:00:00.028)       0:00:43.831 *********
+2024-07-25 16:02:43,325 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:43 +0200 (0:00:00.032)       0:00:43.863 *********
+2024-07-25 16:02:43,384 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:43 +0200 (0:00:00.059)       0:00:43.922 *********
+2024-07-25 16:02:43,426 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:43 +0200 (0:00:00.042)       0:00:43.964 *********
+2024-07-25 16:02:43,478 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:43 +0200 (0:00:00.052)       0:00:44.017 *********
+2024-07-25 16:02:43,500 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:43 +0200 (0:00:00.022)       0:00:44.039 *********
+2024-07-25 16:02:43,528 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:43 +0200 (0:00:00.027)       0:00:44.066 *********
+2024-07-25 16:02:43,582 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:43 +0200 (0:00:00.054)       0:00:44.120 *********
+2024-07-25 16:02:43,590 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:43,590 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_standalone : include_tasks] ***************************************
+2024-07-25 16:02:43,603 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_standalone/tasks/../../splunk_common/tasks/check_for_required_restarts.yml for localhost
+2024-07-25 16:02:43,620 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:43 +0200 (0:00:00.038)       0:00:44.158 *********
+2024-07-25 16:02:43,727 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:43,727 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:43,728 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:43,728 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:44,436 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:44,437 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [splunk_standalone : Check for required restarts] *************************
+2024-07-25 16:02:44,437 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: changed: [localhost]
+2024-07-25 16:02:44,522 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:44 +0200 (0:00:00.901)       0:00:45.060 *********
+2024-07-25 16:02:44,581 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:44 +0200 (0:00:00.059)       0:00:45.120 *********
+2024-07-25 16:02:44,596 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:44,596 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [Check all instances for required restarts] *******************************
+2024-07-25 16:02:44,615 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/check_for_required_restarts.yml for localhost
+2024-07-25 16:02:44,648 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:44 +0200 (0:00:00.066)       0:00:45.186 *********
+2024-07-25 16:02:44,819 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:44,820 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:44,820 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:44,820 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:02:45,718 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:45,718 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: TASK [Check for required restarts] *********************************************
+2024-07-25 16:02:45,718 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: changed: [localhost]
+2024-07-25 16:02:45,731 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:45 +0200 (0:00:01.082)       0:00:46.269 *********
+2024-07-25 16:02:45,731 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:45 +0200 (0:00:00.000)       0:00:46.269 *********
+2024-07-25 16:02:45,752 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:02:45,753 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: RUNNING HANDLER [splunk_common : Restart the splunkd service] ******************
+2024-07-25 16:02:45,766 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: included: /opt/ansible/roles/splunk_common/tasks/../handlers/restart_splunk.yml for localhost
+2024-07-25 16:02:45,766 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:02:45 +0200 (0:00:00.035)       0:00:46.305 *********
+2024-07-25 16:02:45,908 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:02:45,909 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:02:45,909 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:02:45,909 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:03:25,226 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:03:25,226 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: RUNNING HANDLER [splunk_common : Restart the splunkd service - Via CLI] ********
+2024-07-25 16:03:25,227 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: changed: [localhost]
+2024-07-25 16:03:25,227 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:03:25 +0200 (0:00:39.460)       0:01:25.765 *********
+2024-07-25 16:03:25,255 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:03:25 +0200 (0:00:00.028)       0:01:25.793 *********
+2024-07-25 16:03:25,290 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:03:25 +0200 (0:00:00.034)       0:01:25.828 *********
+2024-07-25 16:03:25,460 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: [WARNING]: Using world-readable permissions for temporary files Ansible needs
+2024-07-25 16:03:25,460 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: to create when becoming an unprivileged user. This may be insecure. For
+2024-07-25 16:03:25,460 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: information on securing this, see https://docs.ansible.com/ansible-
+2024-07-25 16:03:25,460 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDERR: core/2.11/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+2024-07-25 16:03:25,664 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:03:25,664 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: RUNNING HANDLER [splunk_common : Wait for splunkd management port] *************
+2024-07-25 16:03:25,664 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ok: [localhost]
+2024-07-25 16:03:25,691 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:03:25,691 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: PLAY RECAP *********************************************************************
+2024-07-25 16:03:25,692 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: localhost                  : ok=78   changed=13   unreachable=0    failed=0    skipped=71   rescued=0    ignored=0
+2024-07-25 16:03:25,692 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT:
+2024-07-25 16:03:25,692 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Thursday 25 July 2024  16:03:25 +0200 (0:00:00.401)       0:01:26.230 *********
+2024-07-25 16:03:25,692 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ===============================================================================
+2024-07-25 16:03:25,692 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: splunk_common : Restart the splunkd service - Via CLI ------------------ 39.46s
+2024-07-25 16:03:25,692 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: splunk_common : Restart the splunkd service - Via CLI ------------------ 19.34s
+2024-07-25 16:03:25,692 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Gathering Facts --------------------------------------------------------- 2.41s
+2024-07-25 16:03:25,692 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: splunk_common : Update Splunk directory owner --------------------------- 2.31s
+2024-07-25 16:03:25,692 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: splunk_common : Get Splunk status --------------------------------------- 1.87s
+2024-07-25 16:03:25,692 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: splunk_common : Update /opt/splunk/etc ---------------------------------- 1.13s
+2024-07-25 16:03:25,693 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: Check for required restarts --------------------------------------------- 1.08s
+2024-07-25 16:03:25,693 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: splunk_standalone : Check for required restarts ------------------------- 0.90s
+2024-07-25 16:03:25,693 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: splunk_common : Test basic https endpoint ------------------------------- 0.77s
+2024-07-25 16:03:25,693 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: splunk_common : Generate user-seed.conf (Linux) ------------------------- 0.73s
+2024-07-25 16:03:25,693 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: splunk_standalone : Setup global HEC ------------------------------------ 0.73s
+2024-07-25 16:03:25,693 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: splunk_standalone : Update HEC token configuration ---------------------- 0.73s
+2024-07-25 16:03:25,693 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: splunk_standalone : Get existing HEC token ------------------------------ 0.66s
+2024-07-25 16:03:25,693 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: splunk_common : Check current license group ----------------------------- 0.65s
+2024-07-25 16:03:25,694 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: splunk_common : Activate free license ----------------------------------- 0.63s
+2024-07-25 16:03:25,694 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: splunk_common : Wait for splunkd management port ------------------------ 0.46s
+2024-07-25 16:03:25,694 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: splunk_common : Find manifests ------------------------------------------ 0.44s
+2024-07-25 16:03:25,694 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: splunk_common : Hash the password --------------------------------------- 0.41s
+2024-07-25 16:03:25,694 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: splunk_common : Wait for splunkd management port ------------------------ 0.40s
+2024-07-25 16:03:25,694 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: splunk_common : Check for scloud ---------------------------------------- 0.40s
+2024-07-25 16:03:25,798 INFO  [org.apa.cam.qua.tes.sup.spl.SplunkTestResource] (docker-java-stream-235276964) STDOUT: ===============================================================================
