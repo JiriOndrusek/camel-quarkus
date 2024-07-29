@@ -83,6 +83,7 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
 
             LOG.debug(banner);
             LOG.debug("Starting splunk server with ssl: " + ssl);
+            LOG.debug(banner);
             container.start();
 
             container.copyFileToContainer(MountableFile.forClasspathResource("local_server.conf"),
@@ -114,6 +115,8 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
 
             LOG.debug(banner);
             LOG.debug("Restarting splunk server.");
+            LOG.debug(banner);
+            asserExecResult(container.execInContainer("sudo", "./bin/splunk", "restart"), "splunk restart");
 
             container.execInContainer("sudo", "./bin/splunk", "add", "index", TEST_INDEX);
             container.execInContainer("sudo", "./bin/splunk", "add", "tcp", String.valueOf(SplunkConstants.TCP_PORT),
