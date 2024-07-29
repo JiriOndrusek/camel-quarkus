@@ -29,7 +29,6 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.component.splunk.ProducerType;
 import org.apache.camel.quarkus.test.support.splunk.SplunkConstants;
-import org.apache.camel.quarkus.test.support.splunk.SplunkTestResource;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.Matchers;
@@ -86,7 +85,7 @@ abstract class AbstractSplunkTest {
     }
 
     @Test
-    @DisabledIf("isSecured") //requires more splunk configuration possible inputs.conf, see i.e. https://community.splunk.com/t5/Getting-Data-In/How-to-set-up-SSL-TLS-for-the-Splunk-indexer/m-p/649693
+    @DisabledIf("isSecured")
     public void testSavedSearchWithTcp() throws InterruptedException {
         String suffix = "_SavedSearchOfTcp";
         String urlPrefix = ssl ? "https://" : "http://";
