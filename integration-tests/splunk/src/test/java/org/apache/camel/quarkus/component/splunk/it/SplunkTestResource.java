@@ -103,10 +103,15 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
             //remove password
             container.copyFileToContainer(MountableFile.forClasspathResource("local_server.conf"),
                     "/opt/splunk/etc/system/local/server.conf");
+            container.copyFileToContainer(MountableFile.forClasspathResource("local_inputs.conf"),
+                    "/opt/splunk/etc/system/local/inputs.conf");
             //copy conf from the container to see the result
-            container.copyFileFromContainer("/opt/splunk/etc/system/local/server.conf",
-                    Path.of(getClass().getResource("/").getPath()).resolve("local_server.conf").toFile()
-                            .getAbsolutePath());
+            //            container.copyFileFromContainer("/opt/splunk/etc/system/local/server.conf",
+            //                    Path.of(getClass().getResource("/").getPath()).resolve("local_server.conf").toFile()
+            //                            .getAbsolutePath());
+            //            container.copyFileFromContainer("/opt/splunk/etc/system/local/inputs.conf",
+            //                    Path.of(getClass().getResource("/").getPath()).resolve("local_inputs.conf").toFile()
+            //                            .getAbsolutePath());
 
             container.execInContainer("sudo", "sed", "-i", "s/allowRemoteLogin=requireSetPassword/allowRemoteLogin=always/",
                     "/opt/splunk/etc/system/local/server.conf");
@@ -130,7 +135,10 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
                         Path.of(getClass().getResource("/").getPath()).resolve("server_from_container.pem").toFile()
                                 .getAbsolutePath());
                 container.copyFileFromContainer("/opt/splunk/etc/system/local/server.conf",
-                        Path.of(getClass().getResource("/").getPath()).resolve("local_server.conf").toFile()
+                        Path.of(getClass().getResource("/").getPath()).resolve("local_server_from_container.conf").toFile()
+                                .getAbsolutePath());
+                container.copyFileFromContainer("/opt/splunk/etc/system/local/inputs.conf",
+                        Path.of(getClass().getResource("/").getPath()).resolve("local_inputs_from_container.conf").toFile()
                                 .getAbsolutePath());
 
             } else {

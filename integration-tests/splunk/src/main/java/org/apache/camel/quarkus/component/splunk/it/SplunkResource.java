@@ -81,7 +81,7 @@ public class SplunkResource {
     SplunkComponent splunk() {
         SplunkComponent component = new SplunkComponent();
         component.setSplunkConfigurationFactory(parameters -> new SplunkConfiguration());
-        component.setSslContextParameters(createServerSSLContextParameters());
+        //        component.setSslContextParameters(createServerSSLContextParameters());
         return component;
     }
 
