@@ -16,18 +16,52 @@
  */
 package org.apache.camel.quarkus.component.splunk.it;
 
+import java.util.concurrent.ExecutionException;
+
 import io.quarkus.test.common.ResourceArg;
 import io.quarkus.test.common.WithTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.camel.quarkus.test.support.splunk.SplunkTestResource;
+import org.apache.http.NoHttpResponseException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 @QuarkusTest
+//@WithTestResource(value = SplunkFakeResource.class)
 @WithTestResource(value = SplunkTestResource.class, initArgs = {
         @ResourceArg(name = "ssl", value = "true"), @ResourceArg(name = "localhost_pem", value = "keytool/combined.pem"),
         @ResourceArg(name = "ca_pem", value = "keytool/splunkca.pem") })
 class SplunkSslTest extends AbstractSplunkTest {
 
-    SplunkSslTest() {
-        super(true);
+    @Test
+    public void testNormalSearchWithSubmitWithRawData() throws InterruptedException {
+        super.testNormalSearchWithSubmitWithRawData(true);
+    }
+
+    @Test
+    public void testSavedSearchWithTcp() throws InterruptedException {
+        super.testSavedSearchWithTcp(true);
+    }
+
+    @Test
+    public void testStreamForRealtime() throws InterruptedException, ExecutionException {
+        super.testStreamForRealtime(true);
+    }
+
+    @Test
+    public void testNormalSearchWithSubmitWithRawDataNoSSL() throws InterruptedException {
+        //creation of data has to be executed with ssl
+        super.testNormalSearchWithSubmitWithRawData(true, false, true);
+    }
+
+    @Test
+    public void testSavedSearchWithTcpNoSSL() throws InterruptedException {
+        Assertions.assertThrowsExactly(NoHttpResponseException.class,
+                () -> super.testSavedSearchWithTcp(false));
+    }
+
+    @Test
+    public void testStreamForRealtimeNoSSL() throws InterruptedException, ExecutionException {
+        super.testStreamForRealtime(true, false, true);
     }
 }

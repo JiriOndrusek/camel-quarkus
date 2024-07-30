@@ -193,7 +193,7 @@ public class SplunkResource {
                     host, port, index,
                     producerType,
                     SOURCE,
-                    ssl ? SplunkConstants.TCP_PORT : 9997, tcpPort);
+                    SplunkConstants.TCP_PORT, tcpPort);
 
         } else {
             url = String.format(

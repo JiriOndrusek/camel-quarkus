@@ -34,8 +34,6 @@ import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIf;
 import org.testcontainers.shaded.org.apache.commons.lang3.RandomStringUtils;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 
@@ -44,50 +42,57 @@ import static org.hamcrest.Matchers.is;
 
 abstract class AbstractSplunkTest {
 
-    private final boolean ssl;
-
-    AbstractSplunkTest(boolean ssl) {
-        this.ssl = ssl;
-    }
-
-    boolean isSecured() {
-        return ssl;
-    }
+    private final static int TIMEOUT_IN_SECONDS = 60;
+    private final static int TIMEOUT_FOR_EMPTY_DATA_IN_SECONDS = 10;
 
     @BeforeEach
     public void reintitializeComponent() throws InterruptedException {
-        //        TimeUnit.HOURS.sleep(5);
         //the spluk client is created by the component with knowledge of schema https/https
         //we need to reset client because the client might be created with the wrong schema for the current test
         RestAssured.get("/splunk/reinitializeComponent").then().statusCode(204);
     }
 
-    @Test
-    public void testNormalSearchWithSubmitWithRawData() {
+    void testNormalSearchWithSubmitWithRawData(boolean ssl) throws InterruptedException {
+        testNormalSearchWithSubmitWithRawData(ssl, ssl, false);
+    }
+
+    void testNormalSearchWithSubmitWithRawData(boolean writeSsl, boolean ssl, boolean expectEmptyData)
+            throws InterruptedException {
         String suffix = "_normalSearchOfSubmit";
         String restUrl = ssl ? "/splunk/ssl/results/normalSearch" : "/splunk/results/normalSearch";
 
-        write(suffix, ProducerType.SUBMIT, 0, true);
+        write(writeSsl, suffix, ProducerType.SUBMIT, 0, true);
 
-        Awaitility.await().pollInterval(1000, TimeUnit.MILLISECONDS).atMost(60, TimeUnit.SECONDS).until(
-                () -> {
+        if (expectEmptyData) {
+            //if expecting empty data (using non-ssl on ssl splunk)
+            //  wait some time and then assert that the result is null
+            TimeUnit.SECONDS.sleep(TIMEOUT_FOR_EMPTY_DATA_IN_SECONDS);
+            RestAssured.given()
+                    .contentType(ContentType.TEXT)
+                    .post(restUrl)
+                    .then()
+                    .statusCode(200)
+                    .body(is("[]"));
+        } else {
 
-                    String result = RestAssured.given()
-                            .contentType(ContentType.TEXT)
-                            .post(restUrl)
-                            .then()
-                            .statusCode(200)
-                            .extract().asString();
+            Awaitility.await().pollInterval(1000, TimeUnit.MILLISECONDS).atMost(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS).until(
+                    () -> {
 
-                    return result.contains("Name: Sheldon" + suffix)
-                            && result.contains("Name: Leonard" + suffix)
-                            && result.contains("Name: Irma" + suffix);
-                });
+                        String result = RestAssured.given()
+                                .contentType(ContentType.TEXT)
+                                .post(restUrl)
+                                .then()
+                                .statusCode(200)
+                                .extract().asString();
+
+                        return result.contains("Name: Sheldon" + suffix)
+                                && result.contains("Name: Leonard" + suffix)
+                                && result.contains("Name: Irma" + suffix);
+                    });
+        }
     }
 
-    @Test
-    @DisabledIf("isSecured") //requires more splunk configuration possible inputs.conf, see i.e. https://community.splunk.com/t5/Getting-Data-In/How-to-set-up-SSL-TLS-for-the-Splunk-indexer/m-p/649693
-    public void testSavedSearchWithTcp() throws InterruptedException {
+    void testSavedSearchWithTcp(boolean ssl) throws InterruptedException {
         String suffix = "_SavedSearchOfTcp";
         String urlPrefix = ssl ? "https://" : "http://";
         String restUrl = ssl ? "/splunk/ssl/results/savedSearch" : "/splunk/results/savedSearch";
@@ -109,10 +114,10 @@ abstract class AbstractSplunkTest {
                 .statusCode(anyOf(is(201), is(409)));
 
         //write data via tcp
-        write(suffix, ProducerType.TCP, 0, false);
+        write(ssl, suffix, ProducerType.TCP, 0, false);
 
         //there might by delay in receiving the data
-        Awaitility.await().pollInterval(1000, TimeUnit.MILLISECONDS).atMost(60, TimeUnit.SECONDS).until(
+        Awaitility.await().pollInterval(1000, TimeUnit.MILLISECONDS).atMost(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS).until(
                 () -> {
                     String result = RestAssured.given()
                             .contentType(ContentType.TEXT)
@@ -127,9 +132,12 @@ abstract class AbstractSplunkTest {
                 });
     }
 
-    @Test
-    @DisabledIf("isSecured")
-    public void testStreamForRealtime() throws InterruptedException, ExecutionException {
+    void testStreamForRealtime(boolean ssl) throws InterruptedException, ExecutionException {
+        testStreamForRealtime(ssl, ssl, false);
+    }
+
+    void testStreamForRealtime(boolean writeSsl, boolean ssl, boolean expectEmptyData)
+            throws InterruptedException, ExecutionException {
         String suffix = "_RealtimeSearchOfStream";
         String restUrl = ssl ? "/splunk/ssl/results/realtimeSearch" : "/splunk/results/realtimeSearch";
         //there is a buffer for stream writing, therefore about 1MB of data has to be written into Splunk
@@ -140,32 +148,44 @@ abstract class AbstractSplunkTest {
         Future<Void> futureResult = executor.submit(
                 () -> {
                     for (int i = 0; i < 5000; i++) {
-                        write(suffix + i, ProducerType.STREAM, 100, false);
+                        write(writeSsl, suffix + i, ProducerType.STREAM, 100, false);
                     }
                     return null;
                 });
 
         try {
-            Awaitility.await().pollInterval(1000, TimeUnit.MILLISECONDS).atMost(60, TimeUnit.SECONDS).until(
-                    () -> {
+            if (expectEmptyData) {
+                //if expecting empty data (using non-ssl on ssl splunk)
+                //  wait some time and then assert that the result is null
+                TimeUnit.SECONDS.sleep(TIMEOUT_FOR_EMPTY_DATA_IN_SECONDS);
+                RestAssured.given()
+                        .contentType(ContentType.TEXT)
+                        .post(restUrl)
+                        .then()
+                        .statusCode(200)
+                        .body(is("[]"));
+            } else {
+                Awaitility.await().pollInterval(1000, TimeUnit.MILLISECONDS).atMost(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS).until(
+                        () -> {
 
-                        String result = RestAssured.given()
-                                .contentType(ContentType.TEXT)
-                                .post(restUrl)
-                                .then()
-                                .statusCode(200)
-                                .extract().asString();
+                            String result = RestAssured.given()
+                                    .contentType(ContentType.TEXT)
+                                    .post(restUrl)
+                                    .then()
+                                    .statusCode(200)
+                                    .extract().asString();
 
-                        return result.contains("Name: Sheldon" + suffix)
-                                && result.contains("Name: Leonard" + suffix)
-                                && result.contains("Name: Irma" + suffix);
-                    });
+                            return result.contains("Name: Sheldon" + suffix)
+                                    && result.contains("Name: Leonard" + suffix)
+                                    && result.contains("Name: Irma" + suffix);
+                        });
+            }
         } finally {
             futureResult.cancel(true);
         }
     }
 
-    private void write(String suffix, ProducerType producerType, int lengthOfRandomString, boolean raw) {
+    private void write(boolean ssl, String suffix, ProducerType producerType, int lengthOfRandomString, boolean raw) {
         String restUrl = ssl ? "/splunk/ssl/write/" : "/splunk/write/";
         Consumer<Map<String, String>> write = data -> RestAssured.given()
                 .contentType(ContentType.JSON)

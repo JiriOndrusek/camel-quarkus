@@ -16,17 +16,32 @@
  */
 package org.apache.camel.quarkus.component.splunk.it;
 
+import java.util.concurrent.ExecutionException;
+
 import io.quarkus.test.common.ResourceArg;
 import io.quarkus.test.common.WithTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.camel.quarkus.test.support.splunk.SplunkTestResource;
+import org.junit.jupiter.api.Test;
 
 @QuarkusTest
+//@WithTestResource(value = SplunkFakeResource.class)
 @WithTestResource(value = SplunkTestResource.class, initArgs = {
         @ResourceArg(name = "ssl", value = "false") })
 class SplunkTest extends AbstractSplunkTest {
 
-    SplunkTest() {
-        super(false);
+    @Test
+    public void testNormalSearchWithSubmitWithRawData() throws InterruptedException {
+        super.testNormalSearchWithSubmitWithRawData(false);
+    }
+
+    @Test
+    public void testSavedSearchWithTcp() throws InterruptedException {
+        super.testSavedSearchWithTcp(false);
+    }
+
+    @Test
+    public void testStreamForRealtime() throws InterruptedException, ExecutionException {
+        super.testStreamForRealtime(false);
     }
 }
