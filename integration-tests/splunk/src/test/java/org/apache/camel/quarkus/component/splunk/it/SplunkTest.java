@@ -51,8 +51,8 @@ import static org.hamcrest.Matchers.is;
 //                Format.JKS, Format.PEM }, password = "password") })
 @QuarkusTest
 @WithTestResource(value = SplunkTestResource.class, initArgs = {
-        @ResourceArg(name = "ssl", value = "true"), @ResourceArg(name = "localhost_pem", value = "keytool/combined.pem"),
-        @ResourceArg(name = "ca_pem", value = "keytool/splunkca.pem") })
+        @ResourceArg(name = "ssl", value = "true"), @ResourceArg(name = "localhost_cert", value = "keytool/combined.pem"),
+        @ResourceArg(name = "ca_cert", value = "keytool/splunkca.pem") })
 public class SplunkTest {
 
     private final static int TIMEOUT_IN_SECONDS = 60;

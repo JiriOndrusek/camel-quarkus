@@ -26,6 +26,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.quarkus.test.support.splunk.SplunkConstants;
+import org.apache.camel.quarkus.test.support.splunk.SplunkTestResource;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
@@ -33,8 +34,11 @@ import org.testcontainers.shaded.org.hamcrest.core.StringContains;
 
 @QuarkusTest
 @WithTestResource(value = FakeSplunkTestResource.class, initArgs = {
-        @ResourceArg(name = "ssl", value = "true"), @ResourceArg(name = "localhost_pem", value = "localhost.pem"),
-        @ResourceArg(name = "ca_pem", value = "splunkca.pem") })
+//@WithTestResource(value = SplunkTestResource.class, initArgs = {
+        @ResourceArg(name = "ssl", value = "true"), @ResourceArg(name = "localhost_cert", value = "/local/combined.pem"),
+        @ResourceArg(name = "ca_cert", value = "/local/splunkca.pem"),
+        @ResourceArg(name = "localhost_keystore", value = "/localhost.jks"),
+        @ResourceArg(name = "keystore_password", value = "password") })
 class SplunkHecTest {
 
     @Test
@@ -46,7 +50,7 @@ class SplunkHecTest {
 
         RestAssured.given()
                 .body("Hello Sheldon")
-                .post("/splunk-hec/send")
+                .post("/splunk-hec/send/sslContextParameters")
                 .then()
                 .statusCode(200);
 
@@ -62,37 +66,16 @@ class SplunkHecTest {
                         .then().statusCode(200)
                         .extract().asString(),
                 StringContains.containsString("Hello Sheldon"));
-
     }
 
     @Test
-    public void produceNonSsl() {
-
-        //send via https
-        String url = String.format("https://%s:%d",
-                getConfigValue(SplunkConstants.PARAM_REMOTE_HOST, String.class),
-                getConfigValue(SplunkConstants.PARAM_REMOTE_PORT, Integer.class));
-
+    public void produceWithWrongCertificate() {
         RestAssured.given()
-                .body("Hello Sheldon via Http")
-                .post("/splunk-hec/sendHttp")
+                .body("Hello Sheldon")
+                .post("/splunk-hec/send/wrongSslContextParameters")
                 .then()
-                .statusCode(200);
-
-        //there might a delay between the data written and received by the search, therefore await()
-        Awaitility.await().atMost(30, TimeUnit.SECONDS).until(
-                //try to receive via http
-                () -> RestAssured.given()
-                        .request()
-                        .formParam("search", "search index=\"testindex\"")
-                        .formParam("exec_mode", "oneshot")
-                        .relaxedHTTPSValidation()
-                        .auth().basic("admin", "password")
-                        .post(url + "/services/search/jobs")
-                        .then().statusCode(200)
-                        .extract().asString(),
-                StringContains.containsString("Hello Sheldon via Http"));
-
+                .statusCode(500)
+                .body(org.hamcrest.core.StringContains.containsString("signature check failed"));
     }
 
     @Test
@@ -108,7 +91,7 @@ class SplunkHecTest {
         //send an event with text 'Hello Time 01'
         RestAssured.given()
                 .body("Hello time 01")
-                .post("/splunk-hec/send")
+                .post("/splunk-hec/send/sslContextParameters")
                 .then()
                 .statusCode(200);
 
@@ -116,7 +99,7 @@ class SplunkHecTest {
         RestAssured.given()
                 .body("Hello time 02")
                 .queryParam("indexTime", calendar.getTimeInMillis())
-                .post("/splunk-hec/send")
+                .post("/splunk-hec/send/sslContextParameters")
                 .then()
                 .statusCode(200);
 

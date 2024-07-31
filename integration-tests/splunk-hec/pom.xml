@@ -169,7 +169,7 @@
                                         <ext>IssuerAlternativeName=DNS:NOT-FOR-PRODUCTION-USE</ext>
                                         <ext>SubjectAlternativeName=DNS:localhost,IP:127.0.0.1</ext>
                                     </exts>
-                                    <keystore>${project.build.outputDirectory}/truststore-server.jks</keystore>
+                                    <keystore>${project.build.outputDirectory}/localhost.jks</keystore>
                                 </configuration>
                             </execution>
                             <execution>
@@ -180,7 +180,7 @@
                                 </goals>
                                 <configuration>
                                     <alias>localhost</alias>
-                                    <keystore>${project.build.outputDirectory}/truststore-server.jks</keystore>
+                                    <keystore>${project.build.outputDirectory}/localhost.jks</keystore>
                                     <file>${project.build.outputDirectory}/localhost.csr</file>
                                 </configuration>
                             </execution>
