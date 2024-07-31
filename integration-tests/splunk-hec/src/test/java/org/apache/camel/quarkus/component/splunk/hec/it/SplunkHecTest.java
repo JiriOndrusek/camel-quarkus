@@ -20,25 +20,27 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import io.quarkus.test.common.ResourceArg;
 import io.quarkus.test.common.WithTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.quarkus.test.support.splunk.SplunkConstants;
-import org.apache.camel.quarkus.test.support.splunk.SplunkTestResource;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 import org.testcontainers.shaded.org.hamcrest.core.StringContains;
 
 @QuarkusTest
-@WithTestResource(SplunkTestResource.class)
+@WithTestResource(value = FakeSplunkTestResource.class, initArgs = {
+        @ResourceArg(name = "ssl", value = "true"), @ResourceArg(name = "localhost_pem", value = "localhost.pem"),
+        @ResourceArg(name = "ca_pem", value = "splunkca.pem") })
 class SplunkHecTest {
 
     @Test
     public void produce() {
 
-        String url = String.format("http://%s:%d",
+        String url = String.format("https://%s:%d",
                 getConfigValue(SplunkConstants.PARAM_REMOTE_HOST, String.class),
                 getConfigValue(SplunkConstants.PARAM_REMOTE_PORT, Integer.class));
 
@@ -64,8 +66,38 @@ class SplunkHecTest {
     }
 
     @Test
+    public void produceNonSsl() {
+
+        //send via https
+        String url = String.format("https://%s:%d",
+                getConfigValue(SplunkConstants.PARAM_REMOTE_HOST, String.class),
+                getConfigValue(SplunkConstants.PARAM_REMOTE_PORT, Integer.class));
+
+        RestAssured.given()
+                .body("Hello Sheldon via Http")
+                .post("/splunk-hec/sendHttp")
+                .then()
+                .statusCode(200);
+
+        //there might a delay between the data written and received by the search, therefore await()
+        Awaitility.await().atMost(30, TimeUnit.SECONDS).until(
+                //try to receive via http
+                () -> RestAssured.given()
+                        .request()
+                        .formParam("search", "search index=\"testindex\"")
+                        .formParam("exec_mode", "oneshot")
+                        .relaxedHTTPSValidation()
+                        .auth().basic("admin", "password")
+                        .post(url + "/services/search/jobs")
+                        .then().statusCode(200)
+                        .extract().asString(),
+                StringContains.containsString("Hello Sheldon via Http"));
+
+    }
+
+    @Test
     public void testIndexTime() {
-        String url = String.format("http://%s:%d",
+        String url = String.format("https://%s:%d",
                 getConfigValue(SplunkConstants.PARAM_REMOTE_HOST, String.class),
                 getConfigValue(SplunkConstants.PARAM_REMOTE_PORT, Integer.class));
 

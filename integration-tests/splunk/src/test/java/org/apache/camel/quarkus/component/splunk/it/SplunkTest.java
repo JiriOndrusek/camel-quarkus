@@ -38,6 +38,7 @@ import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.org.apache.commons.lang3.RandomStringUtils;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
@@ -45,13 +46,21 @@ import org.testcontainers.shaded.org.awaitility.Awaitility;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.is;
 
+//@TestCertificates(certificates = {
+//        @Certificate(name = "splunk", formats = {
+//                Format.JKS, Format.PEM }, password = "password") })
 @QuarkusTest
 @WithTestResource(value = SplunkTestResource.class, initArgs = {
-        @ResourceArg(name = "ssl", value = "true"), @ResourceArg(name = "localhost_pem", value = "localhost.pem"),
-        @ResourceArg(name = "ca_pem", value = "splunkca.pem") })
+        @ResourceArg(name = "ssl", value = "true"), @ResourceArg(name = "localhost_pem", value = "keytool/combined.pem"),
+        @ResourceArg(name = "ca_pem", value = "keytool/splunkca.pem") })
 public class SplunkTest {
 
     private final static int TIMEOUT_IN_SECONDS = 60;
+
+    @BeforeAll
+    public static void beforeClass() throws InterruptedException {
+        TimeUnit.HOURS.sleep(5);
+    }
 
     @Test
     public void testNormalSearchWithSubmitWithRawData() throws InterruptedException {

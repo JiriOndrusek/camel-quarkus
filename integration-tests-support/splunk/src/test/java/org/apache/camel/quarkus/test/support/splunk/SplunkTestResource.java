@@ -30,8 +30,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.MountableFile;
 
 public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
@@ -72,7 +72,7 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
                     .withEnv("SPLUNK_LICENSE_URI", "Free")
                     .withEnv("SPLUNK_USER", "root")//does not work
                     .withEnv("TZ", TimeZone.getDefault().getID())
-                    //                    .withLogConsumer(new Slf4jLogConsumer(LOG))
+                    .withLogConsumer(new Slf4jLogConsumer(LOG))
                     .waitingFor(
                             Wait.forLogMessage(".*Ansible playbook complete.*\\n", 1)
                                     .withStartupTimeout(Duration.ofMinutes(5)));
@@ -86,7 +86,9 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
                         StandardCharsets.UTF_8);
                 byte[] concatenate = (localhost + "\n" + ca).getBytes(StandardCharsets.UTF_8);
 
-                container.withCopyToContainer(Transferable.of(concatenate), "/opt/splunk/etc/auth/mycerts/myServerCert.pem")
+                //                container.withCopyToContainer(Transferable.of(concatenate), "/opt/splunk/etc/auth/mycerts/myServerCert.pem")
+                container.withCopyToContainer(MountableFile.forClasspathResource(localhostPemPath),
+                        "/opt/splunk/etc/auth/mycerts/myServerCert.pem")
                         .withCopyToContainer(MountableFile.forClasspathResource(caPemPath),
                                 "/opt/splunk/etc/auth/mycerts/cacert.pem");
             }
@@ -131,6 +133,14 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
             container.execInContainer("sudo", "./bin/splunk", "add", "index", TEST_INDEX);
             container.execInContainer("sudo", "./bin/splunk", "add", "tcp", String.valueOf(SplunkConstants.TCP_PORT),
                     "-sourcetype", "TCP");
+
+            //copy from container conf and log files for better troubleshooting
+            container.copyFileFromContainer("/opt/splunk/etc/system/local/server.conf",
+                    Path.of(getClass().getResource("/").getPath()).resolve("local-server-from-container.conf").toFile()
+                            .getAbsolutePath());
+            container.copyFileFromContainer("/opt/splunk/var/log/splunk/splunkd.log",
+                    Path.of(getClass().getResource("/").getPath()).resolve("splunk-from-container.log").toFile()
+                            .getAbsolutePath());
 
             String splunkHost = container.getHost();
 
