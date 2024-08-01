@@ -16,10 +16,14 @@
  */
 package org.apache.camel.quarkus.test.support.splunk;
 
+import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.Key;
+import java.security.KeyStore;
 import java.time.Duration;
+import java.util.Base64;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -32,6 +36,7 @@ import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.MountableFile;
 
 public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
@@ -48,14 +53,18 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
     private GenericContainer<?> container;
 
     private boolean ssl;
-    private String localhostPemPath;
-    private String caPemPath;
+    private String localhostCertPath;
+    private String localhostKeystorePath;
+    private String caCertPath;
+    private String keystorePassword;
 
     @Override
     public void init(Map<String, String> initArgs) {
         ssl = Boolean.parseBoolean(initArgs.getOrDefault("ssl", "false"));
-        localhostPemPath = initArgs.get("localhost_pem");
-        caPemPath = initArgs.get("ca_pem");
+        localhostCertPath = initArgs.get("localhost_cert");
+        caCertPath = initArgs.get("ca_cert");
+        localhostKeystorePath = initArgs.get("localhost_keystore");
+        keystorePassword = initArgs.get("keystore_password");
     }
 
     @Override
@@ -78,18 +87,32 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
                                     .withStartupTimeout(Duration.ofMinutes(5)));
 
             if (ssl) {
+                //combine key + certificates into 1 pem - required for splunk
+                //extraction of private key can not be done by keytool (only openssl), but it can be done programmatically
+
+                // Load the KeyStore
+                KeyStore keystore = KeyStore.getInstance("JKS");
+                try (FileInputStream fis = new FileInputStream(
+                        MountableFile.forClasspathResource(localhostKeystorePath).getResolvedPath())) {
+                    keystore.load(fis, keystorePassword.toCharArray());
+                }
+                // Get the private key
+                Key key = keystore.getKey(keystore.aliases().asIterator().next(), keystorePassword.toCharArray());
+
+                // Encode the private key to PEM format
+                String encodedKey = Base64.getEncoder().encodeToString(key.getEncoded());
+                String pemKey = "-----BEGIN PRIVATE KEY-----\n" + encodedKey + "\n-----END PRIVATE KEY-----";
+
                 //localhost.pem and cacert.pem has to be concatenated
                 String localhost = Files.readString(
-                        Path.of(MountableFile.forClasspathResource(localhostPemPath).getResolvedPath()),
+                        Path.of(MountableFile.forClasspathResource(localhostCertPath).getResolvedPath()),
                         StandardCharsets.UTF_8);
-                String ca = Files.readString(Path.of(MountableFile.forClasspathResource(caPemPath).getResolvedPath()),
+                String ca = Files.readString(Path.of(MountableFile.forClasspathResource(caCertPath).getResolvedPath()),
                         StandardCharsets.UTF_8);
-                byte[] concatenate = (localhost + "\n" + ca).getBytes(StandardCharsets.UTF_8);
+                byte[] concatenate = (localhost + ca + pemKey).getBytes(StandardCharsets.UTF_8);
 
-                //                container.withCopyToContainer(Transferable.of(concatenate), "/opt/splunk/etc/auth/mycerts/myServerCert.pem")
-                container.withCopyToContainer(MountableFile.forClasspathResource(localhostPemPath),
-                        "/opt/splunk/etc/auth/mycerts/myServerCert.pem")
-                        .withCopyToContainer(MountableFile.forClasspathResource(caPemPath),
+                container.withCopyToContainer(Transferable.of(concatenate), "/opt/splunk/etc/auth/mycerts/myServerCert.pem")
+                        .withCopyToContainer(MountableFile.forClasspathResource(caCertPath),
                                 "/opt/splunk/etc/auth/mycerts/cacert.pem");
             }
 
