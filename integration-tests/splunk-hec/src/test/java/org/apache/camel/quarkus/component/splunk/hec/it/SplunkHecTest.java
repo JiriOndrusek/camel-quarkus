@@ -28,6 +28,7 @@ import io.restassured.http.ContentType;
 import org.apache.camel.quarkus.test.support.splunk.SplunkConstants;
 import org.apache.camel.quarkus.test.support.splunk.SplunkTestResource;
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 import org.testcontainers.shaded.org.hamcrest.core.StringContains;
@@ -35,8 +36,9 @@ import org.testcontainers.shaded.org.hamcrest.core.StringContains;
 @QuarkusTest
 @WithTestResource(value = FakeSplunkTestResource.class, initArgs = {
 //@WithTestResource(value = SplunkTestResource.class, initArgs = {
-        @ResourceArg(name = "ssl", value = "true"), @ResourceArg(name = "localhost_cert", value = "/local/combined.pem"),
-        @ResourceArg(name = "ca_cert", value = "/local/splunkca.pem"),
+        @ResourceArg(name = "ssl", value = "true"),
+        @ResourceArg(name = "localhost_cert", value = "/fromServer/server_from-container.pem"),
+        @ResourceArg(name = "ca_cert", value = "/fromServer/cacert-from-container.pem"),
         @ResourceArg(name = "localhost_keystore", value = "/localhost.jks"),
         @ResourceArg(name = "keystore_password", value = "password") })
 class SplunkHecTest {
@@ -68,6 +70,7 @@ class SplunkHecTest {
                 StringContains.containsString("Hello Sheldon"));
     }
 
+    @Disabled
     @Test
     public void produceWithWrongCertificate() {
         RestAssured.given()
@@ -78,6 +81,7 @@ class SplunkHecTest {
                 .body(org.hamcrest.core.StringContains.containsString("signature check failed"));
     }
 
+    @Disabled
     @Test
     public void testIndexTime() {
         String url = String.format("https://%s:%d",

@@ -160,6 +160,17 @@ public class SplunkTestResource implements QuarkusTestResourceLifecycleManager {
             container.copyFileFromContainer("/opt/splunk/var/log/splunk/splunkd.log",
                     Path.of(getClass().getResource("/").getPath()).resolve("splunk-from-container.log").toFile()
                             .getAbsolutePath());
+            container.copyFileFromContainer("/opt/splunk/etc/system/default/server.conf",
+                    Path.of(getClass().getResource("/").getPath()).resolve("default-server-from-container.log").toFile()
+                            .getAbsolutePath());
+            if (ssl) {
+                container.copyFileFromContainer("/opt/splunk/etc/auth/server.pem",
+                        Path.of(getClass().getResource("/").getPath()).resolve("server_from-container.pem").toFile()
+                                .getAbsolutePath());
+                container.copyFileFromContainer("/opt/splunk/etc/auth/cacert.pem",
+                        Path.of(getClass().getResource("/").getPath()).resolve("cacert-from-container.pem").toFile()
+                                .getAbsolutePath());
+            }
 
             String splunkHost = container.getHost();
 

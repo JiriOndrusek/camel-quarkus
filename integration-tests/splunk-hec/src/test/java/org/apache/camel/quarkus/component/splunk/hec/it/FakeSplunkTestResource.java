@@ -57,11 +57,11 @@ public class FakeSplunkTestResource implements QuarkusTestResourceLifecycleManag
 
         Map<String, String> m = Map.of(
                 SplunkConstants.PARAM_REMOTE_HOST, "localhost",
-                SplunkConstants.PARAM_TCP_PORT, "32870",
+                SplunkConstants.PARAM_TCP_PORT, "32794",
                 SplunkConstants.PARAM_HEC_TOKEN, "TESTTEST-TEST-TEST-TEST-TESTTESTTEST",
                 SplunkConstants.PARAM_TEST_INDEX, TEST_INDEX,
-                SplunkConstants.PARAM_REMOTE_PORT, "32871",
-                SplunkConstants.PARAM_HEC_PORT, "32872");
+                SplunkConstants.PARAM_REMOTE_PORT, "32795",
+                SplunkConstants.PARAM_HEC_PORT, "32796");
 
         return m;
 
