@@ -4428,16 +4428,16 @@
                 <artifactId>camel-quarkus-jgroups-raft-deployment</artifactId>
                 <version>${camel-quarkus.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.apache.camel.quarkus</groupId>
-                <artifactId>camel-quarkus-jira</artifactId>
-                <version>${camel-quarkus.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.camel.quarkus</groupId>
-                <artifactId>camel-quarkus-jira-deployment</artifactId>
-                <version>${camel-quarkus.version}</version>
-            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>org.apache.camel.quarkus</groupId>-->
+<!--                <artifactId>camel-quarkus-jira</artifactId>-->
+<!--                <version>${camel-quarkus.version}</version>-->
+<!--            </dependency>-->
+<!--            <dependency>-->
+<!--                <groupId>org.apache.camel.quarkus</groupId>-->
+<!--                <artifactId>camel-quarkus-jira-deployment</artifactId>-->
+<!--                <version>${camel-quarkus.version}</version>-->
+<!--            </dependency>-->
             <dependency>
                 <groupId>org.apache.camel.quarkus</groupId>
                 <artifactId>camel-quarkus-jms</artifactId>
