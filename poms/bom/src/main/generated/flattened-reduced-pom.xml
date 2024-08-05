@@ -1536,25 +1536,6 @@
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
-        <artifactId>camel-jira</artifactId>
-        <version>4.7.0</version>
-        <exclusions>
-          <exclusion>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.checkerframework</groupId>
-            <artifactId>checker-qual</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-beans</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.camel</groupId>
         <artifactId>camel-jms</artifactId>
         <version>4.7.0</version>
         <exclusions>
@@ -4381,16 +4362,6 @@
         <artifactId>camel-quarkus-jgroups-raft-deployment</artifactId>
         <version>3.14.0-SNAPSHOT</version>
       </dependency>
-<!--      <dependency>-->
-<!--        <groupId>org.apache.camel.quarkus</groupId>-->
-<!--        <artifactId>camel-quarkus-jira</artifactId>-->
-<!--        <version>3.14.0-SNAPSHOT</version>-->
-<!--      </dependency>-->
-<!--      <dependency>-->
-<!--        <groupId>org.apache.camel.quarkus</groupId>-->
-<!--        <artifactId>camel-quarkus-jira-deployment</artifactId>-->
-<!--        <version>3.14.0-SNAPSHOT</version>-->
-<!--      </dependency>-->
       <dependency>
         <groupId>org.apache.camel.quarkus</groupId>
         <artifactId>camel-quarkus-jms</artifactId>
