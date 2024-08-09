@@ -167,10 +167,10 @@
             </build>
         </profile>
         <profile>
-            <id>fipsNative</id>
+            <id>fips</id>
             <activation>
                 <property>
-                    <name>fipNative</name>
+                    <name>fip</name>
                 </property>
             </activation>
             <build>
@@ -188,7 +188,7 @@
                                 <configuration>
                                     <scripts>
                                         <script>
-                                            File propertiesFile = new File("${project.build.directory}/classes/extra.properties")
+                                            File propertiesFile = new File("${project.build.directory}/classes/extra-fips.properties")
 
                                             if (!propertiesFile.exists()) {
                                                 propertiesFile.createNewFile()
@@ -204,18 +204,9 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
-                            <argLine>-Djava.security.properties=${project.build.directory}/classes/extra.properties</argLine>
+                            <argLine>-Djava.security.properties=${project.build.directory}/classes/extra-fips.properties</argLine>
                         </configuration>
-<!--                        <executions>-->
-<!--                            <execution>-->
-<!--                                <goals>-->
-<!--                                    <goal>integration-test</goal>-->
-<!--                                    <goal>verify</goal>-->
-<!--                                </goals>-->
-<!--                            </execution>-->
-<!--                        </executions>-->
                     </plugin>
-
                 </plugins>
             </build>
         </profile>
