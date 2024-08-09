@@ -168,60 +168,60 @@
                 </plugins>
             </build>
         </profile>
-        <profile>
-            <id>fips2</id>
-            <activation>
-                <property>
-                    <name>fips2</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.gmavenplus</groupId>
-                        <artifactId>gmavenplus-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>fips-property</id>
-                                <goals>
-                                    <goal>execute</goal>
-                                </goals>
-                                <phase>process-resources</phase>
-                                <configuration>
-                                    <scripts>
-                                        <script>
-                                            File propertiesFile = new File("${project.build.directory}/fips/extra-fips.properties")
-
-                                            println "File: $propertiesFile"
-
-                                            if (!propertiesFile.exists()) {
-                                                propertiesFile.getParentFile().mkdirs()
-                                                propertiesFile.createNewFile()
-                                            }
-                                            propertiesFile.append("\nsecurerandom.strongAlgorithms=PKCS11:SunPKCS11-NSS-FIPS")
-                                        </script>
-
-                                    </scripts>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>${quarkus.platform.group-id}</groupId>
-                        <artifactId>quarkus-maven-plugin</artifactId>
-                        <configuration>
-                            <jvmArgs>-Djava.security.properties=${project.build.directory}/fips/extra-fips.properties</jvmArgs>
-                        </configuration>
-                    </plugin>
+<!--        <profile>-->
+<!--            <id>fips2</id>-->
+<!--            <activation>-->
+<!--                <property>-->
+<!--                    <name>fips2</name>-->
+<!--                </property>-->
+<!--            </activation>-->
+<!--            <build>-->
+<!--                <plugins>-->
 <!--                    <plugin>-->
-<!--                        <groupId>org.apache.maven.plugins</groupId>-->
-<!--                        <artifactId>maven-failsafe-plugin</artifactId>-->
+<!--                        <groupId>org.codehaus.gmavenplus</groupId>-->
+<!--                        <artifactId>gmavenplus-plugin</artifactId>-->
+<!--                        <executions>-->
+<!--                            <execution>-->
+<!--                                <id>fips-property</id>-->
+<!--                                <goals>-->
+<!--                                    <goal>execute</goal>-->
+<!--                                </goals>-->
+<!--                                <phase>process-resources</phase>-->
+<!--                                <configuration>-->
+<!--                                    <scripts>-->
+<!--                                        <script>-->
+<!--                                            File propertiesFile = new File("${project.build.directory}/fips/extra-fips.properties")-->
+
+<!--                                            println "File: $propertiesFile"-->
+
+<!--                                            if (!propertiesFile.exists()) {-->
+<!--                                                propertiesFile.getParentFile().mkdirs()-->
+<!--                                                propertiesFile.createNewFile()-->
+<!--                                            }-->
+<!--                                            propertiesFile.append("\nsecurerandom.strongAlgorithms=PKCS11:SunPKCS11-NSS-FIPS")-->
+<!--                                        </script>-->
+
+<!--                                    </scripts>-->
+<!--                                </configuration>-->
+<!--                            </execution>-->
+<!--                        </executions>-->
+<!--                    </plugin>-->
+<!--                    <plugin>-->
+<!--                        <groupId>${quarkus.platform.group-id}</groupId>-->
+<!--                        <artifactId>quarkus-maven-plugin</artifactId>-->
 <!--                        <configuration>-->
-<!--                            <argLine>-Djava.security.properties=@{fips-extra-properties-path}</argLine>-->
+<!--                            <jvmArgs>-Djava.security.properties=${project.build.directory}/fips/extra-fips.properties</jvmArgs>-->
 <!--                        </configuration>-->
 <!--                    </plugin>-->
-                </plugins>
-            </build>
-        </profile>
+<!--&lt;!&ndash;                    <plugin>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <groupId>org.apache.maven.plugins</groupId>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <artifactId>maven-failsafe-plugin</artifactId>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <configuration>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <argLine>-Djava.security.properties=@{fips-extra-properties-path}</argLine>&ndash;&gt;-->
+<!--&lt;!&ndash;                        </configuration>&ndash;&gt;-->
+<!--&lt;!&ndash;                    </plugin>&ndash;&gt;-->
+<!--                </plugins>-->
+<!--            </build>-->
+<!--        </profile>-->
     </profiles>
 </project>
