@@ -204,7 +204,7 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
-                            <argLine>-Djava.security.properties=~/jondruse/projects/camel-quarkus/integration-tests/xpath/src/main/resources/extra.properties</argLine>
+                            <argLine>-Djava.security.properties=${project.build.directory}/classes/extra.properties</argLine>
                         </configuration>
 <!--                        <executions>-->
 <!--                            <execution>-->
