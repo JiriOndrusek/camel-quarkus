@@ -166,5 +166,42 @@
                 </plugins>
             </build>
         </profile>
+                <profile>
+            <id>fips</id>
+            <activation>
+                <property>
+                    <name>fips</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.gmavenplus</groupId>
+                        <artifactId>gmavenplus-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>fips-property</id>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <phase>process-resources</phase>
+                                <configuration>
+                                    <scripts>
+                                        <script>
+                                            File propertiesFile = new File("${project.build.directory}/classes/application.properties")
+
+                                            if (!propertiesFile.exists()) {
+                                                propertiesFile.createNewFile()
+                                            }
+                                            propertiesFile.append("\nsecurerandom.strongAlgorithms=PKCS11:SunPKCS11-NSS-FIPS")
+                                        </script>
+                                    </scripts>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
