@@ -45,6 +45,8 @@
         <camel-quarkus.version>3.14.0-SNAPSHOT</camel-quarkus.version><!-- This needs to be set to the underlying CQ version from command line when testing against Platform BOMs -->
 
         <quarkus.banner.enabled>false</quarkus.banner.enabled>
+
+        <fips-extra-properties-path>${project.build.directory}/fips/extra-fips.properties</fips-extra-properties-path>
     </properties>
 
     <dependencyManagement>
@@ -163,6 +165,61 @@
                             </execution>
                         </executions>
                     </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>fips2</id>
+            <activation>
+                <property>
+                    <name>fips2</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.gmavenplus</groupId>
+                        <artifactId>gmavenplus-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>fips-property</id>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <phase>process-resources</phase>
+                                <configuration>
+                                    <scripts>
+                                        <script>
+                                            File propertiesFile = new File("${project.build.directory}/fips/extra-fips.properties")
+
+                                            println "File: $propertiesFile"
+
+                                            if (!propertiesFile.exists()) {
+                                                propertiesFile.getParentFile().mkdirs()
+                                                propertiesFile.createNewFile()
+                                            }
+                                            propertiesFile.append("\nsecurerandom.strongAlgorithms=PKCS11:SunPKCS11-NSS-FIPS")
+                                        </script>
+
+                                    </scripts>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>${quarkus.platform.group-id}</groupId>
+                        <artifactId>quarkus-maven-plugin</artifactId>
+                        <configuration>
+                            <jvmArgs>-Djava.security.properties=${project.build.directory}/fips/extra-fips.properties</jvmArgs>
+                        </configuration>
+                    </plugin>
+<!--                    <plugin>-->
+<!--                        <groupId>org.apache.maven.plugins</groupId>-->
+<!--                        <artifactId>maven-failsafe-plugin</artifactId>-->
+<!--                        <configuration>-->
+<!--                            <argLine>-Djava.security.properties=@{fips-extra-properties-path}</argLine>-->
+<!--                        </configuration>-->
+<!--                    </plugin>-->
                 </plugins>
             </build>
         </profile>
