@@ -167,10 +167,10 @@
             </build>
         </profile>
         <profile>
-            <id>fips</id>
+            <id>fipsNative</id>
             <activation>
                 <property>
-                    <name>fips</name>
+                    <name>fipNative</name>
                 </property>
             </activation>
             <build>
@@ -204,16 +204,16 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
-                            <argLine>-Djava.security.properties=${project.build.directory}/classes/extra.properties</argLine>
+                            <argLine>-Djava.security.properties=~/jondruse/projects/camel-quarkus/integration-tests/xpath/src/main/resources/extra.properties</argLine>
                         </configuration>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>integration-test</goal>
-                                    <goal>verify</goal>
-                                </goals>
-                            </execution>
-                        </executions>
+<!--                        <executions>-->
+<!--                            <execution>-->
+<!--                                <goals>-->
+<!--                                    <goal>integration-test</goal>-->
+<!--                                    <goal>verify</goal>-->
+<!--                                </goals>-->
+<!--                            </execution>-->
+<!--                        </executions>-->
                     </plugin>
 
                 </plugins>
