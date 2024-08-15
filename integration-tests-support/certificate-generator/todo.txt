@@ -1,14 +1,14 @@
 camel-quarkus-integration-test-elasticsearch-rest-client impl
 camel-quarkus-integration-test-ftp impl
-camel-quarkus-integration-test-grpc
+camel-quarkus-integration-test-grpc impl
 camel-quarkus-integration-test-http-grouped
-camel-quarkus-integration-test-kafka-sasl-ssl
-camel-quarkus-integration-test-kafka-ssl
-camel-quarkus-integration-test-lumberjack
-camel-quarkus-integration-test-mail
-camel-quarkus-integration-test-nats
+camel-quarkus-integration-test-kafka-sasl-ssl impl
+camel-quarkus-integration-test-kafka-ssl impl
+camel-quarkus-integration-test-lumberjack  impl
+ok - camel-quarkus-integration-test-mail impl jvm native
+ok - camel-quarkus-integration-test-nats impl jvm native
 camel-quarkus-integration-test-netty
-camel-quarkus-integration-test-oaipmh
+ok - camel-quarkus-integration-test-oaipmh impl jvm native
 camel-quarkus-integration-test-paho
 camel-quarkus-integration-test-paho-mqtt5
 camel-quarkus-integration-test-platform-http

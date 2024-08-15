@@ -25,4 +25,12 @@ public class CertificatesUtil {
     public static String keystoreFile(String name, String extension) {
         return DEFAULT_CERTS_BASEDIR + "/" + name + "-keystore." + extension;
     }
+
+    public static String caCrt(String name) {
+        return DEFAULT_CERTS_BASEDIR + "/" + name + "-ca.crt";
+    }
+
+    public static String file(String name) {
+        return DEFAULT_CERTS_BASEDIR + "/" + name;
+    }
 }
