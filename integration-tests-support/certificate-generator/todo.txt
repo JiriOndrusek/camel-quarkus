@@ -10,7 +10,10 @@ ok - camel-quarkus-integration-test-nats impl jvm native
 camel-quarkus-integration-test-netty
 ok - camel-quarkus-integration-test-oaipmh impl jvm native
 ok - camel-quarkus-integration-test-paho impl jvm native
-camel-quarkus-integration-test-paho-mqtt5
+camel-quarkus-integration-test-paho-mqtt5 impl jvm
 camel-quarkus-integration-test-platform-http
 camel-quarkus-integration-test-platform-http-proxy-ssl
 camel-quarkus-integration-test-vertx-websocket
+
+1723723095: Error: Unable to load CA certificates. Check cafile "/etc/mosquitto/certs/paho-mqtt5-ca.crt".
+1723723095: Error: Unable to load server certificate "/etc/mosquitto/certs/paho-mqtt5.crt". Check certfile.
