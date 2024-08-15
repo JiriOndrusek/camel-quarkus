@@ -32,7 +32,7 @@ import org.jboss.logging.Logger;
 
 @Path("/lumberjack")
 @ApplicationScoped
-public class LumberjackResource {
+public class FLumberjackResource {
 
     private static final Logger LOG = Logger.getLogger(LumberjackResource.class);
 
