@@ -16,8 +16,10 @@
  */
 package org.apache.camel.quarkus.component.vertx.websocket.it;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Paths;
 import java.security.KeyStore;
 
 import javax.net.ssl.SSLContext;
@@ -35,8 +37,7 @@ public class VertxWebsocketClientSslProvider implements WebsocketClientSslProvid
     private static final SSLContext SSL_CONTEXT;
 
     static {
-        try (InputStream stream = VertxWebsocketClientSslProvider.class
-                .getResourceAsStream("/certs/vertx-websocket-truststore.p12")) {
+        try (InputStream stream = new FileInputStream(Paths.get("target/certs/vertx-websocket-truststore.p12").toFile())) {
             KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
             keystore.load(stream, "changeit".toCharArray());
 
