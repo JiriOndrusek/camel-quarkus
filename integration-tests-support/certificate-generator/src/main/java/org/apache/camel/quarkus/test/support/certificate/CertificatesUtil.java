@@ -17,7 +17,7 @@
 package org.apache.camel.quarkus.test.support.certificate;
 
 public class CertificatesUtil {
-    public static final String DEFAULT_CERTS_BASEDIR = "target/classes/certs";
+    public static final String DEFAULT_CERTS_BASEDIR = "target/certs";
 
     private CertificatesUtil() {
     }
