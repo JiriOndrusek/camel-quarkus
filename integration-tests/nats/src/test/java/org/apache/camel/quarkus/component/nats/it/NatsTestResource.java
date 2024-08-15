@@ -137,8 +137,8 @@ public class NatsTestResource implements QuarkusTestResourceLifecycleManager {
                 .withExposedPorts(NATS_SERVER_PORT)
                 .withNetworkAliases("tlsAuthContainer")
                 .withCopyToContainer(MountableFile.forClasspathResource(CertificatesUtil.caCrt("nats")), "/certs/nats-ca.crt")
-                .withCopyToContainer(MountableFile.forClasspathResource(CertificatesUtil.file("nats.key")), "/certs/nats.key")
-                .withCopyToContainer(MountableFile.forClasspathResource(CertificatesUtil.file("nats.crt")), "/certs/nats.crt")
+                .withCopyToContainer(MountableFile.forClasspathResource(CertificatesUtil.key("nats")), "/certs/nats.key")
+                .withCopyToContainer(MountableFile.forClasspathResource(CertificatesUtil.crt("nats")), "/certs/nats.crt")
                 .withClasspathResourceMapping("conf/tls.conf", "/conf/tls.conf", BindMode.READ_ONLY, SelinuxContext.SHARED)
                 .withCommand(
                         "--config", "/conf/tls.conf",

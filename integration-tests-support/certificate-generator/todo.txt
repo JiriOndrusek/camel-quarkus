@@ -9,7 +9,7 @@ ok - camel-quarkus-integration-test-mail impl jvm native
 ok - camel-quarkus-integration-test-nats impl jvm native
 camel-quarkus-integration-test-netty
 ok - camel-quarkus-integration-test-oaipmh impl jvm native
-camel-quarkus-integration-test-paho
+ok - camel-quarkus-integration-test-paho impl jvm native
 camel-quarkus-integration-test-paho-mqtt5
 camel-quarkus-integration-test-platform-http
 camel-quarkus-integration-test-platform-http-proxy-ssl
