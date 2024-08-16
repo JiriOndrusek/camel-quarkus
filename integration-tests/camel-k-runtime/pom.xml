@@ -121,7 +121,6 @@
                 <quarkus.native.native-image-xmx>6g</quarkus.native.native-image-xmx>
             </properties>
         </profile>
-        <!-- TODO: https://github.com/apache/camel-quarkus/issues/6348
         <profile>
             <id>native</id>
             <activation>
@@ -155,7 +154,6 @@
                 </plugins>
             </build>
         </profile>
-        -->
         <profile>
             <id>virtualDependencies</id>
             <activation>
