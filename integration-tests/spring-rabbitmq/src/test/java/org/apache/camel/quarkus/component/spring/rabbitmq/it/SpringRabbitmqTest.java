@@ -20,6 +20,7 @@ import io.quarkus.test.common.WithTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 import org.apache.camel.component.springrabbit.SpringRabbitMQConstants;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.AmqpAdmin;
@@ -38,6 +39,23 @@ class SpringRabbitmqTest {
     private final static String EXCHANGE_POLLING = "polling";
     private final static String ROUTING_KEY_POLLING = "pollingKey";
     private ConnectionFactory connectionFactory;
+
+    @Test
+    public void testDefault() {
+        //create queue "queueForDefault"
+        bindQueue("queueForDefault", "any_exchange", "any_key");
+        //send a message using default keyword, so the routingKey will be used as queue
+        sendToExchange("default", "queueForDefault", "content for default test");
+
+        //read from "queueForDefault" using default exchange name without routingKey
+        RestAssured.given()
+                .queryParam("queue", "queueForDefault")
+                .queryParam("exchange", "default")
+                .post("/spring-rabbitmq/consume")
+                .then()
+                .statusCode(200)
+                .body(is("content for default test"));
+    }
 
     @Test
     public void testInOutDMLC() {
@@ -84,11 +102,12 @@ class SpringRabbitmqTest {
     }
 
     private void sendToExchange(String exchange, String routingKey, String body) {
-        RestAssured.given()
+        RequestSpecification rs = RestAssured.given()
                 .queryParam(SpringRabbitmqResource.QUERY_EXCHANGE, exchange)
                 .queryParam(SpringRabbitmqResource.QUERY_ROUTING_KEY, routingKey)
-                .body(body)
-                .post("/spring-rabbitmq/send");
+                .body(body);
+
+        rs.post("/spring-rabbitmq/send");
     }
 
     private Response getFromDirect(String direct) {
@@ -99,9 +118,10 @@ class SpringRabbitmqTest {
 
     private void bindQueue(String queue, String exchange, String routingKey) {
         Queue q = new Queue(queue, false);
-        DirectExchange t = new DirectExchange(exchange);
+
         AmqpAdmin admin = new RabbitAdmin(connectionFactory);
         admin.declareQueue(q);
+        DirectExchange t = new DirectExchange(exchange);
         admin.declareExchange(t);
         admin.declareBinding(BindingBuilder.bind(q).to(t).with(routingKey));
     }

@@ -59,6 +59,23 @@ public class SpringRabbitmqResource {
     @Inject
     ConsumerTemplate consumerTemplate;
 
+    @Path("/consume")
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    public String consumeFromExchange(@QueryParam("queue") String queue,
+            @QueryParam("exchange") String exchange,
+            @QueryParam("routingKey") String routingKey) {
+        String url = "spring-rabbitmq:" + exchange + "?";
+        if (routingKey != null) {
+            url += "routingKey=" + routingKey;
+        }
+        if (queue != null) {
+            url += url.endsWith("?") ? "" : "&";
+            url += "queues=" + queue;
+        }
+        return consumerTemplate.receiveBody(url, 5000, String.class);
+    }
+
     @Path("/getFromDirect")
     @POST
     @Produces(MediaType.TEXT_PLAIN)
@@ -69,9 +86,11 @@ public class SpringRabbitmqResource {
     @Path("/send")
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
-    public void send(String message, @QueryParam(QUERY_EXCHANGE) String exchange,
-            @QueryParam(QUERY_ROUTING_KEY) String routingKey) {
-        String url = String.format("spring-rabbitmq:" + exchange + "?routingKey=%s&autoDeclare=true", routingKey);
+    public void send(String message,
+            @QueryParam(QUERY_EXCHANGE) String exchange,
+            @QueryParam(QUERY_ROUTING_KEY) String routingKey,
+            @QueryParam("autoDeclare") boolean autoDeclare) {
+        String url = String.format("spring-rabbitmq:" + exchange + "?routingKey=%s&autoDeclare=%s", routingKey, autoDeclare);
         producerTemplate.sendBody(url, message);
     }
 

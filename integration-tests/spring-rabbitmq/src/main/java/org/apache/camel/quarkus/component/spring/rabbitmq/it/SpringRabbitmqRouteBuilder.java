@@ -32,7 +32,7 @@ public class SpringRabbitmqRouteBuilder extends RouteBuilder {
 
     private void createRoute(String type) {
         String url = String.format(
-                "spring-rabbitmq:%s?queues=%s&routingKey=%s&connectionFactory=#connectionFactory&autoDeclare=true&messageListenerContainerType=DMLC",
+                "spring-rabbitmq:%s?queues=%s&routingKey=%s&connectionFactory=#connectionFactory&autoDeclare=true&messageListenerContainerType=DMLC", //todo dmlc is hardcoded
                 SpringRabbitmqResource.EXCHANGE_IN_OUT + type, type, SpringRabbitmqResource.ROUTING_KEY_IN_OUT + type);
 
         from(url)
