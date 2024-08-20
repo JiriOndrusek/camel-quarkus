@@ -19,15 +19,23 @@ package org.apache.camel.quarkus.component.spring.rabbitmq.it;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.springrabbit.SpringRabbitMQConstants;
 
 @ApplicationScoped
 public class SpringRabbitmqRouteBuilder extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        createRoute(SpringRabbitMQConstants.DIRECT_MESSAGE_LISTENER_CONTAINER);
-        createRoute(SpringRabbitMQConstants.SIMPLE_MESSAGE_LISTENER_CONTAINER);
+
+        from("spring-rabbitmq:exchange-for-autoDeclare?queues=queue1-for-autoDeclare&routingKey=routing-key-for-autoDeclare&connectionFactory=#connectionFactory&autoDeclare=false")
+                .transform(body().prepend("Hello from auto-declared1: "))
+                .to("direct:autoDeclare1");
+
+        from("spring-rabbitmq:exchange-for-autoDeclare?queues=queue2-for-autoDeclare&routingKey=routing-key-for-autoDeclare&connectionFactory=#connectionFactory&autoDeclare=true")
+                .transform(body().prepend("Hello from auto-declared2: "))
+                .to("direct:autoDeclare2");
+
+        //        createRoute(SpringRabbitMQConstants.DIRECT_MESSAGE_LISTENER_CONTAINER);
+        //        createRoute(SpringRabbitMQConstants.SIMPLE_MESSAGE_LISTENER_CONTAINER);
     }
 
     private void createRoute(String type) {

@@ -22,6 +22,7 @@ import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import org.apache.camel.component.springrabbit.SpringRabbitMQConstants;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.core.BindingBuilder;
@@ -43,18 +44,40 @@ class SpringRabbitmqTest {
     @Test
     public void testDefault() {
         //create queue "queueForDefault"
-        bindQueue("queueForDefault", "any_exchange", "any_key");
+        bindQueue("queue-for-default", "any_exchange", "any_key");
         //send a message using default keyword, so the routingKey will be used as queue
-        sendToExchange("default", "queueForDefault", "content for default test");
+        sendToExchange("default", "queue-for-default", "content for default test");
 
         //read from "queueForDefault" using default exchange name without routingKey
         RestAssured.given()
-                .queryParam("queue", "queueForDefault")
                 .queryParam("exchange", "default")
+                .queryParam("queue", "queue-for-default")
                 .post("/spring-rabbitmq/consume")
                 .then()
                 .statusCode(200)
                 .body(is("content for default test"));
+    }
+
+    @Test
+    public void testAutoDeclare() {
+        //send msg which should be routed into directs direct:autoDeclare1 and direct:autoDeclare2
+        RestAssured.given()
+                .queryParam("exchange", "exchange-for-autoDeclare")
+                .queryParam("routingKey", "routing-key-for-autoDeclare")
+                .body("content for autoDeclare test")
+                .post("/spring-rabbitmq/send").then().statusCode(200);
+
+        //direct:autoDeclare1 is defined without autoDeclare
+        getFromDirect("direct:autoDeclare1")
+                .then()
+                .statusCode(200)
+                //todo better validation
+                .body(is(""));
+
+        getFromDirect("direct:autoDeclare2")
+                .then()
+                .statusCode(200)
+                .body(is("Hello from auto-declared2: content for autoDeclare test"));
     }
 
     @Test

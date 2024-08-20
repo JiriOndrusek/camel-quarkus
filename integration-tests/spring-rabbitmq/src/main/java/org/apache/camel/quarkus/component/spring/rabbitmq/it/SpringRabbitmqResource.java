@@ -16,6 +16,8 @@
  */
 package org.apache.camel.quarkus.component.spring.rabbitmq.it;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.concurrent.Executors;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -26,8 +28,10 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.RuntimeCamelException;
 import org.jboss.logging.Logger;
 
 @Path("/spring-rabbitmq")
@@ -62,36 +66,58 @@ public class SpringRabbitmqResource {
     @Path("/consume")
     @POST
     @Produces(MediaType.TEXT_PLAIN)
-    public String consumeFromExchange(@QueryParam("queue") String queue,
+    public Response consume(@QueryParam("queue") String queue,
             @QueryParam("exchange") String exchange,
-            @QueryParam("routingKey") String routingKey) {
-        String url = "spring-rabbitmq:" + exchange + "?";
+            @QueryParam("routingKey") String routingKey,
+            @QueryParam("autoDeclare") String autoDeclare) {
+        String url = "spring-rabbitmq:" + exchange + "?connectionFactory=#connectionFactory&";
         if (routingKey != null) {
-            url += "routingKey=" + routingKey;
+            url += "&routingKey=" + routingKey;
         }
         if (queue != null) {
-            url += url.endsWith("?") ? "" : "&";
-            url += "queues=" + queue;
+            url += "&queues=" + queue;
         }
-        return consumerTemplate.receiveBody(url, 5000, String.class);
+        if (autoDeclare != null) {
+            url += "&autoDeclare=" + autoDeclare;
+        }
+        try {
+            return Response.ok().entity(consumerTemplate.receiveBody(url, 5000, String.class)).build();
+        } catch (RuntimeCamelException e) {
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            return Response.status(500).entity(sw.toString()).build();
+        }
     }
 
     @Path("/getFromDirect")
     @POST
     @Produces(MediaType.TEXT_PLAIN)
-    public String getFromDirect(@QueryParam(QUERY_DIRECT) String directName) {
-        return consumerTemplate.receiveBody(directName, 5000, String.class);
+    public Response getFromDirect(@QueryParam(QUERY_DIRECT) String directName) {
+        try {
+            return Response.ok(consumerTemplate.receiveBody(directName, 5000, String.class)).build();
+        } catch (RuntimeCamelException e) {
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            return Response.status(500).entity(sw.toString()).build();
+        }
     }
 
     @Path("/send")
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
-    public void send(String message,
+    public Response send(String message,
             @QueryParam(QUERY_EXCHANGE) String exchange,
-            @QueryParam(QUERY_ROUTING_KEY) String routingKey,
-            @QueryParam("autoDeclare") boolean autoDeclare) {
-        String url = String.format("spring-rabbitmq:" + exchange + "?routingKey=%s&autoDeclare=%s", routingKey, autoDeclare);
-        producerTemplate.sendBody(url, message);
+            @QueryParam(QUERY_ROUTING_KEY) String routingKey) {
+        String url = String.format("spring-rabbitmq:" + exchange + "?connectionFactory=#connectionFactory&routingKey=%s",
+                routingKey);
+        try {
+            producerTemplate.sendBody(url, message);
+            return Response.ok().build();
+        } catch (Exception e) {
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            return Response.status(500).entity(sw.toString()).build();
+        }
     }
 
     @Path("/startPolling")
