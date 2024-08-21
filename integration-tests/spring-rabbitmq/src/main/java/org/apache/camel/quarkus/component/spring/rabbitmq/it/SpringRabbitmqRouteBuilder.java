@@ -63,17 +63,20 @@ public class SpringRabbitmqRouteBuilder extends RouteBuilder {
                 })
                 .to("direct:manual-ack");
 
-        createRoute(SpringRabbitMQConstants.DIRECT_MESSAGE_LISTENER_CONTAINER);
-        createRoute(SpringRabbitMQConstants.SIMPLE_MESSAGE_LISTENER_CONTAINER);
-    }
+        from("spring-rabbitmq:exchange-for-dmlc?queues=queue-for-dmlc&routingKey=key-for-dmlc&connectionFactory=#connectionFactory&autoDeclare=true&messageListenerContainerType=DMLC&concurrentConsumers=5")
+                .process(exchange -> {
+                    //delay 1 second
+                    TimeUnit.SECONDS.sleep(1);
+                })
+                .transform(body().prepend("Hello from DMLC: "))
+                .to("direct:dmlc");
 
-    private void createRoute(String type) {
-        String url = String.format(
-                "spring-rabbitmq:%s?queues=%s&routingKey=%s&connectionFactory=#connectionFactory&autoDeclare=true&messageListenerContainerType=DMLC", //todo dmlc is hardcoded
-                SpringRabbitmqResource.EXCHANGE_IN_OUT + type, type, SpringRabbitmqResource.ROUTING_KEY_IN_OUT + type);
-
-        from(url)
-                .transform(body().prepend("Hello "))
-                .to(SpringRabbitmqResource.DIRECT_IN_OUT + type);
+        from("spring-rabbitmq:exchange-for-smlc?queues=queueu-for-smlc&routingKey=key-for-smlc&connectionFactory=#connectionFactory&autoDeclare=true&messageListenerContainerType=SMLC&maxConcurrentConsumers=1")
+                .process(exchange -> {
+                    //delay 1 second
+                    TimeUnit.SECONDS.sleep(1);
+                })
+                .transform(body().prepend("Hello from SMLC: "))
+                .to("direct:smlc");
     }
 }

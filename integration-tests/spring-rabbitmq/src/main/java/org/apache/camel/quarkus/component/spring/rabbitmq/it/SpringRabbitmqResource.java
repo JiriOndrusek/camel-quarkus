@@ -18,8 +18,14 @@ package org.apache.camel.quarkus.component.spring.rabbitmq.it;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 
+import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -63,6 +69,9 @@ public class SpringRabbitmqResource {
     @Inject
     ConsumerTemplate consumerTemplate;
 
+    @Inject
+    Map<String, List<String>> resultsMap;
+
     @Path("/consume")
     @POST
     @Produces(MediaType.TEXT_PLAIN)
@@ -91,10 +100,30 @@ public class SpringRabbitmqResource {
 
     @Path("/getFromDirect")
     @POST
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response getFromDirect(@QueryParam(QUERY_DIRECT) String directName) {
+    public Response getFromDirect(@QueryParam(QUERY_DIRECT) String directName,
+            @QueryParam("timeout") Long timeout,
+            @QueryParam("numberOfMessages") Integer numberOfMessages) {
         try {
-            return Response.ok(consumerTemplate.receiveBody(directName, 5000, String.class)).build();
+            long _timeout = timeout != null ? timeout : 5000;
+            if (numberOfMessages != null) {
+                Instant start = Instant.now();
+                LinkedList<String> results = new LinkedList<>();
+                for (int i = 0; i < numberOfMessages; i++) {
+                    String msg = consumerTemplate.receiveBody(directName, _timeout, String.class);
+                    if (msg == null || msg.isEmpty()) {
+                        break;
+                    }
+//                    Log.infof("Message: %s", msg);
+                    results.add(msg);
+                }
+
+                Duration timeElapsed = Duration.between(start, Instant.now());
+                results.addFirst(timeElapsed.getSeconds() + "");
+
+                return Response.ok(SpringRabbitmqUtil.listToString(results)).build();
+            }
+
+            return Response.ok(consumerTemplate.receiveBody(directName, _timeout, String.class)).build();
         } catch (RuntimeCamelException e) {
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
@@ -139,5 +168,15 @@ public class SpringRabbitmqResource {
             String body = consumerTemplate.receiveBody(url, String.class);
             producerTemplate.sendBody(DIRECT_POLLING, "Polling Hello " + body);
         });
+    }
+
+    private void addMsgToResultsMap(String queue, String msg) {
+        List<String> results = resultsMap.get(queue);
+        if (results == null) {
+            results = new LinkedList<>();
+            resultsMap.put(queue, results);
+        }
+        results.add(msg);
+        Log.infof("Received message %s", msg);
     }
 }

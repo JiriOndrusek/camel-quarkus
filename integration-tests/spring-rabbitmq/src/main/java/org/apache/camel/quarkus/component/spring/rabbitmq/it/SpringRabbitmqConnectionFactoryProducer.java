@@ -16,6 +16,10 @@
  */
 package org.apache.camel.quarkus.component.spring.rabbitmq.it;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import jakarta.inject.Named;
 import org.apache.camel.component.springrabbit.SpringRabbitMQComponent;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -50,5 +54,10 @@ public class SpringRabbitmqConnectionFactoryProducer {
         SpringRabbitMQComponent comp = new SpringRabbitMQComponent();
         comp.setHeaderFilterStrategy(new CustomHeaderFilterStrategy());
         return comp;
+    }
+
+    @Named("resultsMap")
+    public Map<String, List<String>> resultsMap() {
+        return new HashMap<>();
     }
 }

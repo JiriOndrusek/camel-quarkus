@@ -1,6 +1,8 @@
 package org.apache.camel.quarkus.component.spring.rabbitmq.it;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SpringRabbitmqUtil {
@@ -22,5 +24,25 @@ public class SpringRabbitmqUtil {
             }
         }
         return headersMap;
+    }
+
+    public static String listToString(List<String> list) {
+        StringBuilder sb = new StringBuilder();
+        if (list != null) {
+            for (String item : list) {
+                sb.append(item).append(";");
+            }
+        }
+        return sb.toString();
+    }
+
+    public static List<Object> stringToList(String string) {
+        List<Object> list = new ArrayList<>();
+        if (string != null) {
+            for (String item : string.split(";")) {
+                list.add(item);
+            }
+        }
+        return list;
     }
 }

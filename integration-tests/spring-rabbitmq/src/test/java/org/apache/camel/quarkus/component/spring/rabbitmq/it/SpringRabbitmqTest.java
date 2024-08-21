@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.component.spring.rabbitmq.it;
 
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -210,23 +211,65 @@ class SpringRabbitmqTest {
     }
 
     @Test
-    public void testInOutDMLC() {
-        testInOut(SpringRabbitMQConstants.DIRECT_MESSAGE_LISTENER_CONTAINER);
+    public void testDMLC() {
+        int count = 20;
+        //sent 20 messages
+        for (int i = 0; i < count; i++) {
+
+            RestAssured.given()
+                    .queryParam("exchange", "exchange-for-dmlc")
+                    .queryParam("routingKey", "key-for-dmlc")
+                    .body("Hello" + i)
+                    .post("/spring-rabbitmq/send").then().statusCode(200);
+        }
+
+        //read results
+        List<Object> results = SpringRabbitmqUtil.stringToList(RestAssured.given()
+                .queryParam(SpringRabbitmqResource.QUERY_DIRECT, "direct:dmlc")
+                .queryParam("numberOfMessages", 20)
+                .queryParam("cacheResults", true)
+                .post("/spring-rabbitmq/getFromDirect")
+                .then().statusCode(200)
+                .extract().body().asString());
+
+        assertThat(results).hasSize(count + 1);
+        //the whole duration has to be longer than count
+        // (part of the first second is taken for the calls to resource, so the duration has to be >= count-1)
+        assertThat(Integer.parseInt((String) results.get(0))).isLessThan(count - 1);
+        for (int i = 0; i < count; i++) {
+            assertThat(results).contains("Hello from DMLC: Hello" + i);
+        }
     }
 
     @Test
-    public void testInOutSMLC() {
-        testInOut(SpringRabbitMQConstants.SIMPLE_MESSAGE_LISTENER_CONTAINER);
-    }
+    public void testSMLC() {
+        int count = 20;
+        //sent 20 messages
+        for (int i = 0; i < count; i++) {
 
-    public void testInOut(String type) {
-        sendToExchange(SpringRabbitmqResource.EXCHANGE_IN_OUT + type,
-                SpringRabbitmqResource.ROUTING_KEY_IN_OUT + type, "Sheldon");
+            RestAssured.given()
+                    .queryParam("exchange", "exchange-for-smlc")
+                    .queryParam("routingKey", "key-for-smlc")
+                    .body("Hello" + i)
+                    .post("/spring-rabbitmq/send").then().statusCode(200);
+        }
 
-        getFromDirect(SpringRabbitmqResource.DIRECT_IN_OUT + type)
-                .then()
-                .statusCode(200)
-                .body(is("Hello Sheldon"));
+        //read results
+        List<Object> results = SpringRabbitmqUtil.stringToList(RestAssured.given()
+                .queryParam(SpringRabbitmqResource.QUERY_DIRECT, "direct:smlc")
+                .queryParam("numberOfMessages", 20)
+                .queryParam("cacheResults", true)
+                .post("/spring-rabbitmq/getFromDirect")
+                .then().statusCode(200)
+                .extract().body().asString());
+
+        assertThat(results).hasSize(count + 1);
+        //the whole duration has to be longer than count
+        // (part of the first second is taken for the calls to resource, so the duration has to be >= count-1)
+        assertThat(Integer.parseInt((String) results.get(0))).isGreaterThanOrEqualTo(count - 1);
+        for (int i = 0; i < count; i++) {
+            assertThat(results).contains("Hello from SMLC: Hello" + i);
+        }
     }
 
     @Test
