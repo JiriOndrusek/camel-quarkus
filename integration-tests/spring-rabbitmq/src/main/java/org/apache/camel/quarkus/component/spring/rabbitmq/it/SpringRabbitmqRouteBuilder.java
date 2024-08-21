@@ -17,6 +17,9 @@
 
 package org.apache.camel.quarkus.component.spring.rabbitmq.it;
 
+import java.util.concurrent.TimeUnit;
+
+import com.rabbitmq.client.Channel;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.springrabbit.SpringRabbitMQConstants;
@@ -47,6 +50,18 @@ public class SpringRabbitmqRouteBuilder extends RouteBuilder {
                 .transform(body().prepend("Hello from reuse2 for key2: "))
                 .to("direct:reuse");
 
+        //        from("spring-rabbitmq:exchange-for-manual-ack?queues=queue-for-manual-ack&routingKey=key-for-manual-ack&connectionFactory=#connectionFactory&autoDeclare=true")
+        from("spring-rabbitmq:exchange-for-manual-ack?queues=queue-for-manual-ack&routingKey=key-for-manual-ack&connectionFactory=#connectionFactory&autoDeclare=true&acknowledgeMode=MANUAL")
+                .process(exchange -> {
+                    //simulate processing time 20 s (has to be bigger than timeout to read from direct routes
+                    // -> see SpringRabbitmqResource.getFromDirect (5 seconds)
+                    TimeUnit.SECONDS.sleep(20);
+                    exchange.getIn().setBody("Processed: " + exchange.getIn().getBody(String.class));
+                    Channel channel = exchange.getProperty(SpringRabbitMQConstants.CHANNEL, Channel.class);
+                    long deliveryTag = exchange.getMessage().getHeader(SpringRabbitMQConstants.DELIVERY_TAG, long.class);
+                    channel.basicAck(deliveryTag, true);
+                })
+                .to("direct:manual-ack");
 
         createRoute(SpringRabbitMQConstants.DIRECT_MESSAGE_LISTENER_CONTAINER);
         createRoute(SpringRabbitMQConstants.SIMPLE_MESSAGE_LISTENER_CONTAINER);

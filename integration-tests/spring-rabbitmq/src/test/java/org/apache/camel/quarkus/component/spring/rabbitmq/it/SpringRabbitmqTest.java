@@ -18,6 +18,7 @@ package org.apache.camel.quarkus.component.spring.rabbitmq.it;
 
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import io.quarkus.test.common.WithTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -25,6 +26,7 @@ import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import org.apache.camel.component.springrabbit.SpringRabbitMQConstants;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.AmqpAdmin;
@@ -39,6 +41,7 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 
 @QuarkusTest
@@ -114,18 +117,17 @@ class SpringRabbitmqTest {
         final MessageProperties messageProperties = out.getMessageProperties();
         Assertions.assertNotNull(messageProperties, "The message properties should not be null");
         String encoding = messageProperties.getContentEncoding();
-        Assertions.assertEquals(Charset.defaultCharset().name(), encoding);
-        Assertions.assertEquals("<price>123</price>", new String(out.getBody(), encoding));
-        Assertions.assertEquals(MessageDeliveryMode.PERSISTENT, messageProperties.getReceivedDeliveryMode());
-        Assertions.assertEquals("price", messageProperties.getType());
-        Assertions.assertEquals("application/xml", messageProperties.getContentType());
-        Assertions.assertEquals("0fe9c142-f9c1-426f-9237-f5a4c988a8ae", messageProperties.getMessageId());
-        Assertions.assertEquals(1, messageProperties.getPriority());
+        assertThat(Charset.defaultCharset().name()).isEqualTo(encoding);
+        assertThat(new String(out.getBody(), encoding)).isEqualTo("<price>123</price>");
+        assertThat(messageProperties.getReceivedDeliveryMode()).isEqualTo(MessageDeliveryMode.PERSISTENT);
+        assertThat(messageProperties.getType()).isEqualTo("price");
+        assertThat(messageProperties.getContentType()).isEqualTo("application/xml");
+        assertThat(messageProperties.getMessageId()).isEqualTo("0fe9c142-f9c1-426f-9237-f5a4c988a8ae");
+        assertThat(messageProperties.getPriority()).isEqualTo(1);
         //the only headers preserved by customHeadersFilterStrategy is "CamelSpringRabbitmqMessageId
-        Assertions.assertEquals(1, messageProperties.getHeaders().size());
-        Assertions.assertTrue(messageProperties.getHeaders().containsKey("CamelSpringRabbitmqMessageId"));
+        assertThat(messageProperties.getHeaders().size()).isEqualTo(1);
+        assertThat(messageProperties.getHeaders()).containsKey("CamelSpringRabbitmqMessageId");
     }
-
 
     @Test
     public void testReuse() {
@@ -147,7 +149,9 @@ class SpringRabbitmqTest {
         RestAssured.given()
                 .queryParam("exchange", "exchange-for-reuse1")
                 .queryParam("routingKey", "key-for-reuse1")
-                .queryParam("headers", SpringRabbitmqUtil.headersToString(Map.of(SpringRabbitMQConstants.EXCHANGE_OVERRIDE_NAME, "exchange-for-reuse2")))
+                .queryParam("headers",
+                        SpringRabbitmqUtil
+                                .headersToString(Map.of(SpringRabbitMQConstants.EXCHANGE_OVERRIDE_NAME, "exchange-for-reuse2")))
                 .body("Hello")
                 .post("/spring-rabbitmq/send")
                 .then()
@@ -162,8 +166,10 @@ class SpringRabbitmqTest {
         RestAssured.given()
                 .queryParam("exchange", "exchange-for-reuse1")
                 .queryParam("routingKey", "key-for-reuse1")
-                .queryParam("headers", SpringRabbitmqUtil.headersToString(Map.of(SpringRabbitMQConstants.EXCHANGE_OVERRIDE_NAME, "exchange-for-reuse2",
-                        SpringRabbitMQConstants.ROUTING_OVERRIDE_KEY, "key-for-reuse2")))
+                .queryParam("headers",
+                        SpringRabbitmqUtil
+                                .headersToString(Map.of(SpringRabbitMQConstants.EXCHANGE_OVERRIDE_NAME, "exchange-for-reuse2",
+                                        SpringRabbitMQConstants.ROUTING_OVERRIDE_KEY, "key-for-reuse2")))
                 .body("Hello")
                 .post("/spring-rabbitmq/send")
                 .then()
@@ -173,7 +179,34 @@ class SpringRabbitmqTest {
                 .then()
                 .statusCode(200)
                 .body(is("Hello from reuse2 for key2: Hello"));
+    }
 
+    @Test
+    public void testManualAcknowledgement() {
+        //autodeclare does not work for producers, therefore the queue has to be prepared in advance
+        bindQueue("queue-for-manual-ack", "exchange-for-manual-ack", "key-for-manual-ack");
+        //send message with 20 seconds processing time
+        RestAssured.given()
+                .queryParam("exchange", "exchange-for-manual-ack")
+                .queryParam("routingKey", "key-for-manual-ack")
+                .body("Hello")
+                .post("/spring-rabbitmq/send")
+                .then()
+                .statusCode(200);
+
+        //message is not acked in rabbitmq (in 5 seconds)
+        getFromDirect("direct:manual-ack")
+                .then()
+                .statusCode(200)
+                .body(is(""));
+
+        //should be acked in 20 seconds
+        Awaitility.await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
+            Response res = getFromDirect("direct:manual-ack");
+
+            assertThat(res.statusCode()).isEqualTo(200);
+            assertThat(res.body().asString()).isEqualTo("Processed: Hello");
+        });
     }
 
     @Test
