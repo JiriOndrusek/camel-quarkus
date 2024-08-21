@@ -35,6 +35,19 @@ public class SpringRabbitmqRouteBuilder extends RouteBuilder {
                 .transform(body().prepend("Hello from auto-declared2: "))
                 .to("direct:autoDeclare2");
 
+        from("spring-rabbitmq:exchange-for-reuse1?queues=queue-for-reuse&routingKey=key-for-reuse1&connectionFactory=#connectionFactory&autoDeclare=true")
+                .transform(body().prepend("Hello from reuse1 for key1: "))
+                .to("direct:reuse");
+
+        from("spring-rabbitmq:exchange-for-reuse2?queues=queue-for-reuse2&routingKey=key-for-reuse1&connectionFactory=#connectionFactory&autoDeclare=true")
+                .transform(body().prepend("Hello from reuse2 for key1: "))
+                .to("direct:reuse");
+
+        from("spring-rabbitmq:exchange-for-reuse2?queues=queue-for-reuse2&routingKey=key-for-reuse2&connectionFactory=#connectionFactory&autoDeclare=true")
+                .transform(body().prepend("Hello from reuse2 for key2: "))
+                .to("direct:reuse");
+
+
         createRoute(SpringRabbitMQConstants.DIRECT_MESSAGE_LISTENER_CONTAINER);
         createRoute(SpringRabbitMQConstants.SIMPLE_MESSAGE_LISTENER_CONTAINER);
     }

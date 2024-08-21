@@ -124,6 +124,55 @@ class SpringRabbitmqTest {
         //the only headers preserved by customHeadersFilterStrategy is "CamelSpringRabbitmqMessageId
         Assertions.assertEquals(1, messageProperties.getHeaders().size());
         Assertions.assertTrue(messageProperties.getHeaders().containsKey("CamelSpringRabbitmqMessageId"));
+    }
+
+
+    @Test
+    public void testReuse() {
+        //send msg without reuse
+        RestAssured.given()
+                .queryParam("exchange", "exchange-for-reuse1")
+                .queryParam("routingKey", "key-for-reuse1")
+                .body("Hello")
+                .post("/spring-rabbitmq/send")
+                .then()
+                .statusCode(200);
+
+        getFromDirect("direct:reuse")
+                .then()
+                .statusCode(200)
+                .body(is("Hello from reuse1 for key1: Hello"));
+
+        //overriding exchange
+        RestAssured.given()
+                .queryParam("exchange", "exchange-for-reuse1")
+                .queryParam("routingKey", "key-for-reuse1")
+                .queryParam("headers", SpringRabbitmqUtil.headersToString(Map.of(SpringRabbitMQConstants.EXCHANGE_OVERRIDE_NAME, "exchange-for-reuse2")))
+                .body("Hello")
+                .post("/spring-rabbitmq/send")
+                .then()
+                .statusCode(200);
+
+        getFromDirect("direct:reuse")
+                .then()
+                .statusCode(200)
+                .body(is("Hello from reuse2 for key1: Hello"));
+
+        //overriding exchange and key
+        RestAssured.given()
+                .queryParam("exchange", "exchange-for-reuse1")
+                .queryParam("routingKey", "key-for-reuse1")
+                .queryParam("headers", SpringRabbitmqUtil.headersToString(Map.of(SpringRabbitMQConstants.EXCHANGE_OVERRIDE_NAME, "exchange-for-reuse2",
+                        SpringRabbitMQConstants.ROUTING_OVERRIDE_KEY, "key-for-reuse2")))
+                .body("Hello")
+                .post("/spring-rabbitmq/send")
+                .then()
+                .statusCode(200);
+
+        getFromDirect("direct:reuse")
+                .then()
+                .statusCode(200)
+                .body(is("Hello from reuse2 for key2: Hello"));
 
     }
 
