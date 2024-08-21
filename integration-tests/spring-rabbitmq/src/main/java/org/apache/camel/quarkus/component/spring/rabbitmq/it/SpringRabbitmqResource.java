@@ -70,7 +70,7 @@ public class SpringRabbitmqResource {
             @QueryParam("exchange") String exchange,
             @QueryParam("routingKey") String routingKey,
             @QueryParam("autoDeclare") String autoDeclare) {
-        String url = "spring-rabbitmq:" + exchange + "?connectionFactory=#connectionFactory&";
+        String url = "spring-rabbitmq:" + exchange + "?connectionFactory=#connectionFactory";
         if (routingKey != null) {
             url += "&routingKey=" + routingKey;
         }
@@ -106,14 +106,22 @@ public class SpringRabbitmqResource {
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
     public Response send(String message,
+            @QueryParam("headers") String headers,
             @QueryParam(QUERY_EXCHANGE) String exchange,
-            @QueryParam(QUERY_ROUTING_KEY) String routingKey) {
-        String url = String.format("spring-rabbitmq:" + exchange + "?connectionFactory=#connectionFactory&routingKey=%s",
-                routingKey);
+            @QueryParam(QUERY_ROUTING_KEY) String routingKey,
+            @QueryParam("componentName") String componentName) {
+        String url = String.format(
+                "%s:%s?connectionFactory=#connectionFactory&routingKey=%s",
+                componentName == null ? "spring-rabbitmq" : componentName, exchange, routingKey);
         try {
-            producerTemplate.sendBody(url, message);
+            if (headers != null) {
+                producerTemplate.sendBodyAndHeaders(url, message, SpringRabbitmqUtil.stringToHeaders(headers));
+            } else {
+                producerTemplate.sendBody(url, message);
+            }
             return Response.ok().build();
         } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
             return Response.status(500).entity(sw.toString()).build();

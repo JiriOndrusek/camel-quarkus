@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.component.spring.rabbitmq.it;
 
 import jakarta.inject.Named;
+import org.apache.camel.component.springrabbit.SpringRabbitMQComponent;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -42,5 +43,12 @@ public class SpringRabbitmqConnectionFactoryProducer {
         cf.setUsername(usernane);
         cf.setPassword(password);
         return cf;
+    }
+
+    @Named("customHeaderFilterStrategySpringRabbit")
+    public SpringRabbitMQComponent headerFilterStrategy() {
+        SpringRabbitMQComponent comp = new SpringRabbitMQComponent();
+        comp.setHeaderFilterStrategy(new CustomHeaderFilterStrategy());
+        return comp;
     }
 }

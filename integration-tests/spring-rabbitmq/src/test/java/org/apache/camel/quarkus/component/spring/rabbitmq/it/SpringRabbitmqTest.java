@@ -16,20 +16,28 @@
  */
 package org.apache.camel.quarkus.component.spring.rabbitmq.it;
 
+import java.nio.charset.Charset;
+import java.util.Map;
+
 import io.quarkus.test.common.WithTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import org.apache.camel.component.springrabbit.SpringRabbitMQConstants;
-import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.AmqpAdmin;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageDeliveryMode;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import static org.hamcrest.Matchers.is;
 
@@ -43,7 +51,7 @@ class SpringRabbitmqTest {
 
     @Test
     public void testDefault() {
-        //create queue "queueForDefault"
+        //autodeclare does not work for producers, therefore the queue has to be prepared in advance
         bindQueue("queue-for-default", "any_exchange", "any_key");
         //send a message using default keyword, so the routingKey will be used as queue
         sendToExchange("default", "queue-for-default", "content for default test");
@@ -78,6 +86,45 @@ class SpringRabbitmqTest {
                 .then()
                 .statusCode(200)
                 .body(is("Hello from auto-declared2: content for autoDeclare test"));
+    }
+
+    @Test
+    public void testHeadersToProperties() throws Exception {
+        //autodeclare does not work for producers, therefore the queue has to be prepared in advance
+        bindQueue("queue-for-headersToProperties", "exchange-for-headersToProperties", "key-for-headersToProperties");
+
+        String headers = SpringRabbitmqUtil
+                .headersToString(Map.of(SpringRabbitMQConstants.DELIVERY_MODE, MessageDeliveryMode.PERSISTENT,
+                        SpringRabbitMQConstants.TYPE, "price",
+                        SpringRabbitMQConstants.CONTENT_TYPE, "application/xml",
+                        SpringRabbitMQConstants.MESSAGE_ID, "0fe9c142-f9c1-426f-9237-f5a4c988a8ae",
+                        SpringRabbitMQConstants.PRIORITY, 1));
+
+        RestAssured.given()
+                .queryParam("exchange", "exchange-for-headersToProperties")
+                .queryParam("routingKey", "key-for-headersToProperties")
+                .queryParam("headers", headers)
+                .queryParam("componentName", "customHeaderFilterStrategySpringRabbit")
+                .body("<price>123</price>")
+                .post("/spring-rabbitmq/send").then().statusCode(200);
+
+        AmqpTemplate template = new RabbitTemplate(connectionFactory);
+        Message out = template.receive("queue-for-headersToProperties");
+
+        final MessageProperties messageProperties = out.getMessageProperties();
+        Assertions.assertNotNull(messageProperties, "The message properties should not be null");
+        String encoding = messageProperties.getContentEncoding();
+        Assertions.assertEquals(Charset.defaultCharset().name(), encoding);
+        Assertions.assertEquals("<price>123</price>", new String(out.getBody(), encoding));
+        Assertions.assertEquals(MessageDeliveryMode.PERSISTENT, messageProperties.getReceivedDeliveryMode());
+        Assertions.assertEquals("price", messageProperties.getType());
+        Assertions.assertEquals("application/xml", messageProperties.getContentType());
+        Assertions.assertEquals("0fe9c142-f9c1-426f-9237-f5a4c988a8ae", messageProperties.getMessageId());
+        Assertions.assertEquals(1, messageProperties.getPriority());
+        //the only headers preserved by customHeadersFilterStrategy is "CamelSpringRabbitmqMessageId
+        Assertions.assertEquals(1, messageProperties.getHeaders().size());
+        Assertions.assertTrue(messageProperties.getHeaders().containsKey("CamelSpringRabbitmqMessageId"));
+
     }
 
     @Test

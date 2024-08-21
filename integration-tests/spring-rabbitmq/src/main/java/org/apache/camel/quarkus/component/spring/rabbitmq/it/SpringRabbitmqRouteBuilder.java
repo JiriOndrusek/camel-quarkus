@@ -19,6 +19,7 @@ package org.apache.camel.quarkus.component.spring.rabbitmq.it;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.springrabbit.SpringRabbitMQConstants;
 
 @ApplicationScoped
 public class SpringRabbitmqRouteBuilder extends RouteBuilder {
@@ -34,8 +35,8 @@ public class SpringRabbitmqRouteBuilder extends RouteBuilder {
                 .transform(body().prepend("Hello from auto-declared2: "))
                 .to("direct:autoDeclare2");
 
-        //        createRoute(SpringRabbitMQConstants.DIRECT_MESSAGE_LISTENER_CONTAINER);
-        //        createRoute(SpringRabbitMQConstants.SIMPLE_MESSAGE_LISTENER_CONTAINER);
+        createRoute(SpringRabbitMQConstants.DIRECT_MESSAGE_LISTENER_CONTAINER);
+        createRoute(SpringRabbitMQConstants.SIMPLE_MESSAGE_LISTENER_CONTAINER);
     }
 
     private void createRoute(String type) {
