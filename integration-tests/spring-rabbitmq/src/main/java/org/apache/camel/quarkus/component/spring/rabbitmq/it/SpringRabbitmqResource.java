@@ -113,7 +113,6 @@ public class SpringRabbitmqResource {
                     if (msg == null || msg.isEmpty()) {
                         break;
                     }
-//                    Log.infof("Message: %s", msg);
                     results.add(msg);
                 }
 
@@ -138,10 +137,19 @@ public class SpringRabbitmqResource {
             @QueryParam("headers") String headers,
             @QueryParam(QUERY_EXCHANGE) String exchange,
             @QueryParam(QUERY_ROUTING_KEY) String routingKey,
+            @QueryParam("exchangeType") String exchangeType,
             @QueryParam("componentName") String componentName) {
         String url = String.format(
-                "%s:%s?connectionFactory=#connectionFactory&routingKey=%s",
-                componentName == null ? "spring-rabbitmq" : componentName, exchange, routingKey);
+                "%s:%s?connectionFactory=#connectionFactory",
+                componentName == null ? "spring-rabbitmq" : componentName, exchange);
+
+        if(routingKey != null) {
+            url += "&routingKey=" + routingKey;
+        }
+        if(exchangeType != null) {
+            url += "&exchangeType=" + exchangeType;
+        }
+
         try {
             if (headers != null) {
                 producerTemplate.sendBodyAndHeaders(url, message, SpringRabbitmqUtil.stringToHeaders(headers));

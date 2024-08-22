@@ -288,11 +288,35 @@ class SpringRabbitmqTest {
 
         sendToExchange(EXCHANGE_POLLING, ROUTING_KEY_POLLING, "Sheldon");
 
-        //get result from direct (for pooling) with timeout
+        //get result from direct (for polling) with timeout
         getFromDirect(SpringRabbitmqResource.DIRECT_POLLING)
                 .then()
                 .statusCode(200)
                 .body(is("Polling Hello Sheldon"));
+
+    }
+
+    @Test
+    public void testTypeFanout() {
+        //send message without key to fanout exchange
+        RestAssured.given()
+                .queryParam("exchange", "exchange-for-fanout")
+                .queryParam("exchangeType", "fanout")
+                .queryParam("routingKey", "key-for-fanout-A")
+                .body("Hello")
+                .post("/spring-rabbitmq/send")
+                .then()
+                .statusCode(200);
+
+        getFromDirect("direct:fanout-A")
+                .then()
+                .statusCode(200)
+                .body(is("Hello from fanout for keyA: Hello"));
+
+        getFromDirect("direct:fanout-B")
+                .then()
+                .statusCode(200)
+                .body(is("Hello from fanout for keyB: Hello"));
 
     }
 
