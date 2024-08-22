@@ -227,6 +227,7 @@ class SpringRabbitmqTest {
         List<Object> results = SpringRabbitmqUtil.stringToList(RestAssured.given()
                 .queryParam(SpringRabbitmqResource.QUERY_DIRECT, "direct:dmlc")
                 .queryParam("numberOfMessages", 20)
+                .queryParam("duration", true)
                 .queryParam("cacheResults", true)
                 .post("/spring-rabbitmq/getFromDirect")
                 .then().statusCode(200)
@@ -258,6 +259,7 @@ class SpringRabbitmqTest {
         List<Object> results = SpringRabbitmqUtil.stringToList(RestAssured.given()
                 .queryParam(SpringRabbitmqResource.QUERY_DIRECT, "direct:smlc")
                 .queryParam("numberOfMessages", 20)
+                .queryParam("duration", true)
                 .queryParam("cacheResults", true)
                 .post("/spring-rabbitmq/getFromDirect")
                 .then().statusCode(200)
@@ -301,8 +303,6 @@ class SpringRabbitmqTest {
         //send message without key to fanout exchange
         RestAssured.given()
                 .queryParam("exchange", "exchange-for-fanout")
-                .queryParam("exchangeType", "fanout")
-                .queryParam("routingKey", "key-for-fanout-A")
                 .body("Hello")
                 .post("/spring-rabbitmq/send")
                 .then()
@@ -317,6 +317,42 @@ class SpringRabbitmqTest {
                 .then()
                 .statusCode(200)
                 .body(is("Hello from fanout for keyB: Hello"));
+    }
+
+    @Test
+    public void testTypeTopic() {
+        RestAssured.given()
+                .queryParam("exchange", "exchange-for-topic")
+                .queryParam("routingKey", "topic.1")
+                .body("Hello1")
+                .post("/spring-rabbitmq/send")
+                .then()
+                .statusCode(200);
+        //different topic
+        RestAssured.given()
+                .queryParam("exchange", "exchange-for-topic")
+                .queryParam("routingKey", "wrong_topic.2")
+                .body("Hello2")
+                .post("/spring-rabbitmq/send")
+                .then()
+                .statusCode(200);
+        RestAssured.given()
+                .queryParam("exchange", "exchange-for-topic")
+                .queryParam("routingKey", "topic.3")
+                .body("Hello3")
+                .post("/spring-rabbitmq/send")
+                .then()
+                .statusCode(200);
+
+        List<Object> results = SpringRabbitmqUtil.stringToList(RestAssured.given()
+                .queryParam(SpringRabbitmqResource.QUERY_DIRECT, "direct:topic")
+                //catch 3 messages to be sure that hello2 is not there
+                .queryParam("numberOfMessages", 3)
+                .post("/spring-rabbitmq/getFromDirect")
+                .then().statusCode(200)
+                .extract().body().asString());
+        assertThat(results).contains("Hello from topic: Hello1", "Hello from topic: Hello3");
+        assertThat(results).doesNotContain("Hello from topic: Hello2");
 
     }
 

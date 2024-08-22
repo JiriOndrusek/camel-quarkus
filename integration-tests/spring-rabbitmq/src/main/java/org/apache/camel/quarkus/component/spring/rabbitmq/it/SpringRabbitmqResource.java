@@ -102,6 +102,7 @@ public class SpringRabbitmqResource {
     @POST
     public Response getFromDirect(@QueryParam(QUERY_DIRECT) String directName,
             @QueryParam("timeout") Long timeout,
+            @QueryParam("duration") boolean duration,
             @QueryParam("numberOfMessages") Integer numberOfMessages) {
         try {
             long _timeout = timeout != null ? timeout : 5000;
@@ -117,7 +118,9 @@ public class SpringRabbitmqResource {
                 }
 
                 Duration timeElapsed = Duration.between(start, Instant.now());
-                results.addFirst(timeElapsed.getSeconds() + "");
+                if (duration) {
+                    results.addFirst(timeElapsed.getSeconds() + "");
+                }
 
                 return Response.ok(SpringRabbitmqUtil.listToString(results)).build();
             }
@@ -143,10 +146,10 @@ public class SpringRabbitmqResource {
                 "%s:%s?connectionFactory=#connectionFactory",
                 componentName == null ? "spring-rabbitmq" : componentName, exchange);
 
-        if(routingKey != null) {
+        if (routingKey != null) {
             url += "&routingKey=" + routingKey;
         }
-        if(exchangeType != null) {
+        if (exchangeType != null) {
             url += "&exchangeType=" + exchangeType;
         }
 

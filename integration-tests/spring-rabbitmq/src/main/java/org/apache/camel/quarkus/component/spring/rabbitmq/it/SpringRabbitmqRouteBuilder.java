@@ -30,26 +30,28 @@ public class SpringRabbitmqRouteBuilder extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
-//        from("spring-rabbitmq:exchange-for-autoDeclare?queues=queue1-for-autoDeclare&routingKey=routing-key-for-autoDeclare&connectionFactory=#connectionFactory&autoDeclare=false")
-//                .transform(body().prepend("Hello from auto-declared1: "))
-//                .to("direct:autoDeclare1");
-//
-//        from("spring-rabbitmq:exchange-for-autoDeclare?queues=queue2-for-autoDeclare&routingKey=routing-key-for-autoDeclare&connectionFactory=#connectionFactory&autoDeclare=true")
-//                .transform(body().prepend("Hello from auto-declared2: "))
-//                .to("direct:autoDeclare2");
-//
-//        from("spring-rabbitmq:exchange-for-reuse1?queues=queue-for-reuse&routingKey=key-for-reuse1&connectionFactory=#connectionFactory&autoDeclare=true")
-//                .transform(body().prepend("Hello from reuse1 for key1: "))
-//                .to("direct:reuse");
-//
-//        from("spring-rabbitmq:exchange-for-reuse2?queues=queue-for-reuse2&routingKey=key-for-reuse1&connectionFactory=#connectionFactory&autoDeclare=true")
-//                .transform(body().prepend("Hello from reuse2 for key1: "))
-//                .to("direct:reuse");
-//
-//        from("spring-rabbitmq:exchange-for-reuse2?queues=queue-for-reuse2&routingKey=key-for-reuse2&connectionFactory=#connectionFactory&autoDeclare=true")
-//                .transform(body().prepend("Hello from reuse2 for key2: "))
-//                .to("direct:reuse");
+        from("spring-rabbitmq:exchange-for-autoDeclare?queues=queue1-for-autoDeclare&routingKey=routing-key-for-autoDeclare&connectionFactory=#connectionFactory&autoDeclare=false")
+                .transform(body().prepend("Hello from auto-declared1: "))
+                .to("direct:autoDeclare1");
 
+        from("spring-rabbitmq:exchange-for-autoDeclare?queues=queue2-for-autoDeclare&routingKey=routing-key-for-autoDeclare&connectionFactory=#connectionFactory&autoDeclare=true")
+                .transform(body().prepend("Hello from auto-declared2: "))
+                .to("direct:autoDeclare2");
+
+        //Reuse endpoint and send to different destinations computed at runtime
+        from("spring-rabbitmq:exchange-for-reuse1?queues=queue-for-reuse&routingKey=key-for-reuse1&connectionFactory=#connectionFactory&autoDeclare=true")
+                .transform(body().prepend("Hello from reuse1 for key1: "))
+                .to("direct:reuse");
+
+        from("spring-rabbitmq:exchange-for-reuse2?queues=queue-for-reuse2&routingKey=key-for-reuse1&connectionFactory=#connectionFactory&autoDeclare=true")
+                .transform(body().prepend("Hello from reuse2 for key1: "))
+                .to("direct:reuse");
+
+        from("spring-rabbitmq:exchange-for-reuse2?queues=queue-for-reuse2&routingKey=key-for-reuse2&connectionFactory=#connectionFactory&autoDeclare=true")
+                .transform(body().prepend("Hello from reuse2 for key2: "))
+                .to("direct:reuse");
+
+        //fanout
         from("spring-rabbitmq:exchange-for-fanout?queues=queue-for-fanout-A&connectionFactory=#connectionFactory&autoDeclare=true&exchangeType=fanout")
                 .transform(body().prepend("Hello from fanout for keyA: "))
                 .to("direct:fanout-A");
@@ -57,33 +59,38 @@ public class SpringRabbitmqRouteBuilder extends RouteBuilder {
         from("spring-rabbitmq:exchange-for-fanout?queues=queue-for-fanout-B&connectionFactory=#connectionFactory&autoDeclare=true&exchangeType=fanout")
                 .transform(body().prepend("Hello from fanout for keyB: "))
                 .to("direct:fanout-B");
-//
-//        from("spring-rabbitmq:exchange-for-manual-ack?queues=queue-for-manual-ack&routingKey=key-for-manual-ack&connectionFactory=#connectionFactory&autoDeclare=true&acknowledgeMode=MANUAL")
-//                .process(exchange -> {
-//                    //simulate processing time 20 s (has to be bigger than timeout to read from direct routes
-//                    // -> see SpringRabbitmqResource.getFromDirect (5 seconds)
-//                    TimeUnit.SECONDS.sleep(20);
-//                    exchange.getIn().setBody("Processed: " + exchange.getIn().getBody(String.class));
-//                    Channel channel = exchange.getProperty(SpringRabbitMQConstants.CHANNEL, Channel.class);
-//                    long deliveryTag = exchange.getMessage().getHeader(SpringRabbitMQConstants.DELIVERY_TAG, long.class);
-//                    channel.basicAck(deliveryTag, true);
-//                })
-//                .to("direct:manual-ack");
-//
-//        from("spring-rabbitmq:exchange-for-dmlc?queues=queue-for-dmlc&routingKey=key-for-dmlc&connectionFactory=#connectionFactory&autoDeclare=true&messageListenerContainerType=DMLC&concurrentConsumers=5")
-//                .process(exchange -> {
-//                    //delay 1 second
-//                    TimeUnit.SECONDS.sleep(1);
-//                })
-//                .transform(body().prepend("Hello from DMLC: "))
-//                .to("direct:dmlc");
-//
-//        from("spring-rabbitmq:exchange-for-smlc?queues=queueu-for-smlc&routingKey=key-for-smlc&connectionFactory=#connectionFactory&autoDeclare=true&messageListenerContainerType=SMLC&maxConcurrentConsumers=1")
-//                .process(exchange -> {
-//                    //delay 1 second
-//                    TimeUnit.SECONDS.sleep(1);
-//                })
-//                .transform(body().prepend("Hello from SMLC: "))
-//                .to("direct:smlc");
+
+        //topic
+        from("spring-rabbitmq:exchange-for-topic?queues=queue-for-topicA&routingKey=topic.#&connectionFactory=#connectionFactory&autoDeclare=true&exchangeType=topic")
+                .transform(body().prepend("Hello from topic: "))
+                .to("direct:topic");
+
+        from("spring-rabbitmq:exchange-for-manual-ack?queues=queue-for-manual-ack&routingKey=key-for-manual-ack&connectionFactory=#connectionFactory&autoDeclare=true&acknowledgeMode=MANUAL")
+                .process(exchange -> {
+                    //simulate processing time 20 s (has to be bigger than timeout to read from direct routes
+                    // -> see SpringRabbitmqResource.getFromDirect (5 seconds)
+                    TimeUnit.SECONDS.sleep(20);
+                    exchange.getIn().setBody("Processed: " + exchange.getIn().getBody(String.class));
+                    Channel channel = exchange.getProperty(SpringRabbitMQConstants.CHANNEL, Channel.class);
+                    long deliveryTag = exchange.getMessage().getHeader(SpringRabbitMQConstants.DELIVERY_TAG, long.class);
+                    channel.basicAck(deliveryTag, true);
+                })
+                .to("direct:manual-ack");
+
+        from("spring-rabbitmq:exchange-for-dmlc?queues=queue-for-dmlc&routingKey=key-for-dmlc&connectionFactory=#connectionFactory&autoDeclare=true&messageListenerContainerType=DMLC&concurrentConsumers=5")
+                .process(exchange -> {
+                    //delay 1 second
+                    TimeUnit.SECONDS.sleep(1);
+                })
+                .transform(body().prepend("Hello from DMLC: "))
+                .to("direct:dmlc");
+
+        from("spring-rabbitmq:exchange-for-smlc?queues=queueu-for-smlc&routingKey=key-for-smlc&connectionFactory=#connectionFactory&autoDeclare=true&messageListenerContainerType=SMLC&maxConcurrentConsumers=1")
+                .process(exchange -> {
+                    //delay 1 second
+                    TimeUnit.SECONDS.sleep(1);
+                })
+                .transform(body().prepend("Hello from SMLC: "))
+                .to("direct:smlc");
     }
 }
