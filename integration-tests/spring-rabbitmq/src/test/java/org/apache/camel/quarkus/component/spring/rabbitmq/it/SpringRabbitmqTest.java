@@ -288,12 +288,45 @@ class SpringRabbitmqTest {
 
         sendToExchange(EXCHANGE_POLLING, ROUTING_KEY_POLLING, "Sheldon");
 
-        //get result from direct (for pooling) with timeout
+        //get result from direct (for polling) with timeout
         getFromDirect(SpringRabbitmqResource.DIRECT_POLLING)
                 .then()
                 .statusCode(200)
                 .body(is("Polling Hello Sheldon"));
 
+    }
+
+    @Test
+    public void testFanOut() {
+        bindQueue("queue-for-fanout-A", "exchange-for-fanout", "key-for-fanout-A");
+        bindQueue("queue-for-fanout-B", "exchange-for-fanout", "key-for-fanout-B");
+        //send message without key to fanout exchange
+        RestAssured.given()
+                .queryParam("exchange", "exchange-for-fanout")
+                .queryParam("exchangeType", "fanout")
+                .body("Hello")
+                .post("/spring-rabbitmq/send")
+                .then()
+                .statusCode(200);
+
+        //message is not acked in rabbitmq (in 5 seconds)
+        getFromDirect("direct:manual-ack")
+                .then()
+                .statusCode(200)
+                .body(is(""));
+
+        //should be acked in 20 seconds
+        Awaitility.await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
+            Response res = getFromDirect("direct:manual-ack");
+
+            assertThat(res.statusCode()).isEqualTo(200);
+            assertThat(res.body().asString()).isEqualTo("Processed: Hello");
+        });
+
+        AmqpTemplate template = new RabbitTemplate(connectionFactory);
+        Message outA = template.receive("queue-for-fanout-A");
+        Message outB = template.receive("queue-for-fanout-B");
+        System.out.println(outA.getBody());
     }
 
     private void sendToExchange(String exchange, String routingKey, String body) {
