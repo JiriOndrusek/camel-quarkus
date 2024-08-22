@@ -65,6 +65,7 @@ public class SpringRabbitmqRouteBuilder extends RouteBuilder {
                 .transform(body().prepend("Hello from topic: "))
                 .to("direct:topic");
 
+        //manual acknowledgement
         from("spring-rabbitmq:exchange-for-manual-ack?queues=queue-for-manual-ack&routingKey=key-for-manual-ack&connectionFactory=#connectionFactory&autoDeclare=true&acknowledgeMode=MANUAL")
                 .process(exchange -> {
                     //simulate processing time 20 s (has to be bigger than timeout to read from direct routes
@@ -77,6 +78,20 @@ public class SpringRabbitmqRouteBuilder extends RouteBuilder {
                 })
                 .to("direct:manual-ack");
 
+        //deadletter
+        from("spring-rabbitmq:exchange-for-deadletter?queues=queue-for-deadletter&routingKey=routing-key-for-deadletter&connectionFactory=#connectionFactory&autoDeclare=true&deadLetterExchange=exchange-for-deadletter-DL&deadLetterExchangeType=fanout&deadLetterQueue=exchange-for-deadletter-DL&deadLetterRoutingKey=any-key&rejectAndDontRequeue=true")
+                .process(exchange -> {
+                    //forced exception
+                    throw new RuntimeException("forced exception to trigger dead letter exchange");
+                })
+                .to("direct:deadletter");
+
+        //redirection from deadletter queu to direct (with autoDeclare = false,because the bindig is created by above route)
+        from("spring-rabbitmq:exchange-for-deadletter-DL?queues=queue-for-deadletter-DL&connectionFactory=#connectionFactory&exchangeType=fanout")
+                .transform(body().prepend("Hello from deadletter: "))
+                .to("direct:deadletter-DL");
+
+        //dmlc
         from("spring-rabbitmq:exchange-for-dmlc?queues=queue-for-dmlc&routingKey=key-for-dmlc&connectionFactory=#connectionFactory&autoDeclare=true&messageListenerContainerType=DMLC&concurrentConsumers=5")
                 .process(exchange -> {
                     //delay 1 second
@@ -85,6 +100,7 @@ public class SpringRabbitmqRouteBuilder extends RouteBuilder {
                 .transform(body().prepend("Hello from DMLC: "))
                 .to("direct:dmlc");
 
+        //smlc
         from("spring-rabbitmq:exchange-for-smlc?queues=queueu-for-smlc&routingKey=key-for-smlc&connectionFactory=#connectionFactory&autoDeclare=true&messageListenerContainerType=SMLC&maxConcurrentConsumers=1")
                 .process(exchange -> {
                     //delay 1 second

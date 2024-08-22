@@ -353,6 +353,29 @@ class SpringRabbitmqTest {
                 .extract().body().asString());
         assertThat(results).contains("Hello from topic: Hello1", "Hello from topic: Hello3");
         assertThat(results).doesNotContain("Hello from topic: Hello2");
+    }
+
+    @Test
+    public void testDeadletter() {
+        RestAssured.given()
+                .queryParam("exchange", "exchange-for-deadletter")
+                .queryParam("routingKey", "routing-key-for-deadletter")
+                .body("Hello")
+                .post("/spring-rabbitmq/send")
+                .then()
+                .statusCode(200);
+
+        //message ends in deadletter
+        getFromDirect("direct:deadletter-DL")
+                .then()
+                .statusCode(200)
+                .body(is("Hello from deadletter: Hello"));
+
+        //no message ends in the "successful scenario" direct
+        getFromDirect("direct:deadletter")
+                .then()
+                .statusCode(200)
+                .body(is(""));
 
     }
 
