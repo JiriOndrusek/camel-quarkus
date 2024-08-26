@@ -79,14 +79,29 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
             kdcServer = new KerbyServer();
             kdcServer.startServer(kerbyDir);
 
-            kdcServer.createPrincipal("kudu/user@EXAMPLE.COM", "changeit");
-            kdcServer.createPrincipal("localhost@EXAMPLE.COM", "changeit");
-            kdcServer.createPrincipal("kudu/localhost@EXAMPLE.COM", "changeit");
-            kdcServer.createPrincipal("kudu@EXAMPLE.COM", "changeit");
-            kdcServer.createPrincipal("kudu/" + KUDU_MASTER_NETWORK_ALIAS + "@EXAMPLE.COM",
-                    "changeit"); //equivalent to hostname of container
-            kdcServer.createPrincipal("kudu/" + KUDU_TABLET_NETWORK_ALIAS + "@EXAMPLE.COM",
-                    "changeit");
+//            kdcServer.createPrincipal("kudu/user@EXAMPLE.COM", "changeit");
+//            kdcServer.createPrincipal("localhost@EXAMPLE.COM", "changeit");
+//            kdcServer.createPrincipal("kudu/localhost@EXAMPLE.COM", "changeit");
+//            kdcServer.createPrincipal("kudu@EXAMPLE.COM", "changeit");
+//            kdcServer.createPrincipal("kudu/tablet@EXAMPLE.COM", "changeit");
+//            kdcServer.createPrincipal("kudu/master@EXAMPLE.COM", "changeit");
+//            kdcServer.createPrincipal("kudu/" + KUDU_MASTER_NETWORK_ALIAS + "@EXAMPLE.COM",
+//                    "changeit"); //equivalent to hostname of container
+//            kdcServer.createPrincipal("kudu/" + KUDU_TABLET_NETWORK_ALIAS + "@EXAMPLE.COM",
+//                    "changeit");
+
+            kdcServer.createPrincipal("kudu/user", "changeit");
+            kdcServer.createPrincipal(IpAddressHelper.getHost4Address()+"", "changeit");
+            kdcServer.createPrincipal("localhost", "changeit");
+            kdcServer.createPrincipal("fedora", "changeit");
+            kdcServer.createPrincipal("kudu/localhost", "changeit");
+            kdcServer.createPrincipal("kudu", "changeit");
+            kdcServer.createPrincipal("kudu/tablet", "changeit");
+            kdcServer.createPrincipal("kudu/master", "changeit");
+//            kdcServer.createPrincipal("kudu/" + KUDU_MASTER_NETWORK_ALIAS + "",
+//                    "changeit"); //equivalent to hostname of container
+//            kdcServer.createPrincipal("kudu/" + KUDU_TABLET_NETWORK_ALIAS + "",
+//                    "changeit");
             kdcServer.exportPrincipals("principals.keytab");
 
             //replace "localhost" in krb5.conf with ip address
@@ -94,9 +109,10 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
             Charset charset = StandardCharsets.UTF_8;
 
             String content = new String(Files.readAllBytes(path), charset);
+//            content = content.replaceAll("localhost", IpAddressHelper.getHost4Address());
             content = content.replaceAll("localhost", IpAddressHelper.getHost4Address());
-            //            content = content.replaceAll("default_realm = EXAMPLE.COM",
-            //                    "default_realm = EXAMPLE.COM\n   allow_weak_crypto = true");
+                        content = content.replaceAll("default_realm = EXAMPLE.COM",
+                                "default_realm = EXAMPLE.COM\n   allow_weak_crypto = true");
             Files.write(path, content.getBytes(charset));
 
         } catch (IOException | KrbException e) {
@@ -107,22 +123,28 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
                 .withDockerfile(Path.of(this.getClass().getResource("/kerby/Dockerfile").getFile())))
                 .withCommand("master")
                 .withExposedPorts(KUDU_MASTER_RPC_PORT, KUDU_MASTER_HTTP_PORT)
+                .withEnv("KUDU_HOST_ID", "kudu-container-constant")
                 .withEnv("MASTER_ARGS", "--unlock_unsafe_flags=true " +
                         "--rpc_authentication=required " +
-                        "--use_system_auth_to_local=true " +
+                        //                        "--use_system_auth_to_local=true " +
                         "--keytab_file=/home/kudu/principals.keytab " +
                         "--allow_world_readable_credentials=true " + //https://kudu.apache.org/docs/prior_release_notes.html
+                        "--principal=kudu/master " +
                         "--stderrthreshold=0 ")
                 .withCopyToContainer(MountableFile.forClasspathResource("kerby/krb5.conf"),
                         "/etc/krb5.conf")
                 .withNetwork(kuduNetwork)
                 .withNetworkAliases(KUDU_MASTER_NETWORK_ALIAS)
-                .withLogConsumer(new Slf4jLogConsumer(LOG))
+                .withLogConsumer(new Slf4jCustomLogConsumer(LOG, kdcServer))
                 .withCreateContainerCmdModifier(cmd -> {
                     cmd.withHostName(KUDU_MASTER_NETWORK_ALIAS);
                 })
                 .waitingFor(Wait.forListeningPort());
         masterContainer.start();
+
+        System.out.println("***********************************************************************");
+        System.out.println("***********************    master started  *************************");
+        System.out.println("***********************************************************************");
 
         // Force host name and port, so that the tablet container is accessible from KuduResource, KuduTest and KuduIT.
         Consumer<CreateContainerCmd> consumer = cmd -> {
@@ -139,12 +161,14 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
         tabletContainer = new GenericContainer<>(new ImageFromDockerfile()
                 .withDockerfile(Path.of(this.getClass().getResource("/kerby/Dockerfile").getFile())))
                 .withCommand("tserver")
+                .withEnv("KUDU_HOST_ID", "kudu-container-constant")
                 .withExposedPorts(KUDU_MASTER_RPC_PORT, KUDU_MASTER_HTTP_PORT)
                 .withEnv("TSERVER_ARGS", "--unlock_unsafe_flags=true " +
                         "--rpc_authentication=required " +
-                        "--use_system_auth_to_local=true " +
+                        //                        "--use_system_auth_to_local=true " +
                         "--keytab_file=/home/kudu/principals.keytab " +
                         "--allow_world_readable_credentials=true " + //https://kudu.apache.org/docs/prior_release_notes.html
+                        "--principal=kudu/tablet " +
                         "--stderrthreshold=0 ")
                 .withCopyToContainer(MountableFile.forClasspathResource("kerby/krb5.conf"),
                         "/etc/krb5.conf")
@@ -154,9 +178,14 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
                 .withNetwork(kuduNetwork)
                 .withNetworkAliases(KUDU_TABLET_NETWORK_ALIAS)
                 .withCreateContainerCmdModifier(consumer)
-                .withLogConsumer(new Slf4jLogConsumer(LOG))
+                .withLogConsumer(new Slf4jCustomLogConsumer(LOG, kdcServer))
                 .waitingFor(Wait.forListeningPort());
+
         tabletContainer.start();
+
+        System.out.println("***********************************************************************");
+        System.out.println("***********************    tablet started  *************************");
+        System.out.println("***********************************************************************");
 
         // Print interesting Kudu servers connectivity information
         final String masterRpcAuthority = masterContainer.getHost() + ":"
