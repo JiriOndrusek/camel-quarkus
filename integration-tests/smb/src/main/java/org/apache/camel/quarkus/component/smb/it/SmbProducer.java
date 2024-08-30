@@ -16,13 +16,25 @@
  */
 package org.apache.camel.quarkus.component.smb.it;
 
-import org.apache.camel.builder.RouteBuilder;
+import java.security.Provider;
+import java.security.Security;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
-public class SmbRoute extends RouteBuilder {
+import com.hierynomus.smbj.SmbConfig;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Named;
 
-    @Override
-    public void configure() throws Exception {
-        from("smb:{{smb.host}}:{{smb.port}}/{{smb.share}}?username={{smb.username}}&password={{smb.password}}&path=/&repeatCount=1&smbConfig=#smbConfig")
-                .to("mock:result");
+public class SmbProducer {
+
+    @Produces
+    @Named("smbConfig")
+    public SmbConfig SMBConfig() {
+
+        System.out.println("******************* providers ********************");
+        System.out.println(Arrays.stream(Security.getProviders()).map(Provider::getName).collect(Collectors.joining(", ")));
+
+        return SmbConfig.createDefaultConfig();
     }
+
 }
