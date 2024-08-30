@@ -34,7 +34,43 @@ public class SmbProducer {
         System.out.println("******************* providers ********************");
         System.out.println(Arrays.stream(Security.getProviders()).map(Provider::getName).collect(Collectors.joining(", ")));
 
-        return SmbConfig.createDefaultConfig();
+        //        Provider fipsProvider = Security.getProvider("SunPKCS11-NSS-FIPS");
+        //
+        //
+        //        SecurityProvider runtimeSecurityProvider = new SecurityProvider() {
+        //            @Override
+        //            public MessageDigest getDigest(String name) throws SecurityException {
+        //                return fipsProvider;
+        //            }
+        //
+        //            @Override
+        //            public Mac getMac(String name) throws SecurityException {
+        //                return null;
+        //            }
+        //
+        //            @Override
+        //            public Cipher getCipher(String name) throws SecurityException {
+        //                return null;
+        //            }
+        //
+        //            @Override
+        //            public AEADBlockCipher getAEADBlockCipher(String name) throws SecurityException {
+        //                return null;
+        //            }
+        //
+        //            @Override
+        //            public DerivationFunction getDerivationFunction(String name) throws SecurityException {
+        //                return null;
+        //            }
+        //        };
+
+        Provider provider = Security.getProvider("SunPKCS11-NSS-FIPS");
+            System.out.println(provider.getName());
+            for (String key : provider.stringPropertyNames())
+                System.out.println("\t" + key + "\t" + provider.getProperty(key));
+
+        SmbConfig smbConfig = SmbConfig.builder(SmbConfig.createDefaultConfig()).build();
+        return smbConfig;
     }
 
 }
