@@ -21,6 +21,7 @@ import java.security.Security;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import com.hierynomus.security.jce.JceSecurityProvider;
 import com.hierynomus.smbj.SmbConfig;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Named;
@@ -64,12 +65,13 @@ public class SmbProducer {
         //            }
         //        };
 
-        Provider provider = Security.getProvider("SunPKCS11-NSS-FIPS");
-            System.out.println(provider.getName());
-            for (String key : provider.stringPropertyNames())
-                System.out.println("\t" + key + "\t" + provider.getProperty(key));
+        //        Provider provider = Security.getProvider("SunPKCS11-NSS-FIPS");
+        //            System.out.println(provider.getName());
+        //            for (String key : provider.stringPropertyNames())
+        //                System.out.println("\t" + key + "\t" + provider.getProperty(key));
 
-        SmbConfig smbConfig = SmbConfig.builder(SmbConfig.createDefaultConfig()).build();
+        SmbConfig smbConfig = SmbConfig.builder(SmbConfig.createDefaultConfig())
+                .withSecurityProvider(new JceSecurityProvider("SunPKCS11-NSS-FIPS")).build();
         return smbConfig;
     }
 
