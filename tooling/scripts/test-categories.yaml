@@ -176,7 +176,6 @@ group-10:
   - fop
   - groovy
   - joor
-  - kotlin
   - mail
   - main-unknown-args-fail
   - main-unknown-args-ignore
@@ -224,7 +223,6 @@ group-13:
   - java-joor-dsl
   - jdbc-grouped
   - js-dsl
-  - kotlin-dsl
   - kubernetes
   - salesforce
   - sap-netweaver
