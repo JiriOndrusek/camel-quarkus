@@ -45,7 +45,7 @@ public class SmbTestResource implements QuarkusTestResourceLifecycleManager {
             return Map.of(
                     "smb.host", smbHost,
                     "smb.port", Integer.toString(smbPort),
-                    "smb.share", "data-rw",
+                    "smb.share", "data\rw",
                     "smb.username", "camel",
                     "smb.password", "camelTester123");
         } catch (Exception e) {

@@ -16,13 +16,39 @@
  */
 package org.apache.camel.quarkus.component.smb.it;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.camel.builder.RouteBuilder;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+@ApplicationScoped
 public class SmbRoute extends RouteBuilder {
+
+    @ConfigProperty(name = "smb.host")
+    String host;
+
+    @ConfigProperty(name = "smb.port")
+    String port;
+
+    @ConfigProperty(name = "smb.username")
+    String username;
+
+    @ConfigProperty(name = "smb.password")
+    String password;
+
+    @ConfigProperty(name = "smb.share")
+    String share;
+
 
     @Override
     public void configure() throws Exception {
-        from("smb:{{smb.host}}:{{smb.port}}/{{smb.share}}?username={{smb.username}}&password={{smb.password}}&path=/&repeatCount=1")
-                .to("mock:result");
+//        from("smb:{{smb.host}}:{{smb.port}}/{{smb.share}}?username={{smb.username}}&password={{smb.password}}&path=/&repeatCount=1")
+//                .to("mock:result");
+
+
+        String s = String.format("smb:%s:%s/%s?username=%s&password=%s&path=/&fileExist=Override", host, port, "data-rw", username, password);
+
+        fromF("direct:send")
+                .to(s);
+//                .to("smb:{{smb.host}}:{{smb.port}}/{{smb.share}}?username={{smb.username}}&password={{smb.password}}&path=/");
     }
 }

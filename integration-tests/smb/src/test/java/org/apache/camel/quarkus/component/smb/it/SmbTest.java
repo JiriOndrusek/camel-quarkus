@@ -19,6 +19,7 @@ package org.apache.camel.quarkus.component.smb.it;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
@@ -30,5 +31,21 @@ public class SmbTest {
         RestAssured.get("/smb/validate")
                 .then()
                 .statusCode(204);
+    }
+
+    @Test
+    public void testSendReceive() {
+        RestAssured.given()
+                .body("Hello")
+                .post("/smb/send/test.txt")
+                .then()
+                .statusCode(204);
+
+        RestAssured.given()
+                .body("test.txt")
+                .post("/smb/receive")
+                .then()
+                .statusCode(200)
+                .body(Matchers.equalTo("Hello"));
     }
 }
