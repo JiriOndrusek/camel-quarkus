@@ -111,6 +111,10 @@ public class CqCatalog {
     public CqCatalog(Path baseDir, Flavor flavor) {
         this(flavor, name -> {
             try {
+                //workaround for beans
+                if (name.contains("org/apache/camel/catalog/beans/")) {
+                    return Thread.currentThread().getContextClassLoader().getResourceAsStream(name);
+                }
                 return Files.newInputStream(baseDir.resolve(name));
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -173,7 +177,7 @@ public class CqCatalog {
     }
 
     public Stream<ArtifactModel<?>> models(Kind kind) {
-            return catalog.findNames(kind).stream().map(name -> (ArtifactModel<?>) catalog.model(kind, name));
+        return catalog.findNames(kind).stream().map(name -> (ArtifactModel<?>) catalog.model(kind, name));
     }
 
     public void addComponent(String name, String className, String jsonSchema) {
@@ -339,7 +343,8 @@ public class CqCatalog {
         private static final String LANGUAGE_DIR = CQ_CATALOG_DIR + "/languages";
         private static final String TRANSFORMER_DIR = CQ_CATALOG_DIR + "/transformers";
         private static final String OTHER_DIR = CQ_CATALOG_DIR + "/others";
-        private static final String BEANS_DIR = CQ_CATALOG_DIR + "/beans";
+        //workaround for beans
+        private static final String BEANS_DIR = "org/apache/camel/catalog/beans";
         private static final String COMPONENTS_CATALOG = CQ_CATALOG_DIR + "/components.properties";
         private static final String DATA_FORMATS_CATALOG = CQ_CATALOG_DIR + "/dataformats.properties";
         private static final String DEV_CONSOLE_CATALOG = CQ_CATALOG_DIR + "/dev-consoles.properties";
