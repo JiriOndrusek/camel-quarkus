@@ -108,7 +108,7 @@
                                 <goals>
                                     <goal>test</goal>
                                 </goals>
-                                <phase>integration-test</phase>
+<!--                                <phase>integration-test</phase>-->
                                 <configuration>
                                     <systemPropertyVariables>
                                         <quarkus.runner>${quarkus.runner}</quarkus.runner>
