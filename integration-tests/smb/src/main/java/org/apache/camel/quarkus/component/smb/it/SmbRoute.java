@@ -59,16 +59,16 @@ public class SmbRoute extends RouteBuilder {
                 .to("mock:result");
 
         from("direct:send")
-                .toF("smb:%s:%s/%s?username=%s&password=%s&path=/", host, port, share, username, password);
+                .toF("smb:%s:%s/%s?username=%s&password=%s&path=/test", host, port, share, username, password);
 
-        from("smb:{{smb.host}}:{{smb.port}}/{{smb.share}}?username={{smb.username}}&password={{smb.password}}&path=/&searchPattern=*.tx1")
-                .process(e -> {
-                    receivedContents.add(Map.of(
-                            "path", e.getIn().getBody(File.class).getPath(),
-                            "content", new String(e.getIn().getBody(InputStream.class).readAllBytes(), "UTF-8"),
-                            SmbConstants.SMB_FILE_PATH, e.getIn().getHeader(SmbConstants.SMB_FILE_PATH, String.class),
-                            SmbConstants.SMB_UNC_PATH, e.getIn().getHeader(SmbConstants.SMB_UNC_PATH, String.class)));
-                });
+//        from("smb:{{smb.host}}:{{smb.port}}/{{smb.share}}?username={{smb.username}}&password={{smb.password}}&path=/test&searchPattern=*.tx1")
+//                .process(e -> {
+//                    receivedContents.add(Map.of(
+//                            "path", e.getIn().getBody(File.class).getPath(),
+//                            "content", new String(e.getIn().getBody(InputStream.class).readAllBytes(), "UTF-8"),
+//                            SmbConstants.SMB_FILE_PATH, e.getIn().getHeader(SmbConstants.SMB_FILE_PATH, String.class),
+//                            SmbConstants.SMB_UNC_PATH, e.getIn().getHeader(SmbConstants.SMB_UNC_PATH, String.class)));
+//                });
     }
 
     static class Producers {

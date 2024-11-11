@@ -86,7 +86,7 @@ public class SmbResource {
     @Path("/receive")
     public String receive(String fileName) throws Exception {
 
-        String uri = String.format("smb:%s:%s/%s?username=%s&password=%s&searchPattern=%s&path=/", host, port, share,
+        String uri = String.format("smb:%s:%s/%s?username=%s&password=%s&searchPattern=%s&path=/test", host, port, share,
                 username, password, fileName);
         var shareFile = consumer.receiveBody(uri, File.class);
         return new String(shareFile.getInputStream().readAllBytes(), "UTF-8");

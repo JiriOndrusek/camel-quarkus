@@ -16,8 +16,14 @@
  */
 package org.apache.camel.quarkus.component.smb.it;
 
+import java.io.IOException;
 import java.util.Map;
 
+import com.hierynomus.smbj.SMBClient;
+import com.hierynomus.smbj.auth.AuthenticationContext;
+import com.hierynomus.smbj.connection.Connection;
+import com.hierynomus.smbj.session.Session;
+import com.hierynomus.smbj.share.DiskShare;
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.testcontainers.containers.GenericContainer;
@@ -41,6 +47,30 @@ public class SmbTestResource implements QuarkusTestResourceLifecycleManager {
 
             String smbHost = container.getHost();
             int smbPort = container.getMappedPort(SMB_PORT);
+
+            //create folder test
+            SMBClient client = new SMBClient();
+
+
+//            try (Connection connection = client.connect(smbHost, smbPort)) {
+//                // Authenticate with SMB server
+//                AuthenticationContext ac = new AuthenticationContext("camel", "camelTester123".toCharArray(), null);
+//                Session session = connection.authenticate(ac);
+//
+//                // Connect to the shared folder
+//                DiskShare share = (DiskShare) session.connectShare("data-rw");
+//
+//                // Check if the folder exists, and create if it doesn't
+//                if (!share.folderExists("test")) {
+//                    share.mkdir("test");
+//                    System.out.println("Folder created: test");
+//                } else {
+//                    System.out.println("Folder already exists:  test");
+//                }
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+
 
             return Map.of(
                     "smb.host", smbHost,

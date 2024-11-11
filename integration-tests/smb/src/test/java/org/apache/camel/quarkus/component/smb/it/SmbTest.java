@@ -129,7 +129,7 @@ public class SmbTest {
             String host = ConfigProvider.getConfig().getValue("smb.host", String.class);
 
             assertThat(set)
-                    .contains("path=msg1.tx1")
+                    .contains("path=test/msg1.tx1")
                     .contains("content=Hello1")
                     .contains(SmbConstants.SMB_FILE_PATH + "=msg1.tx1")
                     .contains(SmbConstants.SMB_UNC_PATH + "=\\\\%s\\data-rw\\msg1.tx1".formatted(host));
