@@ -17,10 +17,12 @@
 package org.apache.camel.quarkus.component.google.secret.manager.it;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import io.quarkus.logging.Log;
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -28,34 +30,48 @@ import org.apache.camel.component.google.secret.manager.GoogleSecretManagerConst
 import org.apache.camel.component.google.secret.manager.GoogleSecretManagerOperations;
 import org.apache.camel.quarkus.test.mock.backend.MockBackendUtils;
 import org.awaitility.Awaitility;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 
 /**
  * Todo use MockBackendUtils
  */
 @QuarkusTest
+@QuarkusTestResource(GoogleSecretManagerTestResource.class)
 class GoogleSecretManagerTest {
 
     @Test
     void secretCreateRetrieveDeletePurge() {
         final String secretToCreate = "firstSecret!";
-        final String nameToCreate = "CQTestSecret" + System.currentTimeMillis();
+        final String secretId = "CQTestSecret" + System.currentTimeMillis();
         String createdName;
 
+        boolean deleted = false;
+
         try {
-            createdName = createSecret(nameToCreate, secretToCreate);
-            assertTrue(createdName.contains(nameToCreate));
+            //create secret
+            createdName = createSecret(secretId, secretToCreate);
+            assertTrue(createdName.contains(secretId));
 
             //parse the name without /version/...
             String name = createdName.substring(0, createdName.indexOf("/version"));
+            String version = createdName.substring(createdName.lastIndexOf("/") + 1);
+
+            //get secret
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .body(Map.of(GoogleSecretManagerConstants.SECRET_ID, secretId, GoogleSecretManagerConstants.VERSION_ID,
+                            version))
+                    .post("/google-secret-manager/operation/" + GoogleSecretManagerOperations.getSecretVersion)
+                    .then()
+                    .statusCode(200)
+                    .body(is(secretToCreate));
 
             // list secrets
             RestAssured.given()
@@ -65,9 +81,8 @@ class GoogleSecretManagerTest {
                     .statusCode(200)
                     .body(containsString(name));
 
-
             //delete secret
-            deleteSecret(nameToCreate);
+            deleteSecret(secretId);
 
             //verify that the secret is gone
             RestAssured.given()
@@ -77,11 +92,17 @@ class GoogleSecretManagerTest {
                     .statusCode(200)
                     .body(not(containsString(name)));
 
+            deleted = true;
 
         } finally {
-
-            //todo delete immediately
-            deleteSecret(nameToCreate);
+            //todo MockBackendUtils
+            if (!deleted /*!MockBackendUtils.startMockBackend(false)*/) {
+                String file = ConfigProvider.getConfig().getValue("cq.google-secrets-manager.path-to-service-account-key",
+                        String.class);
+                String projectName = ConfigProvider.getConfig().getValue("cq.google-secrets-manager.project-name",
+                        String.class);
+                GoogleSecretManagerTestResource.deleteSecret(secretId, file, projectName);
+            }
         }
     }
 
@@ -107,17 +128,16 @@ class GoogleSecretManagerTest {
         return createdArn;
     }
 
-    protected void deleteSecret(String arn) {
-        if (arn != null) {
-            Log.info("Deleting secret: " + arn);
+    protected void deleteSecret(String secretId) {
+        if (secretId != null) {
+            Log.info("Deleting secret: " + secretId);
             RestAssured.given()
                     .contentType(ContentType.JSON)
-                    .body(Collections.singletonMap(GoogleSecretManagerConstants.SECRET_ID, arn))
+                    .body(Collections.singletonMap(GoogleSecretManagerConstants.SECRET_ID, secretId))
                     .post("/google-secret-manager/operation/" + GoogleSecretManagerOperations.deleteSecret)
                     .then()
                     .statusCode(200)
                     .body(CoreMatchers.is("true"));
         }
     }
-
 }

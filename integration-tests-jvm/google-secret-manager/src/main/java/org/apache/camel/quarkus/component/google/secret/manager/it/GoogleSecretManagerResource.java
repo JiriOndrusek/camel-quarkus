@@ -16,7 +16,6 @@
  */
 package org.apache.camel.quarkus.component.google.secret.manager.it;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -102,31 +101,31 @@ public class GoogleSecretManagerResource {
 
         Object result = null;
         switch (GoogleSecretManagerOperations.valueOf(operation)) {
-            case listSecrets:
+        case listSecrets:
 
-                LinkedList<String> listedSecrets = new LinkedList<>();
-                SecretManagerServiceClient.ListSecretsPagedResponse response = ex.getIn()
-                        .getBody(SecretManagerServiceClient.ListSecretsPagedResponse.class);
-                SecretManagerServiceClient.ListSecretsPage page = response.getPage();
-                while (page != null) {
-                    page.getValues().iterator().forEachRemaining(s -> listedSecrets.add(s.getName()));
-                    page = page.getNextPage();
-                }
+            LinkedList<String> listedSecrets = new LinkedList<>();
+            SecretManagerServiceClient.ListSecretsPagedResponse response = ex.getIn()
+                    .getBody(SecretManagerServiceClient.ListSecretsPagedResponse.class);
+            SecretManagerServiceClient.ListSecretsPage page = response.getPage();
+            while (page != null) {
+                page.getValues().iterator().forEachRemaining(s -> listedSecrets.add(s.getName()));
+                page = page.getNextPage();
+            }
 
-                result = listedSecrets;
-                break;
-            case createSecret:
-                SecretVersion createdSecret = ex.getIn().getBody(SecretVersion.class);
-                result = createdSecret.getName();
-                break;
-            case deleteSecret:
-                result = true;
-                break;
-            case getSecretVersion:
-                //todo
-                break;
-            default:
-                return Response.status(500).build();
+            result = listedSecrets;
+            break;
+        case createSecret:
+            SecretVersion createdSecret = ex.getIn().getBody(SecretVersion.class);
+            result = createdSecret.getName();
+            break;
+        case deleteSecret:
+            result = true;
+            break;
+        case getSecretVersion:
+            result = ex.getIn().getBody(String.class);
+            break;
+        default:
+            return Response.status(500).build();
         }
 
         return Response.ok(result).build();
