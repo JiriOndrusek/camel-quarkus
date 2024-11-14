@@ -71,11 +71,19 @@ public class GoogleSecretManagerResource {
         return result;
     }
 
+    @Path("/getGcpSecret")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String loadGcpPassword() {
+        return producerTemplate.requestBody("direct:loadGcpPassword", "", String.class);
+    }
+
     @Path("/operation/{operation}")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response post(@PathParam("operation") String operation, @QueryParam("body") String body, Map<String, Object> headers)
+    public Response operation(@PathParam("operation") String operation, @QueryParam("body") String body,
+            Map<String, Object> headers)
             throws Exception {
 
         final Object resultBody;

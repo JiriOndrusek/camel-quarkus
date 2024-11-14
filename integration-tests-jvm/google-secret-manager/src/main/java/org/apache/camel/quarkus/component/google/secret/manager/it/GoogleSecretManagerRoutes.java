@@ -16,16 +16,24 @@
  */
 package org.apache.camel.quarkus.component.google.secret.manager.it;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.model.language.SimpleExpression;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+@ApplicationScoped
 public class GoogleSecretManagerRoutes extends RouteBuilder {
+
+    @ConfigProperty(name = "gcpSecretId")
+    String gcpSecretId;
+
+    //    @ConfigProperty(name = "cq.google-secret-manager.gcp.secretId")
+    //    String gcpSecretId;
+
     @Override
     public void configure() throws Exception {
-        //        from("direct:start")
-        //                .to("{{gcp:secreetId}}");
-        //
-        //
-        //        from("direct:start")
-        //                .to("{{gcp:route:default}}");
+        from("direct:loadGcpPassword")
+                .setBody(new SimpleExpression("{{gcp:%s@1}}".formatted(gcpSecretId)));
+
     }
 }

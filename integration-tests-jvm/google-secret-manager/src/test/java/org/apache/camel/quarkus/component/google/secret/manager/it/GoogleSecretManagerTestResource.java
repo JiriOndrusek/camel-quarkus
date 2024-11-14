@@ -60,12 +60,13 @@ public class GoogleSecretManagerTestResource implements QuarkusTestResourceLifec
     }
 
     static void createSecret(String secretId, String secretValue, String accessFile, String project) {
+        SecretManagerServiceClient client = null;
         try (FileInputStream fis = new FileInputStream(accessFile)) {
 
             Credentials myCredentials = ServiceAccountCredentials.fromStream(fis);
             SecretManagerServiceSettings settings = SecretManagerServiceSettings.newBuilder()
                     .setCredentialsProvider(FixedCredentialsProvider.create(myCredentials)).build();
-            SecretManagerServiceClient client = SecretManagerServiceClient.create(settings);
+            client = SecretManagerServiceClient.create(settings);
 
             Secret secret = Secret.newBuilder()
                     .setReplication(
@@ -80,24 +81,35 @@ public class GoogleSecretManagerTestResource implements QuarkusTestResourceLifec
                     .setData(ByteString.copyFromUtf8(secretValue)).build();
 
             client.addSecretVersion(createdSecret.getName(), payload);
+
         } catch (IOException e) {
             LOG.error("Unsuccessful creation of secret (%s) for gcp. ".formatted(secretId));
             throw new RuntimeException(e);
+        } finally {
+            if (client != null) {
+                client.close();
+            }
         }
     }
 
     static void deleteSecret(String secretId, String accessFile, String project) {
+
+        SecretManagerServiceClient client = null;
         try (FileInputStream fis = new FileInputStream(accessFile)) {
 
             Credentials myCredentials = ServiceAccountCredentials.fromStream(fis);
             SecretManagerServiceSettings settings = SecretManagerServiceSettings.newBuilder()
                     .setCredentialsProvider(FixedCredentialsProvider.create(myCredentials)).build();
-            SecretManagerServiceClient client = SecretManagerServiceClient.create(settings);
+            client = SecretManagerServiceClient.create(settings);
 
             client.deleteSecret(SecretName.of(project, secretId));
         } catch (IOException e) {
             LOG.error("Unsuccessful creation of secret (%s) for gcp. ".formatted(secretId));
             throw new RuntimeException(e);
+        } finally {
+            if (client != null) {
+                client.close();
+            }
         }
     }
 
