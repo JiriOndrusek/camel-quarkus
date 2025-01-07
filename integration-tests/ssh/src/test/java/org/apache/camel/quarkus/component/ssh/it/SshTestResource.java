@@ -19,7 +19,6 @@ package org.apache.camel.quarkus.component.ssh.it;
 import java.util.Map;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
-import org.apache.camel.util.CollectionHelper;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,11 +53,11 @@ public class SshTestResource implements QuarkusTestResourceLifecycleManager {
             LOGGER.info("Started SSH container to {}:{}", container.getHost(),
                     container.getMappedPort(SSH_PORT).toString());
 
-            return CollectionHelper.mapOf(
-                    "quarkus.ssh.host",
-                    container.getHost(),
-                    "quarkus.ssh.port",
-                    container.getMappedPort(SSH_PORT).toString());
+            return Map.of(
+                    "quarkus.ssh.host", container.getHost(),
+                    "quarkus.ssh.port", container.getMappedPort(SSH_PORT).toString(),
+                    "ssh.username", "test",
+                    "ssh.password", "password");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

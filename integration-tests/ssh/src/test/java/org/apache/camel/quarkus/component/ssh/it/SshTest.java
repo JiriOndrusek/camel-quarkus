@@ -16,10 +16,14 @@
  */
 package org.apache.camel.quarkus.component.ssh.it;
 
+import java.util.Map;
+
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import org.apache.camel.component.ssh.SshConstants;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -48,6 +52,29 @@ class SshTest {
                 .body().asString();
 
         assertEquals(fileContent, sshFileContent);
+    }
+
+    @Test
+    public void testHeaders() {
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(Map.of(SshConstants.USERNAME_HEADER, "test", SshConstants.PASSWORD_HEADER, "password"))
+                .post("/ssh/send/wrong")
+                .then()
+                .statusCode(200)
+                .body("", Matchers.hasEntry(SshConstants.EXIT_VALUE, "127"))
+                .body("", Matchers.hasEntry(Matchers.matchesRegex(SshConstants.STDERR),
+                        Matchers.containsString("command not found")));
+    }
+
+    @Test
+    public void testProducer() {
+        RestAssured.given()
+                .body("echo Hello World")
+                .post("/ssh/sendToDirect/exampleProducer")
+                .then()
+                .statusCode(200)
+                .body(Matchers.equalTo("Hello World"));
     }
 
 }

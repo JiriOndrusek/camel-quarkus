@@ -16,8 +16,13 @@
  */
 package org.apache.camel.quarkus.component.ssh.it;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -29,6 +34,8 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -43,6 +50,9 @@ public class SshResource {
     private String host;
     @ConfigProperty(name = "quarkus.ssh.port")
     private String port;
+
+    @Inject
+    CamelContext camelContext;
 
     @Inject
     ProducerTemplate producerTemplate;
@@ -78,4 +88,37 @@ public class SshResource {
                 .ok(content)
                 .build();
     }
+
+    @POST
+    @Path("/send/{command}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Map<String, String> send(@PathParam("command") String body, Map<String, Object> headers)
+            throws URISyntaxException {
+
+        Exchange exchange = producerTemplate.request(String.format("ssh:%s:%s", host, port),
+                e -> {
+                    e.getIn().setHeaders(headers == null ? Collections.emptyMap() : headers);
+                    e.getIn().setBody(body == null ? "" : body);
+                });
+
+        Map<String, String> result = new HashMap<>();
+        result.put("body", exchange.getMessage().getBody(String.class));
+        result.putAll(exchange.getMessage().getHeaders().entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        //convert inputStreams
+                        entry -> String.valueOf(entry.getValue() instanceof InputStream
+                                ? camelContext.getTypeConverter().convertTo(String.class, entry.getValue())
+                                : entry.getValue()))));
+
+        return result;
+    }
+
+    @Path("/sendToDirect/{direct}")
+    @POST
+    public String sendToDirect(@PathParam("direct") String direct, String body) throws Exception {
+        return producerTemplate.requestBody("direct:" + direct, body, String.class).trim();
+    }
+
 }
