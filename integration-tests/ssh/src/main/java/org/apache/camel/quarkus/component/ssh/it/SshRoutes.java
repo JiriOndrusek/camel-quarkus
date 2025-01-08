@@ -16,8 +16,14 @@
  */
 package org.apache.camel.quarkus.component.ssh.it;
 
+import java.nio.file.Paths;
+
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Named;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.ssh.SshComponent;
+import org.apache.sshd.common.keyprovider.FileKeyPairProvider;
+import org.apache.sshd.common.keyprovider.KeyPairProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
@@ -37,6 +43,36 @@ public class SshRoutes extends RouteBuilder {
         // Route without SSL
         from("direct:exampleProducer")
                 .toF("ssh://%s:%s@%s:%s", username, password, host, port);
+    }
+
+    /**
+     * We need to implement some conditional configuration of the {@link SshComponent} thus we create it
+     * programmatically and publish via CDI.
+     *
+     * @return a configured {@link SshComponent}
+     */
+    @Named("ssh-with-key-provider")
+    SshComponent sshGlobalSsl() throws IllegalAccessException, NoSuchFieldException, InstantiationException {
+        final SshComponent sshComponent = new SshComponent();
+        sshComponent.setCamelContext(getContext());
+        sshComponent.getConfiguration()
+                .setKeyPairProvider(new FileKeyPairProvider(Paths.get("hostkey.pem")));
+        sshComponent.getConfiguration().setKeyType(KeyPairProvider.SSH_RSA);
+        return sshComponent;
+    }
+
+    @Named("ssh-rsa")
+    SshComponent sshRsa() throws IllegalAccessException, NoSuchFieldException, InstantiationException {
+        final SshComponent sshComponent = new SshComponent();
+
+        sshComponent.getConfiguration().setHost("localhost");
+        sshComponent.getConfiguration().setPort(Integer.parseInt(port));
+        sshComponent.getConfiguration().setUsername("smx");
+        sshComponent.getConfiguration()
+                .setKeyPairProvider(new FileKeyPairProvider(Paths.get("target/classes/hostkey.pem")));
+        sshComponent.getConfiguration().setKeyType(KeyPairProvider.SSH_RSA);
+
+        return sshComponent;
     }
 
 }

@@ -26,12 +26,7 @@ import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.camel.CamelContext;
@@ -90,12 +85,20 @@ public class SshResource {
     }
 
     @POST
-    @Path("/send/{command}")
+    @Path("/send/{componentName}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Map<String, String> send(@PathParam("command") String body, Map<String, Object> headers)
+    public Map<String, String> send(@QueryParam("command") String body,
+            @PathParam("componentName") String _componentName,
+            @QueryParam("pathSuffix") String pathSuffix,
+            Map<String, Object> headers)
             throws URISyntaxException {
 
-        Exchange exchange = producerTemplate.request(String.format("ssh:%s:%s", host, port),
+        String componentName = _componentName != null ? _componentName : "ssh";
+        String url = String.format("%s:%s:%s", componentName, host, port);
+        if (pathSuffix != null) {
+            url += "?" + pathSuffix;
+        }
+        Exchange exchange = producerTemplate.request(url,
                 e -> {
                     e.getIn().setHeaders(headers == null ? Collections.emptyMap() : headers);
                     e.getIn().setBody(body == null ? "" : body);

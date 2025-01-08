@@ -22,12 +22,18 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import io.smallrye.certs.Format;
+import io.smallrye.certs.junit5.Certificate;
 import org.apache.camel.component.ssh.SshConstants;
+import org.apache.camel.quarkus.test.support.certificate.TestCertificates;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+//@TestCertificates(certificates = {
+//        @Certificate(name = "ssh", formats = {
+//                Format.PEM }, password = "changeit") })
 @QuarkusTest
 @QuarkusTestResource(SshTestResource.class)
 class SshTest {
@@ -75,6 +81,21 @@ class SshTest {
                 .then()
                 .statusCode(200)
                 .body(Matchers.equalTo("Hello World"));
+    }
+
+    @Test
+    public void testCertificate() {
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(Map.of(SshConstants.USERNAME_HEADER, "smx", SshConstants.PASSWORD_HEADER, "password"))
+                .queryParam("command", "echo test")
+//                .queryParam("pathSuffix", "certResource=file:target/classes/hostkey.pem")
+                //                .queryParam("pathSuffix", "certResource=file:target/certs/ssh.key&certResourcePassword=changeit")
+                .post("/ssh/send/ssh-rsa")
+                .then()
+                .statusCode(200)
+                .body("", Matchers.hasEntry(SshConstants.EXIT_VALUE, "0"))
+                .body("", Matchers.hasEntry(SshConstants.STDERR, "Error:echo test"));
     }
 
 }
