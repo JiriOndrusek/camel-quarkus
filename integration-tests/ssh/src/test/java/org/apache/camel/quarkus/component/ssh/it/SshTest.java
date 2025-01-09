@@ -22,10 +22,7 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import io.smallrye.certs.Format;
-import io.smallrye.certs.junit5.Certificate;
 import org.apache.camel.component.ssh.SshConstants;
-import org.apache.camel.quarkus.test.support.certificate.TestCertificates;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
@@ -65,7 +62,8 @@ class SshTest {
         RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(Map.of(SshConstants.USERNAME_HEADER, "test", SshConstants.PASSWORD_HEADER, "password"))
-                .post("/ssh/send/wrong")
+                .queryParam("command", "wrong")
+                .post("/ssh/send/")
                 .then()
                 .statusCode(200)
                 .body("", Matchers.hasEntry(SshConstants.EXIT_VALUE, "127"))
@@ -84,15 +82,16 @@ class SshTest {
     }
 
     @Test
-    public void testCertificate() {
+    public void testKeyProvider() {
         RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(Map.of(SshConstants.USERNAME_HEADER, "smx", SshConstants.PASSWORD_HEADER, "password"))
+                .queryParam("component", "ssh-with-key-provider")
                 .queryParam("command", "echo test")
                 .queryParam("secured", "true")
-//                .queryParam("pathSuffix", "certResource=file:target/classes/hostkey.pem")
+                //                .queryParam("pathSuffix", "certResource=file:target/classes/hostkey.pem")
                 //                .queryParam("pathSuffix", "certResource=file:target/certs/ssh.key&certResourcePassword=changeit")
-                .post("/ssh/send/ssh-with-key-provider")
+                .post("/ssh/send")
                 .then()
                 .statusCode(200)
                 .body("", Matchers.hasEntry(SshConstants.EXIT_VALUE, "0"))

@@ -56,23 +56,23 @@ public class SshRoutes extends RouteBuilder {
         final SshComponent sshComponent = new SshComponent();
         sshComponent.setCamelContext(getContext());
         sshComponent.getConfiguration()
-                .setKeyPairProvider(new FileKeyPairProvider(Paths.get("hostkey.pem")));
+                .setKeyPairProvider(new FileKeyPairProvider(Paths.get("target/classes/hostkey.pem")));
         sshComponent.getConfiguration().setKeyType(KeyPairProvider.SSH_RSA);
         return sshComponent;
     }
-//
-//    @Named("ssh-rsa")
-//    SshComponent sshRsa() throws IllegalAccessException, NoSuchFieldException, InstantiationException {
-//        final SshComponent sshComponent = new SshComponent();
-//
-//        sshComponent.getConfiguration().setHost("localhost");
-//        sshComponent.getConfiguration().setPort(Integer.parseInt(port));
-//        sshComponent.getConfiguration().setUsername("smx");
-//        sshComponent.getConfiguration()
-//                .setKeyPairProvider(new FileKeyPairProvider(Paths.get("target/classes/hostkey.pem")));
-//        sshComponent.getConfiguration().setKeyType(KeyPairProvider.SSH_RSA);
-//
-//        return sshComponent;
-//    }
+    //
+    //    @Named("ssh-rsa")
+    //    SshComponent sshRsa() throws IllegalAccessException, NoSuchFieldException, InstantiationException {
+    //        final SshComponent sshComponent = new SshComponent();
+    //
+    //        sshComponent.getConfiguration().setHost("localhost");
+    //        sshComponent.getConfiguration().setPort(Integer.parseInt(port));
+    //        sshComponent.getConfiguration().setUsername("smx");
+    //        sshComponent.getConfiguration()
+    //                .setKeyPairProvider(new FileKeyPairProvider(Paths.get("target/classes/hostkey.pem")));
+    //        sshComponent.getConfiguration().setKeyType(KeyPairProvider.SSH_RSA);
+    //
+    //        return sshComponent;
+    //    }
 
 }
