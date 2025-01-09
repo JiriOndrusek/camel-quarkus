@@ -89,7 +89,7 @@ public class SshTestResource implements QuarkusTestResourceLifecycleManager {
 
     //todo proper path (no target)
     protected String getHostKey() {
-        return "target/classes/hostkey.pem";
+        return "target/certs/user01.key";
     }
 
     @Override
