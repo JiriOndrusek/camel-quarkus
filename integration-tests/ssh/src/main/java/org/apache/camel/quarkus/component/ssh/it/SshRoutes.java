@@ -52,27 +52,14 @@ public class SshRoutes extends RouteBuilder {
      * @return a configured {@link SshComponent}
      */
     @Named("ssh-with-key-provider")
-    SshComponent sshGlobalSsl() throws IllegalAccessException, NoSuchFieldException, InstantiationException {
+    SshComponent sshWithKeyProvider() throws IllegalAccessException, NoSuchFieldException, InstantiationException {
         final SshComponent sshComponent = new SshComponent();
-        sshComponent.setCamelContext(getContext());
+
         sshComponent.getConfiguration()
-                .setKeyPairProvider(new FileKeyPairProvider(Paths.get("hostkey.pem")));
+                .setKeyPairProvider(new FileKeyPairProvider(Paths.get("target/certs/ssh.key")));
         sshComponent.getConfiguration().setKeyType(KeyPairProvider.SSH_RSA);
+
         return sshComponent;
     }
-//
-//    @Named("ssh-rsa")
-//    SshComponent sshRsa() throws IllegalAccessException, NoSuchFieldException, InstantiationException {
-//        final SshComponent sshComponent = new SshComponent();
-//
-//        sshComponent.getConfiguration().setHost("localhost");
-//        sshComponent.getConfiguration().setPort(Integer.parseInt(port));
-//        sshComponent.getConfiguration().setUsername("smx");
-//        sshComponent.getConfiguration()
-//                .setKeyPairProvider(new FileKeyPairProvider(Paths.get("target/classes/hostkey.pem")));
-//        sshComponent.getConfiguration().setKeyType(KeyPairProvider.SSH_RSA);
-//
-//        return sshComponent;
-//    }
 
 }

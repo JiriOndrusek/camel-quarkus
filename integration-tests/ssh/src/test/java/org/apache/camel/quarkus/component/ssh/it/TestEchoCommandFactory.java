@@ -16,10 +16,10 @@
  */
 package org.apache.camel.quarkus.component.ssh.it;
 
+import java.util.concurrent.CountDownLatch;
+
 import org.apache.sshd.server.channel.ChannelSession;
 import org.apache.sshd.server.command.Command;
-
-import java.util.concurrent.CountDownLatch;
 
 public class TestEchoCommandFactory extends EchoCommandFactory {
 
