@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 public class SshTestResource implements QuarkusTestResourceLifecycleManager {
@@ -50,14 +49,14 @@ public class SshTestResource implements QuarkusTestResourceLifecycleManager {
         try {
             container = new GenericContainer(SSH_IMAGE)
                     .withExposedPorts(SSH_PORT)
-//                    .withEnv("PUBLIC_KEY_FILE", "true")
+                    .withEnv("PASSWORD_ACCESS", "true")
                     .withEnv("USER_NAME", "test")
                     .withEnv("USER_PASSWORD", "password")
                     .waitingFor(Wait.forListeningPort());
 
-//            container.withCopyFileToContainer(MountableFile.forHostPath("target/classes/hostkey.pem"),
-//                    "/ssl/hostkey.pem")
-//                    .withEnv("PASSWORD_ACCESS", "/ssl/hostkey.pem");
+            //            container.withCopyFileToContainer(MountableFile.forHostPath("target/classes/hostkey.pem"),
+            //                    "/ssl/hostkey.pem")
+            //                    .withEnv("PASSWORD_ACCESS", "/ssl/hostkey.pem");
 
             container.start();
 

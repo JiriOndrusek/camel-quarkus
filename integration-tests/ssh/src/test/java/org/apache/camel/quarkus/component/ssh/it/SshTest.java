@@ -31,9 +31,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-//@TestCertificates(certificates = {
-//        @Certificate(name = "ssh", formats = {
-//                Format.PEM }, password = "changeit") })
+@TestCertificates(certificates = {
+        @Certificate(name = "user01", formats = {
+                Format.PEM }) })
 @QuarkusTest
 @QuarkusTestResource(SshTestResource.class)
 class SshTest {
@@ -65,7 +65,8 @@ class SshTest {
         RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(Map.of(SshConstants.USERNAME_HEADER, "test", SshConstants.PASSWORD_HEADER, "password"))
-                .post("/ssh/send/wrong")
+                .queryParam("command", "wrong")
+                .post("/ssh/send/")
                 .then()
                 .statusCode(200)
                 .body("", Matchers.hasEntry(SshConstants.EXIT_VALUE, "127"))
@@ -84,15 +85,29 @@ class SshTest {
     }
 
     @Test
+    public void testKeyProvider() {
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .queryParam("component", "ssh-with-key-provider")
+                .queryParam("command", "echo test")
+                .queryParam("secured", "true")
+                .post("/ssh/send")
+                .then()
+                .statusCode(200)
+                .body("", Matchers.hasEntry(SshConstants.EXIT_VALUE, "0"))
+                .body("", Matchers.hasEntry(SshConstants.STDERR, "Error:echo test"));
+    }
+
+    @Test
     public void testCertificate() {
         RestAssured.given()
                 .contentType(ContentType.JSON)
-                .body(Map.of(SshConstants.USERNAME_HEADER, "smx", SshConstants.PASSWORD_HEADER, "password"))
+                .queryParam("component", "ssh-cert")
                 .queryParam("command", "echo test")
                 .queryParam("secured", "true")
-//                .queryParam("pathSuffix", "certResource=file:target/classes/hostkey.pem")
-                //                .queryParam("pathSuffix", "certResource=file:target/certs/ssh.key&certResourcePassword=changeit")
-                .post("/ssh/send/ssh-with-key-provider")
+                //todo according to the guide, this should be a certificate, which does not work and password is ignored
+                .queryParam("pathSuffix", "certResource=file:target/certs/user01.key&certResourcePassword=wrong")
+                .post("/ssh/send")
                 .then()
                 .statusCode(200)
                 .body("", Matchers.hasEntry(SshConstants.EXIT_VALUE, "0"))

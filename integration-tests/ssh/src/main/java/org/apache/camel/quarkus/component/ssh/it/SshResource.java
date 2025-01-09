@@ -88,24 +88,23 @@ public class SshResource {
     }
 
     @POST
-    @Path("/send/{componentName}")
+    @Path("/send")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Map<String, String> send(@QueryParam("command") String body,
-            @PathParam("componentName") String _componentName,
+    public Map<String, String> send(@QueryParam("command") String command,
+            @QueryParam("component") @DefaultValue("ssh") String component,
             @QueryParam("secured") @DefaultValue("false") boolean secured,
             @QueryParam("pathSuffix") String pathSuffix,
             Map<String, Object> headers)
             throws URISyntaxException {
 
-        String componentName = _componentName != null ? _componentName : "ssh";
-        String url = String.format("%s:%s:%s", componentName, host, secured ? securedPort : port);
+        String url = String.format("%s:%s@%s:%s", component, username, host, secured ? securedPort : port);
         if (pathSuffix != null) {
             url += "?" + pathSuffix;
         }
         Exchange exchange = producerTemplate.request(url,
                 e -> {
                     e.getIn().setHeaders(headers == null ? Collections.emptyMap() : headers);
-                    e.getIn().setBody(body == null ? "" : body);
+                    e.getIn().setBody(command == null ? "" : command);
                 });
 
         Map<String, String> result = new HashMap<>();
