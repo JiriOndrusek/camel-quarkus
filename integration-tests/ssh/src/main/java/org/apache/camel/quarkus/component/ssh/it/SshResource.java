@@ -26,12 +26,7 @@ import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.camel.CamelContext;
@@ -43,13 +38,16 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 @ApplicationScoped
 public class SshResource {
 
-    private final String user = "test";
-    private final String password = "password";
-
     @ConfigProperty(name = "quarkus.ssh.host")
-    private String host;
+    String host;
     @ConfigProperty(name = "quarkus.ssh.port")
-    private String port;
+    String port;
+    @ConfigProperty(name = "quarkus.ssh.secured-port")
+    String securedPort;
+    @ConfigProperty(name = "ssh.username")
+    String username;
+    @ConfigProperty(name = "ssh.password")
+    String password;
 
     @Inject
     CamelContext camelContext;
@@ -65,7 +63,7 @@ public class SshResource {
 
         String sshWriteFileCommand = String.format("printf \"%s\" > %s", content, fileName);
         producerTemplate.sendBody(
-                String.format("ssh:%s:%s?username=%s&password=%s", host, port, user, password),
+                String.format("ssh:%s:%s?username=%s&password=%s", host, port, username, password),
                 sshWriteFileCommand);
 
         return Response
@@ -80,7 +78,7 @@ public class SshResource {
 
         String sshReadFileCommand = String.format("cat %s", fileName);
         String content = producerTemplate.requestBody(
-                String.format("ssh:%s:%s?username=%s&password=%s", host, port, user, password),
+                String.format("ssh:%s:%s?username=%s&password=%s", host, port, username, password),
                 sshReadFileCommand,
                 String.class);
 
@@ -90,12 +88,21 @@ public class SshResource {
     }
 
     @POST
-    @Path("/send/{command}")
+    @Path("/send/{componentName}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Map<String, String> send(@PathParam("command") String body, Map<String, Object> headers)
+    public Map<String, String> send(@QueryParam("command") String body,
+            @PathParam("componentName") String _componentName,
+            @QueryParam("secured") @DefaultValue("false") boolean secured,
+            @QueryParam("pathSuffix") String pathSuffix,
+            Map<String, Object> headers)
             throws URISyntaxException {
 
-        Exchange exchange = producerTemplate.request(String.format("ssh:%s:%s", host, port),
+        String componentName = _componentName != null ? _componentName : "ssh";
+        String url = String.format("%s:%s:%s", componentName, host, secured ? securedPort : port);
+        if (pathSuffix != null) {
+            url += "?" + pathSuffix;
+        }
+        Exchange exchange = producerTemplate.request(url,
                 e -> {
                     e.getIn().setHeaders(headers == null ? Collections.emptyMap() : headers);
                     e.getIn().setBody(body == null ? "" : body);
