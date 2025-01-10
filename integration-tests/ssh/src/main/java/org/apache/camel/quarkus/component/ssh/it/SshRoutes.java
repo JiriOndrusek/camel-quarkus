@@ -43,6 +43,7 @@ public class SshRoutes extends RouteBuilder {
         // Route without SSL
         from("direct:exampleProducer")
                 .toF("ssh://%s:%s@%s:%s", username, password, host, port);
+
     }
 
     /**

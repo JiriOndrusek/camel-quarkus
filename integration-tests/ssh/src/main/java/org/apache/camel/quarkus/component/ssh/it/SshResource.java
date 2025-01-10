@@ -38,12 +38,18 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 @ApplicationScoped
 public class SshResource {
 
+    public enum ServerType {
+        userPassword, user01Key, edKey
+    };
+
     @ConfigProperty(name = "quarkus.ssh.host")
     String host;
     @ConfigProperty(name = "quarkus.ssh.port")
     String port;
     @ConfigProperty(name = "quarkus.ssh.secured-port")
     String securedPort;
+    @ConfigProperty(name = "quarkus.ssh.ed-port")
+    String edPort;
     @ConfigProperty(name = "ssh.username")
     String username;
     @ConfigProperty(name = "ssh.password")
@@ -92,12 +98,18 @@ public class SshResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Map<String, String> send(@QueryParam("command") String command,
             @QueryParam("component") @DefaultValue("ssh") String component,
-            @QueryParam("secured") @DefaultValue("false") boolean secured,
+            @QueryParam("serverType") @DefaultValue("userPassword") String serverType,
             @QueryParam("pathSuffix") String pathSuffix,
             Map<String, Object> headers)
             throws URISyntaxException {
 
-        String url = String.format("%s:%s@%s:%s", component, username, host, secured ? securedPort : port);
+        var p = switch (ServerType.valueOf(serverType)) {
+        case userPassword -> port;
+        case edKey -> edPort;
+        case user01Key -> securedPort;
+        };
+
+        String url = String.format("%s:%s@%s:%s", component, username, host, p);
         if (pathSuffix != null) {
             url += "?" + pathSuffix;
         }

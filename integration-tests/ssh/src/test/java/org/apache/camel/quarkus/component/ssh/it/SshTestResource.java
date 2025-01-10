@@ -17,6 +17,8 @@
 package org.apache.camel.quarkus.component.ssh.it;
 
 import java.nio.file.Paths;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
@@ -38,8 +40,8 @@ public class SshTestResource implements QuarkusTestResourceLifecycleManager {
             String.class);
 
     private GenericContainer container;
-    protected SshServer sshd;
-    protected int securedPort;
+    protected List<SshServer> sshds = new LinkedList<>();
+    protected int securedPort, edPort;
 
     @Override
     public Map<String, String> start() {
@@ -65,13 +67,27 @@ public class SshTestResource implements QuarkusTestResourceLifecycleManager {
 
             securedPort = AvailablePortFinder.getNextAvailable();
 
-            sshd = SshServer.setUpDefaultServer();
+            var sshd = SshServer.setUpDefaultServer();
             sshd.setPort(securedPort);
             sshd.setKeyPairProvider(new FileKeyPairProvider(Paths.get(getHostKey())));
             sshd.setCommandFactory(new TestEchoCommandFactory());
             sshd.setPasswordAuthenticator((username, password, session) -> true);
             sshd.setPublickeyAuthenticator((username, key, session) -> true);
             sshd.start();
+
+            sshds.add(sshd);
+
+            edPort = AvailablePortFinder.getNextAvailable();
+
+            sshd = SshServer.setUpDefaultServer();
+            sshd.setPort(edPort);
+            sshd.setKeyPairProvider(new FileKeyPairProvider(Paths.get("target/classes/key_ed25519.pem")));
+            sshd.setCommandFactory(new TestEchoCommandFactory());
+            sshd.setPasswordAuthenticator((username, password, session) -> true);
+            sshd.setPublickeyAuthenticator((username, key, session) -> true);
+            sshd.start();
+
+            sshds.add(sshd);
 
             LOGGER.info("Started SSHD server to {}:{}", container.getHost(),
                     securedPort);
@@ -80,6 +96,7 @@ public class SshTestResource implements QuarkusTestResourceLifecycleManager {
                     "quarkus.ssh.host", "localhost",
                     "quarkus.ssh.port", container.getMappedPort(SSH_PORT).toString(),
                     "quarkus.ssh.secured-port", securedPort + "",
+                    "quarkus.ssh.ed-port", edPort + "",
                     "ssh.username", "test",
                     "ssh.password", "password");
         } catch (Exception e) {
@@ -89,6 +106,8 @@ public class SshTestResource implements QuarkusTestResourceLifecycleManager {
 
     //todo proper path (no target)
     protected String getHostKey() {
+        //todo test
+        //        return "target/classes/hostkey.pem";
         return "target/certs/user01.key";
     }
 
@@ -100,10 +119,14 @@ public class SshTestResource implements QuarkusTestResourceLifecycleManager {
             if (container != null) {
                 container.stop();
             }
-            if (sshd != null) {
-                sshd.stop(true);
-                Thread.sleep(50);
-            }
+            sshds.stream().forEach(s -> {
+                try {
+                    s.stop(true);
+                    Thread.sleep(50);
+                } catch (Exception e) {
+                    // ignored
+                }
+            });
         } catch (Exception e) {
             // ignored
         }
