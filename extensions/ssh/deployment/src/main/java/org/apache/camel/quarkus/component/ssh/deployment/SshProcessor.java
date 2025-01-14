@@ -26,7 +26,9 @@ import javax.crypto.Mac;
 
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageProxyDefinitionBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
@@ -34,6 +36,7 @@ import org.apache.sshd.common.channel.ChannelListener;
 import org.apache.sshd.common.forward.PortForwardingEventListener;
 import org.apache.sshd.common.io.nio2.Nio2ServiceFactoryFactory;
 import org.apache.sshd.common.session.SessionListener;
+import org.jboss.jandex.IndexView;
 
 class SshProcessor {
 
@@ -54,6 +57,20 @@ class SshProcessor {
                         Mac.class).methods().build());
         reflectiveClasses.produce(
                 ReflectiveClassBuildItem.builder(Nio2ServiceFactoryFactory.class).build());
+        //        reflectiveClasses.produce(
+        //                ReflectiveClassBuildItem.builder("net.i2p.crypto.eddsa.EdDSASecurityProvider").methods().fields().build());
+        //        reflectiveClasses.produce(
+        //                ReflectiveClassBuildItem.builder("net.i2p.crypto.eddsa.EdDSAEngine")
+        //                        .methods().fields().build());
+        reflectiveClasses.produce(
+                ReflectiveClassBuildItem.builder("org.apache.sshd.common.util.security.eddsa.EdDSASecurityProviderRegistrar")
+                        .methods().fields().build());
+        reflectiveClasses.produce(
+                ReflectiveClassBuildItem.builder("sun.security.x509.X509Key")
+                        .methods().fields().build());
+        //        reflectiveClasses.produce(
+        //                ReflectiveClassBuildItem.builder("net.i2p.crypto.eddsa.KeyFactory")
+        //                        .methods().fields().build());
     }
 
     @BuildStep
@@ -69,6 +86,41 @@ class SshProcessor {
                 PortForwardingEventListener.class.getName())) {
             proxiesProducer.produce(new NativeImageProxyDefinitionBuildItem(s));
         }
+    }
+
+    @BuildStep
+    ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
+        IndexView index = combinedIndex.getIndex();
+
+        String[] dtos = index.getKnownClasses().stream()
+                .map(ci -> ci.name().toString())
+                .filter(n -> n.startsWith("net.i2p.crypto.eddsa"))
+                .sorted()
+                .peek(System.out::println)
+                .toArray(String[]::new);
+
+        String[] dtos2 = index.getKnownClasses().stream()
+                .map(ci -> ci.name().toString())
+                .filter(n -> n.contains("Ed25519"))
+                .sorted()
+                .peek(System.out::println)
+                .toArray(String[]::new);
+
+        String[] all = new String[dtos.length + dtos2.length];
+        System.arraycopy(dtos, 0, all, 0, dtos.length);
+        System.arraycopy(dtos2, 0, all, dtos.length, dtos2.length);
+
+        return ReflectiveClassBuildItem.builder(all).methods().fields().build();
+    }
+
+    @BuildStep
+    IndexDependencyBuildItem registerDependencyForIndex() {
+        return new IndexDependencyBuildItem("net.i2p.crypto", "eddsa");
+    }
+
+    @BuildStep
+    IndexDependencyBuildItem registerDependencyForIndex2() {
+        return new IndexDependencyBuildItem("org.bouncycastle", "bcprov-jdk18on");
     }
 
 }

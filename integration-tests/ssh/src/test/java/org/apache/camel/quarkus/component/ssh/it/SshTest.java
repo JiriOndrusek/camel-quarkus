@@ -129,7 +129,8 @@ class SshTest {
                 .queryParam("command", "echo test")
                 .queryParam("serverType", "edKey")
                 //                .queryParam("pathSuffix", "certResource=file:target/classes/hostkey.pem")
-                .queryParam("pathSuffix", "timeout=3000&knownHostsResource=classpath:known_hosts_eddsa&failOnUnknownHost=true")
+                .queryParam("pathSuffix",
+                        "timeout=3000&knownHostsResource=/edDSA/known_hosts_eddsa&failOnUnknownHost=true")
                 .body(Map.of(SshConstants.USERNAME_HEADER, "test", SshConstants.PASSWORD_HEADER, "password"))
                 .post("/ssh/send")
                 .then()
