@@ -29,6 +29,8 @@ import org.apache.camel.quarkus.test.support.certificate.TestCertificates;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @TestCertificates(certificates = {
         @Certificate(name = "user01", formats = {
                 Format.PEM }, password = "changeit") })
@@ -36,82 +38,82 @@ import org.junit.jupiter.api.Test;
 @QuarkusTestResource(SshTestResource.class)
 class SshTest {
 
-    //    @Test
-    //    public void testWriteToSSHAndReadFromSSH() {
-    //        final String fileContent = "Hello Camel Quarkus SSH";
-    //        // Write a file to SSH session
-    //        RestAssured.given()
-    //                .contentType(ContentType.TEXT)
-    //                .body(fileContent)
-    //                .post("/ssh/file/camelTest")
-    //                .then()
-    //                .statusCode(201);
-    //
-    //        // Retrieve a file from SSH session
-    //        String sshFileContent = RestAssured.get("/ssh/file/camelTest")
-    //                .then()
-    //                .contentType(ContentType.TEXT)
-    //                .statusCode(200)
-    //                .extract()
-    //                .body().asString();
-    //
-    //        assertEquals(fileContent, sshFileContent);
-    //    }
-    //
-    //    @Test
-    //    public void testHeaders() {
-    //        RestAssured.given()
-    //                .contentType(ContentType.JSON)
-    //                .body(Map.of(SshConstants.USERNAME_HEADER, "test", SshConstants.PASSWORD_HEADER, "password"))
-    //                .queryParam("command", "wrong")
-    //                .post("/ssh/send/")
-    //                .then()
-    //                .statusCode(200)
-    //                .body("", Matchers.hasEntry(SshConstants.EXIT_VALUE, "127"))
-    //                .body("", Matchers.hasEntry(Matchers.matchesRegex(SshConstants.STDERR),
-    //                        Matchers.containsString("command not found")));
-    //    }
-    //
-    //    @Test
-    //    public void testProducer() {
-    //        RestAssured.given()
-    //                .body("echo Hello World")
-    //                .post("/ssh/sendToDirect/exampleProducer")
-    //                .then()
-    //                .statusCode(200)
-    //                .body(Matchers.equalTo("Hello World"));
-    //    }
-    //
-    //    @Test
-    //    public void testKeyProvider() {
-    //        RestAssured.given()
-    //                .contentType(ContentType.JSON)
-    //                .queryParam("component", "ssh-with-key-provider")
-    //                .queryParam("command", "echo test")
-    //                .queryParam("serverType", "user01Key")
-    //                .post("/ssh/send")
-    //                .then()
-    //                .statusCode(200)
-    //                .body("", Matchers.hasEntry(SshConstants.EXIT_VALUE, "0"))
-    //                .body("", Matchers.hasEntry(SshConstants.STDERR, "Error:echo test"));
-    //    }
-    //
-    //    @Test
-    //    public void testCertificate() {
-    //        RestAssured.given()
-    //                .contentType(ContentType.JSON)
-    //                .queryParam("component", "ssh-cert")
-    //                .queryParam("command", "echo test")
-    //                .queryParam("serverType", "user01Key")
-    //                //                .queryParam("pathSuffix", "certResource=file:target/classes/hostkey.pem")
-    //                .queryParam("pathSuffix", "certResource=file:target/certs/user01.key&certResourcePassword=changeit")
-    //                //                .body(Map.of(SshConstants.USERNAME_HEADER, "test", SshConstants.PASSWORD_HEADER, "password"))
-    //                .post("/ssh/send")
-    //                .then()
-    //                .statusCode(200)
-    //                .body("", Matchers.hasEntry(SshConstants.EXIT_VALUE, "0"))
-    //                .body("", Matchers.hasEntry(SshConstants.STDERR, "Error:echo test"));
-    //    }
+    @Test
+    public void testWriteToSSHAndReadFromSSH() {
+        final String fileContent = "Hello Camel Quarkus SSH";
+        // Write a file to SSH session
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .body(fileContent)
+                .post("/ssh/file/camelTest")
+                .then()
+                .statusCode(201);
+
+        // Retrieve a file from SSH session
+        String sshFileContent = RestAssured.get("/ssh/file/camelTest")
+                .then()
+                .contentType(ContentType.TEXT)
+                .statusCode(200)
+                .extract()
+                .body().asString();
+
+        assertEquals(fileContent, sshFileContent);
+    }
+
+    @Test
+    public void testHeaders() {
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(Map.of(SshConstants.USERNAME_HEADER, "test", SshConstants.PASSWORD_HEADER, "password"))
+                .queryParam("command", "wrong")
+                .post("/ssh/send/")
+                .then()
+                .statusCode(200)
+                .body("", Matchers.hasEntry(SshConstants.EXIT_VALUE, "127"))
+                .body("", Matchers.hasEntry(Matchers.matchesRegex(SshConstants.STDERR),
+                        Matchers.containsString("command not found")));
+    }
+
+    @Test
+    public void testProducer() {
+        RestAssured.given()
+                .body("echo Hello World")
+                .post("/ssh/sendToDirect/exampleProducer")
+                .then()
+                .statusCode(200)
+                .body(Matchers.equalTo("Hello World"));
+    }
+
+    @Test
+    public void testKeyProvider() {
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .queryParam("component", "ssh-with-key-provider")
+                .queryParam("command", "echo test")
+                .queryParam("serverType", "user01Key")
+                .post("/ssh/send")
+                .then()
+                .statusCode(200)
+                .body("", Matchers.hasEntry(SshConstants.EXIT_VALUE, "0"))
+                .body("", Matchers.hasEntry(SshConstants.STDERR, "Error:echo test"));
+    }
+
+    @Test
+    public void testCertificate() {
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .queryParam("component", "ssh-cert")
+                .queryParam("command", "echo test")
+                .queryParam("serverType", "user01Key")
+                //                .queryParam("pathSuffix", "certResource=file:target/classes/hostkey.pem")
+                .queryParam("pathSuffix", "certResource=file:target/certs/user01.key&certResourcePassword=changeit")
+                //                .body(Map.of(SshConstants.USERNAME_HEADER, "test", SshConstants.PASSWORD_HEADER, "password"))
+                .post("/ssh/send")
+                .then()
+                .statusCode(200)
+                .body("", Matchers.hasEntry(SshConstants.EXIT_VALUE, "0"))
+                .body("", Matchers.hasEntry(SshConstants.STDERR, "Error:echo test"));
+    }
 
     @Test
     public void testProducerWithEdDSAKeyType() {
