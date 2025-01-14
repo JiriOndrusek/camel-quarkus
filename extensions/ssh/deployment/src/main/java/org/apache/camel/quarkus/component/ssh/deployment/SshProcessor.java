@@ -99,12 +99,28 @@ class SshProcessor {
                 .peek(System.out::println)
                 .toArray(String[]::new);
 
-        return ReflectiveClassBuildItem.builder(dtos).methods().fields().build();
+        String[] dtos2 = index.getKnownClasses().stream()
+                .map(ci -> ci.name().toString())
+                .filter(n -> n.contains("Ed25519"))
+                .sorted()
+                .peek(System.out::println)
+                .toArray(String[]::new);
+
+        String[] all = new String[dtos.length + dtos2.length];
+        System.arraycopy(dtos, 0, all, 0, dtos.length);
+        System.arraycopy(dtos2, 0, all, dtos.length, dtos2.length);
+
+        return ReflectiveClassBuildItem.builder(all).methods().fields().build();
     }
 
     @BuildStep
     IndexDependencyBuildItem registerDependencyForIndex() {
         return new IndexDependencyBuildItem("net.i2p.crypto", "eddsa");
+    }
+
+    @BuildStep
+    IndexDependencyBuildItem registerDependencyForIndex2() {
+        return new IndexDependencyBuildItem("org.bouncycastle", "bcprov-jdk18on");
     }
 
 }
