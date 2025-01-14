@@ -81,7 +81,7 @@ public class SshTestResource implements QuarkusTestResourceLifecycleManager {
 
             sshd = SshServer.setUpDefaultServer();
             sshd.setPort(edPort);
-            sshd.setKeyPairProvider(new FileKeyPairProvider(Paths.get("target/classes/key_ed25519.pem")));
+            sshd.setKeyPairProvider(new FileKeyPairProvider(Paths.get("target/classes/edDSA/key_ed25519.pem")));
             sshd.setCommandFactory(new TestEchoCommandFactory());
             sshd.setPasswordAuthenticator((username, password, session) -> true);
             sshd.setPublickeyAuthenticator((username, key, session) -> true);

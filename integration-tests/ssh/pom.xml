@@ -34,12 +34,6 @@
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-ssh</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>bcpg-jdk18on</artifactId>
-                    <groupId>org.bouncycastle</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
@@ -129,6 +123,48 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>bcfips</id>
+            <activation>
+                <property>
+                    <name>bcfips</name>
+                </property>
+            </activation>
+            <properties>
+                <cq-security-provider>quarkus.security.security-providers=BCFIPS</cq-security-provider>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bc-fips</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>io.quarkus</groupId>
+                    <artifactId>quarkus-security</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>bc</id>
+            <activation>
+                <property>
+                    <name>bc</name>
+                </property>
+            </activation>
+            <properties>
+                <cq-security-provider>quarkus.security.security-providers=BC</cq-security-provider>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.apache.camel.quarkus</groupId>
+                    <artifactId>camel-quarkus-support-bouncycastle</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>io.quarkus</groupId>
+                    <artifactId>quarkus-security</artifactId>
+                </dependency>
+            </dependencies>
         </profile>
         <profile>
             <id>fips</id>
