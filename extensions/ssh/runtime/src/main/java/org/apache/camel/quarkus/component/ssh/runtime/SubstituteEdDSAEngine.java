@@ -60,7 +60,8 @@ final class SubstituteEdDSAEngine {
                 }
             } else if (!key.getParams().getHashAlgorithm().equals(digest.getAlgorithm()))
                 throw new InvalidKeyException("Key hash algorithm does not match chosen digest");
-        } else if (publicKey.getFormat().equals("X.509")) {
+        } //following line differs from the original method
+        else if (publicKey.getFormat().equals("X.509")) {
             // X509Certificate will sometimes contain an X509Key rather than the EdDSAPublicKey itself; the contained
             // key is valid but needs to be instanced as an EdDSAPublicKey before it can be used.
             EdDSAPublicKey parsedPublicKey;

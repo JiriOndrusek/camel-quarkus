@@ -22,6 +22,7 @@ import java.security.Signature;
 import java.util.Arrays;
 
 import javax.crypto.KeyAgreement;
+import javax.crypto.Mac;
 
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
@@ -54,6 +55,7 @@ class SshProcessor {
                         KeyAgreement.class,
                         KeyFactory.class,
                         Signature.class,
+                        Mac.class,
                         Nio2ServiceFactoryFactory.class,
                         EdDSAEngine.class,
                         net.i2p.crypto.eddsa.KeyFactory.class).methods().build());
