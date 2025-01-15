@@ -25,6 +25,7 @@ import io.restassured.http.ContentType;
 import io.smallrye.certs.Format;
 import io.smallrye.certs.junit5.Certificate;
 import org.apache.camel.component.ssh.SshConstants;
+import org.apache.camel.quarkus.test.DisabledIfFipsMode;
 import org.apache.camel.quarkus.test.support.certificate.TestCertificates;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -117,6 +118,7 @@ class SshTest {
                 .body("", Matchers.hasEntry(SshConstants.STDERR, "Error:echo test"));
     }
 
+    @DisabledIfFipsMode //ED25519 keys are not allowed in FIPS mode
     @Test
     public void testProducerWithEdDSAKeyType() {
         //
