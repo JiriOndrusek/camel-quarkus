@@ -16,19 +16,21 @@
  */
 package org.apache.camel.quarkus.component.ssh.it;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -36,13 +38,25 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 @ApplicationScoped
 public class SshResource {
 
-    private final String user = "test";
-    private final String password = "password";
+    public enum ServerType {
+        userPassword, user01Key, edKey
+    };
 
     @ConfigProperty(name = "quarkus.ssh.host")
-    private String host;
+    String host;
     @ConfigProperty(name = "quarkus.ssh.port")
-    private String port;
+    String port;
+    @ConfigProperty(name = "quarkus.ssh.secured-port")
+    String securedPort;
+    @ConfigProperty(name = "quarkus.ssh.ed-port")
+    String edPort;
+    @ConfigProperty(name = "ssh.username")
+    String username;
+    @ConfigProperty(name = "ssh.password")
+    String password;
+
+    @Inject
+    CamelContext camelContext;
 
     @Inject
     ProducerTemplate producerTemplate;
@@ -55,7 +69,7 @@ public class SshResource {
 
         String sshWriteFileCommand = String.format("printf \"%s\" > %s", content, fileName);
         producerTemplate.sendBody(
-                String.format("ssh:%s:%s?username=%s&password=%s", host, port, user, password),
+                String.format("ssh:%s:%s?username=%s&password=%s", host, port, username, password),
                 sshWriteFileCommand);
 
         return Response
@@ -70,7 +84,7 @@ public class SshResource {
 
         String sshReadFileCommand = String.format("cat %s", fileName);
         String content = producerTemplate.requestBody(
-                String.format("ssh:%s:%s?username=%s&password=%s", host, port, user, password),
+                String.format("ssh:%s:%s?username=%s&password=%s", host, port, username, password),
                 sshReadFileCommand,
                 String.class);
 
@@ -78,4 +92,51 @@ public class SshResource {
                 .ok(content)
                 .build();
     }
+
+    @POST
+    @Path("/send")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Map<String, String> send(@QueryParam("command") String command,
+            @QueryParam("component") @DefaultValue("ssh") String component,
+            @QueryParam("serverType") @DefaultValue("userPassword") String serverType,
+            @QueryParam("pathSuffix") String pathSuffix,
+            Map<String, Object> headers)
+            throws URISyntaxException {
+
+        var p = switch (ServerType.valueOf(serverType)) {
+        case userPassword -> port;
+        case edKey -> edPort;
+        case user01Key -> securedPort;
+        };
+
+        String url = String.format("%s:%s@%s:%s", component, username, host, p);
+        if (pathSuffix != null) {
+            url += "?" + pathSuffix;
+        }
+        Exchange exchange = producerTemplate.request(url,
+                e -> {
+                    e.getIn().setHeaders(headers == null ? Collections.emptyMap() : headers);
+                    e.getIn().setBody(command == null ? "" : command);
+                });
+
+        Map<String, String> result = new HashMap<>();
+        result.put("body", exchange.getMessage().getBody(String.class));
+        result.putAll(exchange.getMessage().getHeaders().entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        //convert inputStreams
+                        entry -> String.valueOf(entry.getValue() instanceof InputStream
+                                ? camelContext.getTypeConverter().convertTo(String.class, entry.getValue())
+                                : entry.getValue()))));
+
+        return result;
+    }
+
+    @Path("/sendToDirect/{direct}")
+    @POST
+    public String sendToDirect(@PathParam("direct") String direct, String body) throws Exception {
+        return producerTemplate.requestBody("direct:" + direct, body, String.class).trim();
+    }
+
 }

@@ -16,10 +16,15 @@
  */
 package org.apache.camel.quarkus.component.ssh.it;
 
+import java.nio.file.Paths;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
-import org.apache.camel.util.CollectionHelper;
+import org.apache.camel.quarkus.test.AvailablePortFinder;
+import org.apache.sshd.common.keyprovider.FileKeyPairProvider;
+import org.apache.sshd.server.SshServer;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +40,8 @@ public class SshTestResource implements QuarkusTestResourceLifecycleManager {
             String.class);
 
     private GenericContainer container;
+    protected List<SshServer> sshds = new LinkedList<>();
+    protected int securedPort, edPort;
 
     @Override
     public Map<String, String> start() {
@@ -49,29 +56,77 @@ public class SshTestResource implements QuarkusTestResourceLifecycleManager {
                     .withEnv("USER_PASSWORD", "password")
                     .waitingFor(Wait.forListeningPort());
 
+            //            container.withCopyFileToContainer(MountableFile.forHostPath("target/classes/hostkey.pem"),
+            //                    "/ssl/hostkey.pem")
+            //                    .withEnv("PASSWORD_ACCESS", "/ssl/hostkey.pem");
+
             container.start();
 
             LOGGER.info("Started SSH container to {}:{}", container.getHost(),
                     container.getMappedPort(SSH_PORT).toString());
 
-            return CollectionHelper.mapOf(
-                    "quarkus.ssh.host",
-                    container.getHost(),
-                    "quarkus.ssh.port",
-                    container.getMappedPort(SSH_PORT).toString());
+            securedPort = AvailablePortFinder.getNextAvailable();
+
+            var sshd = SshServer.setUpDefaultServer();
+            sshd.setPort(securedPort);
+            sshd.setKeyPairProvider(new FileKeyPairProvider(Paths.get(getHostKey())));
+            sshd.setCommandFactory(new TestEchoCommandFactory());
+            sshd.setPasswordAuthenticator((username, password, session) -> true);
+            sshd.setPublickeyAuthenticator((username, key, session) -> true);
+            sshd.start();
+
+            sshds.add(sshd);
+
+            edPort = AvailablePortFinder.getNextAvailable();
+
+            sshd = SshServer.setUpDefaultServer();
+            sshd.setPort(edPort);
+            sshd.setKeyPairProvider(new FileKeyPairProvider(Paths.get("target/classes/edDSA/key_ed25519.pem")));
+            sshd.setCommandFactory(new TestEchoCommandFactory());
+            sshd.setPasswordAuthenticator((username, password, session) -> true);
+            sshd.setPublickeyAuthenticator((username, key, session) -> true);
+            sshd.start();
+
+            sshds.add(sshd);
+
+            LOGGER.info("Started SSHD server to {}:{}", container.getHost(),
+                    securedPort);
+
+            return Map.of(
+                    "quarkus.ssh.host", "localhost",
+                    "quarkus.ssh.port", container.getMappedPort(SSH_PORT).toString(),
+                    "quarkus.ssh.secured-port", securedPort + "",
+                    "quarkus.ssh.ed-port", edPort + "",
+                    "ssh.username", "test",
+                    "ssh.password", "password");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
+    //todo proper path (no target)
+    protected String getHostKey() {
+        //todo test
+        //        return "target/classes/hostkey.pem";
+        return "target/certs/user01.key";
+    }
+
     @Override
     public void stop() {
-        LOGGER.info("Stopping SSH container");
+        LOGGER.info("Stopping SSH container and server");
 
         try {
             if (container != null) {
                 container.stop();
             }
+            sshds.stream().forEach(s -> {
+                try {
+                    s.stop(true);
+                    Thread.sleep(50);
+                } catch (Exception e) {
+                    // ignored
+                }
+            });
         } catch (Exception e) {
             // ignored
         }
