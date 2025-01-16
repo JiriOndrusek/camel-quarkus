@@ -30,6 +30,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.camel.CamelContext;
+import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -61,6 +62,9 @@ public class SshResource {
     @Inject
     ProducerTemplate producerTemplate;
 
+    @Inject
+    ConsumerTemplate consumerTemplate;
+
     @POST
     @Path("/file/{fileName}")
     @Consumes(MediaType.TEXT_PLAIN)
@@ -83,9 +87,9 @@ public class SshResource {
     public Response readFile(@PathParam("fileName") String fileName) throws URISyntaxException {
 
         String sshReadFileCommand = String.format("cat %s", fileName);
-        String content = producerTemplate.requestBody(
-                String.format("ssh:%s:%s?username=%s&password=%s", host, port, username, password),
-                sshReadFileCommand,
+        String content = consumerTemplate.receiveBody(
+                String.format("ssh:%s:%s?username=%s&password=%s&pollCommand=%s", host, port, username, password,
+                        sshReadFileCommand),
                 String.class);
 
         return Response
