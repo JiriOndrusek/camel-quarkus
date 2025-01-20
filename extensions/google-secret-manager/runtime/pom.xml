@@ -32,6 +32,7 @@
 
     <properties>
         <camel.quarkus.jvmSince>2.8.0</camel.quarkus.jvmSince>
+        <camel.quarkus.nativeSince>3.17.0</camel.quarkus.nativeSince>
     </properties>
 
     <dependencies>
@@ -101,10 +102,6 @@
                     <artifactId>listenablefuture</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-netty</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.logmanager</groupId>
