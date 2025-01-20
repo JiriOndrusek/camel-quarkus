@@ -34,13 +34,4 @@ class GoogleSecretManagerProcessor {
         return new FeatureBuildItem(FEATURE);
     }
 
-    /**
-     * Remove this once this extension starts supporting the native mode.
-     */
-    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class)
-    @Record(value = ExecutionTime.RUNTIME_INIT)
-    void warnJvmInNative(JvmOnlyRecorder recorder) {
-        JvmOnlyRecorder.warnJvmInNative(LOG, FEATURE); // warn at build time
-        recorder.warnJvmInNative(FEATURE); // warn at runtime
-    }
 }
