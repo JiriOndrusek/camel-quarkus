@@ -16,23 +16,16 @@
  */
 package org.apache.camel.quarkus.component.google.secret.manager.deployment;
 
+import java.util.stream.Stream;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.arc.deployment.UnremovableBeanBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.annotations.ExecutionTime;
-import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
-import io.quarkus.deployment.pkg.steps.NativeOrNativeSourcesBuild;
-import io.quarkus.jackson.runtime.ObjectMapperProducer;
-import org.apache.camel.component.google.pubsub.serializer.GooglePubsubSerializer;
-import org.apache.camel.quarkus.component.google.pubsub.GooglePubsubRecorder;
-import org.apache.camel.quarkus.core.JvmOnlyRecorder;
-import org.apache.camel.quarkus.core.deployment.spi.CamelRuntimeBeanBuildItem;
+//import io.quarkus.jackson.runtime.ObjectMapperProducer;
 import org.jboss.logging.Logger;
-
-import java.util.stream.Stream;
 
 class GoogleSecretManagerProcessor {
 
@@ -44,27 +37,26 @@ class GoogleSecretManagerProcessor {
         return new FeatureBuildItem(FEATURE);
     }
 
-
     @BuildStep
     public void markObjectMapperUnremovable(BuildProducer<UnremovableBeanBuildItem> unremovable) {
         unremovable.produce(new UnremovableBeanBuildItem(
                 new UnremovableBeanBuildItem.BeanClassNameExclusion(ObjectMapper.class.getName())));
-        unremovable.produce(new UnremovableBeanBuildItem(
-                new UnremovableBeanBuildItem.BeanClassNameExclusion(ObjectMapperProducer.class.getName())));
+        //        unremovable.produce(new UnremovableBeanBuildItem(
+        //                new UnremovableBeanBuildItem.BeanClassNameExclusion(ObjectMapperProducer.class.getName())));
     }
 
-    @BuildStep
-    @Record(ExecutionTime.RUNTIME_INIT)
-    public CamelRuntimeBeanBuildItem createGooglePubsubSerializerBean(GooglePubsubRecorder recorder) {
-        return new CamelRuntimeBeanBuildItem("googlePubsubSerializer", GooglePubsubSerializer.class.getTypeName(),
-                recorder.createSerializer());
-    }
+    //    @BuildStep
+    //    @Record(ExecutionTime.RUNTIME_INIT)
+    //    public CamelRuntimeBeanBuildItem createGooglePubsubSerializerBean(GooglePubsubRecorder recorder) {
+    //        return new CamelRuntimeBeanBuildItem("googlePubsubSerializer", GooglePubsubSerializer.class.getTypeName(),
+    //                recorder.createSerializer());
+    //    }
 
     @BuildStep
     void runtimeInitializedClasses(BuildProducer<RuntimeInitializedClassBuildItem> runtimeInitializedClass) {
         Stream.of(
-                        "io.grpc.internal.RetriableStream" // Consider moving this to a separate support extension if we need this in multiple top level extensions
-                )
+                "io.grpc.internal.RetriableStream" // Consider moving this to a separate support extension if we need this in multiple top level extensions
+        )
                 .map(RuntimeInitializedClassBuildItem::new)
                 .forEach(runtimeInitializedClass::produce);
     }

@@ -16,6 +16,12 @@
  */
 package org.apache.camel.quarkus.component.google.secret.manager.graalvm;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.time.Duration;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+
 import com.google.api.core.ApiFunction;
 import com.google.api.gax.grpc.ChannelPrimer;
 import com.google.api.gax.grpc.GrpcHeaderInterceptor;
@@ -26,12 +32,6 @@ import com.oracle.svm.core.annotate.Alias;
 import com.oracle.svm.core.annotate.Substitute;
 import com.oracle.svm.core.annotate.TargetClass;
 import io.grpc.*;
-
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.time.Duration;
-import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Cut out unsupported and optional features that are only present in grpc-alts.
