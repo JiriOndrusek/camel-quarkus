@@ -16,9 +16,6 @@
  */
 package org.apache.camel.quarkus.component.google.secret.manager;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.quarkus.arc.Arc;
-import io.quarkus.arc.InstanceHandle;
 import io.quarkus.runtime.annotations.Recorder;
 
 @Recorder
@@ -28,12 +25,12 @@ public class GoogleSecretManagerRecorder {
     //        GooglePubsubSerializer serializer = new JacksonGooglePubsubSerializer(getObjectMapper());
     //        return new RuntimeValue<>(serializer);
     //    }
-
-    private ObjectMapper getObjectMapper() {
-        InstanceHandle<ObjectMapper> instance = Arc.container().instance(ObjectMapper.class);
-        if (instance.isAvailable()) {
-            return instance.get();
-        }
-        return new ObjectMapper();
-    }
+    //
+    //    private ObjectMapper getObjectMapper() {
+    //        InstanceHandle<ObjectMapper> instance = Arc.container().instance(ObjectMapper.class);
+    //        if (instance.isAvailable()) {
+    //            return instance.get();
+    //        }
+    //        return new ObjectMapper();
+    //    }
 }

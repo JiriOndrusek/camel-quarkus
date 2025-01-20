@@ -33,16 +33,6 @@ import com.oracle.svm.core.annotate.Substitute;
 import com.oracle.svm.core.annotate.TargetClass;
 import io.grpc.*;
 
-/**
- * Cut out unsupported and optional features that are only present in grpc-alts.
- *
- * Camel Google PubSub only requires access to FixedTransportChannelProvider, but we leave
- * InstantiatingGrpcChannelProvider in a functional state in case some other library
- * needs to use it.
- */
-final class GaxGrpcSubstitutions {
-}
-
 @TargetClass(InstantiatingGrpcChannelProvider.class)
 final class InstantiatingGrpcChannelProviderSubstitutions {
     @Alias
