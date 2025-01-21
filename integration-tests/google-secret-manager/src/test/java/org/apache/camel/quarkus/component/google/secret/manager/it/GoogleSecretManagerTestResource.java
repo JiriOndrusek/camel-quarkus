@@ -23,13 +23,7 @@ import java.util.Map;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.cloud.secretmanager.v1.ProjectName;
-import com.google.cloud.secretmanager.v1.Replication;
-import com.google.cloud.secretmanager.v1.Secret;
-import com.google.cloud.secretmanager.v1.SecretManagerServiceClient;
-import com.google.cloud.secretmanager.v1.SecretManagerServiceSettings;
-import com.google.cloud.secretmanager.v1.SecretName;
-import com.google.cloud.secretmanager.v1.SecretPayload;
+import com.google.cloud.secretmanager.v1.*;
 import com.google.protobuf.ByteString;
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.apache.camel.quarkus.test.mock.backend.MockBackendUtils;
@@ -102,6 +96,32 @@ public class GoogleSecretManagerTestResource implements QuarkusTestResourceLifec
 
         } catch (IOException e) {
             LOG.error("Unsuccessful creation of secret (%s) for gcp. ".formatted(secretId));
+            throw new RuntimeException(e);
+        } finally {
+            if (client != null) {
+                client.close();
+            }
+        }
+    }
+
+    static void updateSecret(String secretId, String newSecretValue, String accessFile, String project) {
+        SecretManagerServiceClient client = null;
+        try (FileInputStream fis = new FileInputStream(accessFile)) {
+
+            Credentials myCredentials = ServiceAccountCredentials.fromStream(fis);
+            SecretManagerServiceSettings settings = SecretManagerServiceSettings.newBuilder()
+                    .setCredentialsProvider(FixedCredentialsProvider.create(myCredentials)).build();
+            client = SecretManagerServiceClient.create(settings);
+
+            Secret oldSecret = client.getSecret(SecretName.of(project, secretId));
+
+            SecretPayload payload = SecretPayload.newBuilder()
+                    .setData(ByteString.copyFromUtf8(newSecretValue)).build();
+
+            client.addSecretVersion(oldSecret.getName(), payload);
+
+        } catch (IOException e) {
+            LOG.error("Unsuccessful update of secret (%s) for gcp. ".formatted(secretId));
             throw new RuntimeException(e);
         } finally {
             if (client != null) {

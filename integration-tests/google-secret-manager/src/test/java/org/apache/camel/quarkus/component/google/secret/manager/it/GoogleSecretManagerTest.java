@@ -111,14 +111,49 @@ class GoogleSecretManagerTest {
 
     @Test
     void loadGcpSecretTest() {
-        String expectedSecret = ConfigProvider.getConfig().getValue("gcpSecretValue", String.class);
+        String oldValue = ConfigProvider.getConfig().getValue("gcpSecretValue", String.class);
+        String newValue = "new_password";
+        String secretId = ConfigProvider.getConfig().getValue("gcpSecretId", String.class);
+        String file = ConfigProvider.getConfig().getValue("cq.google-secrets-manager.path-to-service-account-key",
+                String.class);
+        String projectName = ConfigProvider.getConfig().getValue("cq.google-secrets-manager.project-name",
+                String.class);
 
+        //load gcp secret starts the route, gets the value and stops the route
         RestAssured
                 .get("/google-secret-manager/getGcpSecret/")
                 .then()
                 .statusCode(200)
-                .body(is(expectedSecret));
+                .body(is(oldValue));
 
+        //change the secret
+        GoogleSecretManagerTestResource.updateSecret(secretId, newValue, file, projectName);
+
+        //set mocked gcp configuration to be able to send a message to the topic for refresh
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(Map.of("test", "test"))
+                .post("/google-secret-manager/setGcpConfiguration")
+                .then()
+                .statusCode(200);
+
+        //the secret was not changed via the route (because context refresh hasn't been forced yet)
+        RestAssured
+                .get("/google-secret-manager/getGcpSecret/")
+                .then()
+                .statusCode(200)
+                .body(is(oldValue));
+
+        //send the message to the topic, forcing context refresh
+
+        //revert gcp configuration to read from the correct (real) cloud
+
+        //verify that the secret is changed
+        RestAssured
+                .get("/google-secret-manager/getGcpSecret/")
+                .then()
+                .statusCode(200)
+                .body(is(oldValue));
     }
 
     protected String createSecret(String secretName, String secretValue) {

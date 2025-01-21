@@ -34,9 +34,11 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.google.secret.manager.GoogleSecretManagerOperations;
+import org.apache.camel.vault.GcpVaultConfiguration;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
@@ -54,6 +56,9 @@ public class GoogleSecretManagerResource {
 
     @Inject
     ProducerTemplate producerTemplate;
+
+    @Inject
+    CamelContext camelContext;
 
     @Path("/list/{secretName}")
     @GET
@@ -74,8 +79,16 @@ public class GoogleSecretManagerResource {
     @Path("/getGcpSecret")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public String loadGcpPassword() {
-        return producerTemplate.requestBody("direct:loadGcpPassword", "", String.class);
+    public String loadGcpPassword() throws Exception {
+        //start the route
+        camelContext.getRouteController().startRoute("loadGcpPasswordRouteId");
+
+        String retVal =  producerTemplate.requestBody("direct:loadGcpPassword", "", String.class);
+
+        //stop route
+        camelContext.getRouteController().stopRoute("loadGcpPasswordRouteId");
+
+        return retVal;
     }
 
     @Path("/operation/{operation}")
@@ -123,6 +136,14 @@ public class GoogleSecretManagerResource {
         }
 
         return Response.ok(result).build();
+    }
+
+    @Path("/setGcpConfiguration/")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response operation(Map<String, String> properties) {
+        GcpVaultConfiguration gcpVaultConfiguration = camelContext.getVaultConfiguration().gcp();
+        return Response.ok().build();
     }
 
 }

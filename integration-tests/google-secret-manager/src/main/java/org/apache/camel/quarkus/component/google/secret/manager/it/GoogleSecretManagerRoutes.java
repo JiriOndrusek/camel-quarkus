@@ -30,6 +30,8 @@ public class GoogleSecretManagerRoutes extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         from("direct:loadGcpPassword")
+                .id("loadGcpPasswordRouteId")
+                .autoStartup(false)
                 .setBody(new SimpleExpression("{{gcp:%s@1}}".formatted(gcpSecretId)));
 
     }
