@@ -71,9 +71,13 @@ public class GoogleCloudTestResource implements QuarkusTestResourceLifecycleMana
 
         ServiceLoader<GoogleTestEnvCustomizer> loader = ServiceLoader.load(GoogleTestEnvCustomizer.class);
         List<GoogleTestEnvCustomizer> customizers = new ArrayList<>();
+        List<GoogleTestEnvCustomizer> runAlwayscustomizers = new ArrayList<>();
         for (GoogleTestEnvCustomizer customizer : loader) {
             LOGGER.info("Loaded GoogleTestEnvCustomizer " + customizer.getClass().getName());
             customizers.add(customizer);
+            if (customizer.runAlways()) {
+                runAlwayscustomizers.add(customizer);
+            }
         }
 
         if (!usingMockBackend) {
@@ -84,12 +88,14 @@ public class GoogleCloudTestResource implements QuarkusTestResourceLifecycleMana
 
             envContext.property(PARAM_PROJECT_ID, realProjectId);
             envContext.property(PARAM_CREDENTIALS_PATH, realCredentials);
+        }
 
-        } else {
-
-            for (GoogleTestEnvCustomizer customizer : customizers) {
+        for (GoogleTestEnvCustomizer customizer : customizers) {
+            //use only customizers is=f mockBeckend is true or the customizer runs always
+            if (usingMockBackend || customizer.runAlways()) {
                 GenericContainer container = customizer.createContainer();
                 if (container != null) {
+                    LOGGER.info("Container is forced to start with mocked backend. " + customizer.getClass().getName());
                     container.start();
                     envContext.closeable(container);
                 }

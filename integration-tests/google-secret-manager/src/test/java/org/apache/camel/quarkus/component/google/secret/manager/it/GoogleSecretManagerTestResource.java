@@ -60,14 +60,16 @@ public class GoogleSecretManagerTestResource implements QuarkusTestResourceLifec
         final boolean usingMockBackend = startMockBackend && !realCredentialsProvided;
 
         if (usingMockBackend) {
+            LOG.info("Mocked backend will be used for the refresh topic subscription.");
             //try wiremock
-            throw new RuntimeException("Mocked test backend is not implemented yet");
+            //            throw new RuntimeException("Mocked test backend is not implemented yet");
         } else {
             if (!startMockBackend && !realCredentialsProvided) {
                 throw new IllegalStateException(
                         "Set GOOGLE_PROJECT and GOOGLE_SERVICE_ACCOUNT_KEY env vars if you set CAMEL_QUARKUS_START_MOCK_BACKEND=false");
             }
             MockBackendUtils.logRealBackendUsed();
+            LOG.info("Mocked backend will be used for the refresh topic subscription.");
             realBackendIsUsed = true;
             //create secret for gcp
             createSecret(gcpSecretId, gcpSecretValue, accessFile, projectName);

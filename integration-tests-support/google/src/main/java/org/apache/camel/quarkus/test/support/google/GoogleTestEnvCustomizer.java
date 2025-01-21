@@ -36,4 +36,12 @@ public interface GoogleTestEnvCustomizer<C extends GenericContainer> {
      */
     void customize(GoogleCloudContext envContext);
 
+    /**
+     * There are cases, when the mocked backend has to be run alongside the real account.
+     * If this is the case, return true.
+     */
+    default boolean runAlways() {
+        return false;
+    }
+
 }

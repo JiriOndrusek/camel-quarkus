@@ -33,8 +33,6 @@ import org.awaitility.Awaitility;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
-import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariables;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -46,10 +44,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 @QuarkusTest
 @QuarkusTestResource(GoogleSecretManagerTestResource.class)
-@EnabledIfEnvironmentVariables({
-        @EnabledIfEnvironmentVariable(named = "GOOGLE_SERVICE_ACCOUNT_KEY", matches = ".+"),
-        @EnabledIfEnvironmentVariable(named = "GOOGLE_PROJECT_NAME", matches = ".+")
-})
+//@EnabledIfEnvironmentVariables({
+//        @EnabledIfEnvironmentVariable(named = "GOOGLE_SERVICE_ACCOUNT_KEY", matches = ".+"),
+//        @EnabledIfEnvironmentVariable(named = "GOOGLE_PROJECT_NAME", matches = ".+")
+//})
 class GoogleSecretManagerTest {
 
     @Test
@@ -120,6 +118,7 @@ class GoogleSecretManagerTest {
                 .then()
                 .statusCode(200)
                 .body(is(expectedSecret));
+
     }
 
     protected String createSecret(String secretName, String secretValue) {
