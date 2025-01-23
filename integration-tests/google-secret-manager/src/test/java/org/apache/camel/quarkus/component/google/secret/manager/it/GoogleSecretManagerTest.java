@@ -145,19 +145,16 @@ class GoogleSecretManagerTest {
         //simulate that secret change is detected and proper message to a subscription is sent
         customizer.sendMsg("mocked message forcing refresh", Map.of("eventType", "SECRET_UPDATE", "secretId", secretId));
 
-        //wait till the refresh is executed
+        //wait till the refresh is executed, route should return the new secret
         Awaitility.await()
                 .atMost(30, TimeUnit.SECONDS)
                 .pollDelay(1, TimeUnit.SECONDS)
                 .pollInterval(1, TimeUnit.SECONDS)
-                .until(() -> !inMemoryLogHandler.getRecords().isEmpty());
-
-        //route should return the new secret
-        RestAssured
-                .get("/google-secret-manager/getGcpSecret/")
-                .then()
-                .statusCode(200)
-                .body(is("new_changeit"));
+                .untilAsserted(() -> RestAssured
+                        .get("/google-secret-manager/getGcpSecret/")
+                        .then()
+                        .statusCode(200)
+                        .body(is("new_changeit")));
     }
 
     protected String createSecret(String secretName, String secretValue) {

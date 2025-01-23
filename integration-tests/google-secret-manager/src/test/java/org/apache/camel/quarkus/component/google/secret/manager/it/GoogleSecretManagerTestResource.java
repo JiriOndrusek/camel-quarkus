@@ -18,6 +18,7 @@ package org.apache.camel.quarkus.component.google.secret.manager.it;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.google.api.gax.core.FixedCredentialsProvider;
@@ -47,7 +48,7 @@ public class GoogleSecretManagerTestResource extends GoogleCloudTestResource {
 
     @Override
     public Map<String, String> start() {
-        Map<String, String> props = super.start();
+        Map<String, String> retVal = new HashMap<>(super.start());
 
         gcpSecretId = "CQ-GCPTestSecret" + System.currentTimeMillis();
         String gcpSecretValue = "GCP secret value";
@@ -73,8 +74,12 @@ public class GoogleSecretManagerTestResource extends GoogleCloudTestResource {
             //create secret for gcp
             createSecret(gcpSecretId, gcpSecretValue, accessFile, projectName);
         }
-        return Map.of("gcpSecretId", gcpSecretId, "gcpSecretValue", gcpSecretValue, "gcpAccessFile", accessFile, "cqProjectId",
-                projectName);
+        retVal.put("gcpSecretId", gcpSecretId);
+        retVal.put("gcpSecretValue", gcpSecretValue);
+        retVal.put("gcpAccessFile", accessFile);
+        retVal.put("cqProjectId", projectName);
+
+        return retVal;
     }
 
     static void createSecret(String secretId, String secretValue, String accessFile, String project) {
