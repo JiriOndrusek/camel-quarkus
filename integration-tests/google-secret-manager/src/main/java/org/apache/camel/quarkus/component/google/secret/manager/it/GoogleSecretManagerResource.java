@@ -82,16 +82,28 @@ public class GoogleSecretManagerResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response operation(@PathParam("operation") String operation, @QueryParam("body") String body,
+    public Response operation(@PathParam("operation") String operation,
+            @QueryParam("body") String body,
+            @QueryParam("accountKey") String accountKey,
+            @QueryParam("useEnv") boolean useEnv,
             Map<String, Object> headers) {
 
-        Exchange ex = producerTemplate.send(String.format("google-secret-manager://%s" +
-                "?serviceAccountKey=file:%s" +
-                "&operation=%s", projectName, accountKey, operation),
-                e -> {
-                    e.getIn().setHeaders(headers == null ? Collections.emptyMap() : headers);
-                    e.getIn().setBody(body == null ? "" : body);
-                });
+        String url = useEnv ? String.format("google-secret-manager://%s" +
+                "?operation=%s", projectName, operation) : String.format(
+                        "google-secret-manager://%s" +
+                                "?serviceAccountKey=%s" +
+                                "&operation=%s",
+                        projectName, accountKey, operation);
+        Exchange ex;
+        try {
+            ex = producerTemplate.send(url,
+                    e -> {
+                        e.getIn().setHeaders(headers == null ? Collections.emptyMap() : headers);
+                        e.getIn().setBody(body == null ? "" : body);
+                    });
+        } catch (Exception e) {
+            return Response.ok(e.getMessage()).build();
+        }
 
         Object result = null;
         switch (GoogleSecretManagerOperations.valueOf(operation)) {

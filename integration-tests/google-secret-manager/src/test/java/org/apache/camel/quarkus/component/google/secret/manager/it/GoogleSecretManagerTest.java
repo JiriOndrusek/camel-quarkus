@@ -30,13 +30,14 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.component.google.secret.manager.GoogleSecretManagerConstants;
 import org.apache.camel.component.google.secret.manager.GoogleSecretManagerOperations;
-import org.apache.camel.quarkus.test.mock.backend.MockBackendUtils;
 import org.awaitility.Awaitility;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariables;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -53,10 +54,12 @@ class GoogleSecretManagerTest {
 
     private GooglePubSubCustomizer customizer;
 
-    @Test
-    void secretCreateListDelete() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void secretCreateListDelete(boolean useEnvProperties) {
         final String secretToCreate = "firstSecret!";
-        final String secretId = "CQTestSecret" + System.currentTimeMillis();
+        final String secretId = "CQTestSecret-" + useEnvProperties + "-" + System.currentTimeMillis();
+        String accountKey = ConfigProvider.getConfig().getValue("camel.vault.gcp.serviceAccountKey", String.class);
         String createdName;
 
         boolean deleted = false;
@@ -70,11 +73,26 @@ class GoogleSecretManagerTest {
             String name = createdName.substring(0, createdName.indexOf("/version"));
             String version = createdName.substring(createdName.lastIndexOf("/") + 1);
 
+            if (!useEnvProperties) {
+                //validate that with the wrong accessKey, the request fails
+                RestAssured.given()
+                        .contentType(ContentType.JSON)
+                        .body(Map.of(GoogleSecretManagerConstants.SECRET_ID, secretId, GoogleSecretManagerConstants.VERSION_ID,
+                                version))
+                        .queryParam("accountKey", "file:wrongPath")
+                        .post("/google-secret-manager/operation/" + GoogleSecretManagerOperations.getSecretVersion)
+                        .then()
+                        .statusCode(200)
+                        .body(containsString("java.io.FileNotFoundException: wrongPath does not exist"));
+            }
+
             //get secret
             RestAssured.given()
                     .contentType(ContentType.JSON)
                     .body(Map.of(GoogleSecretManagerConstants.SECRET_ID, secretId, GoogleSecretManagerConstants.VERSION_ID,
                             version))
+                    .queryParam("useEnv", useEnvProperties)
+                    .queryParam("accountKey", accountKey)
                     .post("/google-secret-manager/operation/" + GoogleSecretManagerOperations.getSecretVersion)
                     .then()
                     .statusCode(200)
@@ -83,6 +101,8 @@ class GoogleSecretManagerTest {
             // list secrets
             RestAssured.given()
                     .contentType(ContentType.JSON)
+                    .queryParam("useEnv", useEnvProperties)
+                    .queryParam("accountKey", accountKey)
                     .post("/google-secret-manager/operation/" + GoogleSecretManagerOperations.listSecrets)
                     .then()
                     .statusCode(200)
@@ -94,6 +114,8 @@ class GoogleSecretManagerTest {
             //verify that the secret is gone
             RestAssured.given()
                     .contentType(ContentType.JSON)
+                    .queryParam("useEnv", useEnvProperties)
+                    .queryParam("accountKey", accountKey)
                     .post("/google-secret-manager/operation/" + GoogleSecretManagerOperations.listSecrets)
                     .then()
                     .statusCode(200)
@@ -102,7 +124,7 @@ class GoogleSecretManagerTest {
             deleted = true;
 
         } finally {
-            if (!deleted && !MockBackendUtils.startMockBackend(false)) {
+            if (!deleted) {
                 String file = ConfigProvider.getConfig().getValue("cq.google-secrets-manager.path-to-service-account-key",
                         String.class);
                 String projectName = ConfigProvider.getConfig().getValue("cq.google-secrets-manager.project-name",
@@ -121,7 +143,7 @@ class GoogleSecretManagerTest {
         String expectedSecret = ConfigProvider.getConfig().getValue("gcpSecretValue", String.class);
         String secretId = ConfigProvider.getConfig().getValue("gcpSecretId", String.class);
         String projectId = ConfigProvider.getConfig().getValue("cqProjectId", String.class);
-        String accessFile = ConfigProvider.getConfig().getValue("gcpAccessFile", String.class);
+        String accountKey = ConfigProvider.getConfig().getValue("gcpAccessFile", String.class);
 
         //verify default secret value
         RestAssured
@@ -131,7 +153,7 @@ class GoogleSecretManagerTest {
                 .body(is(expectedSecret));
 
         //change secret
-        GoogleSecretManagerTestResource.updateSecret(secretId, "new_changeit", accessFile, projectId);
+        GoogleSecretManagerTestResource.updateSecret(secretId, "new_changeit", accountKey, projectId);
 
         //wait a moment and verify that the secret returned by the route is not changed
         Thread.sleep(20000);
@@ -167,6 +189,7 @@ class GoogleSecretManagerTest {
                                 .contentType(ContentType.JSON)
                                 .body(Collections.singletonMap(GoogleSecretManagerConstants.SECRET_ID, secretName))
                                 .queryParam("body", secretValue)
+                                .queryParam("useEnv", true)
                                 .post("/google-secret-manager/operation/" + GoogleSecretManagerOperations.createSecret)
                                 .then()
                                 .statusCode(200)
@@ -185,6 +208,7 @@ class GoogleSecretManagerTest {
             RestAssured.given()
                     .contentType(ContentType.JSON)
                     .body(Collections.singletonMap(GoogleSecretManagerConstants.SECRET_ID, secretId))
+                    .queryParam("useEnv", true)
                     .post("/google-secret-manager/operation/" + GoogleSecretManagerOperations.deleteSecret)
                     .then()
                     .statusCode(200)

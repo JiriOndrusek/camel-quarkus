@@ -32,7 +32,6 @@ import com.google.cloud.secretmanager.v1.SecretManagerServiceSettings;
 import com.google.cloud.secretmanager.v1.SecretName;
 import com.google.cloud.secretmanager.v1.SecretPayload;
 import com.google.protobuf.ByteString;
-import org.apache.camel.quarkus.test.mock.backend.MockBackendUtils;
 import org.apache.camel.quarkus.test.support.google.GoogleCloudTestResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +43,6 @@ public class GoogleSecretManagerTestResource extends GoogleCloudTestResource {
     private String gcpSecretId;
     private String accessFile;
     private String projectName;
-    private boolean realBackendIsUsed = false;
 
     @Override
     public Map<String, String> start() {
@@ -56,24 +54,14 @@ public class GoogleSecretManagerTestResource extends GoogleCloudTestResource {
         accessFile = System.getenv("GOOGLE_APPLICATION_CREDENTIALS");
         projectName = System.getenv("GOOGLE_PROJECT_ID");
 
-        final boolean startMockBackend = MockBackendUtils.startMockBackend(false);
-        final boolean realCredentialsProvided = accessFile != null && !accessFile.isEmpty() && projectName != null
-                && !projectName.isEmpty();
-        final boolean usingMockBackend = startMockBackend && !realCredentialsProvided;
-
-        if (usingMockBackend) {
-            //try wiremock
-            throw new RuntimeException("Mocked test backend is not implemented yet");
-        } else {
-            if (!startMockBackend && !realCredentialsProvided) {
-                throw new IllegalStateException(
-                        "Set GOOGLE_PROJECT_ID and GOOGLE_APPLICATION_CREDENTIALS env vars if you set CAMEL_QUARKUS_START_MOCK_BACKEND=false");
-            }
-            MockBackendUtils.logRealBackendUsed();
-            realBackendIsUsed = true;
-            //create secret for gcp
-            createSecret(gcpSecretId, gcpSecretValue, accessFile, projectName);
+        if (accessFile == null || accessFile.isEmpty() || projectName == null || projectName.isEmpty()) {
+            throw new IllegalStateException(
+                    "Set GOOGLE_PROJECT_ID and GOOGLE_APPLICATION_CREDENTIALS env vars if you set CAMEL_QUARKUS_START_MOCK_BACKEND=false");
         }
+
+        //create secret for gcp
+        createSecret(gcpSecretId, gcpSecretValue, accessFile, projectName);
+
         retVal.put("gcpSecretId", gcpSecretId);
         retVal.put("gcpSecretValue", gcpSecretValue);
         retVal.put("gcpAccessFile", accessFile);
@@ -174,8 +162,6 @@ public class GoogleSecretManagerTestResource extends GoogleCloudTestResource {
     public void stop() {
         super.stop();
 
-        if (realBackendIsUsed) {
-            deleteSecret(gcpSecretId, accessFile, projectName);
-        }
+        deleteSecret(gcpSecretId, accessFile, projectName);
     }
 }
