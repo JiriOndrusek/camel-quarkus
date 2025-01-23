@@ -125,9 +125,9 @@ class GoogleSecretManagerTest {
 
         } finally {
             if (!deleted) {
-                String file = ConfigProvider.getConfig().getValue("cq.google-secrets-manager.path-to-service-account-key",
+                String file = ConfigProvider.getConfig().getValue("camel.vault.gcp.serviceAccountKey",
                         String.class);
-                String projectName = ConfigProvider.getConfig().getValue("cq.google-secrets-manager.project-name",
+                String projectName = ConfigProvider.getConfig().getValue("camel.vault.gcp.projectId",
                         String.class);
                 GoogleSecretManagerTestResource.deleteSecret(secretId, file, projectName);
             }

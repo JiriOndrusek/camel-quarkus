@@ -46,10 +46,10 @@ public class GoogleSecretManagerResource {
 
     private static final Logger LOG = Logger.getLogger(GoogleSecretManagerResource.class);
 
-    @ConfigProperty(name = "cq.google-secrets-manager.path-to-service-account-key")
+    @ConfigProperty(name = "camel.vault.gcp.serviceAccountKey")
     String accountKey;
 
-    @ConfigProperty(name = "cq.google-secrets-manager.project-name")
+    @ConfigProperty(name = "camel.vault.gcp.projectId")
     String projectName;
 
     @Inject
