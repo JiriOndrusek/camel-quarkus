@@ -52,8 +52,8 @@ public class GoogleSecretManagerTestResource extends GoogleCloudTestResource {
         gcpSecretId = "CQ-GCPTestSecret" + System.currentTimeMillis();
         String gcpSecretValue = "GCP secret value";
 
-        accessFile = System.getenv("GOOGLE_SERVICE_ACCOUNT_KEY");
-        projectName = System.getenv("GOOGLE_PROJECT_NAME");
+        accessFile = System.getenv("GOOGLE_APPLICATION_CREDENTIALS");
+        projectName = System.getenv("GOOGLE_PROJECT_ID");
 
         final boolean startMockBackend = MockBackendUtils.startMockBackend(false);
         final boolean realCredentialsProvided = accessFile != null && !accessFile.isEmpty() && projectName != null
@@ -66,7 +66,7 @@ public class GoogleSecretManagerTestResource extends GoogleCloudTestResource {
         } else {
             if (!startMockBackend && !realCredentialsProvided) {
                 throw new IllegalStateException(
-                        "Set GOOGLE_PROJECT and GOOGLE_SERVICE_ACCOUNT_KEY env vars if you set CAMEL_QUARKUS_START_MOCK_BACKEND=false");
+                        "Set GOOGLE_PROJECT_ID and GOOGLE_APPLICATION_CREDENTIALS env vars if you set CAMEL_QUARKUS_START_MOCK_BACKEND=false");
             }
             MockBackendUtils.logRealBackendUsed();
             realBackendIsUsed = true;

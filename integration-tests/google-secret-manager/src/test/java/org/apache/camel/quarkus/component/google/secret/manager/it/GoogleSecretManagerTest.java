@@ -20,8 +20,10 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.LogManager;
 
 import io.quarkus.logging.Log;
+import io.quarkus.test.InMemoryLogHandler;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
@@ -41,14 +43,11 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Todo use MockBackendUtils
- */
 @QuarkusTest
 @QuarkusTestResource(GoogleSecretManagerTestResource.class)
 @EnabledIfEnvironmentVariables({
-        @EnabledIfEnvironmentVariable(named = "GOOGLE_SERVICE_ACCOUNT_KEY", matches = ".+"),
-        @EnabledIfEnvironmentVariable(named = "GOOGLE_PROJECT_NAME", matches = ".+")
+        @EnabledIfEnvironmentVariable(named = "GOOGLE_APPLICATION_CREDENTIALS", matches = ".+"),
+        @EnabledIfEnvironmentVariable(named = "GOOGLE_PROJECT_ID", matches = ".+")
 })
 class GoogleSecretManagerTest {
 
@@ -114,58 +113,51 @@ class GoogleSecretManagerTest {
     }
 
     @Test
-    void loadGcpSecretTest() {
+    void loadGcpSecretAndRefreshTest() throws Exception {
+        InMemoryLogHandler inMemoryLogHandler = new InMemoryLogHandler(
+                record -> record.getMessage().contains("Reloading CamelContext"));
+        LogManager.getLogManager().getLogger("").addHandler(inMemoryLogHandler);
+
         String expectedSecret = ConfigProvider.getConfig().getValue("gcpSecretValue", String.class);
         String secretId = ConfigProvider.getConfig().getValue("gcpSecretId", String.class);
         String projectId = ConfigProvider.getConfig().getValue("cqProjectId", String.class);
         String accessFile = ConfigProvider.getConfig().getValue("gcpAccessFile", String.class);
 
+        //verify default secret value
         RestAssured
                 .get("/google-secret-manager/getGcpSecret/")
                 .then()
                 .statusCode(200)
                 .body(is(expectedSecret));
-        System.out.println(">>> correct secret received");
 
+        //change secret
         GoogleSecretManagerTestResource.updateSecret(secretId, "new_changeit", accessFile, projectId);
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        System.out.println(">>> slept");
-        //
-        //        RestAssured
-        //                .get("/google-secret-manager/getGcpSecret/")
-        //                .then()
-        //                .statusCode(200)
-        //                .body(is(expectedSecret));
-        //        System.out.println(">>> correct secret received again");
 
-        //send message to force context refresh
-        customizer.sendMsg("test", Map.of("eventType", "SECRET_UPDATE", "secretId", secretId));
-        System.out.println(">>> msg send to refresh topic");
+        //wait a moment and verify that the secret returned by the route is not changed
+        Thread.sleep(20000);
 
-        try {
-            Thread.sleep(65000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        System.out.println(">>> slept");
+        RestAssured
+                .get("/google-secret-manager/getGcpSecret/")
+                .then()
+                .statusCode(200)
+                .body(is(expectedSecret));
 
+        //simulate that secret change is detected and proper message to a subscription is sent
+        customizer.sendMsg("mocked message forcing refresh", Map.of("eventType", "SECRET_UPDATE", "secretId", secretId));
+
+        //wait till the refresh is executed
+        Awaitility.await()
+                .atMost(30, TimeUnit.SECONDS)
+                .pollDelay(1, TimeUnit.SECONDS)
+                .pollInterval(1, TimeUnit.SECONDS)
+                .until(() -> !inMemoryLogHandler.getRecords().isEmpty());
+
+        //route should return the new secret
         RestAssured
                 .get("/google-secret-manager/getGcpSecret/")
                 .then()
                 .statusCode(200)
                 .body(is("new_changeit"));
-
-        System.out.println(">>> updated secret secret received");
-
-        RestAssured
-                .get("/google-secret-manager/getGcpSecret/")
-                .then()
-                .statusCode(200)
-                .body(is(expectedSecret));
     }
 
     protected String createSecret(String secretName, String secretValue) {

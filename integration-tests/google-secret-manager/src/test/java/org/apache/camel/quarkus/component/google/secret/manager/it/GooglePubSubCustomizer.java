@@ -87,16 +87,10 @@ public class GooglePubSubCustomizer implements GoogleTestEnvCustomizer {
             envContext.property("google-pubsub.refresh-subscription-name", refreshSubscriptionName);
             System.setProperty("google-pubsub.refresh-subscription-name", refreshSubscriptionName);
 
-            System.out.println("--------------------------------------------");
-            System.out.println("------------ creating topic and subscription----------");
             Topic topic = createTopic(topicClient, refreshTopicName, projectId);
             Subscription subscription = createSubscription(subscriptionClient, topic, refreshSubscriptionName, projectId);
-            System.out.println("--------------------------------------------");
-            System.out.println("------------ created topic and subscription----------");
 
             envContext.closeable(() -> {
-                System.out.println("--------------------------------------------");
-                System.out.println("------------ deleting topic and subscription----------");
                 subscriptionClient.deleteSubscription(subscription.getName());
                 topicClient.deleteTopic(topic.getName());
 
@@ -106,7 +100,6 @@ public class GooglePubSubCustomizer implements GoogleTestEnvCustomizer {
                 topicClient.awaitTermination(5, TimeUnit.SECONDS);
                 subscriptionClient.awaitTermination(5, TimeUnit.SECONDS);
             });
-            System.out.println("added closeable");
 
         } catch (Exception e) {
             throw new RuntimeException(e);

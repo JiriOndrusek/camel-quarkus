@@ -7,8 +7,8 @@ Below are the environment variables that have to be configured:
 
 [source,shell]
 ----
-export GOOGLE_SERVICE_ACCOUNT_KEY=<path-to-google-credentials-json-file>
-export GOOGLE_PROJECT=<name-of-your-project>
+export GOOGLE_APPLICATION_CREDENTIALS=<path-to-google-credentials-json-file>
+export GOOGLE_PROJECT_ID=<name-of-your-project>
 ----
 
 If any of the required variables is not defined, the tests are automatically skipped.
