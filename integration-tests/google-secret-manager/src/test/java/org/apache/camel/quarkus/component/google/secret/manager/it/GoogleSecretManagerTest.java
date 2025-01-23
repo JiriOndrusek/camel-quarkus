@@ -30,6 +30,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.component.google.secret.manager.GoogleSecretManagerConstants;
 import org.apache.camel.component.google.secret.manager.GoogleSecretManagerOperations;
+import org.apache.camel.quarkus.test.support.google.GoogleCloudTestResource;
 import org.awaitility.Awaitility;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.CoreMatchers;
@@ -44,15 +45,24 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * There is no mock support for google secret-manager, therefore tests work only with real credentials.
+ * <p/>
+ * Basic operations are covered by test `secretCreateListDelete`. Test is parametrized.
+ * True/false in the parameter forces to yse environment property or not.
+ * <p/>
+ * Second test `loadGcpSecretAndRefreshTest` covers use of gcp secret manager properties.
+ * The refresh of the secret is simulated by sending of pubsub message.
+ * For that purpose the second testResource is used. (which creates topic and subscription)
+ */
 @QuarkusTest
 @QuarkusTestResource(GoogleSecretManagerTestResource.class)
+@QuarkusTestResource(GoogleCloudTestResource.class)
 @EnabledIfEnvironmentVariables({
         @EnabledIfEnvironmentVariable(named = "GOOGLE_APPLICATION_CREDENTIALS", matches = ".+"),
         @EnabledIfEnvironmentVariable(named = "GOOGLE_PROJECT_ID", matches = ".+")
 })
 class GoogleSecretManagerTest {
-
-    private GooglePubSubCustomizer customizer;
 
     @ParameterizedTest
     @ValueSource(booleans = { true, false })
@@ -165,7 +175,8 @@ class GoogleSecretManagerTest {
                 .body(is(expectedSecret));
 
         //simulate that secret change is detected and proper message to a subscription is sent
-        customizer.sendMsg("mocked message forcing refresh", Map.of("eventType", "SECRET_UPDATE", "secretId", secretId));
+        GoogleSecretManagerTestResource.sendMsg("mocked message forcing refresh",
+                Map.of("eventType", "SECRET_UPDATE", "secretId", secretId));
 
         //wait till the refresh is executed, route should return the new secret
         Awaitility.await()
@@ -214,9 +225,5 @@ class GoogleSecretManagerTest {
                     .statusCode(200)
                     .body(CoreMatchers.is("true"));
         }
-    }
-
-    public void setCustomizer(GooglePubSubCustomizer customizer) {
-        this.customizer = customizer;
     }
 }

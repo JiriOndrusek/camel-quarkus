@@ -18,7 +18,6 @@ package org.apache.camel.quarkus.component.google.secret.manager.it;
 
 import java.io.IOException;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import com.google.api.gax.core.CredentialsProvider;
@@ -176,30 +175,4 @@ public class GooglePubSubCustomizer implements GoogleTestEnvCustomizer {
         }
     }
 
-    private Publisher createPublisher(GoogleCloudContext context) throws IOException {
-        if (!context.isUsingMockBackend()) {
-
-            TopicName topicName = TopicName.of(envContext.getProperties().get("project.id"),
-                    envContext.getProperties().get("google-pubsub.refresh-topic-name"));
-
-            return Publisher.newBuilder(topicName).build();
-        }
-        throw new IllegalStateException("Mock backend is not supported.");
-    }
-
-    public String sendMsg(String msg, Map<String, String> attributes) {
-        try {
-            Publisher publisher = createPublisher(envContext);
-
-            PubsubMessage message = PubsubMessage.newBuilder()
-                    .setData(com.google.protobuf.ByteString.copyFromUtf8(msg))
-                    .putAllAttributes(attributes)
-                    .build();
-
-            return publisher.publish(message).get();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-    }
 }
