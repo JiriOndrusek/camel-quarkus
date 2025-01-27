@@ -26,11 +26,16 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.component.aws.secretsmanager.SecretsManagerConstants;
 import org.apache.camel.component.aws.secretsmanager.SecretsManagerOperations;
+import org.apache.camel.quarkus.test.support.aws2.BaseAWs2TestSupport;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 import static org.hamcrest.CoreMatchers.is;
 
-class AwsSecretsManagerAbstractTest {
+abstract class AwsSecretsManagerAbstractTest extends BaseAWs2TestSupport {
+
+    public AwsSecretsManagerAbstractTest() {
+        super("/aws-secrets-manager");
+    }
 
     protected String createSecret(String secretName, String secretValue) {
         String createdArn = Awaitility.await()
