@@ -58,7 +58,7 @@ import software.amazon.awssdk.services.secretsmanager.model.UpdateSecretResponse
 
 @Path("/aws-secrets-manager")
 @ApplicationScoped
-public class AwsSecretsManagerResource extends BaseAws2Resource  {
+public class AwsSecretsManagerResource extends BaseAws2Resource {
 
     private static final Logger LOG = Logger.getLogger(AwsSecretsManagerResource.class);
 
@@ -71,7 +71,7 @@ public class AwsSecretsManagerResource extends BaseAws2Resource  {
     ProducerTemplate producerTemplate;
 
     public AwsSecretsManagerResource() {
-        super("cw");
+        super(null, "camel.component.aws-secrets-manager");
     }
 
     static final AtomicBoolean contextReloaded = new AtomicBoolean(false);
@@ -100,7 +100,9 @@ public class AwsSecretsManagerResource extends BaseAws2Resource  {
 
         String region = headers.containsKey("region") ? String.format("region=%s&", headers.get("region")) : "";
 
-        Exchange ex = producerTemplate.send(String.format("aws-secrets-manager://test?%soperation=%s", region, operation),
+        Exchange ex = producerTemplate.send(
+                String.format("aws-secrets-manager://test?%soperation=%s&useDefaultCredentialsProvider=%s",
+                        region, operation, isUseDefaultCredentials()),
                 e -> {
                     e.getIn().setHeaders(headers);
                     e.getIn().setBody(resultBody);

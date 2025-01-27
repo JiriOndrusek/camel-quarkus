@@ -42,13 +42,14 @@ import static org.hamcrest.CoreMatchers.is;
 // disabled on Localstack due to https://docs.localstack.cloud/references/coverage/coverage_cloudtrail/#lookupevents
 @EnabledIf(MockBackendDisabled.class)
 @Disabled("https://issues.apache.org/jira/browse/CAMEL-21324")
-public class CamelContextRefreshOnSecretRefreshTest extends AwsSecretsManagerAbstractTest {
+public class CamelContextRefreshOnSecretRefreshTest {
     @Test
     public void testCamelContextReloadOnSecretRefresh() {
         String secretArn = null;
         try {
             final String myUniqueSecretValue = "Uniqueee1234";
-            secretArn = createSecret(ConfigProvider.getConfig().getValue("camel.vault.aws.secrets", String.class),
+            secretArn = AwsSecretsManagerUtil.createSecret(
+                    ConfigProvider.getConfig().getValue("camel.vault.aws.secrets", String.class),
                     myUniqueSecretValue);
             RestAssured.given()
                     .contentType(ContentType.JSON)
@@ -66,7 +67,7 @@ public class CamelContextRefreshOnSecretRefreshTest extends AwsSecretsManagerAbs
                                 .body(is("true"));
                     });
         } finally {
-            deleteSecretImmediately(secretArn);
+            AwsSecretsManagerUtil.deleteSecretImmediately(secretArn);
         }
     }
 }
