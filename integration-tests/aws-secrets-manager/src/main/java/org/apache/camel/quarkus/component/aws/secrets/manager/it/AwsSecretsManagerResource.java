@@ -40,6 +40,7 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.aws.secretsmanager.SecretsManagerConstants;
 import org.apache.camel.component.aws.secretsmanager.SecretsManagerOperations;
 import org.apache.camel.impl.event.CamelContextReloadedEvent;
+import org.apache.camel.quarkus.test.support.aws2.BaseAws2Resource;
 import org.apache.camel.spi.PeriodTaskResolver;
 import org.apache.camel.support.PluginHelper;
 import org.apache.camel.util.CollectionHelper;
@@ -57,7 +58,7 @@ import software.amazon.awssdk.services.secretsmanager.model.UpdateSecretResponse
 
 @Path("/aws-secrets-manager")
 @ApplicationScoped
-public class AwsSecretsManagerResource {
+public class AwsSecretsManagerResource extends BaseAws2Resource  {
 
     private static final Logger LOG = Logger.getLogger(AwsSecretsManagerResource.class);
 
@@ -68,6 +69,10 @@ public class AwsSecretsManagerResource {
 
     @Inject
     ProducerTemplate producerTemplate;
+
+    public AwsSecretsManagerResource() {
+        super("cw");
+    }
 
     static final AtomicBoolean contextReloaded = new AtomicBoolean(false);
 
