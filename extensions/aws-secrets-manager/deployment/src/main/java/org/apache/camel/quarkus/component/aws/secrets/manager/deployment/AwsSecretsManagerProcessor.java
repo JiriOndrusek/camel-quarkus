@@ -16,12 +16,10 @@
  */
 package org.apache.camel.quarkus.component.aws.secrets.manager.deployment;
 
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.annotations.ExecutionTime;
-import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
-import io.quarkus.deployment.pkg.steps.NativeOrNativeSourcesBuild;
-import org.apache.camel.quarkus.core.JvmOnlyRecorder;
+import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import org.jboss.logging.Logger;
 
 class AwsSecretsManagerProcessor {
@@ -34,13 +32,8 @@ class AwsSecretsManagerProcessor {
         return new FeatureBuildItem(FEATURE);
     }
 
-    /**
-     * Remove this once this extension starts supporting the native mode.
-     */
-    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class)
-    @Record(value = ExecutionTime.RUNTIME_INIT)
-    void warnJvmInNative(JvmOnlyRecorder recorder) {
-        JvmOnlyRecorder.warnJvmInNative(LOG, FEATURE); // warn at build time
-        recorder.warnJvmInNative(FEATURE); // warn at runtime
+    @BuildStep
+    void runtimeInit(BuildProducer<RuntimeInitializedClassBuildItem> deps) {
+        deps.produce(new RuntimeInitializedClassBuildItem("org.apache.http.impl.auth.NTLMEngineImpl"));
     }
 }

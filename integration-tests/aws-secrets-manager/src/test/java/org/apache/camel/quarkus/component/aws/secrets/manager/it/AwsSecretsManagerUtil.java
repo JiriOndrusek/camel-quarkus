@@ -26,18 +26,13 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.component.aws.secretsmanager.SecretsManagerConstants;
 import org.apache.camel.component.aws.secretsmanager.SecretsManagerOperations;
-import org.apache.camel.quarkus.test.support.aws2.BaseAWs2TestSupport;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 import static org.hamcrest.CoreMatchers.is;
 
-abstract class AwsSecretsManagerAbstractTest extends BaseAWs2TestSupport {
+class AwsSecretsManagerUtil {
 
-    public AwsSecretsManagerAbstractTest() {
-        super("/aws-secrets-manager");
-    }
-
-    protected String createSecret(String secretName, String secretValue) {
+    static String createSecret(String secretName, String secretValue) {
         String createdArn = Awaitility.await()
                 .pollInterval(5, TimeUnit.SECONDS)
                 .atMost(1, TimeUnit.MINUTES)
@@ -59,7 +54,7 @@ abstract class AwsSecretsManagerAbstractTest extends BaseAWs2TestSupport {
         return createdArn;
     }
 
-    protected void updateSecret(String secretArn, String newValue) {
+    static void updateSecret(String secretArn, String newValue) {
         RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(Collections.singletonMap(SecretsManagerConstants.SECRET_ID, secretArn))
@@ -70,7 +65,7 @@ abstract class AwsSecretsManagerAbstractTest extends BaseAWs2TestSupport {
                 .body(is("true"));
     }
 
-    protected Map<String, Boolean> listSecrets() {
+    static Map<String, Boolean> listSecrets() {
         return RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(Collections.emptyMap())
@@ -80,7 +75,7 @@ abstract class AwsSecretsManagerAbstractTest extends BaseAWs2TestSupport {
                 .extract().as(Map.class);
     }
 
-    protected void deleteSecretImmediately(String arn) {
+    static void deleteSecretImmediately(String arn) {
         if (arn != null) {
             Log.info("Deleting secret: " + arn);
             RestAssured.given()
