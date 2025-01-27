@@ -50,6 +50,7 @@ group-02:
   - smallrye-reactive-messaging
   - sql
 group-03:
+  - aws-secrets-manager
   - bean-validator
   - box
   - foundation-grouped
