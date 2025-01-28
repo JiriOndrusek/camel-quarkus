@@ -32,6 +32,8 @@ import org.apache.camel.quarkus.test.mock.backend.MockBackendUtils;
 import org.apache.camel.quarkus.test.support.aws2.Aws2TestResource;
 import org.apache.camel.quarkus.test.support.aws2.BaseAWs2TestSupport;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -42,19 +44,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
 @QuarkusTestResource(Aws2TestResource.class)
+
 public class AwsSecretsManagerTest extends BaseAWs2TestSupport {
 
     public AwsSecretsManagerTest() {
         super("/aws-secrets-manager");
     }
 
-    @Test
-    public void testOperations() {
+    /**
+     * @param useHeaders If true, use headers instead of uri parts.
+     */
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    public void testOperations(boolean useHeaders) {
         final String secretToCreate = "loadFirst";
         final String secret2ToCreate = "changeit2";
         final String secretToUpdate = "loadSecond";
-        final String nameToCreate = "CQTestSecret" + System.currentTimeMillis();
-        final String name2ToCreate = "CQTestSecret2" + System.currentTimeMillis();
+        final String nameToCreate = "CQTestSecret-operation-" + useHeaders + "-1-" + System.currentTimeMillis();
+        final String name2ToCreate = "CQTestSecret2-operation-" + useHeaders + "-2-" + System.currentTimeMillis();
+        final String description2ToCreate = "description-" + name2ToCreate;
         String createdArn = null;
         String createdArn2 = null;
 
@@ -62,10 +70,16 @@ public class AwsSecretsManagerTest extends BaseAWs2TestSupport {
             createdArn = AwsSecretsManagerUtil.createSecret(nameToCreate, secretToCreate);
             assertNotNull(createdArn);
 
+            Map<String, Object> headers = useHeaders
+                    ? Map.of(SecretsManagerConstants.OPERATION, SecretsManagerOperations.createSecret,
+                            SecretsManagerConstants.SECRET_NAME, name2ToCreate,
+                            SecretsManagerConstants.SECRET_DESCRIPTION, description2ToCreate)
+                    : Collections.singletonMap(SecretsManagerConstants.SECRET_NAME, name2ToCreate);
             createdArn2 = RestAssured.given()
                     .contentType(ContentType.JSON)
-                    .body(Collections.singletonMap(SecretsManagerConstants.SECRET_NAME, name2ToCreate))
+                    .body(headers)
                     .queryParam("body", secret2ToCreate)
+                    .queryParam("useHeaders", useHeaders)
                     .post("/aws-secrets-manager/operation/" + SecretsManagerOperations.createSecret)
                     .then()
                     .statusCode(201)
@@ -77,11 +91,21 @@ public class AwsSecretsManagerTest extends BaseAWs2TestSupport {
             final String finalCreatedArn2 = createdArn2;
             Awaitility.await().pollInterval(5, TimeUnit.SECONDS).atMost(1, TimeUnit.MINUTES).untilAsserted(
                     () -> {
-                        Map<String, Boolean> secrets = AwsSecretsManagerUtil.listSecrets();
+                        Map<String, Boolean> secrets = AwsSecretsManagerUtil.listSecrets(null);
                         // contains both created secrets
                         assertTrue(secrets.containsKey(finalCreatedArn));
                         assertTrue(secrets.containsKey(finalCreatedArn2));
                     });
+            if (useHeaders) {
+                //use MAX_RESULTS header
+                Awaitility.await().pollDelay(5, TimeUnit.SECONDS).pollInterval(5, TimeUnit.SECONDS).atMost(1, TimeUnit.MINUTES)
+                        .untilAsserted(
+                                () -> {
+                                    Map<String, Boolean> secrets = AwsSecretsManagerUtil.listSecrets(1);
+                                    // contains both created secrets
+                                    assertTrue(secrets.size() == 1);
+                                });
+            }
 
             String secret = RestAssured.given()
                     .contentType(ContentType.JSON)
@@ -95,15 +119,19 @@ public class AwsSecretsManagerTest extends BaseAWs2TestSupport {
 
             Map description = RestAssured.given()
                     .contentType(ContentType.JSON)
-                    .body(Collections.singletonMap(SecretsManagerConstants.SECRET_ID, createdArn))
+                    .body(Map.of(SecretsManagerConstants.SECRET_ID, createdArn2))
                     .post("/aws-secrets-manager/operation/" + SecretsManagerOperations.describeSecret)
                     .then()
                     .statusCode(201)
                     .extract().as(Map.class);
 
-            assertEquals(2, description.size());
+            assertEquals(3, description.size());
+
             assertEquals(true, description.get("sdkHttpSuccessful"));
-            assertEquals(nameToCreate, description.get("name"));
+            assertEquals(name2ToCreate, description.get("name"));
+            if (useHeaders) {
+                assertEquals(description2ToCreate, description.get("description"));
+            }
 
             RestAssured.given()
                     .contentType(ContentType.JSON)
@@ -115,7 +143,7 @@ public class AwsSecretsManagerTest extends BaseAWs2TestSupport {
 
             Awaitility.await().pollInterval(5, TimeUnit.SECONDS).atMost(1, TimeUnit.MINUTES).untilAsserted(
                     () -> {
-                        Map<String, Boolean> secrets = AwsSecretsManagerUtil.listSecrets();
+                        Map<String, Boolean> secrets = AwsSecretsManagerUtil.listSecrets(null);
                         // by default secrets marked for deletion are not listed (can be enabled with https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/secretsmanager/model/ListSecretsRequest.Builder.html#includePlannedDeletion(java.lang.Boolean))
                         // but on localstack they are present (with non-null deletedDate field) - see https://github.com/localstack/localstack/issues/11635
                         assertTrue(secrets.containsKey(finalCreatedArn));
@@ -161,7 +189,7 @@ public class AwsSecretsManagerTest extends BaseAWs2TestSupport {
 
             Awaitility.await().pollInterval(5, TimeUnit.SECONDS).atMost(1, TimeUnit.MINUTES).untilAsserted(
                     () -> {
-                        Map<String, Boolean> secrets = AwsSecretsManagerUtil.listSecrets();
+                        Map<String, Boolean> secrets = AwsSecretsManagerUtil.listSecrets(null);
 
                         //none of them is deleted, because they were restored
                         assertTrue(secrets.containsKey(finalCreatedArn));
@@ -182,19 +210,17 @@ public class AwsSecretsManagerTest extends BaseAWs2TestSupport {
             // .statusCode(201)
             // .body(is("true"));
         } finally {
-            if (!MockBackendUtils.startMockBackend(false)) {
-                // we must clean created secrets
-                // skip cleaning on localstack
-                AwsSecretsManagerUtil.deleteSecretImmediately(createdArn);
-                AwsSecretsManagerUtil.deleteSecretImmediately(createdArn2);
-            }
+            // we must clean created secrets
+            // also on localstack, if not the second run of operations would fail
+            AwsSecretsManagerUtil.deleteSecretImmediately(createdArn);
+            AwsSecretsManagerUtil.deleteSecretImmediately(createdArn2);
         }
     }
 
     @Override
     public void testMethodForDefaultCredentialsProvider() {
         final String secretToCreate = "loadFirst";
-        final String nameToCreate = "CQTestSecret" + System.currentTimeMillis();
+        final String nameToCreate = "CQTestSecret-provider-" + System.currentTimeMillis();
         String createdArn = null;
 
         try {
@@ -202,11 +228,9 @@ public class AwsSecretsManagerTest extends BaseAWs2TestSupport {
             assertNotNull(createdArn);
 
         } finally {
-            if (!MockBackendUtils.startMockBackend(false)) {
-                // we must clean created secrets
-                // skip cleaning on localstack
-                AwsSecretsManagerUtil.deleteSecretImmediately(createdArn);
-            }
+            // we must clean created secrets
+            // also on localstack, if not the second run of operations would fail
+            AwsSecretsManagerUtil.deleteSecretImmediately(createdArn);
         }
     }
 

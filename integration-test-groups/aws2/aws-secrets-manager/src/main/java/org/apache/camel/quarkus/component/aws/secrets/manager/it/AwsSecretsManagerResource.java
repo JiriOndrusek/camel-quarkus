@@ -84,7 +84,10 @@ public class AwsSecretsManagerResource extends BaseAws2Resource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response post(@PathParam("operation") String operation, @QueryParam("body") String body, Map<String, Object> headers)
+    public Response post(@PathParam("operation") String operation,
+            @QueryParam("body") String body,
+            @QueryParam("useHeaders") boolean useHeaders,
+            Map<String, Object> headers)
             throws Exception {
 
         final Object resultBody;
@@ -100,9 +103,12 @@ public class AwsSecretsManagerResource extends BaseAws2Resource {
 
         String region = headers.containsKey("region") ? String.format("region=%s&", headers.get("region")) : "";
 
-        Exchange ex = producerTemplate.send(
-                String.format("aws-secrets-manager://test?%soperation=%s&useDefaultCredentialsProvider=%s",
-                        region, operation, isUseDefaultCredentials()),
+        String url = useHeaders ? String.format("aws-secrets-manager://test?%suseDefaultCredentialsProvider=%s",
+                region, isUseDefaultCredentials())
+                : String.format("aws-secrets-manager://test?%soperation=%s&useDefaultCredentialsProvider=%s",
+                        region, operation, isUseDefaultCredentials());
+
+        Exchange ex = producerTemplate.send(url,
                 e -> {
                     e.getIn().setHeaders(headers);
                     e.getIn().setBody(resultBody);
@@ -121,7 +127,7 @@ public class AwsSecretsManagerResource extends BaseAws2Resource {
         case describeSecret:
             DescribeSecretResponse response = ex.getIn().getBody(DescribeSecretResponse.class);
             result = CollectionHelper.mapOf("sdkHttpSuccessful", response.sdkHttpResponse().isSuccessful(),
-                    "name", response.name());
+                    "name", response.name(), "description", response.description());
             break;
         case getSecret:
             result = ex.getIn().getBody(String.class);

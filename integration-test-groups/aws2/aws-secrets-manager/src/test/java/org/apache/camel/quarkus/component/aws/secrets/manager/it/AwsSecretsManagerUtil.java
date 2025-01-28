@@ -65,10 +65,11 @@ class AwsSecretsManagerUtil {
                 .body(is("true"));
     }
 
-    static Map<String, Boolean> listSecrets() {
+    static Map<String, Boolean> listSecrets(Integer maxResults) {
         return RestAssured.given()
                 .contentType(ContentType.JSON)
-                .body(Collections.emptyMap())
+                .body(maxResults == null ? Collections.emptyMap()
+                        : Collections.singletonMap(SecretsManagerConstants.MAX_RESULTS, maxResults))
                 .post("/aws-secrets-manager/operation/" + SecretsManagerOperations.listSecrets)
                 .then()
                 .statusCode(201)
