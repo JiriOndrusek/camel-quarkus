@@ -16,9 +16,7 @@
  */
 package org.apache.camel.quarkus.component.azure.key.vault.it;
 
-import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.spi.PropertiesComponent;
 
@@ -38,13 +36,10 @@ public class AzureKeyVaultRoutes extends RouteBuilder {
                 .to(azureKeyVault("purgeDeletedSecret"));
 
         from("direct:propertyPlaceholder")
-                .process(new Processor() {
-                    @Override
-                    public void process(Exchange exchange) throws Exception {
-                        Message message = exchange.getMessage();
-                        PropertiesComponent component = exchange.getContext().getPropertiesComponent();
-                        component.resolveProperty("azure:camel-quarkus-secret").ifPresent(message::setBody);
-                    }
+                .process(exchange -> {
+                    Message message = exchange.getMessage();
+                    PropertiesComponent component = exchange.getContext().getPropertiesComponent();
+                    component.resolveProperty("azure:camel-quarkus-secret").ifPresent(message::setBody);
                 });
     }
 
