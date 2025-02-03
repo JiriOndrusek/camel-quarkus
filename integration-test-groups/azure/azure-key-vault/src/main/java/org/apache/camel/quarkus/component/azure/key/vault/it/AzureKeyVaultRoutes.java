@@ -24,16 +24,16 @@ public class AzureKeyVaultRoutes extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         from("direct:createSecret")
-                .to(azureKeyVault("createSecret"));
+                .to(azureKeyVault("createSecret", true));
 
         from("direct:getSecret")
-                .to(azureKeyVault("getSecret"));
+                .to(azureKeyVault("getSecret", false));
 
         from("direct:deleteSecret")
-                .to(azureKeyVault("deleteSecret"));
+                .to(azureKeyVault("deleteSecret", true));
 
         from("direct:purgeDeletedSecret")
-                .to(azureKeyVault("purgeDeletedSecret"));
+                .to(azureKeyVault("purgeDeletedSecret", false));
 
         from("direct:propertyPlaceholder")
                 .process(exchange -> {
@@ -43,11 +43,16 @@ public class AzureKeyVaultRoutes extends RouteBuilder {
                 });
     }
 
-    private String azureKeyVault(String operation) {
-        return "azure-key-vault://{{camel.vault.azure.vaultName}}" +
+    private String azureKeyVault(String operation, boolean useIdentity) {
+        StringBuilder sb = new StringBuilder("azure-key-vault://{{camel.vault.azure.vaultName}}" +
                 "?clientId=RAW({{camel.vault.azure.clientId}})" +
                 "&clientSecret=RAW({{camel.vault.azure.clientSecret}})" +
                 "&tenantId=RAW({{camel.vault.azure.tenantId}})" +
-                "&operation=" + operation;
+                "&operation=" + operation);
+
+        if (useIdentity) {
+            sb.append("&credentialType=AZURE_IDENTITY");
+        }
+        return sb.toString();
     }
 }
