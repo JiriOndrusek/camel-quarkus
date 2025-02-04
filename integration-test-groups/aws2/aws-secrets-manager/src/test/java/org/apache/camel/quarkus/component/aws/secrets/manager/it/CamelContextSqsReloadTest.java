@@ -16,9 +16,6 @@
  */
 package org.apache.camel.quarkus.component.aws.secrets.manager.it;
 
-import java.util.Collections;
-import java.util.concurrent.TimeUnit;
-
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
@@ -26,19 +23,49 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.component.aws.secretsmanager.SecretsManagerConstants;
 import org.apache.camel.component.aws.secretsmanager.SecretsManagerOperations;
+import org.apache.camel.quarkus.test.support.aws2.Aws2Client;
 import org.apache.camel.quarkus.test.support.aws2.Aws2TestResource;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
+import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
+import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.model.MessageAttributeValue;
+import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequest;
+import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequestEntry;
+import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
+import software.amazon.awssdk.services.sqs.model.SendMessageResponse;
+
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.is;
 
 @QuarkusTest
 @QuarkusTestResource(Aws2TestResource.class)
-@TestProfile(ContextReloadTestProfile.class)
-// disabled on Localstack due to https://docs.localstack.cloud/references/coverage/coverage_cloudtrail/#lookupevents
-//@EnabledIf(MockBackendDisabled.class)
-public class CamelContextRefreshOnSecretRefreshTest {
+@TestProfile(ContextSqsReloadTestProfile.class)
+public class CamelContextSqsReloadTest {
+
+    @Aws2Client(LocalStackContainer.Service.SQS)
+    SqsClient sqsClient;
+
+    private static String eventMsg(String secretId) {
+        return "{\n" +
+                "  \"detail\": {\n" +
+                "    \"eventSource\": \"secretsmanager.amazonaws.com\",\n" +
+                "    \"eventName\" : \"PutSecretValue\",\n" +
+                "    \"requestParameters\" : {\n" +
+                "      \"secretId\" : \"" + secretId +"\"\n" +
+                "    },\n" +
+                "   \"eventTime\" : \"" + Instant.now() + "\"\n" +
+                "  }\n" +
+                "}";
+    }
+
     @Test
     public void testCamelContextReloadOnSecretRefresh() {
         String secretArn = null;
@@ -55,6 +82,18 @@ public class CamelContextRefreshOnSecretRefreshTest {
                     .then()
                     .statusCode(201)
                     .body(is("true"));
+
+            //trigger context reload
+            SendMessageRequest.Builder request = SendMessageRequest.builder().queueUrl(ConfigProvider.getConfig().getValue("camel.vault.aws.sqsQueueUrl", String.class));
+
+//            MessageAttributeValue.Builder mav = MessageAttributeValue.builder();
+//            mav.dataType("String");
+//            mav.stringValue("test_value");
+//            request.messageAttributes(Map.of("test_key", mav.build()));
+            request.messageBody(eventMsg(secretArn));
+
+            SendMessageResponse response = sqsClient.sendMessage(request.build());
+
             Awaitility.await().pollInterval(5, TimeUnit.SECONDS).atMost(5, TimeUnit.MINUTES).untilAsserted(
                     () -> {
                         RestAssured.get("/aws-secrets-manager/context/reload")
