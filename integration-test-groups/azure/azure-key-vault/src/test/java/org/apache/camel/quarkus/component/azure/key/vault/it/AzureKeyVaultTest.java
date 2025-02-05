@@ -16,35 +16,27 @@
  */
 package org.apache.camel.quarkus.component.azure.key.vault.it;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
-import com.azure.messaging.eventhubs.EventData;
-import com.azure.messaging.eventhubs.EventHubClientBuilder;
-import com.azure.messaging.eventhubs.EventHubConsumerAsyncClient;
-import com.azure.messaging.eventhubs.EventHubProducerClient;
-import com.azure.messaging.eventhubs.models.EventPosition;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.restassured.RestAssured;
-import org.hamcrest.CoreMatchers;
 import org.jboss.logging.Logger;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 import static org.hamcrest.Matchers.is;
 
 // Azure Key Vault is not supported by Azurite https://github.com/Azure/Azurite/issues/619
-@EnabledIfEnvironmentVariable(named = "AZURE_CQ_TENANT_ID", matches = ".+")
-@EnabledIfEnvironmentVariable(named = "AZURE_CQ_CLIENT_ID", matches = ".+")
-@EnabledIfEnvironmentVariable(named = "AZURE_CQ_CLIENT_SECRET", matches = ".+")
-@EnabledIfEnvironmentVariable(named = "AZURE_CQ_VAULT_NAME", matches = ".+")
-@TestProfile(ContextReloadTestProfile.class)
+@EnabledIfEnvironmentVariable(named = "AZURE_TENANT_ID", matches = ".+")
+@EnabledIfEnvironmentVariable(named = "AZURE_CLIENT_ID", matches = ".+")
+@EnabledIfEnvironmentVariable(named = "AZURE_CLIENT_SECRET", matches = ".+")
+@EnabledIfEnvironmentVariable(named = "AZURE_VAULT_NAME", matches = ".+")
+@TestProfile(AzureKeyVaultProfile.class)
 @QuarkusTest
 class AzureKeyVaultTest {
 
@@ -57,6 +49,22 @@ class AzureKeyVaultTest {
                 "  \"subject\": \"" + SECRET_NAME_FOR_REFRESH + "-.*\",\n" +
                 "  \"eventType\": \"Microsoft.KeyVault.SecretNewVersionCreated\"\n" +
                 "}]";
+    }
+
+    @BeforeEach
+    public void beforeAll() {
+        RestAssured.given()
+                .post("/azure-key-vault/secret/routes/start")
+                .then()
+                .statusCode(204);
+    }
+
+    @AfterEach
+    public void afterAll() {
+        RestAssured.given()
+                .post("/azure-key-vault/secret/routes/stop")
+                .then()
+                .statusCode(204);
     }
 
     @ParameterizedTest
@@ -81,7 +89,7 @@ class AzureKeyVaultTest {
                     .statusCode(200)
                     .body(is(secret));
         } finally {
-            deleteSecretImmediately(secretName, useIdentity);
+            AzureKeyVaultUtil.deleteSecretImmediately(secretName, useIdentity);
         }
     }
 
@@ -104,7 +112,7 @@ class AzureKeyVaultTest {
             tryToDeleteSecret = false;
         } finally {
             if (tryToDeleteSecret) {
-                deleteSecretImmediately(secretName, false);
+                AzureKeyVaultUtil.deleteSecretImmediately(secretName);
             }
         }
     }
@@ -130,98 +138,7 @@ class AzureKeyVaultTest {
                     .statusCode(200)
                     .body(is(secret));
         } finally {
-            deleteSecretImmediately(secretName, false);
+            AzureKeyVaultUtil.deleteSecretImmediately(secretName);
         }
-    }
-
-    @EnabledIfEnvironmentVariable(named = "AZURE_STORAGE_ACCOUNT_KEY", matches = ".+")
-    @EnabledIfEnvironmentVariable(named = AZURE_VAULT_EVENT_HUBS_CONNECTION_STRING, matches = ".+")
-    @Test
-    void contextRefresh() {
-        String secretName = SECRET_NAME_FOR_REFRESH;
-        String secretValue = "Hello Camel Quarkus Azure Key Vault From Refresh";
-        try {
-            // Create secret
-            RestAssured.given()
-                    .body(secretValue)
-                    .post("/azure-key-vault/secret/false/{secretName}", secretName)
-                    .then()
-                    .statusCode(200)
-                    .body(is(secretName));
-
-            // Retrieve secret
-            RestAssured.given()
-                    .get("/azure-key-vault/secret/false/{secretName}", secretName)
-                    .then()
-                    .statusCode(200);
-
-            //force reload by sending a msg
-            try (EventHubProducerClient client = new EventHubClientBuilder()
-                    .connectionString(System.getenv(AZURE_VAULT_EVENT_HUBS_CONNECTION_STRING))
-                    .buildProducerClient()) {
-
-                EventData eventData = new EventData(generateRefreshEvent(secretName).getBytes());
-                List<EventData> finalEventData = new LinkedList<>();
-                finalEventData.add(eventData);
-                client.send(finalEventData);
-            } catch (Exception e) {
-                LOG.info("Failed to send a refresh message", e);
-            }
-
-            //await context reload
-            Awaitility.await().pollInterval(10, TimeUnit.SECONDS).atMost(1, TimeUnit.MINUTES).untilAsserted(
-                    () -> {
-                        RestAssured.get("/azure-key-vault/context/reload")
-                                .then()
-                                .statusCode(200)
-                                .body(CoreMatchers.is("true"));
-                    });
-        } finally {
-
-            //move cursor of events to ignore old ones (old events are deleted after 1 hour)
-            try {
-                String connectionString = System.getenv(AZURE_VAULT_EVENT_HUBS_CONNECTION_STRING);
-                String consumerGroup = EventHubClientBuilder.DEFAULT_CONSUMER_GROUP_NAME;
-
-                try (EventHubConsumerAsyncClient consumer = new EventHubClientBuilder()
-                        .connectionString(connectionString)
-                        .consumerGroup(consumerGroup)
-                        .buildAsyncConsumerClient()) {
-
-                    // Move consumer to the latest position, skipping old messages
-                    consumer.receiveFromPartition("0", EventPosition.latest())
-                            .subscribe(event -> {
-                                System.out.println("Processing new event: " + event.toString());
-                            }, error -> {
-                                System.err.println("Error receiving events: " + error);
-                            });
-                }
-            } catch (Exception e) {
-                LOG.info("Failed to clear event hub.", e);
-            }
-
-            deleteSecretImmediately(secretName, false);
-        }
-    }
-
-    private static void deleteSecretImmediately(String secretName, boolean useIdentity) {
-        // Delete secret
-        RestAssured.given()
-                .delete("/azure-key-vault/secret/" + useIdentity + "/{secretName}", secretName)
-                .then()
-                .statusCode(200);
-
-        // Purge secret
-        RestAssured.given()
-                .delete("/azure-key-vault/secret/" + useIdentity + "/{secretName}/purge", secretName)
-                .then()
-                .statusCode(200);
-
-        // Confirm deletion
-        RestAssured.given()
-                .queryParam("identity", useIdentity)
-                .get("/azure-key-vault/secret/" + useIdentity + "/{secretName}", secretName)
-                .then()
-                .statusCode(500);
     }
 }
