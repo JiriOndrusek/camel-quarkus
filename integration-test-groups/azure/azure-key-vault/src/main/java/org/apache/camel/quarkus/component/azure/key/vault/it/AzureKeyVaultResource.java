@@ -31,6 +31,7 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.ResolveEndpointFailedException;
 import org.apache.camel.component.azure.key.vault.KeyVaultConstants;
@@ -42,10 +43,30 @@ public class AzureKeyVaultResource {
     @Inject
     ProducerTemplate producerTemplate;
 
+    @Inject
+    CamelContext camelContext;
+
     static final AtomicBoolean contextReloaded = new AtomicBoolean(false);
 
     void onReload(@Observes CamelContextReloadedEvent event) {
         contextReloaded.set(true);
+    }
+
+    @Path("/secret/routes/{command}")
+    @POST
+    public void startRoutes(@PathParam("command") String cmd) throws Exception {
+        if ("start".equals(cmd)) {
+            camelContext.getRouteController().startRoute("createSecret");
+            camelContext.getRouteController().startRoute("getSecret");
+            camelContext.getRouteController().startRoute("deleteSecret");
+            camelContext.getRouteController().startRoute("purgeDeletedSecret");
+        }
+        if ("stop".equals(cmd)) {
+            camelContext.getRouteController().stopRoute("createSecret");
+            camelContext.getRouteController().stopRoute("getSecret");
+            camelContext.getRouteController().stopRoute("deleteSecret");
+            camelContext.getRouteController().stopRoute("purgeDeletedSecret");
+        }
     }
 
     @Path("/secret/{identity}/{secretName}")

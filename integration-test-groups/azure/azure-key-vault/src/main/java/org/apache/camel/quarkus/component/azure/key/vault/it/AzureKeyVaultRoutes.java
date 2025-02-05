@@ -24,15 +24,23 @@ public class AzureKeyVaultRoutes extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         from("direct:createSecret")
+                .autoStartup(false)
+                .id("createSecret")
                 .to(azureKeyVault("createSecret", false));
 
         from("direct:getSecret")
+                .autoStartup(false)
+                .id("getSecret")
                 .to(azureKeyVault("getSecret", false));
 
         from("direct:deleteSecret")
+                .autoStartup(false)
+                .id("deleteSecret")
                 .to(azureKeyVault("deleteSecret", false));
 
         from("direct:purgeDeletedSecret")
+                .autoStartup(false)
+                .id("purgeDeletedSecret")
                 .to(azureKeyVault("purgeDeletedSecret", false));
 
         from("direct:createSecretIdentity")
@@ -62,9 +70,9 @@ public class AzureKeyVaultRoutes extends RouteBuilder {
         if (useIdentity) {
             sb.append("&credentialType=AZURE_IDENTITY");
         } else {
-            sb.append("&clientId=RAW({{camel.vault.azure.clientId}})" +
-                    "&clientSecret=RAW({{camel.vault.azure.clientSecret}})" +
-                    "&tenantId=RAW({{camel.vault.azure.tenantId}})");
+            sb.append("&clientId=").append(System.getenv("AZURE_CLIENT_ID"))
+                    .append("&clientSecret=").append(System.getenv("AZURE_CLIENT_SECRET"))
+                    .append("&tenantId=").append(System.getenv("AZURE_TENANT_ID"));
         }
         return sb.toString();
     }
