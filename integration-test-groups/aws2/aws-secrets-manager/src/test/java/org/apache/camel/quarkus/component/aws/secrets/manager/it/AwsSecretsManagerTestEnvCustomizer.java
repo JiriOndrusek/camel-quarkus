@@ -63,7 +63,7 @@ public class AwsSecretsManagerTestEnvCustomizer implements Aws2TestEnvCustomizer
         final String queueName = "cq-secret-manager-sqs-reload-" + RandomStringUtils.randomAlphanumeric(49).toLowerCase(Locale.ROOT);
 
         //configure endpoint override for properties function
-        envContext.property("camel.vault.aws.override-endpoint", envContext.getProperties().get("camel.component.aws-secrets-manager.override-endpoint"));
+//        envContext.property("camel.vault.aws.override-endpoint", envContext.getProperties().get("camel.component.aws-secrets-manager.override-endpoint"));
         envContext.property("camel.vault.aws.uri-endpoint-override", envContext.getProperties().get("camel.component.aws-secrets-manager.uri-endpoint-override"));
 
         final SqsClient sqsClient = envContext.client(Service.SQS, SqsClient::builder);
