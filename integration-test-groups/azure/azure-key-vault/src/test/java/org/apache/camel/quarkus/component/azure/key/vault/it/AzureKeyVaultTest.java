@@ -33,15 +33,17 @@ import org.hamcrest.CoreMatchers;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 import static org.hamcrest.Matchers.is;
 
 // Azure Key Vault is not supported by Azurite https://github.com/Azure/Azurite/issues/619
-@EnabledIfEnvironmentVariable(named = "AZURE_TENANT_ID", matches = ".+")
-@EnabledIfEnvironmentVariable(named = "AZURE_CLIENT_ID", matches = ".+")
-@EnabledIfEnvironmentVariable(named = "AZURE_CLIENT_SECRET", matches = ".+")
-@EnabledIfEnvironmentVariable(named = "AZURE_VAULT_NAME", matches = ".+")
+@EnabledIfEnvironmentVariable(named = "AZURE_CQ_TENANT_ID", matches = ".+")
+@EnabledIfEnvironmentVariable(named = "AZURE_CQ_CLIENT_ID", matches = ".+")
+@EnabledIfEnvironmentVariable(named = "AZURE_CQ_CLIENT_SECRET", matches = ".+")
+@EnabledIfEnvironmentVariable(named = "AZURE_CQ_VAULT_NAME", matches = ".+")
 @TestProfile(ContextReloadTestProfile.class)
 @QuarkusTest
 class AzureKeyVaultTest {
@@ -57,28 +59,53 @@ class AzureKeyVaultTest {
                 "}]";
     }
 
-    @Test
-    void secretCreateRetrieveDeletePurge() {
-        String secretName = UUID.randomUUID().toString();
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void secretCreateRetrieveDeletePurge(boolean useIdentity) {
+        String secretName = "cq-create-" + useIdentity + "-" + UUID.randomUUID().toString();
         String secret = "Hello Camel Quarkus Azure Key Vault";
 
         try {
             // Create secret
             RestAssured.given()
                     .body(secret)
-                    .post("/azure-key-vault/secret/{secretName}", secretName)
+                    .post("/azure-key-vault/secret/" + useIdentity + "/{secretName}", secretName)
                     .then()
                     .statusCode(200)
                     .body(is(secretName));
 
             // Retrieve secret
             RestAssured.given()
-                    .get("/azure-key-vault/secret/{secretName}", secretName)
+                    .get("/azure-key-vault/secret/" + useIdentity + "/{secretName}", secretName)
                     .then()
                     .statusCode(200)
                     .body(is(secret));
         } finally {
-            deleteSecretImmediately(secretName);
+            deleteSecretImmediately(secretName, useIdentity);
+        }
+    }
+
+    @Test
+    void wrongClientTest() {
+        String secretName = "cq-create-with-identity" + UUID.randomUUID().toString();
+        String secret = "Hello Camel Quarkus Azure Key Vault";
+        boolean tryToDeleteSecret = true;
+        try {
+            // Create secret
+            RestAssured.given()
+                    .body(secret)
+                    .queryParam("suffix", "Wrong")
+                    .post("/azure-key-vault/secret/wrongClient/{secretName}", secretName)
+                    .then()
+                    .statusCode(500)
+                    .body(is("ResolveEndpointFailedException"));
+
+            //don't delete secret as it was not created
+            tryToDeleteSecret = false;
+        } finally {
+            if (tryToDeleteSecret) {
+                deleteSecretImmediately(secretName, false);
+            }
         }
     }
 
@@ -91,19 +118,19 @@ class AzureKeyVaultTest {
             // Create secret
             RestAssured.given()
                     .body(secret)
-                    .post("/azure-key-vault/secret/{secretName}", secretName)
+                    .post("/azure-key-vault/secret/true/{secretName}", secretName)
                     .then()
                     .statusCode(200)
                     .body(is(secretName));
 
             // Retrieve secret
             RestAssured.given()
-                    .get("/azure-key-vault/secret/from/placeholder")
+                    .get("/azure-key-vault/secret/fromPlaceholder")
                     .then()
                     .statusCode(200)
                     .body(is(secret));
         } finally {
-            deleteSecretImmediately(secretName);
+            deleteSecretImmediately(secretName, false);
         }
     }
 
@@ -117,14 +144,14 @@ class AzureKeyVaultTest {
             // Create secret
             RestAssured.given()
                     .body(secretValue)
-                    .post("/azure-key-vault/secret/{secretName}", secretName)
+                    .post("/azure-key-vault/secret/false/{secretName}", secretName)
                     .then()
                     .statusCode(200)
                     .body(is(secretName));
 
             // Retrieve secret
             RestAssured.given()
-                    .get("/azure-key-vault/secret/{secretName}", secretName)
+                    .get("/azure-key-vault/secret/false/{secretName}", secretName)
                     .then()
                     .statusCode(200);
 
@@ -173,26 +200,27 @@ class AzureKeyVaultTest {
                 LOG.info("Failed to clear event hub.", e);
             }
 
-            deleteSecretImmediately(secretName);
+            deleteSecretImmediately(secretName, false);
         }
     }
 
-    private static void deleteSecretImmediately(String secretName) {
+    private static void deleteSecretImmediately(String secretName, boolean useIdentity) {
         // Delete secret
         RestAssured.given()
-                .delete("/azure-key-vault/secret/{secretName}", secretName)
+                .delete("/azure-key-vault/secret/" + useIdentity + "/{secretName}", secretName)
                 .then()
                 .statusCode(200);
 
         // Purge secret
         RestAssured.given()
-                .delete("/azure-key-vault/secret/{secretName}/purge", secretName)
+                .delete("/azure-key-vault/secret/" + useIdentity + "/{secretName}/purge", secretName)
                 .then()
                 .statusCode(200);
 
         // Confirm deletion
         RestAssured.given()
-                .get("/azure-key-vault/secret/{secretName}", secretName)
+                .queryParam("identity", useIdentity)
+                .get("/azure-key-vault/secret/" + useIdentity + "/{secretName}", secretName)
                 .then()
                 .statusCode(500);
     }
