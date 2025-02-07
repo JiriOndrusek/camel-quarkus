@@ -4,7 +4,7 @@ import java.util.Map;
 
 import io.quarkus.test.junit.QuarkusTestProfile;
 
-public class AzureKeyVaultProfile implements QuarkusTestProfile {
+public class AzureKeyVaultTestProfile implements QuarkusTestProfile {
     @Override
     public Map<String, String> getConfigOverrides() {
         //properties have to be set via profile to not be used by different azure-* test in grouped module

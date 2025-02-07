@@ -16,8 +16,7 @@
  */
 package org.apache.camel.quarkus.component.azure.key.vault.it;
 
-import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
+import io.quarkus.test.junit.QuarkusIntegrationTest;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 // Azure Key Vault is not supported by Azurite https://github.com/Azure/Azurite/issues/619
@@ -25,7 +24,7 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 @EnabledIfEnvironmentVariable(named = "AZURE_CLIENT_ID", matches = ".+")
 @EnabledIfEnvironmentVariable(named = "AZURE_CLIENT_SECRET", matches = ".+")
 @EnabledIfEnvironmentVariable(named = "AZURE_VAULT_NAME", matches = ".+")
-@TestProfile(AzureKeyVaultContextRefreshIdentityTestProfile.class)
-@QuarkusTest
-class AzureKeyVaultContextRefreshIdentityTest extends AbstractAzureKeyVaultContextRefreshTest {
+@QuarkusIntegrationTest
+class AzureKeyVaultContextReloadIT extends AzureKeyVaultContextReloadTest {
+
 }

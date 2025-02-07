@@ -20,12 +20,22 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
+/**
+ * Test for key vault create/delete/purge with the `credentialType=AZURE_IDENTITY`
+ * </br>
+ * Requires own test profile, which does not contain any credentials.
+ */
 // Azure Key Vault is not supported by Azurite https://github.com/Azure/Azurite/issues/619
 @EnabledIfEnvironmentVariable(named = "AZURE_TENANT_ID", matches = ".+")
 @EnabledIfEnvironmentVariable(named = "AZURE_CLIENT_ID", matches = ".+")
 @EnabledIfEnvironmentVariable(named = "AZURE_CLIENT_SECRET", matches = ".+")
 @EnabledIfEnvironmentVariable(named = "AZURE_VAULT_NAME", matches = ".+")
-@TestProfile(AzureKeyVaultContextRefreshTestProfile.class)
+@TestProfile(AzureKeyVaultWithIdentityTestProfile.class)
 @QuarkusTest
-class AzureKeyVaultContextRefreshTest extends AbstractAzureKeyVaultContextRefreshTest {
+class AzureKeyVaultWithIdentityTest extends AbstractAzureKeyVaultTest {
+
+    public AzureKeyVaultWithIdentityTest() {
+        super(true);
+    }
+
 }

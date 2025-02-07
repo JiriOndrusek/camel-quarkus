@@ -26,25 +26,18 @@ import com.azure.messaging.eventhubs.EventHubClientBuilder;
 import com.azure.messaging.eventhubs.EventHubConsumerAsyncClient;
 import com.azure.messaging.eventhubs.EventHubProducerClient;
 import com.azure.messaging.eventhubs.models.EventPosition;
-import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import org.hamcrest.CoreMatchers;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 import static org.hamcrest.Matchers.is;
 
 // Azure Key Vault is not supported by Azurite https://github.com/Azure/Azurite/issues/619
-@EnabledIfEnvironmentVariable(named = "AZURE_TENANT_ID", matches = ".+")
-@EnabledIfEnvironmentVariable(named = "AZURE_CLIENT_ID", matches = ".+")
-@EnabledIfEnvironmentVariable(named = "AZURE_CLIENT_SECRET", matches = ".+")
-@EnabledIfEnvironmentVariable(named = "AZURE_VAULT_NAME", matches = ".+")
-@QuarkusTest
-class AbstractAzureKeyVaultContextRefreshTest {
+abstract class AbstractAzureKeyVaultContextReloadTest {
 
-    private static final Logger LOG = Logger.getLogger(AbstractAzureKeyVaultContextRefreshTest.class);
+    private static final Logger LOG = Logger.getLogger(AbstractAzureKeyVaultContextReloadTest.class);
     private static final String SECRET_NAME_FOR_REFRESH = "cq-secret-context-refresh-" + UUID.randomUUID();
     private static final String AZURE_VAULT_EVENT_HUBS_CONNECTION_STRING = "AZURE_VAULT_EVENT_HUBS_CONNECTION_STRING";
 
@@ -55,10 +48,8 @@ class AbstractAzureKeyVaultContextRefreshTest {
                 "}]";
     }
 
-    @EnabledIfEnvironmentVariable(named = "AZURE_STORAGE_ACCOUNT_KEY", matches = ".+")
-    @EnabledIfEnvironmentVariable(named = AZURE_VAULT_EVENT_HUBS_CONNECTION_STRING, matches = ".+")
     @Test
-    void contextRefresh() {
+    void contextReload() {
         String secretName = SECRET_NAME_FOR_REFRESH;
         String secretValue = "Hello Camel Quarkus Azure Key Vault From Refresh";
         try {
