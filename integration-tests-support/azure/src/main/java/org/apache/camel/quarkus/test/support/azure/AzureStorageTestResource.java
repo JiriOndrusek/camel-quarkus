@@ -17,8 +17,11 @@
 
 package org.apache.camel.quarkus.test.support.azure;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -46,43 +49,9 @@ public class AzureStorageTestResource implements QuarkusTestResourceLifecycleMan
             .getValue("eventhubs-emulator.container.image", String.class);
     private static final int EVENTHUBS_EMULATOR_PORT = 5672;
     private Map<String, String> initArgs = new LinkedHashMap<>();
-    private GenericContainer<?> container;
+    private GenericContainer<?> azuriteContainer;
     private GenericContainer<?> eventHubsEmulatorContainer;
     private Network network = Network.newNetwork();
-
-    public enum AzuriteService {
-        blob(10000),
-        queue(10001),
-        datalake(-1, "dfs"); // Datalake not supported by Azurite https://github.com/Azure/Azurite/issues/553
-
-        private final int azuritePort;
-        private final String azureServiceCode;
-
-        AzuriteService(int port) {
-            this(port, null);
-        }
-
-        AzuriteService(int port, String azureServiceCode) {
-            this.azuritePort = port;
-            this.azureServiceCode = azureServiceCode;
-        }
-
-        public static Integer[] getAzuritePorts() {
-            return Stream.of(values())
-                    .mapToInt(AzuriteService::getAzuritePort)
-                    .filter(p -> p >= 0)
-                    .boxed()
-                    .toArray(Integer[]::new);
-        }
-
-        public int getAzuritePort() {
-            return azuritePort;
-        }
-
-        public String getAzureServiceCode() {
-            return azureServiceCode == null ? name() : azureServiceCode;
-        }
-    }
 
     @Override
     public void init(Map<String, String> initArgs) {
@@ -102,33 +71,59 @@ public class AzureStorageTestResource implements QuarkusTestResourceLifecycleMan
         final String azureStorageAccountName = config
                 .getValue("azure.storage.account-name", String.class);
         final boolean startMockBackend = MockBackendUtils.startMockBackend(false);
+
+        ServiceLoader<AzureTestEnvCustomizer> loader = ServiceLoader.load(AzureTestEnvCustomizer.class);
+        List<AzureTestEnvCustomizer> customizers = new ArrayList<>();
+        for (AzureTestEnvCustomizer customizer : loader) {
+            LOGGER.info("Loaded AzureTestEnvCustomizer " + customizer.getClass().getName());
+            customizers.add(customizer);
+        }
+
         final Map<String, String> result = new LinkedHashMap<>();
         if (startMockBackend && !realCredentialsProvided) {
             MockBackendUtils.logMockBackendUsed();
+
+            final List<AzureService> services = customizers.stream()
+                    .map(AzureTestEnvCustomizer::services)
+                    .flatMap(Stream::of)
+                    .distinct()
+                    .toList();
+
             try {
-                container = new GenericContainer<>(AZURITE_IMAGE)
-                        .withNetworkAliases("azurite")
-                        .withNetwork(network)
-                        .withExposedPorts(AzuriteService.getAzuritePorts())
-                        .withLogConsumer(new Slf4jLogConsumer(LOGGER))
-                        .waitingFor(Wait.forListeningPort());
-                container.start();
+                //   ---------------- azurite container ------------------------------
+                List<AzureService> azuriteServices = services.stream()
+                        .filter(s -> s == AzureService.blob || s == AzureService.queue || s == AzureService.eventhubs)
+                        .toList();
+                //gather exposed ports for azurite
+                Integer[] azuritePorts = azuriteServices.stream()
+                        .map(AzureService::getAzuritePort)
+                        .toArray(Integer[]::new);
 
-                result.put("azure.blob.container.name", azureBlobContainername);
-                Stream.of(AzuriteService.values())
-                        .forEach(s -> {
-                            result.put(
-                                    "azure." + s.name() + ".service.url",
-                                    "http://" + container.getHost() + ":"
-                                            + (s.azuritePort >= 0 ? container.getMappedPort(s.azuritePort) : s.azuritePort)
-                                            + "/"
-                                            + azureStorageAccountName);
-                        });
 
-                String eventHubs = initArgs.get("eventHubs");
-                if (eventHubs != null && eventHubs.equals("true")) {
-                    result.put("azure.event.hubs.blob.container.name", azureBlobContainername);
+                if(!azuriteServices.isEmpty()) {
+                    azuriteContainer = new GenericContainer<>(AZURITE_IMAGE)
+                            .withNetworkAliases("azurite")
+                            .withNetwork(network)
+                            .withExposedPorts(azuritePorts)
+                            .withLogConsumer(new Slf4jLogConsumer(LOGGER))
+                            .waitingFor(Wait.forListeningPort());
+                    azuriteContainer.start();
 
+
+                    result.put("azure.blob.container.name", azureBlobContainername);
+                    azuriteServices
+                            .forEach(s -> {
+                                result.put(
+                                        "azure." + s.name() + ".service.url",
+                                        "http://" + azuriteContainer.getHost() + ":"
+                                                + (s.getAzuritePort() >= 0 ? azuriteContainer.getMappedPort(s.getAzuritePort()) : s.getAzuritePort())
+                                                + "/"
+                                                + azureStorageAccountName);
+                            });
+                }
+
+                //   ---------------- eventhub container ------------------------------
+                if (services.contains(AzureService.eventhubs)) {
                     eventHubsEmulatorContainer = new GenericContainer<>(
                             EVENTHUBS_EMULATOR_IMAGE)
                             .withNetwork(network)
@@ -151,8 +146,13 @@ public class AzureStorageTestResource implements QuarkusTestResourceLifecycleMan
                             .waitingFor(Wait.forLogMessage(".*Emulator Service is Successfully Up.*", 1));
                     eventHubsEmulatorContainer.start();
 
+                    //   ---------------- servicebus container ------------------------------
+                    if (services.contains(AzureService.servicebus)) {
+                        //TODO
+                    }
+
                     String connectionString = "Endpoint=sb://%s;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;EntityPath=eh1"
-                            .formatted(container.getHost());
+                            .formatted(azuriteContainer.getHost());
                     result.put("azure.event.hubs.connection.string", connectionString);
                 }
             } catch (Exception e) {
@@ -163,14 +163,15 @@ public class AzureStorageTestResource implements QuarkusTestResourceLifecycleMan
                 throw new IllegalStateException(
                         "Set AZURE_STORAGE_ACCOUNT_NAME and AZURE_STORAGE_ACCOUNT_KEY env vars if you set CAMEL_QUARKUS_START_MOCK_BACKEND=false");
             }
-            MockBackendUtils.logRealBackendUsed();
-            result.put("azure.blob.container.name", azureBlobContainername);
-            Stream.of(AzuriteService.values())
-                    .forEach(s -> {
-                        result.put(
-                                "azure." + s.name() + ".service.url",
-                                "https://" + realAzureStorageAccountName + "." + s.getAzureServiceCode() + ".core.windows.net");
-                    });
+            //TODO
+//            MockBackendUtils.logRealBackendUsed();
+//            result.put("azure.blob.container.name", azureBlobContainername);
+//            Stream.of(AzuriteService.values())
+//                    .forEach(s -> {
+//                        result.put(
+//                                "azure." + s.name() + ".service.url",
+//                                "https://" + realAzureStorageAccountName + "." + s.getAzureServiceCode() + ".core.windows.net");
+//                    });
         }
         return result;
     }
@@ -182,8 +183,8 @@ public class AzureStorageTestResource implements QuarkusTestResourceLifecycleMan
                 eventHubsEmulatorContainer.stop();
             }
 
-            if (container != null) {
-                container.stop();
+            if (azuriteContainer != null) {
+                azuriteContainer.stop();
             }
 
             if (network != null) {

@@ -56,7 +56,7 @@ public class SmbRoute extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        from("smb:{{smb.host}}:{{smb.port}}/{{smb.share}}?username={{smb.username}}&password={{smb.password}}&path=/&repeatCount=1&searchPattern=*.txt&idempotent=true&idempotentRepository=#myRepo")
+        from("smb:{{smb.host}}:{{smb.port}}/{{smb.share}}?username={{smb.username}}&password={{smb.password}}&path=/&repeatCount=1&idempotent=true&idempotentRepository=#myRepo")
                 .to("mock:result");
 
         from("direct:send")
