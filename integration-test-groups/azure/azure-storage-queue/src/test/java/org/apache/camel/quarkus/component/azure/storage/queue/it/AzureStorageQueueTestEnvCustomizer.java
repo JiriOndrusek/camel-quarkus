@@ -14,21 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.azure.servicebus.it;
+package org.apache.camel.quarkus.component.azure.storage.queue.it;
 
-import org.apache.camel.quarkus.test.support.aws2.Aws2TestEnvContext;
-import org.apache.camel.quarkus.test.support.aws2.Aws2TestEnvCustomizer;
-import org.testcontainers.containers.localstack.LocalStackContainer.Service;
+import org.apache.camel.quarkus.test.support.azure.AzureCloudContext;
+import org.apache.camel.quarkus.test.support.azure.AzureService;
+import org.apache.camel.quarkus.test.support.azure.AzureTestEnvCustomizer;
 
-public class Aws2SesTestEnvCustomizer implements Aws2TestEnvCustomizer {
+public class AzureStorageQueueTestEnvCustomizer implements AzureTestEnvCustomizer {
 
-    @Override
-    public Service[] localstackServices() {
-        return new Service[] { Service.SES };
-    }
 
     @Override
-    public void customize(Aws2TestEnvContext envContext) {
+    public AzureService[] services(){
+        return new AzureService[] {AzureService.queue};
+    };
+
+    @Override
+    public void customize(AzureCloudContext azureCloudContext) {
 
     }
+
 }
