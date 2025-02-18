@@ -27,7 +27,7 @@ import java.util.Map;
 
 public class AzureCloudContext {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GoogleCloudContext.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AzureCloudContext.class);
 
     private final ArrayList<AutoCloseable> closeables = new ArrayList<>();
     private final Map<String, String> properties = new LinkedHashMap<>();
@@ -37,9 +37,9 @@ public class AzureCloudContext {
      * Add an {@link AutoCloseable} to be closed after running Google Cloud tests
      *
      * @param  closeable the {@link AutoCloseable} to add
-     * @return           this {@link GoogleCloudContext}
+     * @return           this {@link AzureCloudContext}
      */
-    public GoogleCloudContext closeable(AutoCloseable closeable) {
+    public AzureCloudContext closeable(AutoCloseable closeable) {
         closeables.add(closeable);
         return this;
     }
@@ -64,9 +64,9 @@ public class AzureCloudContext {
      *
      * @param  key
      * @param  value
-     * @return       this {@link GoogleCloudContext}
+     * @return       this {@link AzureCloudContext}
      */
-    public GoogleCloudContext property(String key, String value) {
+    public AzureCloudContext property(String key, String value) {
         properties.put(key, value);
         return this;
     }
