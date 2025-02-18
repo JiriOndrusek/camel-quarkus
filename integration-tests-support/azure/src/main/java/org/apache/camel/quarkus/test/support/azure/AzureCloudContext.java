@@ -33,6 +33,16 @@ public class AzureCloudContext {
     private final Map<String, String> properties = new LinkedHashMap<>();
     private boolean usingMockBackend;
 
+    public AzureCloudContext(AzureService[] azureServices, String accountName, String accountKey) {
+        //todo
+//        if(!isUsingMockBackend()) {
+        for (AzureService azureService : azureServices) {
+            properties.put("azurite." + azureService + ".account.name", accountName);
+            properties.put("azurite." + azureService + ".account.key", accountKey);
+        }
+//        }
+    }
+
     /**
      * Add an {@link AutoCloseable} to be closed after running Google Cloud tests
      *

@@ -18,6 +18,8 @@
 package org.apache.camel.quarkus.test.support.azure;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +55,8 @@ public class AzureStorageTestResource implements QuarkusTestResourceLifecycleMan
     private GenericContainer<?> eventHubsEmulatorContainer;
     private Network network = Network.newNetwork();
 
+    private AzureCloudContext azureCloudContext;
+
     @Override
     public void init(Map<String, String> initArgs) {
         this.initArgs = initArgs;
@@ -68,8 +72,6 @@ public class AzureStorageTestResource implements QuarkusTestResourceLifecycleMan
 
         final String azureBlobContainername = "camel-quarkus-" + UUID.randomUUID();
 
-        final String azureStorageAccountName = config
-                .getValue("azure.storage.account-name", String.class);
         final boolean startMockBackend = MockBackendUtils.startMockBackend(false);
 
         ServiceLoader<AzureTestEnvCustomizer> loader = ServiceLoader.load(AzureTestEnvCustomizer.class);
@@ -83,11 +85,16 @@ public class AzureStorageTestResource implements QuarkusTestResourceLifecycleMan
         if (startMockBackend && !realCredentialsProvided) {
             MockBackendUtils.logMockBackendUsed();
 
+            String accountName = "devstoreaccount1";
+            String accountKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
+
             final List<AzureService> services = customizers.stream()
                     .map(AzureTestEnvCustomizer::services)
                     .flatMap(Stream::of)
                     .distinct()
                     .toList();
+
+            azureCloudContext = new AzureCloudContext(services.toArray(new AzureService[0]), accountName, accountKey);
 
             try {
                 //   ---------------- azurite container ------------------------------
@@ -110,15 +117,15 @@ public class AzureStorageTestResource implements QuarkusTestResourceLifecycleMan
                     azuriteContainer.start();
 
 
-                    result.put("azure.blob.container.name", azureBlobContainername);
+                    azureCloudContext.property("azure.blob.container.name", azureBlobContainername);
                     azuriteServices
                             .forEach(s -> {
-                                result.put(
+                                azureCloudContext.property(
                                         "azure." + s.name() + ".service.url",
                                         "http://" + azuriteContainer.getHost() + ":"
                                                 + (s.getAzuritePort() >= 0 ? azuriteContainer.getMappedPort(s.getAzuritePort()) : s.getAzuritePort())
                                                 + "/"
-                                                + azureStorageAccountName);
+                                                + accountName);
                             });
                 }
 
@@ -158,6 +165,8 @@ public class AzureStorageTestResource implements QuarkusTestResourceLifecycleMan
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+
+
         } else {
             if (!startMockBackend && !realCredentialsProvided) {
                 throw new IllegalStateException(
@@ -173,7 +182,7 @@ public class AzureStorageTestResource implements QuarkusTestResourceLifecycleMan
 //                                "https://" + realAzureStorageAccountName + "." + s.getAzureServiceCode() + ".core.windows.net");
 //                    });
         }
-        return result;
+        return azureCloudContext.getProperties();
     }
 
     @Override
