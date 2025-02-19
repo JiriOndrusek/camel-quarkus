@@ -69,6 +69,23 @@ public class AzureCloudContext {
         }
     }
 
+
+    public <B extends AwsClientBuilder<B, C>, C extends SdkClient> C client(LocalStackContainer.Service service, Supplier<B> builderSupplier) {
+        B builder = ((AwsClientBuilder)builderSupplier.get()).credentialsProvider((AwsCredentialsProvider)(this.credentialsProvider == Aws2TestEnvContext.CredentialsProvider.defaultProvider ? DefaultCredentialsProvider.create() : StaticCredentialsProvider.create(AwsBasicCredentials.create(this.accessKey, this.secretKey))));
+        builder.region(Region.of(this.region));
+        if (this.localstack.isPresent()) {
+            ((AwsClientBuilder)builder.endpointOverride(((LocalStackContainer)this.localstack.get()).getEndpointOverride(service))).region(Region.of(this.region));
+        } else if (service == Service.IAM) {
+            builder.endpointOverride(URI.create("https://iam.amazonaws.com"));
+            builder.region(Region.of("us-east-1"));
+        }
+
+        C client = (C)(builder.build());
+        this.closeables.add(client);
+        return client;
+    }
+
+
     /**
      * Add a key-value pair to the system properties seen by google cloud tests
      *

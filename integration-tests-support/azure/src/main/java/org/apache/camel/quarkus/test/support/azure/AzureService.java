@@ -6,6 +6,7 @@ public enum AzureService {
         blob(10000),
         queue(10001),
         datalake(-1, "dfs"),
+        keyVault(-1 ),
         eventhubs(blob.getAzuritePort()),
         servicebus(10002); // Datalake not supported by Azurite https://github.com/Azure/Azurite/issues/553
 
@@ -36,4 +37,6 @@ public enum AzureService {
         public String getAzureServiceCode() {
             return azureServiceCode == null ? name() : azureServiceCode;
         }
+
+
 }

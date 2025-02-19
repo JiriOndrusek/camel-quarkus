@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.azure.storage.queue.it;
+package org.apache.camel.quarkus.component.azure.key.vault.it;
 
 import org.apache.camel.quarkus.test.support.azure.AzureCloudContext;
 import org.apache.camel.quarkus.test.support.azure.AzureService;
 import org.apache.camel.quarkus.test.support.azure.AzureTestEnvCustomizer;
 
-public class AzureStorageQueueTestEnvCustomizer implements AzureTestEnvCustomizer {
+public class AzureKeyVaultTestEnvCustomizer implements AzureTestEnvCustomizer {
 
 
     @Override
     public AzureService[] services(){
-        return new AzureService[] {AzureService.queue};
+        return new AzureService[] {AzureService.keyVault};
     };
 
     @Override
