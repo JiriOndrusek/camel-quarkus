@@ -18,8 +18,6 @@
 package org.apache.camel.quarkus.test.support.azure;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,9 +64,10 @@ public class AzureStorageTestResource implements QuarkusTestResourceLifecycleMan
     public Map<String, String> start() {
         final SmallRyeConfig config = ConfigUtils.configBuilder(true, LaunchMode.NORMAL).build();
 
-        final String realAzureStorageAccountName = System.getenv("AZURE_STORAGE_ACCOUNT_NAME");
-        final boolean realCredentialsProvided = realAzureStorageAccountName != null
-                && System.getenv("AZURE_STORAGE_ACCOUNT_KEY") != null;
+        //        final String realAzureStorageAccountName = System.getenv("AZURE_STORAGE_ACCOUNT_NAME");
+        final boolean realCredentialsProvided = System.getenv("AZURE_TENANT_ID") != null &&
+                System.getenv("AZURE_CLIENT_ID") != null &&
+                System.getenv("AZURE_CLIENT_SECRET") != null;
 
         final String azureBlobContainername = "camel-quarkus-" + UUID.randomUUID();
 
@@ -81,18 +80,19 @@ public class AzureStorageTestResource implements QuarkusTestResourceLifecycleMan
             customizers.add(customizer);
         }
 
-        final Map<String, String> result = new LinkedHashMap<>();
+        final List<AzureService> services = customizers.stream()
+                .map(AzureTestEnvCustomizer::services)
+                .flatMap(Stream::of)
+                .distinct()
+                .toList();
+
+        //        final Map<String, String> result = new LinkedHashMap<>();
+
         if (startMockBackend && !realCredentialsProvided) {
             MockBackendUtils.logMockBackendUsed();
 
             String accountName = "devstoreaccount1";
             String accountKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
-
-            final List<AzureService> services = customizers.stream()
-                    .map(AzureTestEnvCustomizer::services)
-                    .flatMap(Stream::of)
-                    .distinct()
-                    .toList();
 
             azureCloudContext = new AzureCloudContext(services.toArray(new AzureService[0]), accountName, accountKey);
 
@@ -106,8 +106,7 @@ public class AzureStorageTestResource implements QuarkusTestResourceLifecycleMan
                         .map(AzureService::getAzuritePort)
                         .toArray(Integer[]::new);
 
-
-                if(!azuriteServices.isEmpty()) {
+                if (!azuriteServices.isEmpty()) {
                     azuriteContainer = new GenericContainer<>(AZURITE_IMAGE)
                             .withNetworkAliases("azurite")
                             .withNetwork(network)
@@ -116,14 +115,14 @@ public class AzureStorageTestResource implements QuarkusTestResourceLifecycleMan
                             .waitingFor(Wait.forListeningPort());
                     azuriteContainer.start();
 
-
                     azureCloudContext.property("azure.blob.container.name", azureBlobContainername);
                     azuriteServices
                             .forEach(s -> {
                                 azureCloudContext.property(
                                         "azure." + s.name() + ".service.url",
                                         "http://" + azuriteContainer.getHost() + ":"
-                                                + (s.getAzuritePort() >= 0 ? azuriteContainer.getMappedPort(s.getAzuritePort()) : s.getAzuritePort())
+                                                + (s.getAzuritePort() >= 0 ? azuriteContainer.getMappedPort(s.getAzuritePort())
+                                                        : s.getAzuritePort())
                                                 + "/"
                                                 + accountName);
                             });
@@ -160,29 +159,36 @@ public class AzureStorageTestResource implements QuarkusTestResourceLifecycleMan
 
                     String connectionString = "Endpoint=sb://%s;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;EntityPath=eh1"
                             .formatted(azuriteContainer.getHost());
-                    result.put("azure.event.hubs.connection.string", connectionString);
+                    azureCloudContext.property("azure.event.hubs.connection.string", connectionString);
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-
 
         } else {
             if (!startMockBackend && !realCredentialsProvided) {
                 throw new IllegalStateException(
                         "Set AZURE_STORAGE_ACCOUNT_NAME and AZURE_STORAGE_ACCOUNT_KEY env vars if you set CAMEL_QUARKUS_START_MOCK_BACKEND=false");
             }
+
+            //todo
+            azureCloudContext = new AzureCloudContext(services.toArray(new AzureService[0]), null, null);
+
             //TODO
-//            MockBackendUtils.logRealBackendUsed();
-//            result.put("azure.blob.container.name", azureBlobContainername);
-//            Stream.of(AzuriteService.values())
-//                    .forEach(s -> {
-//                        result.put(
-//                                "azure." + s.name() + ".service.url",
-//                                "https://" + realAzureStorageAccountName + "." + s.getAzureServiceCode() + ".core.windows.net");
-//                    });
+            //            MockBackendUtils.logRealBackendUsed();
+            //            result.put("azure.blob.container.name", azureBlobContainername);
+            //            Stream.of(AzuriteService.values())
+            //                    .forEach(s -> {
+            //                        result.put(
+            //                                "azure." + s.name() + ".service.url",
+            //                                "https://" + realAzureStorageAccountName + "." + s.getAzureServiceCode() + ".core.windows.net");
+            //                    });
         }
-        return azureCloudContext.getProperties();
+
+        customizers.forEach(customizer -> customizer.customize(azureCloudContext));
+
+        throw new RuntimeException("TODO emergency stop");
+        //        return azureCloudContext.getProperties();
     }
 
     @Override
@@ -198,6 +204,10 @@ public class AzureStorageTestResource implements QuarkusTestResourceLifecycleMan
 
             if (network != null) {
                 network.close();
+            }
+
+            if(azureCloudContext != null) {
+                azureCloudContext.close();
             }
         } catch (Exception e) {
             // ignored

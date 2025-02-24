@@ -431,6 +431,22 @@
                 <version>${unboundid-ldapsdk.version}</version>
                 <scope>test</scope>
             </dependency>
+            <!-- TOdO test -->
+            <dependency>
+                <groupId>com.azure.resourcemanager</groupId>
+                <artifactId>azure-resourcemanager</artifactId>
+                <version>${azure-resourcemanager-eventhubs.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.azure.resourcemanager</groupId>
+                <artifactId>azure-resourcemanager-eventhubs</artifactId>
+                <version>${azure-resourcemanager-eventhubs.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-core-http-jdk-httpclient</artifactId>
+                <version>${azure-core-http-jdk-httpclient.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

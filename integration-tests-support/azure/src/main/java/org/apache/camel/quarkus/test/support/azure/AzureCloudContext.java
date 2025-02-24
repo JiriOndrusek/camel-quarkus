@@ -16,14 +16,24 @@
  */
 package org.apache.camel.quarkus.test.support.azure;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.function.Function;
+
+import com.azure.core.client.traits.TokenCredentialTrait;
+import com.azure.core.credential.TokenCredential;
+import com.azure.core.http.jdk.httpclient.JdkHttpClientBuilder;
+import com.azure.core.management.AzureEnvironment;
+import com.azure.core.management.profile.AzureProfile;
+import com.azure.identity.ClientSecretCredentialBuilder;
+import com.azure.identity.DefaultAzureCredentialBuilder;
+import com.azure.resourcemanager.AzureResourceManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AzureCloudContext {
 
@@ -35,12 +45,12 @@ public class AzureCloudContext {
 
     public AzureCloudContext(AzureService[] azureServices, String accountName, String accountKey) {
         //todo
-//        if(!isUsingMockBackend()) {
+        //        if(!isUsingMockBackend()) {
         for (AzureService azureService : azureServices) {
             properties.put("azurite." + azureService + ".account.name", accountName);
             properties.put("azurite." + azureService + ".account.key", accountKey);
         }
-//        }
+        //        }
     }
 
     /**
@@ -69,22 +79,69 @@ public class AzureCloudContext {
         }
     }
 
+    public <C, B extends TokenCredentialTrait<B>> C client(B builder, Function<B, C> buildClient) {
+        if (!isUsingMockBackend()) {
+            TokenCredential credential = new ClientSecretCredentialBuilder()
+                    .tenantId(System.getenv("AZURE_TENANT_ID"))
+                    .clientId(System.getenv("AZURE_CLIENT_ID"))
+                    .clientSecret(System.getenv("AZURE_CLIENT_SECRET")).build();
 
-    public <B extends AwsClientBuilder<B, C>, C extends SdkClient> C client(LocalStackContainer.Service service, Supplier<B> builderSupplier) {
-        B builder = ((AwsClientBuilder)builderSupplier.get()).credentialsProvider((AwsCredentialsProvider)(this.credentialsProvider == Aws2TestEnvContext.CredentialsProvider.defaultProvider ? DefaultCredentialsProvider.create() : StaticCredentialsProvider.create(AwsBasicCredentials.create(this.accessKey, this.secretKey))));
-        builder.region(Region.of(this.region));
-        if (this.localstack.isPresent()) {
-            ((AwsClientBuilder)builder.endpointOverride(((LocalStackContainer)this.localstack.get()).getEndpointOverride(service))).region(Region.of(this.region));
-        } else if (service == Service.IAM) {
-            builder.endpointOverride(URI.create("https://iam.amazonaws.com"));
-            builder.region(Region.of("us-east-1"));
+            builder.credential(credential);
         }
 
-        C client = (C)(builder.build());
-        this.closeables.add(client);
+        C client = buildClient.apply(builder);
+        if (client instanceof Closeable) {
+            this.closeables.add((Closeable) client);
+        }
         return client;
     }
 
+    public AzureResourceManager azureResourceManager() {
+        if (!isUsingMockBackend()) {
+            //            TokenCredential credential = new ClientSecretCredentialBuilder()
+            //                    .httpClient(new JdkHttpClientBuilder().build())
+            //                    .tenantId(System.getenv("AZURE_TENANT_ID"))
+            //                    .clientId(System.getenv("AZURE_CLIENT_ID"))
+            //                    .clientSecret(System.getenv("AZURE_CLIENT_SECRET")).build();
+            //            DefaultAzureCredential dc = new DefaultAzureCredentialBuilder().httpClient(new JdkHttpClientBuilder().build())
+            //                    .build();
+            //
+            //            AzureProfile profile = new AzureProfile(AzureEnvironment.AZURE);
+            //            // Create an Azure Resource Manager client
+            //            return AzureResourceManager
+            //                    .configure().withHttpClient(new JdkHttpClientBuilder().build())
+            //                    .authenticate(dc, profile)
+            //                    .withTenantId(System.getenv("AZURE_TENANT_ID"))
+            //                    //                    .withDefaultSubscription();
+            //                    .withSubscription(getSubscriptionId());
+
+            AzureProfile profile = new AzureProfile(AzureEnvironment.AZURE);
+            TokenCredential credential = new DefaultAzureCredentialBuilder()
+                    .httpClient(new JdkHttpClientBuilder().build())
+                    .authorityHost(profile.getEnvironment().getActiveDirectoryEndpoint())
+                    .build();
+            AzureResourceManager azure = AzureResourceManager
+                    .configure().withHttpClient(new JdkHttpClientBuilder().build())
+                    .authenticate(credential, profile)
+                    .withDefaultSubscription();
+
+            return azure;
+        }
+
+        return null;
+    }
+
+    public String getNamespace() {
+        return System.getenv("EH_NAMESPACE");
+    }
+
+    public String getResourceGroup() {
+        return System.getenv("RESOURCE_GROUP");
+    }
+
+    public String getSubscriptionId() {
+        return System.getenv("SUBSCRIPTION_ID");
+    }
 
     /**
      * Add a key-value pair to the system properties seen by google cloud tests

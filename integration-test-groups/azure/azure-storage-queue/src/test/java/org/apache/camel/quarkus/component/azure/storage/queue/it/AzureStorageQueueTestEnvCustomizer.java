@@ -22,10 +22,9 @@ import org.apache.camel.quarkus.test.support.azure.AzureTestEnvCustomizer;
 
 public class AzureStorageQueueTestEnvCustomizer implements AzureTestEnvCustomizer {
 
-
     @Override
-    public AzureService[] services(){
-        return new AzureService[] {AzureService.queue};
+    public AzureService[] services() {
+        return new AzureService[] { AzureService.queue };
     };
 
     @Override

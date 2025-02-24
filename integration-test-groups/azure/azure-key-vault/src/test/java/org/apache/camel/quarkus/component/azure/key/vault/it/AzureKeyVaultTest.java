@@ -18,9 +18,11 @@ package org.apache.camel.quarkus.component.azure.key.vault.it;
 
 import java.util.UUID;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.restassured.RestAssured;
+import org.apache.camel.quarkus.test.support.azure.AzureStorageTestResource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
@@ -35,9 +37,10 @@ import static org.hamcrest.Matchers.is;
 @EnabledIfEnvironmentVariable(named = "AZURE_TENANT_ID", matches = ".+")
 @EnabledIfEnvironmentVariable(named = "AZURE_CLIENT_ID", matches = ".+")
 @EnabledIfEnvironmentVariable(named = "AZURE_CLIENT_SECRET", matches = ".+")
-@EnabledIfEnvironmentVariable(named = "AZURE_VAULT_NAME", matches = ".+")
+//@EnabledIfEnvironmentVariable(named = "AZURE_VAULT_NAME", matches = ".+")
 @TestProfile(AzureKeyVaultTestProfile.class)
 @QuarkusTest
+@QuarkusTestResource(AzureStorageTestResource.class)
 class AzureKeyVaultTest extends AbstractAzureKeyVaultTest {
 
     public AzureKeyVaultTest() {

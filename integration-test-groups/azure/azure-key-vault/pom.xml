@@ -60,6 +60,18 @@
             <artifactId>camel-quarkus-integration-tests-support-azure</artifactId>
             <scope>test</scope>
         </dependency>
+<!--    TODO    https://learn.microsoft.com/en-us/java/api/overview/azure/resourcemanager-eventhubs-readme?view=azure-java-stable-->
+        <dependency>
+            <groupId>com.azure.resourcemanager</groupId>
+            <artifactId>azure-resourcemanager-eventhubs</artifactId>
+            <scope>test</scope>
+        </dependency>
+<!--    todo    https://learn.microsoft.com/en-us/java/api/overview/azure/resourcemanager-readme?view=azure-java-stable-->
+        <dependency>
+            <groupId>com.azure.resourcemanager</groupId>
+            <artifactId>azure-resourcemanager</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <profiles>
