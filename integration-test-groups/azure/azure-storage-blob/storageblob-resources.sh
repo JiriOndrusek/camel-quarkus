@@ -20,7 +20,6 @@
 #In comparison with ../azure-resources/sh, the script is not creating any permissions, resource groups, ...
 #Following properties has to be se upon running the script
 #export RESOURCE_GROUP=<existing-resource-group>
-#export ZONE=<your-zone>
 #export EH_NAMESPACE=<existing event hub namespace>
 #export AZURE_STORAGE_ACCOUNT_NAME=<existing event hub storage account name>
 
@@ -35,8 +34,9 @@ fi
 suffix="$(az ad signed-in-user show --query displayName -o tsv | tr '[:upper:]' '[:lower:]' | tr -cd '[:alnum:]' | cut -c-12)"
 suffix="${suffix}4"
 
-export AZURE_VAULT_REFRESH_EH_NAME=camel-quarkus-secret-refresh-hub-${suffix}
-export AZURE_BLOB_CONTAINER_NAME=cq-container-key-vault-test-${suffix}
+
+export AZURE_EVENT_HUBS_NAME=camel-quarkus-storageblob-test-${suffix}
+export AZURE_BLOB_CONTAINER_NAME=cq-container-storageblob-test-${suffix}
 
 function createResources() {
     set -e
@@ -45,15 +45,17 @@ function createResources() {
 
     az storage container create --account-name ${AZURE_STORAGE_ACCOUNT_NAME} --name ${AZURE_BLOB_CONTAINER_NAME} --auth-mode login
 
+
     AZURE_STORAGE_ACCOUNT_KEY=$(az storage account keys list --account-name ${AZURE_STORAGE_ACCOUNT_NAME} --query '[0].value' -o tsv)
 
-    az eventhubs eventhub create --name ${AZURE_VAULT_REFRESH_EH_NAME} --resource-group ${RESOURCE_GROUP} --namespace-name ${EH_NAMESPACE}  --cleanup-policy Delete --partition-count 1  --retention-time 1
+    az eventhubs eventhub create --name ${AZURE_EVENT_HUBS_NAME} --resource-group ${RESOURCE_GROUP} --namespace-name ${EH_NAMESPACE}  --cleanup-policy Delete --partition-count 5  --retention-time 1
 
     set +x
     echo "Add the following to your environment:"
-    echo 'export AZURE_VAULT_EVENT_HUBS_BLOB_CONTAINER_NAME="'${AZURE_BLOB_CONTAINER_NAME}'"'
-    echo 'export AZURE_VAULT_EVENT_HUBS_CONNECTION_STRING="'$AZURE_EVENT_HUBS_CONNECTION_STRING';EntityPath='${AZURE_VAULT_REFRESH_EH_NAME}'"'
+    echo 'export AZURE_STORAGE_ACCOUNT_NAME="'${AZURE_STORAGE_ACCOUNT_NAME}'"'
+    echo 'export AZURE_EVENT_HUBS_CONNECTION_STRING="'$AZURE_EVENT_HUBS_CONNECTION_STRING';EntityPath='${AZURE_EVENT_HUBS_NAME}'"'
     echo 'export AZURE_STORAGE_ACCOUNT_KEY="'${AZURE_STORAGE_ACCOUNT_KEY}'"'
+    echo 'export AZURE_VAULT_EVENT_HUBS_BLOB_CONTAINER_NAME="'${AZURE_BLOB_CONTAINER_NAME}'"'
 }
 
 
@@ -63,7 +65,7 @@ function deleteResources() {
 
     az storage container delete --account-name ${AZURE_STORAGE_ACCOUNT_NAME} --name ${AZURE_BLOB_CONTAINER_NAME} --auth-mode login
 
-    az eventhubs eventhub delete --name ${AZURE_VAULT_REFRESH_EH_NAME} --resource-group ${RESOURCE_GROUP} --namespace-name ${EH_NAMESPACE}
+    az eventhubs eventhub delete --name ${AZURE_EVENT_HUBS_NAME} --resource-group ${RESOURCE_GROUP} --namespace-name ${EH_NAMESPACE}
 }
 
 case "$1" in
