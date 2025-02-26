@@ -59,7 +59,7 @@ class AzureServiceBusTest {
     @BeforeAll
     public static void beforeAll() {
         //this is not necessary for mocked testing
-        if(AzureServiceBusHelper.isMockBackEnd()) {
+        if (AzureServiceBusHelper.isMockBackEnd()) {
             return;
         }
         // Drain the test queue in case there are messages lingering from previous failed runs

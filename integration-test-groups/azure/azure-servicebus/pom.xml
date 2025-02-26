@@ -107,6 +107,7 @@
                 </plugins>
             </build>
         </profile>
+<!--        todo accept eula profile-->
         <profile>
             <id>virtualDependencies</id>
             <activation>
