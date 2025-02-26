@@ -25,8 +25,8 @@ public class AzureKeyVaultTestProfile implements QuarkusTestProfile {
     public Map<String, String> getConfigOverrides() {
         //properties have to be set via profile to not be used by different azure-* test in grouped module
         return Map.of(
-                "camel.vault.azure.tenantId", System.getenv("AZURE_TENANT_ID"),
-                "camel.vault.azure.clientId", System.getenv("AZURE_CLIENT_ID"),
-                "camel.vault.azure.clientSecret", System.getenv("AZURE_CLIENT_SECRET"));
+                "camel.vault.azure.tenantId", System.getenv("AZURE_KEY_VAULT_TENANT_ID"),
+                "camel.vault.azure.clientId", System.getenv("AZURE_KEY_VAULT_CLIENT_ID"),
+                "camel.vault.azure.clientSecret", System.getenv("AZURE_KEY_VAULT_CLIENT_SECRET"));
     }
 }

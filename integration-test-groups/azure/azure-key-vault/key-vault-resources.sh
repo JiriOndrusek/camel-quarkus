@@ -35,8 +35,8 @@ fi
 suffix="$(az ad signed-in-user show --query displayName -o tsv | tr '[:upper:]' '[:lower:]' | tr -cd '[:alnum:]' | cut -c-12)"
 suffix="${suffix}4"
 
-export AZURE_VAULT_REFRESH_EH_NAME=camel-quarkus-secret-refresh-hub-${suffix}
-export AZURE_BLOB_CONTAINER_NAME=cq-container-${suffix}
+export AZURE_VAULT_REFRESH_EH_NAME=camel-quarkus-key-vault-tests-${suffix}
+export AZURE_BLOB_CONTAINER_NAME=cq-container-key-vault-tests-${suffix}
 
 function createResources() {
     set -e

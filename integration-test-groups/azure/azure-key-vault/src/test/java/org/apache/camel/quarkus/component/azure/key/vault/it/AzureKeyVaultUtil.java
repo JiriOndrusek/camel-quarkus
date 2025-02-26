@@ -70,8 +70,8 @@ public class AzureKeyVaultUtil {
         //create client
         String keyVaultUri = "https://" + System.getenv("AZURE_VAULT_NAME") + ".vault.azure.net";
         TokenCredential credential = ((ClientSecretCredentialBuilder) ((ClientSecretCredentialBuilder) (new ClientSecretCredentialBuilder())
-                .tenantId(System.getenv("AZURE_TENANT_ID"))).clientId(System.getenv("AZURE_CLIENT_ID")))
-                .clientSecret(System.getenv("AZURE_CLIENT_SECRET")).build();
+                .tenantId(System.getenv("AZURE_KEY_VAULT_TENANT_ID"))).clientId(System.getenv("AZURE_KEY_VAULT_CLIENT_ID")))
+                .clientSecret(System.getenv("AZURE_KEY_VAULT_CLIENT_SECRET")).build();
 
         SecretClient client = (new SecretClientBuilder()).vaultUrl(keyVaultUri).credential(credential).buildClient();
 

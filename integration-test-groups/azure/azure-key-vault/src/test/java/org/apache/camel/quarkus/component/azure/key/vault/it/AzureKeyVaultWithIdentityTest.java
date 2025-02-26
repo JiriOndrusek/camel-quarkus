@@ -26,9 +26,9 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
  * Requires own test profile, which does not contain any credentials.
  */
 // Azure Key Vault is not supported by Azurite https://github.com/Azure/Azurite/issues/619
-@EnabledIfEnvironmentVariable(named = "AZURE_TENANT_ID", matches = ".+")
-@EnabledIfEnvironmentVariable(named = "AZURE_CLIENT_ID", matches = ".+")
-@EnabledIfEnvironmentVariable(named = "AZURE_CLIENT_SECRET", matches = ".+")
+@EnabledIfEnvironmentVariable(named = "AZURE_KEY_VAULT_TENANT_ID", matches = ".+")
+@EnabledIfEnvironmentVariable(named = "AZURE_KEY_VAULT_CLIENT_ID", matches = ".+")
+@EnabledIfEnvironmentVariable(named = "AZURE_KEY_VAULT_CLIENT_SECRET", matches = ".+")
 @EnabledIfEnvironmentVariable(named = "AZURE_VAULT_NAME", matches = ".+")
 @TestProfile(AzureKeyVaultWithIdentityTestProfile.class)
 @QuarkusTest

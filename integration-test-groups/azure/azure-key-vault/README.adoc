@@ -23,9 +23,9 @@ The configuration is handed to the test via environmental variables. All followi
 
 [source,shell]
 ----
-export AZURE_CLIENT_ID=<your-azure-app-client-id>
-export AZURE_CLIENT_SECRET=<your-azure-app-client-secret>
-export AZURE_TENANT_ID=<your-azure-app-tenant-id>
+export AZURE_KEY_VAULT_CLIENT_ID=<your-azure-app-client-id>
+export AZURE_KEY_VAULT_CLIENT_SECRET=<your-azure-app-client-secret>
+export AZURE_KEY_VAULT_TENANT_ID=<your-azure-app-tenant-id>
 export AZURE_VAULT_NAME=<your-azure-key-vault-name>
 export AZURE_VAULT_EVENT_HUBS_BLOB_CONTAINER_NAME=<container for storing position of eventhub consumer>
 export AZURE_VAULT_EVENT_HUBS_CONNECTION_STRING=<connection string for eventhub>

@@ -28,9 +28,9 @@ public class AzureKeyVaultContextReloadTestProfile implements QuarkusTestProfile
     public Map<String, String> getConfigOverrides() {
         //properties have to be set via profile to not be used by different azure-* test in grouped module
         Map<String, String> props = new HashMap<>();
-        props.put("camel.vault.azure.tenantId", System.getenv("AZURE_TENANT_ID"));
-        props.put("camel.vault.azure.clientId", System.getenv("AZURE_CLIENT_ID"));
-        props.put("camel.vault.azure.clientSecret", System.getenv("AZURE_CLIENT_SECRET"));
+        props.put("camel.vault.azure.tenantId", System.getenv("AZURE_KEY_VAULT_TENANT_ID"));
+        props.put("camel.vault.azure.clientId", System.getenv("AZURE_KEY_VAULT_CLIENT_ID"));
+        props.put("camel.vault.azure.clientSecret", System.getenv("AZURE_KEY_VAULT_CLIENT_SECRET"));
         props.put("camel.vault.azure.refreshEnabled", "true");
         props.put("camel.vault.azure.refreshPeriod", "1000");
         props.put("camel.vault.azure.secrets", String.format("cq-secret-context-refresh-%s.*", UUID.randomUUID()));

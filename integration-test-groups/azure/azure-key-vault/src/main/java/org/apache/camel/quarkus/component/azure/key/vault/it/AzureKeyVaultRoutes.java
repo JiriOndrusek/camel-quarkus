@@ -71,9 +71,9 @@ public class AzureKeyVaultRoutes extends RouteBuilder {
             sb.append("&credentialType=AZURE_IDENTITY");
         } else {
             //can not use i.e. RAW({{camel.vault.azure.clientSecret}}) as the value is not set in identity profiles
-            sb.append("&clientId=").append(System.getenv("AZURE_CLIENT_ID"))
-                    .append("&clientSecret=").append(System.getenv("AZURE_CLIENT_SECRET"))
-                    .append("&tenantId=").append(System.getenv("AZURE_TENANT_ID"));
+            sb.append("&clientId=").append(System.getenv("AZURE_KEY_VAULT_CLIENT_ID"))
+                    .append("&clientSecret=").append(System.getenv("AZURE_KEY_VAULT_CLIENT_SECRET"))
+                    .append("&tenantId=").append(System.getenv("AZURE_KEY_VAULT_TENANT_ID"));
         }
         return sb.toString();
     }
