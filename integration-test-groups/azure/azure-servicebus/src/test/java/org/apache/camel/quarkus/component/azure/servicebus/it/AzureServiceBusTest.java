@@ -62,6 +62,7 @@ class AzureServiceBusTest {
         if (AzureServiceBusHelper.isMockBackEnd()) {
             return;
         }
+
         // Drain the test queue in case there are messages lingering from previous failed runs
         ServiceBusProcessorClient client = new ServiceBusClientBuilder()
                 .connectionString(AzureServiceBusHelper.getConnectionString())
@@ -77,8 +78,13 @@ class AzureServiceBusTest {
 
         client.start();
         try {
-            // We don't know how many messages there may be to drain so just sleep for enough time
-            Thread.sleep(5000);
+            //this is not necessary for mocked testing
+            if (AzureServiceBusHelper.isMockBackEnd()) {
+                Thread.sleep(1000);
+            } else {
+                // We don't know how many messages there may be to drain so just sleep for enough time
+                Thread.sleep(5000);
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } finally {
@@ -135,6 +141,7 @@ class AzureServiceBusTest {
 
     @Test
     void multipleMessages() throws InterruptedException {
+
         final String consumerRouteId = "servicebus-queue-consumer-" + AmqpTransportType.AMQP;
         final String destination = AzureServiceBusHelper.getDestination("queue");
         final String mockEndpointUri = "mock:%s-%s-%s-%s-results".formatted("queue", destination, AmqpTransportType.AMQP.name(),
@@ -185,6 +192,7 @@ class AzureServiceBusTest {
 
     @Test
     void produceConsumeWithCustomClients() {
+
         final String messageBody = UUID.randomUUID().toString();
         try {
             RestAssured.given()
@@ -222,6 +230,7 @@ class AzureServiceBusTest {
     @Test
     @EnabledIf({ MockBackendDisabled.class }) //only connection string is enabled on emulator, see https://github.com/Azure/azure-service-bus-emulator-installer/issues/30#issuecomment-2500163047
     void tokenCredentialAuthentication() {
+
         final String messageBody = UUID.randomUUID().toString();
         try {
             RestAssured.given()
@@ -258,6 +267,7 @@ class AzureServiceBusTest {
 
     @Test
     void scheduled() {
+
         final String messageBody = UUID.randomUUID().toString();
         try {
             RestAssured.given()
@@ -314,6 +324,7 @@ class AzureServiceBusTest {
         }
     }
 
+    @EnabledIf({ MockBackendDisabled.class }) //only connection string is enabled on emulator, see https://github.com/Azure/azure-service-bus-emulator-installer/issues/30#issuecomment-2500163047
     @Test
     void azureIdentityCredentials() {
         Assumptions.assumeTrue(AzureServiceBusHelper.isAzureIdentityCredentialsAvailable());
