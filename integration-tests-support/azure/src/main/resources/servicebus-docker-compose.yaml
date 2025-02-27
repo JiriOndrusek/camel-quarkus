@@ -20,7 +20,7 @@ services:
   emulator:
     image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
     volumes:
-      - "./servicebus-config.json:/ServiceBus_Emulator/ConfigFiles/Config.json"
+      - "${CONFIG_FILE}:/ServiceBus_Emulator/ConfigFiles/Config.json"
     ports:
       - "5672:5672"
     environment:

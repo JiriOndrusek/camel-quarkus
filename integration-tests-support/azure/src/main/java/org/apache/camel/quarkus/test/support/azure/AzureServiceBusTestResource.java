@@ -18,6 +18,9 @@
 package org.apache.camel.quarkus.test.support.azure;
 
 import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -53,15 +56,25 @@ public class AzureServiceBusTestResource implements QuarkusTestResourceLifecycle
         final Map<String, String> result = new LinkedHashMap<>();
         if (startMockBackend && !realCredentialsProvided) {
             MockBackendUtils.logMockBackendUsed();
+
             try {
-                container = new ComposeContainer(
-                        new File(this.getClass().getResource("/servicebus-docker-compose.yaml").toURI().getPath()))
+                //copy docker-compose to tmp location
+                File dockerComposeFile, configFile;
+                try (InputStream inYaml = getClass().getClassLoader().getResourceAsStream("servicebus-docker-compose.yaml");
+                        InputStream inJson = getClass().getClassLoader().getResourceAsStream("servicebus-config.json")) {
+                    dockerComposeFile = File.createTempFile("servicebus-docker-compose-", ".yaml");
+                    configFile = File.createTempFile("servicebus-config-", ".json");
+                    Files.copy(inYaml, dockerComposeFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    Files.copy(inJson, configFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                }
+
+                container = new ComposeContainer(dockerComposeFile)
                         .withEnv("ACCEPT_EULA", "Y")
+                        .withEnv("CONFIG_FILE", configFile.getAbsolutePath())
                         .withEnv("MSSQL_SA_PASSWORD", "12345678923456y!43")
                         .withExposedService("emulator", 5672)
                         .withLocalCompose(true)
                         .withLogConsumer("emulator", new Slf4jLogConsumer(LOGGER))
-                        //                        .waitingFor("emulator", Wait.forListeningPort());
                         .waitingFor("emulator", Wait.forLogMessage(".*Emulator Service is Successfully Up!.*", 1));
 
                 container.start();
