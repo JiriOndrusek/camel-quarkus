@@ -23,10 +23,12 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
+import org.apache.camel.quarkus.test.support.azure.AzureNoServiceBusTestProfile;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
@@ -44,6 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @EnabledIfEnvironmentVariable(named = "AZURE_EVENT_HUBS_BLOB_CONTAINER_NAME", matches = ".+")
 @EnabledIfEnvironmentVariable(named = "AZURE_EVENT_HUBS_CONNECTION_STRING", matches = ".+")
 @QuarkusTest
+@TestProfile(AzureNoServiceBusTestProfile.class)
 class AzureEventhubsTest {
     // NOTE: Consumer endpoints are started / stopped manually to prevent them from inferring with each other
 

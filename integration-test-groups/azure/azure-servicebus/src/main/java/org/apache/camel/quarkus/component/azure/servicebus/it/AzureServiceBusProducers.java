@@ -44,7 +44,7 @@ public class AzureServiceBusProducers {
     private static final Logger LOG = Logger.getLogger(AzureServiceBusProducers.class);
 
     @ConfigProperty(name = "azure.servicebus.connection.string")
-    Optional<String> connectionString;
+    Optional<String> connectionStringOptional;
 
     @ConfigProperty(name = "azure.servicebus.queue.name")
     Optional<String> queueName;
@@ -54,9 +54,9 @@ public class AzureServiceBusProducers {
 
     @Named
     ServiceBusProcessorClient customProcessorClient() {
-        if (connectionString.isPresent() && queueName.isPresent()) {
+        if (AzureServiceBusHelper.isServicebusRunning() && queueName.isPresent()) {
             return new ServiceBusClientBuilder()
-                    .connectionString(connectionString.get())
+                    .connectionString(connectionStringOptional.get())
                     .processor()
                     .queueName(queueName.get())
                     .processMessage(messageContext -> {
@@ -82,9 +82,9 @@ public class AzureServiceBusProducers {
 
     @Named
     ServiceBusSenderClient customSenderClient() {
-        if (connectionString.isPresent() && queueName.isPresent()) {
+        if (AzureServiceBusHelper.isServicebusRunning()  && queueName.isPresent()) {
             return new ServiceBusClientBuilder()
-                    .connectionString(connectionString.get())
+                    .connectionString(connectionStringOptional.get())
                     .sender()
                     .queueName(queueName.get())
                     .buildClient();
@@ -94,8 +94,8 @@ public class AzureServiceBusProducers {
 
     @Named("serviceBusTokenCredential")
     TokenCredential tokenCredential() {
-        if (connectionString.isPresent()) {
-            ConnectionStringProperties properties = new ConnectionStringProperties(connectionString.get());
+        if (AzureServiceBusHelper.isServicebusRunning() ) {
+            ConnectionStringProperties properties = new ConnectionStringProperties(connectionStringOptional.get());
             TokenCredential tokenCredential;
             if (properties.getSharedAccessSignature() == null) {
                 tokenCredential = new ServiceBusSharedKeyCredential(properties.getSharedAccessKeyName(),
@@ -110,8 +110,8 @@ public class AzureServiceBusProducers {
 
     @Named("namespaceURI")
     URI namespaceURI() {
-        if (connectionString.isPresent()) {
-            ConnectionStringProperties properties = new ConnectionStringProperties(connectionString.get());
+        if (AzureServiceBusHelper.isServicebusRunning() ) {
+            ConnectionStringProperties properties = new ConnectionStringProperties(connectionStringOptional.get());
             return properties.getEndpoint();
         }
         return null;

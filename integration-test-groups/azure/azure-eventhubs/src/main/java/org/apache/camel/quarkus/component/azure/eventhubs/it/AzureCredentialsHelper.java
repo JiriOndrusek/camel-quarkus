@@ -90,4 +90,8 @@ public final class AzureCredentialsHelper {
 
         return properties;
     }
+
+    public static boolean isServicebusRunning() {
+        return ConfigProvider.getConfig().getOptionalValue("azure.servicebus.running", Boolean.class).orElse(false);
+    }
 }

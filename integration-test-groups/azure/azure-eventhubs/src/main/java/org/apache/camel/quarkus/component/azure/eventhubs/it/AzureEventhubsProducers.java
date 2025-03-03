@@ -29,12 +29,12 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 public class AzureEventhubsProducers {
     @ConfigProperty(name = "azure.event.hubs.connection.string")
-    Optional<String> connectionString;
+    Optional<String> connectionStringOptional;
 
     @Named("eventHubsTokenCredential")
     TokenCredential tokenCredential() {
-        if (connectionString.isPresent()) {
-            ConnectionStringProperties properties = new ConnectionStringProperties(connectionString.get());
+        if (!AzureCredentialsHelper.isServicebusRunning() && connectionStringOptional.isPresent()) {
+            ConnectionStringProperties properties = new ConnectionStringProperties(connectionStringOptional.get());
             TokenCredential tokenCredential;
             if (properties.getSharedAccessSignature() == null) {
                 tokenCredential = new EventHubSharedKeyCredential(properties.getSharedAccessKeyName(),
@@ -49,7 +49,10 @@ public class AzureEventhubsProducers {
 
     @Named("eventHubClient")
     EventHubProducerAsyncClient eventHubClient() {
-        return connectionString.map(connection -> new EventHubClientBuilder()
+        if (!connectionStringOptional.isPresent()) {
+            return null;
+        }
+        return connectionStringOptional.map(connection -> new EventHubClientBuilder()
                 .connectionString(connection)
                 .buildAsyncProducerClient())
                 .orElse(null);

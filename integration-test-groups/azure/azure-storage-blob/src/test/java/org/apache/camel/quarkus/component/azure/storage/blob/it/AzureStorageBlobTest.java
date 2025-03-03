@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import com.azure.storage.blob.models.BlockListType;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
@@ -37,6 +38,7 @@ import org.apache.camel.quarkus.component.azure.storage.blob.it.AzureStorageHelp
 import org.apache.camel.quarkus.component.azure.storage.blob.it.AzureStorageHelper.ClientSecretAuthEnabled;
 import org.apache.camel.quarkus.test.EnabledIf;
 import org.apache.camel.quarkus.test.mock.backend.MockBackendDisabled;
+import org.apache.camel.quarkus.test.support.azure.AzureNoServiceBusTestProfile;
 import org.apache.camel.quarkus.test.support.azure.AzureStorageTestResource;
 import org.awaitility.Awaitility;
 import org.eclipse.microprofile.config.Config;
@@ -56,6 +58,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 @QuarkusTest
 @QuarkusTestResource(AzureStorageTestResource.class)
+@TestProfile(AzureNoServiceBusTestProfile.class)
 class AzureStorageBlobTest {
 
     private static final String BLOB_CONTENT = "Hello Camel Quarkus Azure Blob";

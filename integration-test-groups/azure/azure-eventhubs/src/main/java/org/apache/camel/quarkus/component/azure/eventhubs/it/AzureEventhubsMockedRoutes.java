@@ -46,7 +46,8 @@ public class AzureEventhubsMockedRoutes extends EndpointRouteBuilder {
 
     @Override
     public void configure() {
-        if (MockBackendUtils.startMockBackend() && azureBlobServiceUrl.isPresent() && azureBlobContainerName.isPresent()) {
+        if (!AzureCredentialsHelper.isServicebusRunning() && MockBackendUtils.startMockBackend()
+                && azureBlobServiceUrl.isPresent() && azureBlobContainerName.isPresent()) {
             BlobContainerAsyncClient blobClient = new BlobContainerClientBuilder()
                     .endpoint(azureBlobServiceUrl.get())
                     .containerName(azureBlobContainerName.get())

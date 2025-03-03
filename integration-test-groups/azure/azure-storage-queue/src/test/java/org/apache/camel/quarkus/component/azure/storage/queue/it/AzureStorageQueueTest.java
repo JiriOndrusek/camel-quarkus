@@ -22,8 +22,10 @@ import java.util.concurrent.TimeUnit;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import org.apache.camel.quarkus.test.support.azure.AzureNoServiceBusTestProfile;
 import org.apache.camel.quarkus.test.support.azure.AzureStorageTestResource;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
@@ -36,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @QuarkusTest
 @QuarkusTestResource(AzureStorageTestResource.class)
+@TestProfile(AzureNoServiceBusTestProfile.class)
 class AzureStorageQueueTest {
 
     @Test
