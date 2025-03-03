@@ -53,7 +53,7 @@ public class AzureServiceBusRoutes extends EndpointRouteBuilder {
 
     @Override
     public void configure() {
-        if (AzureServiceBusHelper.isMinimumConfigurationAvailable()) {
+        if (AzureServiceBusHelper.isServicebusRunning() && AzureServiceBusHelper.isMinimumConfigurationAvailable()) {
             String mockEndpointUri = "${header.serviceBusType}-${header.destination}-${header.transportType}-${header.payloadType}-results";
 
             // Simple queue consumer

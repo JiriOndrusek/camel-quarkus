@@ -27,6 +27,7 @@ import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -86,8 +87,9 @@ public class AzureStorageBlobResource {
     @ConfigProperty(name = "azure.storage.account-name")
     public String azureStorageAccountName;
 
+    //when executed as a pat of grupped test, this property might not be available when servicebus is running
     @ConfigProperty(name = "azure.blob.container.name")
-    public String azureBlobContainerName;
+    public Optional<String> azureBlobContainerNameOptional;
 
     @Path("/blob/create")
     @POST
@@ -117,7 +119,7 @@ public class AzureStorageBlobResource {
             @QueryParam("containerName") String containerName,
             @QueryParam("uri") String uri) {
         if (containerName == null) {
-            containerName = azureBlobContainerName;
+            containerName = azureBlobContainerNameOptional.get();
         }
 
         if (uri == null) {
@@ -380,7 +382,7 @@ public class AzureStorageBlobResource {
         Map<String, Object> headers = new HashMap<>();
         headers.put(BlobConstants.BLOB_CONTAINER_NAME, containerName);
         headers.put(BlobConstants.BLOB_NAME, AzureStorageBlobRoutes.BLOB_NAME);
-        headers.put(BlobConstants.SOURCE_BLOB_CONTAINER_NAME, azureBlobContainerName);
+        headers.put(BlobConstants.SOURCE_BLOB_CONTAINER_NAME, azureBlobContainerNameOptional.get());
         headers.put(BlobConstants.SOURCE_BLOB_ACCOUNT_NAME, azureStorageAccountName);
         String result = producerTemplate.requestBodyAndHeaders("direct:copy", null, headers, String.class);
         return Response.ok(result).build();

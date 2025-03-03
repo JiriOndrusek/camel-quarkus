@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.component.azure.storage.blob.it;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import com.azure.core.http.policy.HttpLogDetailLevel;
 import com.azure.core.http.policy.HttpLogOptions;
@@ -37,8 +38,9 @@ public class AzureStorageBlobProducers {
     @ConfigProperty(name = "azure.storage.account-key")
     String azureStorageAccountKey;
 
+    //when executed as a pat of grupped module, this property might not be available when servicebus is running
     @ConfigProperty(name = "azure.blob.service.url")
-    String azureBlobServiceUrl;
+    Optional<String> azureBlobServiceUrlOptional;
 
     @Named("azureStorageSharedKeyCredential")
     public StorageSharedKeyCredential azureStorageSharedKeyCredential() {
@@ -79,6 +81,7 @@ public class AzureStorageBlobProducers {
 
     @Named("azure-storage-blob-client-certificate-auth")
     public BlobComponent azureStorageBlobClientCertificateAuth() throws IOException {
+
         if (AzureStorageHelper.isClientCertificateAuthEnabled()) {
             BlobConfiguration configuration = new BlobConfiguration();
             configuration.setCredentialType(CredentialType.AZURE_IDENTITY);
@@ -92,7 +95,10 @@ public class AzureStorageBlobProducers {
     }
 
     private BlobServiceClientBuilder getBlobClientBuilder() {
-        return new BlobServiceClientBuilder().endpoint(azureBlobServiceUrl)
+        if (AzureStorageHelper.isServicebusRunning()) {
+            return null;
+        }
+        return new BlobServiceClientBuilder().endpoint(azureBlobServiceUrlOptional.get())
                 .httpLogOptions(new HttpLogOptions()
                         .setLogLevel(HttpLogDetailLevel.BODY_AND_HEADERS)
                         .setPrettyPrintBody(true));

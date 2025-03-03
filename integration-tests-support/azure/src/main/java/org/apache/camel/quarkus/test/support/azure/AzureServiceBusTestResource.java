@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -48,6 +49,13 @@ public class AzureServiceBusTestResource implements QuarkusTestResourceLifecycle
     @Override
     public Map<String, String> start() {
         final SmallRyeConfig config = ConfigUtils.configBuilder(true, LaunchMode.NORMAL).build();
+
+        //start container only when servicebus tests are running (to avoid port issues with azureite image in grupped run)
+        if (!config.getOptionalValue("azure.servicebus.running", Boolean.class).orElse(false)) {
+            LOGGER.debug("%s is not started, because different test is currently being executed."
+                    .formatted(getClass().getSimpleName()));
+            return Collections.emptyMap();
+        }
 
         final boolean realCredentialsProvided = System.getenv("AZURE_SERVICEBUS_CONNECTION_STRING") != null
                 && System.getenv("AZURE_SERVICEBUS_QUEUE_NAME") != null;
@@ -83,6 +91,8 @@ public class AzureServiceBusTestResource implements QuarkusTestResourceLifecycle
                         .formatted(container.getServiceHost("emulator", 5762));
                 result.put("azure.servicebus.connection.string", connectionString);
                 result.put("azure.servicebus.queue.name", "queue.1");
+                result.put("azure.servicebus.topic.name", "topic.1");
+                result.put("azure.servicebus.topic.subscription.name", "subscription.1");
 
             } catch (Exception e) {
                 throw new RuntimeException(e);

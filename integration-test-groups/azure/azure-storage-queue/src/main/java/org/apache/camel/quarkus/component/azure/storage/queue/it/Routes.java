@@ -18,6 +18,7 @@ package org.apache.camel.quarkus.component.azure.storage.queue.it;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.camel.builder.RouteBuilder;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import static org.apache.camel.quarkus.component.azure.storage.queue.it.AzureStorageQueueResource.QUEUE_NAME;
@@ -30,6 +31,10 @@ public class Routes extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
+        //start routes only when servicebus tests are NOT running (because azurite container is not running now)
+        if (ConfigProvider.getConfig().getOptionalValue("azure.servicebus.running", Boolean.class).orElse(false)) {
+            return;
+        }
         // setting the consumer startup to False in order to differenciate consuming messages by consumer or producer
         from(String.format("azure-storage-queue://%s/%s?maxMessages=5", azureStorageAccountName, QUEUE_NAME))
                 .routeId("queueRoute").autoStartup(false)

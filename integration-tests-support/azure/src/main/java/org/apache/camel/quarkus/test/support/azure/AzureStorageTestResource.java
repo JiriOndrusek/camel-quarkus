@@ -17,6 +17,7 @@
 
 package org.apache.camel.quarkus.test.support.azure;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -92,6 +93,13 @@ public class AzureStorageTestResource implements QuarkusTestResourceLifecycleMan
     @Override
     public Map<String, String> start() {
         final SmallRyeConfig config = ConfigUtils.configBuilder(true, LaunchMode.NORMAL).build();
+
+        //do not start of azure-servicebus profile is active (to make grupped tests work)
+        if (config.getOptionalValue("azure.servicebus.running", Boolean.class).orElse(false)) {
+            LOGGER.debug("%s is not started, because servicebus test is currently being executed."
+                    .formatted(getClass().getSimpleName()));
+            return Collections.emptyMap();
+        }
 
         final String realAzureStorageAccountName = System.getenv("AZURE_STORAGE_ACCOUNT_NAME");
         final boolean realCredentialsProvided = realAzureStorageAccountName != null

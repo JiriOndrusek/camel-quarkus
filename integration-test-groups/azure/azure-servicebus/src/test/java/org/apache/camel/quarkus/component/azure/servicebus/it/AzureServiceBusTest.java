@@ -58,7 +58,7 @@ class AzureServiceBusTest {
 
     private static final Logger LOG = Logger.getLogger(AzureServiceBusTest.class);
 
-//    @BeforeAll
+    @BeforeAll
     public static void beforeAll() {
         //this is not necessary for mocked testing
         if (AzureServiceBusHelper.isMockBackEnd()) {

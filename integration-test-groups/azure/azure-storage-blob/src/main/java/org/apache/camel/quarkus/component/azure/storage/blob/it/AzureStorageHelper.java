@@ -72,4 +72,8 @@ public class AzureStorageHelper {
                 && expectedValue.equals(
                         ConfigProvider.getConfig().getValue(name, type));
     }
+
+    public static boolean isServicebusRunning() {
+        return ConfigProvider.getConfig().getOptionalValue("azure.servicebus.running", Boolean.class).orElse(false);
+    }
 }

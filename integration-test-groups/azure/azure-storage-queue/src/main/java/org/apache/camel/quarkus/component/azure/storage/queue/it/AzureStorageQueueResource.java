@@ -20,6 +20,7 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -52,6 +53,7 @@ import org.apache.camel.component.azure.storage.queue.QueueOperationDefinition;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.quarkus.component.azure.storage.queue.it.model.ExampleMessage;
 import org.apache.camel.spi.RouteController;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @Path("/azure-storage-queue")
@@ -72,15 +74,19 @@ public class AzureStorageQueueResource {
     @ConfigProperty(name = "azure.storage.account-key")
     String azureStorageAccountKey;
 
+    //when executed as a pat of grupped test, this property might not be available when servicebus is running
     @ConfigProperty(name = "azure.queue.service.url")
-    String azureQueueServiceUrl;
+    Optional<String> azureQueueServiceUrlOptional;
 
     @jakarta.enterprise.inject.Produces
     public QueueServiceClient createQueueClient() throws Exception {
+        if (ConfigProvider.getConfig().getOptionalValue("azure.servicebus.running", Boolean.class).orElse(false)) {
+            return null;
+        }
         final StorageSharedKeyCredential credentials = new StorageSharedKeyCredential(azureStorageAccountName,
                 azureStorageAccountKey);
         return new QueueServiceClientBuilder()
-                .endpoint(azureQueueServiceUrl)
+                .endpoint(azureQueueServiceUrlOptional.get())
                 .credential(credentials)
                 .httpLogOptions(new HttpLogOptions().setLogLevel(HttpLogDetailLevel.BODY_AND_HEADERS).setPrettyPrintBody(true))
                 .buildClient();

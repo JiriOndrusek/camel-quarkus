@@ -66,4 +66,8 @@ public final class AzureServiceBusHelper {
         Config config = ConfigProvider.getConfig();
         return config.getOptionalValue("camel.quarkus.start.mock.backend", Boolean.class).orElse(true);
     }
+
+    public static boolean isServicebusRunning() {
+        return ConfigProvider.getConfig().getOptionalValue("azure.servicebus.running", Boolean.class).orElse(false);
+    }
 }

@@ -16,6 +16,8 @@
  */
 package org.apache.camel.quarkus.component.azure.storage.blob.it;
 
+import java.util.Optional;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.azure.storage.blob.BlobConstants;
@@ -30,15 +32,20 @@ public class AzureStorageBlobRoutes extends RouteBuilder {
     @ConfigProperty(name = "azure.storage.account-name")
     public String azureStorageAccountName;
 
+    //when executed as a pat of grupped module, this property might not be available when servicebus is running
     @ConfigProperty(name = "azure.blob.container.name")
-    public String azureBlobContainerName;
+    public Optional<String> azureBlobContainerNameOptional;
 
     @ConfigProperty(name = "azure.storage.account-key")
     public String azureStorageAccountKey;
 
     @Override
     public void configure() throws Exception {
-        fromF("azure-storage-blob://%s/%s", azureStorageAccountName, azureBlobContainerName)
+        //start routes only when servicebus tests are NOT running (because azurite container is not running now)
+        if (AzureStorageHelper.isServicebusRunning()) {
+            return;
+        }
+        fromF("azure-storage-blob://%s/%s", azureStorageAccountName, azureBlobContainerNameOptional.get())
                 .id("blob-consumer")
                 .autoStartup(false)
                 .to("seda:blobs");
@@ -139,7 +146,7 @@ public class AzureStorageBlobRoutes extends RouteBuilder {
         return String.format("%s://%s/%s?operation=%s&blobName=%s",
                 componentName,
                 azureStorageAccountName,
-                azureBlobContainerName,
+                azureBlobContainerNameOptional.get(),
                 operation.name(), BLOB_NAME);
     }
 }
