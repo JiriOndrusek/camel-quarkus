@@ -22,7 +22,7 @@ services:
     volumes:
       - "${CONFIG_FILE}:/ServiceBus_Emulator/ConfigFiles/Config.json"
     ports:
-      - "5672:5672"
+      - 0:5672
     environment:
       SQL_SERVER: sqledge
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}

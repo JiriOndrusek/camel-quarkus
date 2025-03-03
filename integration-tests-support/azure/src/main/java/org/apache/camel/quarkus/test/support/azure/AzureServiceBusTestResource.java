@@ -87,8 +87,8 @@ public class AzureServiceBusTestResource implements QuarkusTestResourceLifecycle
 
                 container.start();
 
-                String connectionString = "Endpoint=sb://%s;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;"
-                        .formatted(container.getServiceHost("emulator", 5762));
+                String connectionString = "Endpoint=sb://%s:%d;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;"
+                        .formatted(container.getServiceHost("emulator", 5672), container.getServicePort("emulator", 5672));
                 result.put("azure.servicebus.connection.string", connectionString);
                 result.put("azure.servicebus.queue.name", "queue.1");
                 result.put("azure.servicebus.topic.name", "topic.1");

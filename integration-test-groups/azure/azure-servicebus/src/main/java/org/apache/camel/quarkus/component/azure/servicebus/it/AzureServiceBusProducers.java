@@ -82,7 +82,7 @@ public class AzureServiceBusProducers {
 
     @Named
     ServiceBusSenderClient customSenderClient() {
-        if (AzureServiceBusHelper.isServicebusRunning()  && queueName.isPresent()) {
+        if (AzureServiceBusHelper.isServicebusRunning() && queueName.isPresent()) {
             return new ServiceBusClientBuilder()
                     .connectionString(connectionStringOptional.get())
                     .sender()
@@ -94,7 +94,7 @@ public class AzureServiceBusProducers {
 
     @Named("serviceBusTokenCredential")
     TokenCredential tokenCredential() {
-        if (AzureServiceBusHelper.isServicebusRunning() ) {
+        if (AzureServiceBusHelper.isServicebusRunning()) {
             ConnectionStringProperties properties = new ConnectionStringProperties(connectionStringOptional.get());
             TokenCredential tokenCredential;
             if (properties.getSharedAccessSignature() == null) {
@@ -110,7 +110,7 @@ public class AzureServiceBusProducers {
 
     @Named("namespaceURI")
     URI namespaceURI() {
-        if (AzureServiceBusHelper.isServicebusRunning() ) {
+        if (AzureServiceBusHelper.isServicebusRunning()) {
             ConnectionStringProperties properties = new ConnectionStringProperties(connectionStringOptional.get());
             return properties.getEndpoint();
         }
