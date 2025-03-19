@@ -43,6 +43,7 @@
         <module>barcode</module>
         <module>beanio</module>
         <module>bonita</module>
+        <module>cics</module>
         <module>chatscript</module>
         <module>chunk</module>
         <module>cli-connector</module>

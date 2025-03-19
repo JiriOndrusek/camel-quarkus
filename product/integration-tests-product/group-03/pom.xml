@@ -33,7 +33,7 @@
     <name>Camel Quarkus :: Integration Tests :: Product :: Group 03</name>
 
     <modules>
-        <module>../../../integration-tests-jvm/beanio</module>
+        <module>../../../integration-tests-jvm/cics</module>
         <module>../../../integration-tests-jvm/cli-connector</module>
         <module>../../../integration-tests-jvm/console</module>
         <module>../../../integration-tests-jvm/controlbus-statistics</module>
