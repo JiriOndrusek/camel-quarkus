@@ -1,0 +1,81 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------< org.apache.camel.quarkus:camel-quarkus-cics >-------------
+[INFO] Building Camel Quarkus :: CICS :: Runtime 3.15.0.fuse-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- dependency:3.7.1:tree (default-cli) @ camel-quarkus-cics ---
+[INFO] org.apache.camel.quarkus:camel-quarkus-cics:jar:3.15.0.fuse-SNAPSHOT
+[INFO] +- org.apache.camel.quarkus:camel-quarkus-core:jar:3.15.0.fuse-SNAPSHOT:compile
+[INFO] |  +- io.quarkus:quarkus-core:jar:3.15.1.redhat-00005:compile
+[INFO] |  |  +- jakarta.annotation:jakarta.annotation-api:jar:3.0.0.redhat-00001:compile
+[INFO] |  |  +- jakarta.enterprise:jakarta.enterprise.cdi-api:jar:4.1.0.redhat-00001:compile
+[INFO] |  |  |  +- jakarta.enterprise:jakarta.enterprise.lang-model:jar:4.1.0.redhat-00001:compile
+[INFO] |  |  |  +- jakarta.el:jakarta.el-api:jar:5.0.1.redhat-00003:compile
+[INFO] |  |  |  \- jakarta.interceptor:jakarta.interceptor-api:jar:2.2.0.redhat-00001:compile
+[INFO] |  |  +- jakarta.inject:jakarta.inject-api:jar:2.0.1.redhat-00006:compile
+[INFO] |  |  +- io.smallrye.common:smallrye-common-os:jar:2.6.0.redhat-00001:compile
+[INFO] |  |  +- io.quarkus:quarkus-ide-launcher:jar:3.15.1.redhat-00005:compile
+[INFO] |  |  +- io.smallrye.config:smallrye-config:jar:3.9.1.redhat-00001:compile
+[INFO] |  |  |  \- io.smallrye.config:smallrye-config-core:jar:3.9.1.redhat-00001:compile
+[INFO] |  |  |     +- io.smallrye.common:smallrye-common-annotation:jar:2.6.0.redhat-00001:compile
+[INFO] |  |  |     +- io.smallrye.common:smallrye-common-classloader:jar:2.6.0.redhat-00001:compile
+[INFO] |  |  |     \- io.smallrye.config:smallrye-config-common:jar:3.9.1.redhat-00001:compile
+[INFO] |  |  +- org.jboss.logging:jboss-logging:jar:3.6.0.Final-redhat-00001:compile
+[INFO] |  |  +- org.jboss.logmanager:jboss-logmanager:jar:3.0.6.Final-redhat-00001:compile
+[INFO] |  |  |  +- io.smallrye.common:smallrye-common-constraint:jar:2.6.0.redhat-00001:compile
+[INFO] |  |  |  +- io.smallrye.common:smallrye-common-cpu:jar:2.6.0.redhat-00001:compile
+[INFO] |  |  |  +- io.smallrye.common:smallrye-common-expression:jar:2.6.0.redhat-00001:compile
+[INFO] |  |  |  |  \- io.smallrye.common:smallrye-common-function:jar:2.6.0.redhat-00001:compile
+[INFO] |  |  |  +- io.smallrye.common:smallrye-common-net:jar:2.6.0.redhat-00001:compile
+[INFO] |  |  |  +- io.smallrye.common:smallrye-common-ref:jar:2.6.0.redhat-00001:compile
+[INFO] |  |  |  +- jakarta.json:jakarta.json-api:jar:2.1.3.redhat-00002:compile
+[INFO] |  |  |  \- org.eclipse.parsson:parsson:jar:1.1.7.redhat-00002:compile
+[INFO] |  |  +- org.jboss.logging:jboss-logging-annotations:jar:3.0.1.Final-redhat-00001:compile
+[INFO] |  |  +- org.jboss.threads:jboss-threads:jar:3.6.1.Final-redhat-00001:compile
+[INFO] |  |  +- org.jboss.slf4j:slf4j-jboss-logmanager:jar:2.0.0.Final-redhat-00001:compile
+[INFO] |  |  +- org.wildfly.common:wildfly-common:jar:1.7.0.Final-redhat-00003:compile
+[INFO] |  |  +- io.quarkus:quarkus-bootstrap-runner:jar:3.15.1.redhat-00005:compile
+[INFO] |  |  |  +- io.quarkus:quarkus-classloader-commons:jar:3.15.1.redhat-00005:compile
+[INFO] |  |  |  +- io.smallrye.common:smallrye-common-io:jar:2.6.0.redhat-00001:compile
+[INFO] |  |  |  \- io.github.crac:org-crac:jar:0.1.3.redhat-00002:compile
+[INFO] |  |  \- io.quarkus:quarkus-fs-util:jar:0.0.10.redhat-00001:compile
+[INFO] |  +- io.quarkus:quarkus-arc:jar:3.15.1.redhat-00005:compile
+[INFO] |  |  +- io.quarkus.arc:arc:jar:3.15.1.redhat-00005:compile
+[INFO] |  |  |  +- jakarta.transaction:jakarta.transaction-api:jar:2.0.1.redhat-00004:compile
+[INFO] |  |  |  \- io.smallrye.reactive:mutiny:jar:2.6.2.redhat-00001:compile
+[INFO] |  |  |     \- org.jctools:jctools-core:jar:4.0.5.redhat-00001:compile
+[INFO] |  |  \- org.eclipse.microprofile.context-propagation:microprofile-context-propagation-api:jar:1.3.0.redhat-00002:compile
+[INFO] |  +- io.quarkus:quarkus-development-mode-spi:jar:3.15.1.redhat-00005:compile
+[INFO] |  +- org.apache.camel:camel-base:jar:4.8.0.redhat-00015:compile
+[INFO] |  |  +- org.apache.camel:camel-management-api:jar:4.8.0.redhat-00015:compile
+[INFO] |  |  +- org.apache.camel:camel-support:jar:4.8.0.redhat-00015:compile
+[INFO] |  |  |  \- org.apache.camel:camel-util-json:jar:4.8.0.redhat-00015:compile
+[INFO] |  |  \- org.apache.camel:camel-util:jar:4.8.0.redhat-00015:compile
+[INFO] |  +- org.apache.camel:camel-componentdsl:jar:4.8.0.redhat-00015:compile
+[INFO] |  +- org.apache.camel:camel-core-catalog:jar:4.8.0.redhat-00015:compile
+[INFO] |  |  \- org.apache.camel:camel-tooling-model:jar:4.8.0.redhat-00015:compile
+[INFO] |  +- org.apache.camel:camel-core-engine:jar:4.8.0.redhat-00015:compile
+[INFO] |  |  +- org.apache.camel:camel-base-engine:jar:4.8.0.redhat-00015:compile
+[INFO] |  |  \- org.apache.camel:camel-core-reifier:jar:4.8.0.redhat-00015:compile
+[INFO] |  +- org.apache.camel:camel-core-languages:jar:4.8.0.redhat-00015:compile
+[INFO] |  |  \- org.apache.camel:camel-xml-jaxp-util:jar:4.8.0.redhat-00015:compile
+[INFO] |  +- org.apache.camel:camel-core-processor:jar:4.8.0.redhat-00015:compile
+[INFO] |  +- org.apache.camel:camel-endpointdsl:jar:4.8.0.redhat-00015:compile
+[INFO] |  +- org.apache.camel:camel-main:jar:4.8.0.redhat-00015:compile
+[INFO] |  +- org.apache.camel:camel-microprofile-config:jar:4.8.0.redhat-00015:compile
+[INFO] |  |  \- org.eclipse.microprofile.config:microprofile-config-api:jar:3.1.0.redhat-00001:compile
+[INFO] |  \- jakarta.xml.bind:jakarta.xml.bind-api:jar:4.0.2.redhat-00001:compile
+[INFO] |     \- jakarta.activation:jakarta.activation-api:jar:2.1.3.redhat-00001:compile
+[INFO] \- org.fusesource:camel-cics:jar:4.8.0.redhat-00001:compile
+[INFO]    +- org.apache.camel:camel-core-model:jar:4.8.0.redhat-00015:compile
+[INFO]    +- org.apache.camel:camel-api:jar:4.8.0.redhat-00015:compile
+[INFO]    +- org.slf4j:slf4j-api:jar:2.0.7.redhat-00003:compile (optional)
+[INFO]    \- org.apache.commons:commons-pool2:jar:2.12.0.redhat-00001:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  0.851 s
+[INFO] Finished at: 2025-03-19T15:17:13+01:00
+[INFO] ------------------------------------------------------------------------

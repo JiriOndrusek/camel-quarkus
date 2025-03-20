@@ -14,36 +14,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.camel.quarkus.component.cics.it;
 
-import java.util.Collections;
+import java.time.Duration;
 import java.util.Map;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 public class CicsTestResource implements QuarkusTestResourceLifecycleManager {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CicsTestResource.class);
-    private static final int CICS_PORT = 5984;
-    //    private static final String COUCHDB_IMAGE = ConfigProvider.getConfig().getValue("couchdb.container.image", String.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CicsTestResource.class);
+    //    private static final String CICS_IMAGE = ConfigProvider.getConfig().getValue("kudu.container.image", String.class);
     private static final String CICS_IMAGE = "images.paas.redhat.com/fuseqe/ibm-cicstg-container-linux-x86-trial:9.3";
 
-    private GenericContainer container;
+    private final static Network network = Network.newNetwork();
+
+    private GenericContainer<?> container;
 
     @Override
     public Map<String, String> start() {
-        LOGGER.info(TestcontainersConfiguration.getInstance().toString());
+        LOG.info(TestcontainersConfiguration.getInstance().toString());
 
         try {
-            container = new GenericContainer(COUCHDB_IMAGE).withExposedPorts(2006, 2810).waitingFor(Wait.forListeningPort());
+            container = new GenericContainer(CICS_IMAGE)
+                    .withEnv("LICENSE", "accept")
+                    .withNetwork(network)
+                    .withNetworkAliases("cgt")
+                    .withExposedPorts(2006, 2810)
+                    .withCopyFileToContainer(MountableFile.forClasspathResource("ctg.ini"), "/var/cicscli/ctg.ini")
+                    .waitingFor(Wait.forLogMessage(".*CTG6512I CICS Transaction Gateway initialization complete.*", 1))
+                    .withStartupTimeout(Duration.ofSeconds(60L));
             container.start();
-
-            final String authority = container.getHost() + ":" + container.getMappedPort(COUCHDB_PORT).toString();
-            return Collections.emptyMap();
+            return Map.of("tcg.tcp.port", container.getMappedPort(2006) + "",
+                    "tcg.host", container.getHost());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -55,8 +65,8 @@ public class CicsTestResource implements QuarkusTestResourceLifecycleManager {
             if (container != null) {
                 container.stop();
             }
-        } catch (Exception e) {
-            // ignored
+        } catch (Exception ex) {
+            LOG.error("An issue occurred while stopping the CicsTestResource", ex);
         }
     }
 }

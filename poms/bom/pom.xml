@@ -6734,6 +6734,11 @@
                 <version>${hapi-fhir-core.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.ibm</groupId>
+                <artifactId>ctgclient</artifactId>
+                <version>${ctgclient.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.amazon.redshift</groupId>
                 <artifactId>redshift-jdbc42</artifactId>
                 <version>${redshift-jdbc42.version}</version>

@@ -111,6 +111,7 @@ com.healthmarketscience.jackcess:jackcess
 com.healthmarketscience.jackcess:jackcess-encrypt
 com.huaweicloud.sdk:huaweicloud-sdk-core
 com.huaweicloud.sdk:huaweicloud-sdk-smn
+com.ibm:ctgclient
 com.ibm.cloud:cloudant
 com.ibm.cloud:cloudant-common
 com.ibm.cloud:sdk-core

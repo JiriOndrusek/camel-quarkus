@@ -252,6 +252,7 @@ com.hierynomus:asn-one
 com.hierynomus:smbj
 com.huaweicloud.sdk:huaweicloud-sdk-core
 com.huaweicloud.sdk:huaweicloud-sdk-smn
+com.ibm:ctgclient
 com.ibm.async:asyncutil
 com.ibm.cloud:cloudant
 com.ibm.cloud:cloudant-common
