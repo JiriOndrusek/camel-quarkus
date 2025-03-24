@@ -30,6 +30,11 @@
     <name>Camel Quarkus :: Integration Tests :: Cics</name>
     <description>Integration tests for Camel Quarkus Cics extension</description>
 
+    <properties>
+        <!-- You need to download the ctgclient jar by yourself. We cannot add a compile scope dependency for legal reasons. -->
+        <ctgclient.jar>${settings.localRepository}/com/ibm/ctgclient/${ctgclient.version}/ctgclient-${ctgclient.version}.jar</ctgclient.jar>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
@@ -40,12 +45,8 @@
             <artifactId>quarkus-resteasy</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.camel.quarkus</groupId>
-            <artifactId>camel-quarkus-direct</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.camel.quarkus</groupId>
-            <artifactId>camel-quarkus-mock</artifactId>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-jackson</artifactId>
         </dependency>
 
         <!-- test dependencies -->
@@ -80,15 +81,26 @@
             <artifactId>awaitility</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <!--todo local hack -->
-        <dependency>
-            <groupId>com.ibm</groupId>
-            <artifactId>ctgclient</artifactId>
-        </dependency>
     </dependencies>
 
     <profiles>
+        <profile>
+            <id>ctgClient</id>
+            <activation>
+                <file>
+                    <exists>${ctgclient.jar}</exists>
+                </file>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.ibm</groupId>
+                    <artifactId>ctgclient</artifactId>
+                    <version>${ctgclient.version}</version>
+                    <scope>system</scope>
+                    <systemPath>${ctgclient.jar}</systemPath>
+                </dependency>
+            </dependencies>
+        </profile>
         <profile>
             <id>virtualDependencies</id>
             <activation>

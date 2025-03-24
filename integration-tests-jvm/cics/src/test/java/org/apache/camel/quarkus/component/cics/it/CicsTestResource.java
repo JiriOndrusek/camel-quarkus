@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.TestcontainersConfiguration;
@@ -48,12 +49,13 @@ public class CicsTestResource implements QuarkusTestResourceLifecycleManager {
                     .withNetwork(network)
                     .withNetworkAliases("cgt")
                     .withExposedPorts(2006, 2810)
+                    .withLogConsumer(new Slf4jLogConsumer(LOG))
                     .withCopyFileToContainer(MountableFile.forClasspathResource("ctg.ini"), "/var/cicscli/ctg.ini")
                     .waitingFor(Wait.forLogMessage(".*CTG6512I CICS Transaction Gateway initialization complete.*", 1))
                     .withStartupTimeout(Duration.ofSeconds(60L));
             container.start();
             return Map.of("tcg.tcp.port", container.getMappedPort(2006) + "",
-                    "tcg.host", container.getHost());
+                    "ctg.host", container.getHost());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

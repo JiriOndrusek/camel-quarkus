@@ -16,19 +16,23 @@
  */
 package org.apache.camel.quarkus.component.cics.it;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.redhat.camel.component.cics.CICSConstants;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 @Path("/cics")
@@ -38,26 +42,40 @@ public class CicsResource {
     private static final Logger LOG = Logger.getLogger(CicsResource.class);
 
     private static final String COMPONENT_CICS = "cics";
+
+    @ConfigProperty(name = "tcg.tcp.port")
+    int tcpPort;
+
+    @ConfigProperty(name = "ctg.host")
+    String ctgHost;
+
     @Inject
     CamelContext context;
 
     @Inject
     ProducerTemplate producerTemplate;
 
-    @Path("/test")
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response loadComponentSap() throws Exception {
-        Exchange ex = producerTemplate.request("direct:test", e -> {
+    @Path("/eciReady/{dataExchangeType}/{factory}")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response eciReady(Map<String, String> containers,
+            @PathParam("dataExchangeType") String dataExchangeType,
+            @PathParam("factory") String factory) throws Exception {
+        String uri = "cics:eci/" + dataExchangeType + ("noFactory".equals(factory)
+                ? "?host=%s&port=%d&protocol=tcp".formatted(ctgHost, tcpPort) : "?gatewayFactory=#" + factory);
+
+        Exchange ex = producerTemplate.request(uri, e -> {
             e.getIn().setHeader(CICSConstants.CICS_PROGRAM_NAME_HEADER, "ECIREADY");
+            if ("channel".equals(dataExchangeType)) {
+                e.getIn().setHeader(CICSConstants.CICS_CHANNEL_NAME_HEADER, "mychannel");
+                e.getIn().setBody(containers);
+            }
             e.getIn().setHeader(CICSConstants.CICS_COMM_AREA_SIZE_HEADER, "18");
         });
 
-        Object o = producerTemplate.requestBodyAndHeaders("direct:test",
-                Map.of(CICSConstants.CICS_PROGRAM_NAME_HEADER, "ECIREADY",
-                        CICSConstants.CICS_COMM_AREA_SIZE_HEADER, "18"),
-                null);
-
-        return null;
+        Map<String, Object> results = new HashMap<String, Object>(ex.getIn().getHeaders());
+        results.put("body", ex.getIn().getBody(String.class));
+        return Response.ok(results).build();
     }
 }

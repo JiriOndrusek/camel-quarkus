@@ -13,15 +13,14 @@ public class CicsProducer {
     @ConfigProperty(name = "tcg.tcp.port")
     int tcpPort;
 
-    @ConfigProperty(name = "tcg.host")
-    String tcgHost;
+    @ConfigProperty(name = "ctg.host")
+    String ctgHost;
 
     @Singleton
-    @Named("pooledConnectionFactory")
-    //    @IfBuildProfile("PooledConnection")
-    CICSPooledGatewayFactory pooledConnectionFactory() throws Exception {
+    @Named("pooledFactory")
+    CICSPooledGatewayFactory pooledFactory() throws Exception {
         CICSSingleGatewayFactory factory = new CICSSingleGatewayFactory();
-        factory.setHost(tcgHost);
+        factory.setHost(ctgHost);
         factory.setPort(tcpPort);
         factory.setProtocol("tcp");
 
@@ -33,6 +32,16 @@ public class CicsProducer {
         gatewayPool.start();
 
         return gatewayPool;
+    }
+
+    @Singleton
+    @Named("factory")
+    CICSSingleGatewayFactory factory() throws Exception {
+        CICSSingleGatewayFactory factory = new CICSSingleGatewayFactory();
+        factory.setPort(tcpPort);
+        factory.setHost(ctgHost);
+        factory.setProtocol("tcp");
+        return factory;
 
     }
 }
