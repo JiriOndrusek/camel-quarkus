@@ -1,0 +1,15 @@
+== Running tests
+
+To be able to run the tests, you have to add the IBM CTG client jar file into your local Maven repository using:
+
+```
+mvn install:install-file -DgroupId=com.ibm -DartifactId=ctgclient -Dversion=9.2 -Dpackaging=jar -Dfile=/path/to/ctg.jar --
+```
+
+Then, you have to export the version
+
+```
+export CTG_CLIENT_VERSION=9.2
+```
+
+After that, tests can be executed.

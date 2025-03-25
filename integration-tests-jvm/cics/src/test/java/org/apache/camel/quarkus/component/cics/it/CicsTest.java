@@ -20,29 +20,33 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import com.redhat.camel.component.cics.CICSConstants;
+import com.redhat.camel.component.cics.support.CICSDataExchangeType;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import static com.redhat.camel.component.cics.CICSConstants.*;
 
+@EnabledIfEnvironmentVariable(named = "CTG_CLIENT_VERSION", matches = ".+")
 @QuarkusTestResource(CicsTestResource.class)
 @QuarkusTest
 class CicsTest {
 
-    private final Map<String, Object> containers = Map.of("FirstChar", "My First Container",
-            "SecondByteArray", "My Second Container".getBytes());
+    private final Map<String, Object> containers = Map.of("FirstChar", "My First Container vvvvvvv",
+            "SecondByteArray", "My Second Container vvvvvvv".getBytes());
 
     static Stream<Arguments> typeMatrix() {
-        //        String[] gatewayFactories = { "noFactory", "factory", "pooledFactory" };
-        //        String[] dataExchangeTypes = { "commarea", "channel" };
-        String[] gatewayFactories = { "pooledFactory" };
-        String[] dataExchangeTypes = { "channel" };
+        String[] gatewayFactories = { "noFactory", "factory", "pooledFactory" };
+        // channel requires a special app deployed in thw container image, which is not present
+        // String[] dataExchangeTypes = { "commarea", "channel" };
+        //only commarea is covered
+        String[] dataExchangeTypes = { CICSDataExchangeType.COMMAREA.name() };
 
         return Stream.of(dataExchangeTypes)
                 .flatMap(num -> Stream.of(gatewayFactories)
@@ -55,7 +59,7 @@ class CicsTest {
         RestAssured.given()
                 .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
-                .body("channel".equals(dataExchangeType) ? containers : null)
+                .body("channel".equals(dataExchangeType) ? containers : "")
                 .post("/cics/eciReady/" + dataExchangeType + "/" + factory)
                 .then()
                 .statusCode(200)
@@ -64,7 +68,7 @@ class CicsTest {
                 .body("$", Matchers.hasKey(CICSConstants.CICS_RETURN_CODE_STRING_HEADER))
                 .body("$", Matchers.hasKey(CICSConstants.CICS_LUW_TOKEN_HEADER))
                 .body("$", Matchers.hasKey(CICSConstants.CICS_EXTEND_MODE_HEADER))
-                .extract().as(Map.class);
+                .body("body", Matchers.matchesRegex("\\d+/\\d+/\\d+.*"));
 
     }
 

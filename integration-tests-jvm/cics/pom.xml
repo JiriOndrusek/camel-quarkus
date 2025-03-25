@@ -30,11 +30,6 @@
     <name>Camel Quarkus :: Integration Tests :: Cics</name>
     <description>Integration tests for Camel Quarkus Cics extension</description>
 
-    <properties>
-        <!-- You need to download the ctgclient jar by yourself. We cannot add a compile scope dependency for legal reasons. -->
-        <ctgclient.jar>${settings.localRepository}/com/ibm/ctgclient/${ctgclient.version}/ctgclient-${ctgclient.version}.jar</ctgclient.jar>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
@@ -87,17 +82,16 @@
         <profile>
             <id>ctgClient</id>
             <activation>
-                <file>
-                    <exists>${ctgclient.jar}</exists>
-                </file>
+                <property>
+                    <name>env.CTG_CLIENT_VERSION</name>
+                    <value/>
+                </property>
             </activation>
             <dependencies>
                 <dependency>
                     <groupId>com.ibm</groupId>
                     <artifactId>ctgclient</artifactId>
-                    <version>${ctgclient.version}</version>
-                    <scope>system</scope>
-                    <systemPath>${ctgclient.jar}</systemPath>
+                    <version>${env.CTG_CLIENT_VERSION}</version>
                 </dependency>
             </dependencies>
         </profile>

@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.redhat.camel.component.cics.CICSConstants;
+import com.redhat.camel.component.cics.support.CICSDataExchangeType;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -29,7 +30,6 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -50,9 +50,6 @@ public class CicsResource {
     String ctgHost;
 
     @Inject
-    CamelContext context;
-
-    @Inject
     ProducerTemplate producerTemplate;
 
     @Path("/eciReady/{dataExchangeType}/{factory}")
@@ -67,11 +64,12 @@ public class CicsResource {
 
         Exchange ex = producerTemplate.request(uri, e -> {
             e.getIn().setHeader(CICSConstants.CICS_PROGRAM_NAME_HEADER, "ECIREADY");
-            if ("channel".equals(dataExchangeType)) {
+            if (CICSDataExchangeType.CHANNEL.name().equals(dataExchangeType)) {
                 e.getIn().setHeader(CICSConstants.CICS_CHANNEL_NAME_HEADER, "mychannel");
                 e.getIn().setBody(containers);
+            } else {
+                e.getIn().setHeader(CICSConstants.CICS_COMM_AREA_SIZE_HEADER, "18");
             }
-            e.getIn().setHeader(CICSConstants.CICS_COMM_AREA_SIZE_HEADER, "18");
         });
 
         Map<String, Object> results = new HashMap<String, Object>(ex.getIn().getHeaders());
