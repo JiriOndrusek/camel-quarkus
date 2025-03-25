@@ -50,6 +50,8 @@ public class CicsTestResource implements QuarkusTestResourceLifecycleManager {
                     .withNetworkAliases("cgt")
                     .withExposedPorts(2006, 2810)
                     .withLogConsumer(new Slf4jLogConsumer(LOG))
+                    //                    .withCopyToContainer(MountableFile.forHostPath(CertificatesUtil.keystoreFile("ctg-server", "p12")),
+                    //                            "/home/ctg/config/server.keystore")
                     .withCopyFileToContainer(MountableFile.forClasspathResource("ctg.ini"), "/var/cicscli/ctg.ini")
                     .waitingFor(Wait.forLogMessage(".*CTG6512I CICS Transaction Gateway initialization complete.*", 1))
                     .withStartupTimeout(Duration.ofSeconds(60L));

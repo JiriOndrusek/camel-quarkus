@@ -16,11 +16,11 @@
  */
 package org.apache.camel.quarkus.component.cics.it;
 
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.redhat.camel.component.cics.CICSConstants;
-import com.redhat.camel.component.cics.support.CICSDataExchangeType;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -52,24 +52,20 @@ public class CicsResource {
     @Inject
     ProducerTemplate producerTemplate;
 
-    @Path("/eciReady/{dataExchangeType}/{factory}")
+    @Path("/eciReady/COMMAREA/{factory}")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response eciReady(Map<String, String> containers,
-            @PathParam("dataExchangeType") String dataExchangeType,
             @PathParam("factory") String factory) throws Exception {
-        String uri = "cics:eci/" + dataExchangeType + ("noFactory".equals(factory)
+        String uri = "cics:eci/commarea" + ("noFactory".equals(factory)
                 ? "?host=%s&port=%d&protocol=tcp".formatted(ctgHost, tcpPort) : "?gatewayFactory=#" + factory);
+        java.nio.file.Path path = Paths.get("target/certs/ctg-server-trusstore.p12");
+        uri = uri + "&sslKeyring=" + path.toAbsolutePath() + "&sslPassword=changeit";
 
         Exchange ex = producerTemplate.request(uri, e -> {
             e.getIn().setHeader(CICSConstants.CICS_PROGRAM_NAME_HEADER, "ECIREADY");
-            if (CICSDataExchangeType.CHANNEL.name().equals(dataExchangeType)) {
-                e.getIn().setHeader(CICSConstants.CICS_CHANNEL_NAME_HEADER, "mychannel");
-                e.getIn().setBody(containers);
-            } else {
-                e.getIn().setHeader(CICSConstants.CICS_COMM_AREA_SIZE_HEADER, "18");
-            }
+            e.getIn().setHeader(CICSConstants.CICS_COMM_AREA_SIZE_HEADER, "18");
         });
 
         Map<String, Object> results = new HashMap<String, Object>(ex.getIn().getHeaders());
