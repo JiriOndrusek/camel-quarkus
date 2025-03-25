@@ -25,6 +25,9 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import io.smallrye.certs.Format;
+import io.smallrye.certs.junit5.Certificate;
+import org.apache.camel.quarkus.test.support.certificate.TestCertificates;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -32,9 +35,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import static com.redhat.camel.component.cics.CICSConstants.*;
 
-//@TestCertificates(certificates = {
-//        @Certificate(name = "ctg-server", formats = { Format.PKCS12,
-//                Format.PEM }, password = "changeit") })
+@TestCertificates(certificates = {
+        @Certificate(name = "ctg-server", formats = { Format.PKCS12 }, password = "changeit") })
 //@EnabledIfEnvironmentVariable(named = "CTG_CLIENT_VERSION", matches = ".+")
 @QuarkusTestResource(CicsTestResource.class)
 @QuarkusTest
@@ -73,6 +75,11 @@ class CicsTest {
                 //validate output of the echo app for the commarea
                 .body("body", Matchers.matchesRegex("\\d+/\\d+/\\d+.*"));
 
+        //        try {
+        //            Thread.sleep(10 * 60 * 1000);
+        //        } catch (InterruptedException e) {
+        //            throw new RuntimeException(e);
+        //        }
     }
 
 }

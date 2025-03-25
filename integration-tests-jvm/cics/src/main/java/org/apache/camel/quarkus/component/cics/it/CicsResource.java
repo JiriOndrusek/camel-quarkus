@@ -16,7 +16,6 @@
  */
 package org.apache.camel.quarkus.component.cics.it;
 
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -60,8 +59,8 @@ public class CicsResource {
             @PathParam("factory") String factory) throws Exception {
         String uri = "cics:eci/commarea" + ("noFactory".equals(factory)
                 ? "?host=%s&port=%d&protocol=tcp".formatted(ctgHost, tcpPort) : "?gatewayFactory=#" + factory);
-        java.nio.file.Path path = Paths.get("target/certs/ctg-server-trusstore.p12");
-        uri = uri + "&sslKeyring=" + path.toAbsolutePath() + "&sslPassword=changeit";
+        //        java.nio.file.Path path = Paths.get("target/certs/ctg-server-trusstore.p12");
+        //        uri = uri + "&sslKeyring=" + path.toAbsolutePath() + "&sslPassword=changeit";
 
         Exchange ex = producerTemplate.request(uri, e -> {
             e.getIn().setHeader(CICSConstants.CICS_PROGRAM_NAME_HEADER, "ECIREADY");
