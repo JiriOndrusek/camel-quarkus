@@ -36,7 +36,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import static com.redhat.camel.component.cics.CICSConstants.*;
 
 @TestCertificates(certificates = {
-        @Certificate(name = "ctg-server", formats = { Format.PKCS12 }, password = "changeit") })
+        @Certificate(name = "localhost", formats = { Format.PKCS12, Format.PEM, Format.JKS }, password = "changeit") })
 //@EnabledIfEnvironmentVariable(named = "CTG_CLIENT_VERSION", matches = ".+")
 @QuarkusTestResource(CicsTestResource.class)
 @QuarkusTest
@@ -46,8 +46,8 @@ class CicsTest {
             "SecondByteArray", "My Second Container".getBytes());
 
     static Stream<Arguments> typeMatrix() {
-        //        String[] gatewayFactories = { "noFactory", "factory", "pooledFactory" };
-        String[] gatewayFactories = { "noFactory" };
+        String[] gatewayFactories = { "noFactory", "factory", "pooledFactory" };
+        //        String[] gatewayFactories = { "factory" };
         // channel requires a special app deployed in thw container image, which is not present
         // only commarea has relevant app deployed in the docker image
         String[] dataExchangeTypes = { CICSDataExchangeType.COMMAREA.name() };
