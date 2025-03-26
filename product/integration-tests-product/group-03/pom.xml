@@ -33,7 +33,6 @@
     <name>Camel Quarkus :: Integration Tests :: Product :: Group 03</name>
 
     <modules>
-        <module>../../../integration-tests-jvm/beanio</module>
         <module>../../../integration-tests-jvm/cli-connector</module>
         <module>../../../integration-tests-jvm/console</module>
         <module>../../../integration-tests-jvm/controlbus-statistics</module>
@@ -46,6 +45,7 @@
         <module>../../../integration-tests/bean-validator</module>
         <module>../../../integration-tests/bindy</module>
         <module>../../../integration-tests/cassandraql</module>
+        <module>../../../integration-tests/cics</module>
         <module>../../../integration-tests/core-discovery-disabled</module>
         <module>../../../integration-tests/crypto</module>
         <module>../../../integration-tests/elasticsearch-rest-client</module>

@@ -67,5 +67,6 @@
         <module>../../../integration-test-groups/foundation/controlbus</module>
         <module>../../../integration-test-groups/foundation/core</module>
         <module>../../../integration-test-groups/foundation/core-annotations</module>
+        <module>../../../integration-test-groups/foundation/core-languages</module>
     </modules>
 </project>

@@ -152,6 +152,7 @@ group-08:
 group-09:
   - activemq
   - amqp
+  - cics
   - debug
   - ftp
   - graphql

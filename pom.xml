@@ -48,7 +48,7 @@
         <camel.sb.docs.branch>camel-spring-boot-${camel.major.minor}.x</camel.sb.docs.branch><!-- The stable camel-spring-boot branch on which our Antora docs depends -->
         <camel-quarkus-community.version>3.15.0</camel-quarkus-community.version>
         <camel-kamelets.version>4.8.0.redhat-00013</camel-kamelets.version>
-        <camel-sap.version>4.8.0.redhat-00001</camel-sap.version>
+        <camel-fusesource.version>4.8.0.redhat-00001</camel-fusesource.version><!-- version of internal components, like camel-sap & camel-cics -->
         <cassandra-quarkus.version>1.2.0</cassandra-quarkus.version><!-- This should be in sync with quarkus-platform https://repo1.maven.org/maven2/com/datastax/oss/quarkus/cassandra-quarkus-bom/ -->
         <debezium.version>2.7.3.Final</debezium.version> <!-- This should be in sync with quarkus-platform https://github.com/quarkusio/quarkus-platform-->
         <optaplanner.version>9.37.0.Final</optaplanner.version><!-- This should be in sync with quarkus-platform https://repo1.maven.org/maven2/org/optaplanner/optaplanner-quarkus/ -->
@@ -98,6 +98,7 @@
         <commons-dbcp2.version>${commons-dbcp2-version}</commons-dbcp2.version>
         <commons-exec.version>${commons-exec-version}</commons-exec.version>
         <commons-validator.version>${commons-validator-version}</commons-validator.version>
+        <ctgclient.version>9.2</ctgclient.version>
         <dropwizard-metrics.version>${metrics-version}</dropwizard-metrics.version>
         <eddsa.version>${eddsa-version}</eddsa.version>
         <eclipse-transformer.version>0.5.0</eclipse-transformer.version>
