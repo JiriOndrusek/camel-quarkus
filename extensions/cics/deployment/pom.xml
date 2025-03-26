@@ -60,4 +60,23 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>ctgClient</id>
+            <activation>
+                <property>
+                    <name>env.CTG_CLIENT_VERSION</name>
+                    <value />
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.ibm</groupId>
+                    <artifactId>ctgclient</artifactId>
+                    <version>9.2</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
 </project>
