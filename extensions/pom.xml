@@ -79,6 +79,7 @@
         <!-- <module>caffeine</module> disabled by cq-prod-maven-plugin:prod-excludes -->
         <module>cassandraql</module>
         <!-- <module>cbor</module> disabled by cq-prod-maven-plugin:prod-excludes -->
+        <module>cics</module>
         <!-- <module>cloudevents</module> disabled by cq-prod-maven-plugin:prod-excludes -->
         <!-- <module>consul</module> disabled by cq-prod-maven-plugin:prod-excludes -->
         <module>controlbus</module>

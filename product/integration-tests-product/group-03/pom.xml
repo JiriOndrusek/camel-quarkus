@@ -41,6 +41,7 @@
         <module>../../../integration-tests/beanio</module>
         <module>../../../integration-tests/bindy</module>
         <module>../../../integration-tests/cassandraql</module>
+        <module>../../../integration-tests/cics</module>
         <module>../../../integration-tests/core-discovery-disabled</module>
         <module>../../../integration-tests/crypto</module>
         <module>../../../integration-tests/elasticsearch-rest-client</module>
@@ -66,6 +67,5 @@
         <module>../../../integration-tests/jms-ibmmq-client</module>
         <module>../../../integration-tests/jms-qpid-amqp-client</module>
         <module>../../../integration-tests/jpa</module>
-        <module>../../../integration-tests/jq</module>
     </modules>
 </project>

@@ -7547,6 +7547,21 @@
         <version>3.20.0.fuse-SNAPSHOT</version>
       </dependency>
       <dependency>
+        <groupId>org.fusesource</groupId>
+        <artifactId>camel-cics</artifactId>
+        <version>4.10.2.redhat-00001</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.camel.quarkus</groupId>
+        <artifactId>camel-quarkus-cics</artifactId>
+        <version>3.20.0.fuse-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.camel.quarkus</groupId>
+        <artifactId>camel-quarkus-cics-deployment</artifactId>
+        <version>3.20.0.fuse-SNAPSHOT</version>
+      </dependency>
+      <dependency>
         <groupId>org.apache.camel.kamelets</groupId>
         <artifactId>camel-kamelets</artifactId>
         <version>4.10.2.redhat-00001</version>

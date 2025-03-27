@@ -1,0 +1,42 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+name: ctg_with_haproxy
+services:
+  ctg:
+    image: "images.paas.redhat.com/fuseqe/ibm-cicstg-container-linux-x86-trial:9.3"
+    volumes:
+      - "${CTG_INI_FILE}:/var/cicscli/ctg.ini"
+      - "${SERVER_KEYSTORE_FILE}:/home/ctg/config/server.keystore"
+    environment:
+      LICENSE: "accept"
+    networks:
+      ctg_network:
+        aliases:
+          - "ctg"
+  haproxy:
+    image: "haproxytech/haproxy-alpine:latest"
+    volumes:
+      - "${HAPROXY_CFG_FILE}:/usr/local/etc/haproxy/haproxy.cfg"
+    networks:
+      ctg_network:
+        aliases:
+          - "haproxy"
+    depends_on:
+      - ctg
+networks:
+  ctg_network:
