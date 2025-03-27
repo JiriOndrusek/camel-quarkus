@@ -16,6 +16,7 @@
  */
 package org.apache.camel.quarkus.component.cics.deployment;
 
+import java.util.Collections;
 import java.util.ListResourceBundle;
 
 import io.quarkus.deployment.annotations.BuildProducer;
@@ -24,9 +25,12 @@ import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.ExtensionSslNativeSupportBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
+import io.quarkus.deployment.builditem.RemovedResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBundleBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
+import io.quarkus.deployment.pkg.steps.NativeOrNativeSourcesBuild;
+import io.quarkus.maven.dependency.ArtifactKey;
 import org.apache.commons.pool2.impl.DefaultEvictionPolicy;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
@@ -78,12 +82,14 @@ class CicsProcessor {
         IndexView index = combinedIndex.getIndex();
 
         index.getKnownClasses().stream()
-                .filter(cl -> cl.name().toString().startsWith("com.ibm.ctg"))
+                .filter(cl -> (cl.name().toString().startsWith("com.ibm.ctg")
+                        || cl.name().toString().startsWith("com.ibm.cics.common"))
+                        && !cl.name().toString().contains("CICSTrace"))
                 .map(cl -> cl.name().toString())
                 .sorted()
                 .peek(System.out::println)
                 .map(s -> ReflectiveClassBuildItem
-                        .builder(s).build())
+                        .builder(s).methods().fields().build())
                 .forEach(reflectiveClasses::produce);
     }
 
@@ -93,6 +99,14 @@ class CicsProcessor {
         runtime.produce(new RuntimeInitializedClassBuildItem("com.ibm.ctg.client.LocalCICSJavaGateway"));
         runtime.produce(new RuntimeInitializedClassBuildItem("com.ibm.ctg.client.statistics.Stat"));
         runtime.produce(new RuntimeInitializedClassBuildItem("com.ibm.ctg.util.CICSServerURL"));
+        runtime.produce(new RuntimeInitializedClassBuildItem("com.ibm.ctg.client.BufferTrace"));
+        //        runtime.produce(new RuntimeInitializedClassBuildItem("com.ibm.ctg.client.CICSTrace"));
+    }
+
+    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class)
+    RemovedResourceBuildItem removedResources() {
+        return new RemovedResourceBuildItem(ArtifactKey.fromString("com.ibm:ctgclient"),
+                Collections.singleton("com/ibm/ctg/client/CICSTrace.class"));
     }
 
     //ctg client classes
