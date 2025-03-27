@@ -1,5 +1,8 @@
 package com.ibm.ctg.server;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
 public class TraceMessages {
 
     public static String getMessage(int var1) {

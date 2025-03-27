@@ -85,22 +85,6 @@
 
     <profiles>
         <profile>
-            <id>ctgClient</id>
-            <activation>
-                <property>
-                    <name>env.CTG_CLIENT_VERSION</name>
-                    <value />
-                </property>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>com.ibm</groupId>
-                    <artifactId>ctgclient</artifactId>
-                    <version>${env.CTG_CLIENT_VERSION}</version>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
             <id>native</id>
             <activation>
                 <property>

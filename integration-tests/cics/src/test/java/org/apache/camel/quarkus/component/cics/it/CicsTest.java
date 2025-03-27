@@ -30,7 +30,6 @@ import io.smallrye.certs.junit5.Certificate;
 import org.apache.camel.quarkus.test.support.certificate.TestCertificates;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -38,7 +37,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 @TestCertificates(certificates = {
         @Certificate(name = "localhost", formats = { Format.PKCS12 }, password = "changeit"),
         @Certificate(name = "wrong", formats = { Format.PKCS12 }, password = "changeit") })
-@EnabledIfEnvironmentVariable(named = "CTG_CLIENT_VERSION", matches = ".+")
 @QuarkusTestResource(CicsTestResource.class)
 @QuarkusTest
 class CicsTest {

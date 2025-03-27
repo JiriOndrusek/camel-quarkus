@@ -1,7 +1,9 @@
 package com.ibm.ctg.server;
 
 import io.quarkus.logging.Log;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
+@RegisterForReflection
 public class ServerGatewayRequest {
 
     public void setLocalMode(boolean b) {
@@ -16,7 +18,7 @@ public class ServerGatewayRequest {
         Log.error("Not supported in native");
     }
 
-    public static void execute() {
+    public void execute() {
         Log.error("Not supported in native");
     }
 }

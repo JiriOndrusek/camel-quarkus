@@ -93,6 +93,7 @@
         <commons-collections4.version>${commons-collections4-version}</commons-collections4.version>
         <commons-exec.version>${commons-exec-version}</commons-exec.version>
         <commons-validator.version>${commons-validator-version}</commons-validator.version>
+        <ctgClient.version>9.2</ctgClient.version>
         <cxf.version>4.1.1</cxf.version><!-- @sync io.quarkiverse.cxf:quarkus-cxf-parent:${quarkiverse-cxf.version} prop:cxf.version -->
         <dropwizard-metrics.version>${metrics-version}</dropwizard-metrics.version>
         <eddsa.version>${eddsa-version}</eddsa.version>
