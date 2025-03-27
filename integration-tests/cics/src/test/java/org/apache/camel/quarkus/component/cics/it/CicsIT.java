@@ -19,6 +19,6 @@ package org.apache.camel.quarkus.component.cics.it;
 import io.quarkus.test.junit.QuarkusIntegrationTest;
 
 @QuarkusIntegrationTest
-class ActiveMQIT extends CicsTest {
+class CicsIT extends CicsTest {
 
 }

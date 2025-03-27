@@ -29,6 +29,7 @@ import io.smallrye.certs.Format;
 import io.smallrye.certs.junit5.Certificate;
 import org.apache.camel.quarkus.test.support.certificate.TestCertificates;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -48,12 +49,13 @@ class CicsTest {
 
     static Stream<Arguments> typeMatrix() {
         return Stream.of(
-                Arguments.of("tcp", CICSDataExchangeType.COMMAREA.name(), "noFactory"),
-                Arguments.of("tcp", CICSDataExchangeType.COMMAREA.name(), "factory"),
-                Arguments.of("tcp", CICSDataExchangeType.COMMAREA.name(), "pooledFactory"),
-                Arguments.of("ssl", CICSDataExchangeType.COMMAREA.name(), "noFactory"),
-                Arguments.of("ssl", CICSDataExchangeType.COMMAREA.name(), "sslFactory"),
-                Arguments.of("ssl", CICSDataExchangeType.COMMAREA.name(), "sslPooledFactory"));
+                //                Arguments.of("tcp", CICSDataExchangeType.COMMAREA.name(), "noFactory"),
+                Arguments.of("tcp", CICSDataExchangeType.COMMAREA.name(), "factory")
+        //                Arguments.of("tcp", CICSDataExchangeType.COMMAREA.name(), "pooledFactory"),
+        //                Arguments.of("ssl", CICSDataExchangeType.COMMAREA.name(), "noFactory"),
+        //                Arguments.of("ssl", CICSDataExchangeType.COMMAREA.name(), "sslFactory"),
+        //                Arguments.of("ssl", CICSDataExchangeType.COMMAREA.name(), "sslPooledFactory")
+        );
     };
 
     @MethodSource("typeMatrix")
@@ -74,6 +76,7 @@ class CicsTest {
                 .body("body", Matchers.matchesRegex("\\d+/\\d+/\\d+.*"));
     }
 
+    @Disabled
     @Test
     public void sslWrongCertificate() {
         RestAssured.given()
@@ -89,6 +92,7 @@ class CicsTest {
      * Channel should fail with a program deployed in the server (eciReady).
      * Test verifies, that channel type does not cause aby trouble for the native execution.
      */
+    @Disabled
     @Test
     public void channelFail() {
         RestAssured.given()

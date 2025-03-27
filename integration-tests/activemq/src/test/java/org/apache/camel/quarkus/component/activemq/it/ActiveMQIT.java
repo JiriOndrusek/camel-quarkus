@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.activemq.it;
+package com.ibm.ctg.server;
 
 import io.quarkus.test.junit.QuarkusIntegrationTest;
 

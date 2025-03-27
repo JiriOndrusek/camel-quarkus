@@ -139,6 +139,7 @@ com.google.protobuf:protoc
 com.google.re2j:re2j
 com.hierynomus:asn-one
 com.hierynomus:smbj
+com.ibm:ctgclient
 com.ibm.async:asyncutil
 com.ibm.icu:icu4j
 com.jayway.jsonpath:json-path
