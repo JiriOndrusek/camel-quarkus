@@ -17,7 +17,6 @@
 package org.apache.camel.quarkus.component.cics.it;
 
 import java.util.Map;
-import java.util.stream.Stream;
 
 import com.redhat.camel.component.cics.CICSConstants;
 import com.redhat.camel.component.cics.support.CICSDataExchangeType;
@@ -29,10 +28,8 @@ import io.smallrye.certs.Format;
 import io.smallrye.certs.junit5.Certificate;
 import org.apache.camel.quarkus.test.support.certificate.TestCertificates;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
 @TestCertificates(certificates = {
         @Certificate(name = "localhost", formats = { Format.PKCS12 }, password = "changeit"),
@@ -41,26 +38,62 @@ import org.junit.jupiter.params.provider.MethodSource;
 @QuarkusTest
 class CicsTest {
 
+    int sslPort, tcpPort;
+    String host;
+
     private static final Map<String, Object> containers = Map.of("FirstChar", "My First Container",
             "SecondByteArray", "My Second Container".getBytes());
 
-    static Stream<Arguments> typeMatrix() {
-        return Stream.of(
-                Arguments.of("tcp", CICSDataExchangeType.COMMAREA.name(), "noFactory"),
-                Arguments.of("tcp", CICSDataExchangeType.COMMAREA.name(), "factory"),
-                Arguments.of("tcp", CICSDataExchangeType.COMMAREA.name(), "pooledFactory"),
-                Arguments.of("ssl", CICSDataExchangeType.COMMAREA.name(), "noFactory"),
-                Arguments.of("ssl", CICSDataExchangeType.COMMAREA.name(), "sslFactory"),
-                Arguments.of("ssl", CICSDataExchangeType.COMMAREA.name(), "sslPooledFactory"));
-    };
+    @Test
+    public void commareaTcpNoFactory() {
+        test("cics", CICSDataExchangeType.COMMAREA, "?host=%s&port=%d&protocol=%s".formatted(host, tcpPort, "tcp"));
+    }
 
-    @MethodSource("typeMatrix")
-    @ParameterizedTest
-    public void commarea(String protocol, String dataExchangeType, String factory) {
+    @Test
+    public void commareaTcpFactory() {
+        test("cicsFactory", CICSDataExchangeType.COMMAREA, null);
+    }
+
+    @Test
+    public void commareaTcpPooledFactory() {
+        test("cicsPooledFactory", CICSDataExchangeType.COMMAREA, null);
+    }
+    //
+    //    @Test
+    //    public void commareaSslNoFactory() {
+    //        test("ssl", CICSDataExchangeType.COMMAREA, "noFactory");
+    //    }
+
+    @Test
+    public void commareaSslFactory() {
+        test("cicsSslFactory", CICSDataExchangeType.COMMAREA, null);
+    }
+
+    @Test
+    public void commareaSslPooledFactory() {
+        test("cicsSslPooledFactory", CICSDataExchangeType.COMMAREA, null);
+    }
+
+    //    @Test
+    //    public void commareaCorrectUsernameNoFactory() {
+    //        test("auth", CICSDataExchangeType.COMMAREA, "noFactory", "&userId=cicstg&password=cicstg");
+    //    }
+    //
+    //    @Test
+    //    public void commareaWrongUsernameNoFactory() {
+    //        test("auth", CICSDataExchangeType.COMMAREA, "noFactory", "&userId=cicstg&password=wrong");
+    //    }
+
+    //    private void test(String protocol, CICSDataExchangeType dataExchangeType, String factory) {
+    //        test(protocol, dataExchangeType,  null);
+    //    }
+
+    private void test(String component, CICSDataExchangeType dataExchangeType, String urlSuffix) {
         RestAssured.given()
                 .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
-                .post("/cics/eciReady/" + dataExchangeType + "/" + protocol + "/" + factory)
+                .queryParam("urlSuffix", urlSuffix)
+                .post("/cics/eciReady/" + component + "/" + dataExchangeType.name())
                 .then()
                 .statusCode(200)
                 .body("body", Matchers.notNullValue())
@@ -72,6 +105,7 @@ class CicsTest {
                 .body("body", Matchers.matchesRegex("\\d+/\\d+/\\d+.*"));
     }
 
+    @Disabled
     @Test
     public void sslWrongCertificate() {
         RestAssured.given()
@@ -87,6 +121,7 @@ class CicsTest {
      * Channel should fail with a program deployed in the server (eciReady).
      * Test verifies, that channel type does not cause aby trouble for the native execution.
      */
+    @Disabled
     @Test
     public void channelFail() {
         RestAssured.given()

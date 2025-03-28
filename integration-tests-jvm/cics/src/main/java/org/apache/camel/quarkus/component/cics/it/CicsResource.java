@@ -16,7 +16,6 @@
  */
 package org.apache.camel.quarkus.component.cics.it;
 
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +27,7 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.camel.Exchange;
@@ -43,6 +43,9 @@ public class CicsResource {
 
     private static final String COMPONENT_CICS = "cics";
 
+    @ConfigProperty(name = "ctg.authenticated.tcp.port")
+    int authenticatedPort;
+
     @ConfigProperty(name = "ctg.tcp.port")
     int tcpPort;
 
@@ -55,25 +58,42 @@ public class CicsResource {
     @Inject
     ProducerTemplate producerTemplate;
 
-    @Path("/eciReady/{dataExchangeType}/{protocol}/{factory}")
+    @Path("/eciReady/{component}/{dataExchangeType}")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response eciReady(Map<String, String> containers,
-            @PathParam("protocol") String protocol,
+            @PathParam("component") String component,
             @PathParam("dataExchangeType") String dataExchangeType,
-            @PathParam("factory") String factory) throws Exception {
-        var port = "ssl".equals(protocol) ? sslPort : tcpPort;
-        String uri = "cics:eci/" + dataExchangeType.toLowerCase();
-        if ("noFactory".equals(factory)) {
-            uri = uri + "?host=%s&port=%d&protocol=%s".formatted(ctgHost, port, protocol);
-            if ("ssl".equals(protocol)) {
-                java.nio.file.Path path = Paths.get("target/certs/localhost-truststore.p12");
-                uri = uri + "&sslKeyring=" + path.toAbsolutePath() + "&sslPassword=changeit";
-            }
-        } else {
-            uri = uri + "?gatewayFactory=#" + factory;
+            @PathParam("factory") String factory,
+            @QueryParam("urlSuffix") String urlSuffix) throws Exception {
+
+        String uri = component;
+
+        //
+        //        int port = switch (protocol) {
+        //        case "ssl" -> sslPort;
+        //        case "tcp" -> tcpPort;
+        //        case "auth" -> authenticatedPort;
+        //        default -> throw new IllegalStateException("Unexpected value: " + protocol);
+        //        };
+        //        String p = "auth".equals(protocol) ? "tcp" : protocol;
+
+        uri = uri + ":eci/" + dataExchangeType.toLowerCase();
+        //        if ("noFactory".equals(factory)) {
+        //            uri = uri + "?host=%s&port=%d&protocol=%s".formatted(ctgHost, port, p);
+        //            if ("ssl".equals(protocol)) {
+        //                java.nio.file.Path path = Paths.get("target/certs/localhost-truststore.p12");
+        //                uri = uri + "&sslKeyring=" + path.toAbsolutePath() + "&sslPassword=changeit";
+        //                ;
+        //            }
+        //        } else {
+        //            uri = uri + "?gatewayFactory=#" + factory;
+        //        }
+        if (urlSuffix != null) {
+            uri = uri + urlSuffix;
         }
+
         Exchange ex = producerTemplate.request(uri, e -> {
             e.getIn().setHeader(CICSConstants.CICS_PROGRAM_NAME_HEADER, "ECIREADY");
             e.getIn().setHeader(CICSConstants.CICS_COMM_AREA_SIZE_HEADER, "18");

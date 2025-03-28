@@ -2,6 +2,8 @@ package org.apache.camel.quarkus.component.cics.it;
 
 import java.nio.file.Paths;
 
+import com.redhat.camel.component.cics.CICSComponent;
+import com.redhat.camel.component.cics.CICSConfiguration;
 import com.redhat.camel.component.cics.pool.CICSPooledGatewayFactory;
 import com.redhat.camel.component.cics.pool.CICSSingleGatewayFactory;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -21,9 +23,30 @@ public class CicsProducer {
     @ConfigProperty(name = "ctg.host")
     String ctgHost;
 
-    @Singleton
-    @Named("pooledFactory")
-    CICSPooledGatewayFactory pooledFactory() throws Exception {
+    @Named("cics")
+    public CICSComponent Component() {
+        return new CICSComponent();
+    }
+
+    @Named("cicsFactory")
+    public CICSComponent factoryComponent() {
+        CICSConfiguration configuration = new CICSConfiguration();
+
+        CICSSingleGatewayFactory factory = new CICSSingleGatewayFactory();
+        factory.setPort(tcpPort);
+        factory.setHost(ctgHost);
+        factory.setProtocol("tcp");
+        configuration.setGatewayFactory(factory);
+
+        CICSComponent component = new CICSComponent();
+        component.setConfiguration(configuration);
+        return component;
+    }
+
+    @Named("cicsPooledFactory")
+    public CICSComponent pooledFactoryComponent() throws Exception {
+        CICSConfiguration configuration = new CICSConfiguration();
+
         CICSSingleGatewayFactory factory = new CICSSingleGatewayFactory();
         factory.setHost(ctgHost);
         factory.setPort(tcpPort);
@@ -36,12 +59,35 @@ public class CicsProducer {
         gatewayPool.setJmxEnabled(true);
         gatewayPool.start();
 
-        return gatewayPool;
+        configuration.setGatewayFactory(gatewayPool);
+
+        CICSComponent component = new CICSComponent();
+        component.setConfiguration(configuration);
+        return component;
     }
 
-    @Singleton
-    @Named("sslPooledFactory")
-    CICSPooledGatewayFactory sslPooledFactory() throws Exception {
+    @Named("cicsSslFactory")
+    public CICSComponent sslFactoryComponent() {
+        CICSConfiguration configuration = new CICSConfiguration();
+
+        CICSSingleGatewayFactory factory = new CICSSingleGatewayFactory();
+        factory.setPort(sslPort);
+        factory.setHost(ctgHost);
+        factory.setProtocol("ssl");
+        factory.setSslPassword("changeit");
+        factory.setSslKeyring(Paths.get("target/certs/localhost-truststore.p12").toAbsolutePath().toString());
+
+        configuration.setGatewayFactory(factory);
+
+        CICSComponent component = new CICSComponent();
+        component.setConfiguration(configuration);
+        return component;
+    }
+
+    @Named("cicsSslPooledFactory")
+    public CICSComponent sslPooledFactoryComponent() throws Exception {
+        CICSConfiguration configuration = new CICSConfiguration();
+
         CICSSingleGatewayFactory factory = new CICSSingleGatewayFactory();
         factory.setHost(ctgHost);
         factory.setPort(sslPort);
@@ -57,20 +103,11 @@ public class CicsProducer {
         gatewayPool.setSslKeyring(Paths.get("target/certs/localhost-keystore.p12").toAbsolutePath().toString());
         gatewayPool.setSslPassword("changeit");
         gatewayPool.start();
+        configuration.setGatewayFactory(gatewayPool);
 
-        return gatewayPool;
-    }
-
-    @Singleton
-    @Named("sslFactory")
-    CICSSingleGatewayFactory sslFactory() throws Exception {
-        CICSSingleGatewayFactory factory = new CICSSingleGatewayFactory();
-        factory.setPort(sslPort);
-        factory.setHost(ctgHost);
-        factory.setProtocol("ssl");
-        factory.setSslPassword("changeit");
-        factory.setSslKeyring(Paths.get("target/certs/localhost-truststore.p12").toAbsolutePath().toString());
-        return factory;
+        CICSComponent component = new CICSComponent();
+        component.setConfiguration(configuration);
+        return component;
     }
 
     @Singleton
@@ -85,13 +122,4 @@ public class CicsProducer {
         return factory;
     }
 
-    @Singleton
-    @Named("factory")
-    CICSSingleGatewayFactory factory() throws Exception {
-        CICSSingleGatewayFactory factory = new CICSSingleGatewayFactory();
-        factory.setPort(tcpPort);
-        factory.setHost(ctgHost);
-        factory.setProtocol("tcp");
-        return factory;
-    }
 }

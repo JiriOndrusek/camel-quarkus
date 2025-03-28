@@ -35,29 +35,39 @@ public class CicsTestResource implements QuarkusTestResourceLifecycleManager {
     private static final Logger LOG = LoggerFactory.getLogger(CicsTestResource.class);
     private static final String CICS_IMAGE = ConfigProvider.getConfig().getValue("cics.container.image", String.class);
 
-    private GenericContainer container;
+    private GenericContainer container, containerWithBasicAuthentication;
+    private int sslPort, tcpPort;
 
     @Override
     public Map<String, String> start() {
         LOG.info(TestcontainersConfiguration.getInstance().toString());
 
         try {
-            container = new GenericContainer<>(CICS_IMAGE)
-                    .withEnv("LICENSE", "accept")
-                    .withExposedPorts(8573, 2006)
-                    .withLogConsumer(new Slf4jLogConsumer(LOG))
-                    .withCopyToContainer(MountableFile.forHostPath(CertificatesUtil.keystoreFile("localhost", "p12")),
-                            "/home/ctg/config/server.keystore")
-                    .withCopyFileToContainer(MountableFile.forClasspathResource("ctg.ini"), "/var/cicscli/ctg.ini")
-                    .waitingFor(Wait.forLogMessage(".*CTG6512I CICS Transaction Gateway initialization complete.*", 1))
-                    .withStartupTimeout(Duration.ofSeconds(60L));
-            container.start();
-            return Map.of("ctg.tcp.port", container.getMappedPort(2006) + "",
-                    "ctg.ssl.port", container.getMappedPort(8573) + "",
+            container = startContainer("ctg.ini", 2006);
+            containerWithBasicAuthentication = startContainer("ctg_requiresecurity.ini", 2005);
+
+            return Map.of("ctg.tcp.port", (tcpPort = container.getMappedPort(2006)) + "",
+                    "ctg.authenticated.tcp.port", containerWithBasicAuthentication.getMappedPort(2005) + "",
+                    "ctg.ssl.port", (sslPort = container.getMappedPort(8573)) + "",
                     "ctg.host", container.getHost());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private GenericContainer startContainer(String iniFile, int tcpPort) {
+        var container = new GenericContainer<>(CICS_IMAGE)
+                .withEnv("LICENSE", "accept")
+                .withExposedPorts(8573, tcpPort)
+                .withLogConsumer(new Slf4jLogConsumer(LOG))
+                .withCopyToContainer(MountableFile.forHostPath(CertificatesUtil.keystoreFile("localhost", "p12")),
+                        "/home/ctg/config/server.keystore")
+                .withCopyFileToContainer(MountableFile.forClasspathResource(iniFile), "/var/cicscli/ctg.ini")
+                .waitingFor(Wait.forLogMessage(".*CTG6512I CICS Transaction Gateway initialization complete.*", 1))
+                .withStartupTimeout(Duration.ofSeconds(60L));
+
+        container.start();
+        return container;
     }
 
     @Override
@@ -66,8 +76,19 @@ public class CicsTestResource implements QuarkusTestResourceLifecycleManager {
             if (container != null) {
                 container.stop();
             }
+            if (containerWithBasicAuthentication != null) {
+                containerWithBasicAuthentication.stop();
+            }
         } catch (Exception ex) {
             LOG.error("An issue occurred while stopping the CicsTestResource", ex);
         }
+    }
+
+    @Override
+    public void inject(Object testInstance) {
+        CicsTest test = (CicsTest) testInstance;
+        test.sslPort = sslPort;
+        test.tcpPort = tcpPort;
+        test.host = container.getHost();
     }
 }
