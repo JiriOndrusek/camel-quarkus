@@ -27,8 +27,8 @@ public class JasyptFipsModeTestProfile implements QuarkusTestProfile {
                 "quarkus.camel.jasypt.algorithm", "PBEWithHMACSHA256AndAES_256",
                 "quarkus.camel.jasypt.random-iv-generator-algorithm", "PKCS11",
                 "quarkus.camel.jasypt.random-salt-generator-algorithm", "PKCS11",
-                "greeting.secret", "ENC(tp3QOxMouvD3oIdTXNM0uH+BtVEMCI1ak+GBTzPZOatthRP3m+ZxAg7CF0saNTmK)",
-                "explicit.config.provider.secret", "ENC(tp3QOxMouvD3oIdTXNM0uH+BtVEMCI1ak+GBTzPZOatthRP3m+ZxAg7CF0saNTmK)",
+                "greeting.secret", "ENC(k8yu87+YVxG1zdmzKYfwPv8OhlJfOUrK11/uwgjPApVUDwbdhyf2LtQ+SBozEyJDxt1W8N81JD111Af2Pp1WdNJxjMXXTwrVEpiGWFD8kHeiZVn/g4sbNRUpIvEaTLUK)",
+                "explicit.config.provider.secret", "ENC(k8yu87+YVxG1zdmzKYfwPv8OhlJfOUrK11/uwgjPApVUDwbdhyf2LtQ+SBozEyJDxt1W8N81JD111Af2Pp1WdNJxjMXXTwrVEpiGWFD8kHeiZVn/g4sbNRUpIvEaTLUK)",
                 "camel.component.direct.timeout", "30000",
                 "timer.delay.secret", "ENC(/NsF9u8xrJh/sIre0ZQtOf6DwBaVVOcQkHe3ungkmvVfUyLXgboTgunz5Rpy+C6G)",
                 "timer.repeatCount.secret", "ENC(J1sLt6MpTuCTROefLY3MwQXcbPEDXnReFqvNdf/mBta4fs2HuO1Jkl8YbASg2oVt)");
