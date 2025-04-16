@@ -95,6 +95,6 @@ class JasyptTest {
                 .get("/jasypt/decrypt/configuration/insecure.property")
                 .then()
                 .statusCode(200)
-                .body(is("Hello World"));
+                .body(is("Hello World has to be much longer to work on FIPS system!"));
     }
 }
