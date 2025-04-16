@@ -50,7 +50,7 @@ class JasyptTest {
                 .get("/jasypt/decrypt/configuration/greeting.expression.secret")
                 .then()
                 .statusCode(200)
-                .body(is("Hello World From Expression"));
+                .body(is("Hello World From Expression has to be much longer to work on FIPS system!"));
     }
 
     @Test
