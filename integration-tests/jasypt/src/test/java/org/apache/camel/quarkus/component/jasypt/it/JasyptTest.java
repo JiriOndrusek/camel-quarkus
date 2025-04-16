@@ -19,6 +19,7 @@ package org.apache.camel.quarkus.component.jasypt.it;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -29,6 +30,13 @@ import static org.hamcrest.Matchers.is;
 @DefaultBean
 @QuarkusTest
 class JasyptTest {
+
+    @BeforeAll
+    static void beforeAll() {
+        JasyptEncodingHelper.main(null);
+    }
+
+
     @ParameterizedTest
     @ValueSource(strings = {
             "direct:decryptConfiguration",
