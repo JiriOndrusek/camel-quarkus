@@ -29,7 +29,6 @@ import static org.hamcrest.Matchers.is;
 @DefaultBean
 @QuarkusTest
 class JasyptTest {
-    @Disabled
     @ParameterizedTest
     @ValueSource(strings = {
             "direct:decryptConfiguration",
@@ -42,10 +41,9 @@ class JasyptTest {
                 .get("/jasypt/decrypt/configuration/greeting.secret")
                 .then()
                 .statusCode(200)
-                .body(is("Hello World"));
+                .body(is("Hello World has to be much longer to work on FIPS system!"));
     }
 
-    @Disabled
     @Test
     void decryptSimpleConfigPropertyPlaceholderWithExpression() {
         RestAssured.given()
@@ -53,10 +51,9 @@ class JasyptTest {
                 .get("/jasypt/decrypt/configuration/greeting.expression.secret")
                 .then()
                 .statusCode(200)
-                .body(is("Hello World From Expression has to be much longer to work on FIPS system!"));
+                .body(is("Hello World has to be much longer to work on FIPS system! From Expression"));
     }
 
-    @Disabled
     @Test
     void decryptSimpleConfigPropertyPlaceholderWithExplicitConfigProvider() {
         RestAssured.given()
@@ -64,28 +61,25 @@ class JasyptTest {
                 .get("/jasypt/decrypt/configuration/explicit.config.provider.secret")
                 .then()
                 .statusCode(200)
-                .body(is("Hello World"));
+                .body(is("Hello World has to be much longer to work on FIPS system!"));
     }
 
-    @Disabled
     @Test
     void decryptInjectedConfigProperty() {
         RestAssured.get("/jasypt/decrypt/injected/configuration/direct:secretPropertyInjection")
                 .then()
                 .statusCode(200)
-                .body(is("Hello World"));
+                .body(is("Hello World has to be much longer to work on FIPS system!"));
     }
 
-    @Disabled
     @Test
     void decryptInjectedConfigPropertyWithExplicitConfigProvider() {
         RestAssured.get("/jasypt/decrypt/injected/configuration/direct:secretExplicitConfigProviderPropertyInjection")
                 .then()
                 .statusCode(200)
-                .body(is("Hello World"));
+                .body(is("Hello World has to be much longer to work on FIPS system!"));
     }
 
-    @Disabled
     @Test
     void timerConfiguredWithEncryptedPropertiesFired() {
         RestAssured.given()
