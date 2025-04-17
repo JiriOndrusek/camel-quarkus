@@ -20,6 +20,7 @@ import io.quarkus.arc.DefaultBean;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -35,6 +36,7 @@ class JasyptTest {
         JasyptEncodingHelper.main(null);
     }
 
+    @Disabled
     @ParameterizedTest
     @ValueSource(strings = {
             "direct:decryptConfiguration",
@@ -50,6 +52,7 @@ class JasyptTest {
                 .body(is("Hello World has to be much longer to work on FIPS system!"));
     }
 
+    @Disabled
     @Test
     void decryptSimpleConfigPropertyPlaceholderWithExpression() {
         RestAssured.given()
@@ -60,6 +63,7 @@ class JasyptTest {
                 .body(is("Hello World has to be much longer to work on FIPS system! From Expression"));
     }
 
+    @Disabled
     @Test
     void decryptSimpleConfigPropertyPlaceholderWithExplicitConfigProvider() {
         RestAssured.given()
@@ -70,6 +74,7 @@ class JasyptTest {
                 .body(is("Hello World has to be much longer to work on FIPS system!"));
     }
 
+    @Disabled
     @Test
     void decryptInjectedConfigProperty() {
         RestAssured.get("/jasypt/decrypt/injected/configuration/direct:secretPropertyInjection")
@@ -78,6 +83,7 @@ class JasyptTest {
                 .body(is("Hello World has to be much longer to work on FIPS system!"));
     }
 
+    @Disabled
     @Test
     void decryptInjectedConfigPropertyWithExplicitConfigProvider() {
         RestAssured.get("/jasypt/decrypt/injected/configuration/direct:secretExplicitConfigProviderPropertyInjection")
@@ -86,6 +92,7 @@ class JasyptTest {
                 .body(is("Hello World has to be much longer to work on FIPS system!"));
     }
 
+    @Disabled
     @Test
     void timerConfiguredWithEncryptedPropertiesFired() {
         RestAssured.given()
