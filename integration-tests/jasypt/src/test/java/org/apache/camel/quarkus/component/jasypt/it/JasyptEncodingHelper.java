@@ -7,20 +7,18 @@ import org.jasypt.salt.RandomSaltGenerator;
 
 public class JasyptEncodingHelper {
 
-
     public static void main(String[] args) {
         String msg = "Hello World has to be much longer to work on FIPS system!";
 
-//        System.out.println("encoded messages is: '%s'".formatted(encode()));;
-        if(FipsModeUtil.isFipsMode()) {
+        //        System.out.println("encoded messages is: '%s'".formatted(encode()));;
+        if (FipsModeUtil.isFipsMode()) {
             System.out.println("FIPS encoded messages is: '%s'".formatted(
-                    encode(msg, "2s3cr3t", "PBEWithHMACSHA256AndAES_256", "PKCS11", "PKCS11")
-            ));
+                    encode(msg, "2s3cr3t", "PBEWithHMACSHA256AndAES_256", "PKCS11", "PKCS11")));
         }
     }
 
-
-    private static String encode(String message, String password, String algorithm, String saltAlgorithm, String ivGeneratorAlgorithm) {
+    private static String encode(String message, String password, String algorithm, String saltAlgorithm,
+            String ivGeneratorAlgorithm) {
         StandardPBEStringEncryptor pbeStringEncryptor = new StandardPBEStringEncryptor();
 
         pbeStringEncryptor.setPassword(password);

@@ -20,7 +20,6 @@ import io.quarkus.arc.DefaultBean;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -35,7 +34,6 @@ class JasyptTest {
     static void beforeAll() {
         JasyptEncodingHelper.main(null);
     }
-
 
     @ParameterizedTest
     @ValueSource(strings = {
