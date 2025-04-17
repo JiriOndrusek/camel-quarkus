@@ -27,10 +27,11 @@ public class JasyptFipsModeTestProfile implements QuarkusTestProfile {
                 "quarkus.camel.jasypt.algorithm", "PBEWithHMACSHA256AndAES_256",
                 "quarkus.camel.jasypt.random-iv-generator-algorithm", "PKCS11",
                 "quarkus.camel.jasypt.random-salt-generator-algorithm", "PKCS11",
-                "greeting.secret", "ENC(tp3QOxMouvD3oIdTXNM0uH+BtVEMCI1ak+GBTzPZOatthRP3m+ZxAg7CF0saNTmK)",
-                "explicit.config.provider.secret", "ENC(tp3QOxMouvD3oIdTXNM0uH+BtVEMCI1ak+GBTzPZOatthRP3m+ZxAg7CF0saNTmK)",
+                "greeting.secret", "ENC(xzuMOkyUMYG8mM4qnFXKf3HxngLky9EJTeP3vvNLp2QeLaESJL77NDD00kWBQLdrlLP2WjOjx5t8Nky1G9ez5mrr3Iiqkn7x/FGGdxXX/Wga0i289k+0ThrggjpkB5D0)",
+                "explicit.config.provider.secret", "ENC(txzuMOkyUMYG8mM4qnFXKf3HxngLky9EJTeP3vvNLp2QeLaESJL77NDD00kWBQLdrlLP2WjOjx5t8Nky1G9ez5mrr3Iiqkn7x/FGGdxXX/Wga0i289k+0ThrggjpkB5D0)",
                 "camel.component.direct.timeout", "30000",
-                "timer.delay.secret", "ENC(/NsF9u8xrJh/sIre0ZQtOf6DwBaVVOcQkHe3ungkmvVfUyLXgboTgunz5Rpy+C6G)",
-                "timer.repeatCount.secret", "ENC(J1sLt6MpTuCTROefLY3MwQXcbPEDXnReFqvNdf/mBta4fs2HuO1Jkl8YbASg2oVt)");
+                "timer.delay.secret", "ENC(xzuMOkyUMYG8mM4qnFXKf3HxngLky9EJTeP3vvNLp2QeLaESJL77NDD00kWBQLdrlLP2WjOjx5t8Nky1G9ez5mrr3Iiqkn7x/FGGdxXX/Wga0i289k+0ThrggjpkB5D0)",
+                "timer.repeatCount.secret", "ENC(xzuMOkyUMYG8mM4qnFXKf3HxngLky9EJTeP3vvNLp2QeLaESJL77NDD00kWBQLdrlLP2WjOjx5t8Nky1G9ez5mrr3Iiqkn7x/FGGdxXX/Wga0i289k+0ThrggjpkB5D0)",
+                "%custom-profile.greeting.expression.secret", "ENC(xzuMOkyUMYG8mM4qnFXKf3HxngLky9EJTeP3vvNLp2QeLaESJL77NDD00kWBQLdrlLP2WjOjx5t8Nky1G9ez5mrr3Iiqkn7x/FGGdxXX/Wga0i289k+0ThrggjpkB5D0)");
     }
 }

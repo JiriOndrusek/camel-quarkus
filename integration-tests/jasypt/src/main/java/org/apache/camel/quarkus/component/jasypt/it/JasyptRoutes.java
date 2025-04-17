@@ -39,20 +39,20 @@ public class JasyptRoutes extends RouteBuilder {
                 .process("decryptConfig")
                 .log("Decrypted: ${body}");
 
-        from("direct:secretPropertyInjection")
-                .setBody().constant(secretProperty)
-                .log("Decrypted: ${body}");
+//        from("direct:secretPropertyInjection")
+//                .setBody().constant(secretProperty)
+//                .log("Decrypted: ${body}");
 
-        from("direct:secretExplicitConfigProviderPropertyInjection")
-                .setBody().constant(secretExplicitConfigProviderProperty)
-                .log("Decrypted: ${body}");
-
-        from("timer:tick?delay={{timer.delay.secret}}&repeatCount={{timer.repeatCount.secret}}").id("secret-timer")
-                .autoStartup(false)
-                .setBody()
-                .simple("delay = ${properties:timer.delay.secret}, repeatCount = ${properties:timer.repeatCount.secret}")
-                .log("${body}")
-                .to("mock:timerResult");
+//        from("direct:secretExplicitConfigProviderPropertyInjection")
+//                .setBody().constant(secretExplicitConfigProviderProperty)
+//                .log("Decrypted: ${body}");
+//
+//        from("timer:tick?delay={{timer.delay.secret}}&repeatCount={{timer.repeatCount.secret}}").id("secret-timer")
+//                .autoStartup(false)
+//                .setBody()
+//                .simple("delay = ${properties:timer.delay.secret}, repeatCount = ${properties:timer.repeatCount.secret}")
+//                .log("${body}")
+//                .to("mock:timerResult");
     }
 
     @Singleton
