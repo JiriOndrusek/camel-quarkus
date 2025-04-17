@@ -12,12 +12,16 @@ public class JasyptEncodingHelper {
 
         //        System.out.println("encoded messages is: '%s'".formatted(encode()));;
         if (FipsModeUtil.isFipsMode()) {
-            System.out.println("FIPS encoded messages is: '%s'".formatted(
-                    encode(msg, "2s3cr3t", "PBEWithHMACSHA256AndAES_256", "PKCS11", "PKCS11")));
+            StandardPBEStringEncryptor encryptor = encryptor("2s3cr3t", "PBEWithHMACSHA256AndAES_256", "PKCS11", "PKCS11");
+            String encrypted = encryptor.encrypt(msg);
+            String decrypted = encryptor.decrypt(encrypted);
+
+            System.out.println("FIPS encrypted messages is: '%s'".formatted(encrypted));
+            System.out.println("FIPS encrypted messages is: '%s'".formatted(decrypted));
         }
     }
 
-    private static String encode(String message, String password, String algorithm, String saltAlgorithm,
+    private static StandardPBEStringEncryptor encryptor(String password, String algorithm, String saltAlgorithm,
             String ivGeneratorAlgorithm) {
         StandardPBEStringEncryptor pbeStringEncryptor = new StandardPBEStringEncryptor();
 
@@ -31,6 +35,6 @@ public class JasyptEncodingHelper {
             pbeStringEncryptor.setIvGenerator(new RandomIvGenerator(ivGeneratorAlgorithm));
         }
 
-        return pbeStringEncryptor.encrypt(message);
+        return pbeStringEncryptor;
     }
 }
