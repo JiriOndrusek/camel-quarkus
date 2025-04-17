@@ -33,6 +33,8 @@ public class JasyptFipsModeTestProfile implements QuarkusTestProfile {
                 "ENC(vr60weD7g1X8ottJA6EHVKshNDJX1Y5NRMK61+GXHt+ITv0nyc4UDXDglRPOrXvupC7WQ5PatcbuNoT1oz9yLTOW3LyWILYaRBixnG7REGpcYl1QyrOUDioOLWo7euO8)",
                 "camel.component.direct.timeout", "30000",
                 "timer.delay.secret", "ENC(/NsF9u8xrJh/sIre0ZQtOf6DwBaVVOcQkHe3ungkmvVfUyLXgboTgunz5Rpy+C6G)",
-                "timer.repeatCount.secret", "ENC(J1sLt6MpTuCTROefLY3MwQXcbPEDXnReFqvNdf/mBta4fs2HuO1Jkl8YbASg2oVt)");
+                "timer.repeatCount.secret", "ENC(J1sLt6MpTuCTROefLY3MwQXcbPEDXnReFqvNdf/mBta4fs2HuO1Jkl8YbASg2oVt)",
+                "%custom-profile.greeting.expression.secret",
+                "${camel-jasypt::ENC(xzuMOkyUMYG8mM4qnFXKf3HxngLky9EJTeP3vvNLp2QeLaESJL77NDD00kWBQLdrlLP2WjOjx5t8Nky1G9ez5mrr3Iiqkn7x/FGGdxXX/Wga0i289k+0ThrggjpkB5D0)");
     }
 }
