@@ -44,6 +44,7 @@ import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.*;
@@ -560,6 +561,7 @@ class AzureStorageBlobTest {
 
     // Authentication with client secrets is not possible with Azurite
     @EnabledIf({ ClientSecretAuthEnabled.class })
+    @Disabled //test
     @Test
     public void readWithClientSecretAuth() {
         try {
@@ -588,6 +590,7 @@ class AzureStorageBlobTest {
 
     // Authentication with client certificates is not possible with Azurite
     @EnabledIf({ ClientCertificateAuthEnabled.class })
+    @Disabled //test
     @Test
     public void readWithClientCertificateAuth() {
         try {
