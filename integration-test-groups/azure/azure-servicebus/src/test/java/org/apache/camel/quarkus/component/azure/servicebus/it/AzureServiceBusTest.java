@@ -266,7 +266,7 @@ class AzureServiceBusTest {
 
             // Schedule message for 10 seconds in the future
             long scheduledEnqueueTime = Instant.now()
-                    .plus(Duration.of(10, ChronoUnit.SECONDS))
+                    .plus(Duration.of(15, ChronoUnit.SECONDS))
                     .toEpochMilli();
 
             RestAssured.given()
@@ -279,7 +279,8 @@ class AzureServiceBusTest {
                     .then()
                     .statusCode(201);
 
-            while (Instant.now().toEpochMilli() < scheduledEnqueueTime) {
+            //nebudeme poustet kontrolu v poslednich 5ti sekundach, at pri nejakem zpozdeni nahodou nenacteme zpravu
+            while (Instant.now().toEpochMilli() <(scheduledEnqueueTime - 5000)) {
                 // No message should be received before the scheduled time
                 RestAssured.given()
                         .queryParam("endpointUri", "mock:servicebus-queue-scheduled-consumer-results")
@@ -288,7 +289,7 @@ class AzureServiceBusTest {
                         .statusCode(200)
                         .body("size()", is(0));
                 try {
-                    Thread.sleep(250);
+                    Thread.sleep(5250);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
