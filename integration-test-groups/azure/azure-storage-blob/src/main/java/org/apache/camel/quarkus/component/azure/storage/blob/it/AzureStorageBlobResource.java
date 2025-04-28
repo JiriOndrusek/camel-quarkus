@@ -69,10 +69,13 @@ import org.apache.camel.component.azure.storage.blob.BlobBlock;
 import org.apache.camel.component.azure.storage.blob.BlobConstants;
 import org.apache.camel.quarkus.core.util.FileUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.logging.Logger;
 
 @Path("/azure-storage-blob")
 @ApplicationScoped
 public class AzureStorageBlobResource {
+
+    private static final Logger LOG = Logger.getLogger(AzureStorageBlobResource.class);
 
     @Inject
     ProducerTemplate producerTemplate;
@@ -340,6 +343,7 @@ public class AzureStorageBlobResource {
     @Path("/blob/container")
     @POST
     public Response createBlobContainer(@QueryParam("containerName") String containerName) throws Exception {
+        LOG.infof("Creating blob container %s", containerName);
         producerTemplate.sendBodyAndHeader("direct:createBlobContainer", null, BlobConstants.BLOB_CONTAINER_NAME,
                 containerName);
         return Response.created(new URI("https://camel.apache.org/")).build();

@@ -97,7 +97,7 @@ public class AzureStorageTestResource implements QuarkusTestResourceLifecycleMan
         final boolean realCredentialsProvided = realAzureStorageAccountName != null
                 && System.getenv("AZURE_STORAGE_ACCOUNT_KEY") != null;
 
-        final String azureBlobContainername = "camel-quarkus-" + UUID.randomUUID();
+        final String azureBlobContainername = "camel-quarkus-jiriondrusek-" + UUID.randomUUID();
 
         final String azureStorageAccountName = config
                 .getValue("azure.storage.account-name", String.class);

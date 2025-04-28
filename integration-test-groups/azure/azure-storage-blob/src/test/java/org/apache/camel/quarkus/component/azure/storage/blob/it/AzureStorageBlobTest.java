@@ -41,13 +41,12 @@ import org.apache.camel.quarkus.test.support.azure.AzureStorageTestResource;
 import org.awaitility.Awaitility;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.jboss.logging.Logger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.matchesPattern;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -57,6 +56,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 @QuarkusTest
 @QuarkusTestResource(AzureStorageTestResource.class)
 class AzureStorageBlobTest {
+    private static final Logger LOG = Logger.getLogger(AzureStorageBlobTest.class);
 
     private static final String BLOB_CONTENT = "Hello Camel Quarkus Azure Blob";
 
@@ -71,6 +71,17 @@ class AzureStorageBlobTest {
                 .post("/azure-storage-blob/blob/container")
                 .then()
                 .statusCode(201);
+
+        //verify that container exists
+        Awaitility.await().pollInterval(5, TimeUnit.SECONDS).atMost(120, TimeUnit.SECONDS).untilAsserted(() ->
+
+        RestAssured.get("/azure-storage-blob/blob/container")
+                .then()
+                .statusCode(200)
+                .body("containers.name",
+                        hasItem(containerName)));
+
+        LOG.infof("Container %s exists", containerName);
     }
 
     @AfterAll
