@@ -16,14 +16,19 @@
  */
 package org.apache.camel.quarkus.component.saga.it;
 
+import java.util.Map;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.camel.CamelContext;
+import org.apache.camel.quarkus.component.saga.it.lra.LraCreditService;
+import org.apache.camel.quarkus.component.saga.it.lra.LraTicketService;
 import org.jboss.logging.Logger;
 
 @Path("/saga")
@@ -42,6 +47,12 @@ public class SagaResource {
 
     @Inject
     CreditService creditService;
+
+    @Inject
+    LraCreditService lraCreditService;
+
+    @Inject
+    LraTicketService lraTicketService;
 
     @Path("/load/component/saga")
     @GET
@@ -93,5 +104,40 @@ public class SagaResource {
                 throw new RuntimeException("Unexpected exception");
             }
         }
+    }
+
+    @Path("/lraSaga/{id}/{credit}/{trainCost}/{flightCost}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response lraSaga(@PathParam("id") int id,
+            @PathParam("credit") int credit,
+            @PathParam("trainCost") int trainCost,
+            @PathParam("flightCost") int flightCost) throws InterruptedException {
+
+        //initialize total credit
+        lraCreditService.setTotalCredit(credit);
+        lraTicketService.reset();
+
+        try {
+            context.createFluentProducerTemplate().to("direct:lraSaga")
+                    .withHeader("id", id)
+                    .withHeader("trainCost", trainCost)
+                    .withHeader("flightCost", flightCost)
+                    .request();
+        } catch (Exception e) {
+            return getResponse(500);
+        }
+
+        return getResponse(200);
+    }
+
+    private Response getResponse(int status) throws InterruptedException {
+        // wait for the orders being cancelled
+        Thread.sleep(500);
+        Map result = Map.of("creditBalance", lraCreditService.getCredit(), "train",
+                lraTicketService.getTrain(),
+                "flight", lraTicketService.getFlight());
+
+        return Response.status(status).entity(result).build();
     }
 }

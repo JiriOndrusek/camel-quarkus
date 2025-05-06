@@ -18,6 +18,8 @@ package org.apache.camel.quarkus.component.saga.it;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
+import org.apache.camel.quarkus.component.saga.it.lra.LraTicketServiceStatus;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
@@ -36,6 +38,66 @@ class SagaTest {
         RestAssured.get("/saga/test")
                 .then()
                 .statusCode(200);
+    }
+
+    //long-run-actions using jms.
+    // Scenario - buying train and flight ticket.
+    //            If credit is not sufficient, the purchase fails.
+    //            All payments are refunded, the reason of refundment is saved in ticket service
+
+    @Test
+    public void testLRASuccessfulScenario() {
+        //successful transaction
+        RestAssured.get("/saga/lraSaga/1/100/50/50")
+                .then()
+                .statusCode(200)
+                .body("creditBalance", Matchers.is(0))
+                .body("train", Matchers.is(LraTicketServiceStatus.reserved.name()))
+                .body("flight", Matchers.is(LraTicketServiceStatus.reserved.name()));
+    }
+
+    @Test
+    public void testLRAInsufficientCredit01() {
+        //successful transaction
+        RestAssured.get("/saga/lraSaga/2/50/50/100")
+                .then()
+                .statusCode(500)
+                .body("creditBalance", Matchers.is(50))
+                .body("train", Matchers.is(LraTicketServiceStatus.refunded.name()))
+                .body("flight", Matchers.is(LraTicketServiceStatus.error.name()));
+    }
+
+    @Test
+    public void testLRAInsufficientCredit02() {
+        //successful transaction
+        RestAssured.get("/saga/lraSaga/3/50/100/50")
+                .then()
+                .statusCode(500)
+                .body("creditBalance", Matchers.is(50))
+                .body("train", Matchers.is(LraTicketServiceStatus.error.name()))
+                .body("flight", Matchers.is(LraTicketServiceStatus.refunded.name()));
+    }
+
+    @Test
+    public void testLRAInsufficientCredit03() {
+        //successful transaction
+        RestAssured.get("/saga/lraSaga/4/50/100/100")
+                .then()
+                .statusCode(500)
+                .body("creditBalance", Matchers.is(50))
+                .body("train", Matchers.is(LraTicketServiceStatus.error.name()))
+                .body("flight", Matchers.is(LraTicketServiceStatus.refunded.name())); //bought of flight ticket is not attempted
+    }
+
+    @Test
+    public void testLRAInsufficientCredit04() {
+        //successful transaction
+        RestAssured.get("/saga/lraSaga/5/50/50/50")
+                .then()
+                .statusCode(500)
+                .body("creditBalance", Matchers.is(50))
+                .body("train", Matchers.is(LraTicketServiceStatus.refunded.name()))
+                .body("flight", Matchers.is(LraTicketServiceStatus.error.name())); //the second buy action fails
     }
 
 }
