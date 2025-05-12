@@ -58,4 +58,8 @@ public class LraCreditService {
     public void setTotalCredit(int totalCredit) {
         this.totalCredit = totalCredit;
     }
+
+    public void sleep10seconds(@Header("timeout") long timeout) throws InterruptedException {
+        Thread.sleep(timeout);
+    }
 }

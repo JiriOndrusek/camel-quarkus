@@ -46,7 +46,7 @@ class SagaTest {
     //            All payments are refunded, the reason of refundment is saved in ticket service
 
     @Test
-    public void testLRASuccessfulScenario() {
+    public void testLRACompletedScenario() {
         //successful transaction
         RestAssured.get("/saga/lraSaga/1/100/50/50")
                 .then()
@@ -98,6 +98,23 @@ class SagaTest {
                 .body("creditBalance", Matchers.is(50))
                 .body("train", Matchers.is(LraTicketServiceStatus.refunded.name()))
                 .body("flight", Matchers.is(LraTicketServiceStatus.error.name())); //the second buy action fails
+    }
+
+    @Test
+    public void testTimeoutSuccessful() {
+        //successful transaction
+        RestAssured.get("/saga/timeout/2000")
+                .then()
+                .body(Matchers.is("success"))
+                .statusCode(200);
+    }
+
+    @Test
+    public void testTimeoutFailure() {
+        //successful transaction
+        RestAssured.get("/saga/timeout/10000")
+                .then()
+                .statusCode(500);
     }
 
 }

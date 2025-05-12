@@ -16,6 +16,8 @@
  */
 package org.apache.camel.quarkus.component.saga.it;
 
+import java.util.concurrent.TimeUnit;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.apache.camel.Exchange;
@@ -76,6 +78,7 @@ public class SagaRoute extends RouteBuilder {
         from("direct:lraSaga")
                 .saga()
                 .compensation("direct:lraCancelOrder")
+                .completion("direct:lraCompleted")
                 .log("Executing saga #${header.id} with LRA ${header.Long-Running-Action}")
                 .setHeader("payFor", constant("train"))
                 .setHeader("amount", header("trainCost"))
@@ -88,7 +91,6 @@ public class SagaRoute extends RouteBuilder {
                         "&replyTo=flight.reply")
                 .log("flight booked for saga #${header.id} with payment transaction: ${body}")
                 .setBody(header("Long-Running-Action"))
-                .bean(lraTicketService, "setTicketsReserved")
                 .end();
 
         from("direct:lraCancelOrder")
@@ -96,6 +98,10 @@ public class SagaRoute extends RouteBuilder {
                 .bean(lraCreditService, "refundCredit")
                 .bean(lraTicketService, "setTicketsRefunded")
                 .log("Credit for action ${body} refunded");
+
+        from("direct:lraCompleted")
+                .log("Transaction ${header.Long-Running-Action} has been completed.")
+                .bean(lraTicketService, "setTicketsReserved");
 
         //train
         from("jms:queue:train")
@@ -148,5 +154,19 @@ public class SagaRoute extends RouteBuilder {
                 .when(header("payFor").contains("flight")).bean(lraTicketService, "setFlightError")
                 .endChoice()
                 .log("Payment for order #${header.id} did not finish (insufficient credit)");
+
+        // ----------------- timeout ------------------------------
+
+        from("direct:newOrderTimeout5sec")
+                .saga()
+                .timeout(5, TimeUnit.SECONDS) // newOrder requires that the saga is completed within 5 seconds
+                .propagation(SagaPropagation.REQUIRES_NEW)
+                .compensation("direct:cancelOrderTimeout5sec")
+                .bean(lraCreditService, "sleep10seconds")
+                .setBody(constant("success"))
+                .log("Order ${body} created");
+
+        from("direct:cancelOrderTimeout5sec")
+                .setBody(constant("failure"));
     }
 }

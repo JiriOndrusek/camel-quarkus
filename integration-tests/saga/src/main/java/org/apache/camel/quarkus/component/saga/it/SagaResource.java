@@ -140,4 +140,14 @@ public class SagaResource {
 
         return Response.status(status).entity(result).build();
     }
+
+    @Path("/timeout/{timeout}")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response timeout(@PathParam("timeout") int timeout) throws InterruptedException {
+        Object o = context.createFluentProducerTemplate().to("direct:newOrderTimeout5sec")
+                .withHeader("timeout", timeout)
+                .request();
+        return Response.ok().entity(o).build();
+    }
 }
