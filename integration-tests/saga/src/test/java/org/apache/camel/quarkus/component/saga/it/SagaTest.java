@@ -16,9 +16,12 @@
  */
 package org.apache.camel.quarkus.component.saga.it;
 
+import java.util.concurrent.TimeUnit;
+
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import org.apache.camel.quarkus.component.saga.it.lra.LraTicketServiceStatus;
+import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
@@ -116,59 +119,36 @@ class SagaTest {
                 .then()
                 .statusCode(500);
     }
-    //
-    //    @Test
-    //    public void testManualFailure() {
-    //
-    //        //start saga action, which is confirmed manually (and takes 10 seconds to finish)
-    //        ExecutorService executor = Executors.newSingleThreadExecutor();
-    //        Future<String> manualSagaResult = executor.submit(
-    //                () -> {
-    //                    ValidatableResponse r = RestAssured.given().get("/saga/manualSaga").then();
-    //
-    //                    return r.statusCode(200).extract().asString();
-    //                });
-    //
-    //        //do not confirm the action
-    //
-    //        //wait 15 seconds to status 200 without confirmed body
-    //        Assertions.assertThrows(Exception.class,
-    //                () -> {
-    //                    Awaitility.await()
-    //                            .atMost(Duration.ofSeconds(15))
-    //                            .pollDelay(Duration.ofSeconds(1))
-    //                            .until(() -> {
-    //                                String st = manualSagaResult.get();
-    //                                return st.startsWith("completed");
-    //                            });
-    //                });
-    //
-    //    }
-    //
-    //    @Test
-    //    public void testManualWithConfirmation() throws InterruptedException {
-    //
-    //
-    //        //start saga action, which is confirmed manually (and takes 10 seconds to finish)
-    //        ExecutorService executor = Executors.newSingleThreadExecutor();
-    //        Future<String> manualSagaResult = executor.submit(
-    //                () ->
-    //                        RestAssured.given().get("/saga/manualSaga").then().statusCode(200).extract().asString()
-    //                );
-    //
-    //        Thread.sleep(10000);
-    //        //confirm the action
-    //        String s = RestAssured.get("/saga/manualStep")
-    //                .then()
-    //                .statusCode(200)
-    //                .extract().toString();
-    //
-    //        //wait 15 seconds to status 200 confirmed success
-    //        Awaitility.await()
-    //                    .atMost(Duration.ofSeconds(15))
-    //                    .pollDelay(Duration.ofSeconds(1))
-    //                    .until(() -> "completedWithSuccess".equals(manualSagaResult.get()));
-    //
-    //    }
+
+    @Test
+    public void testManualSuccess() {
+
+        //start saga action, which won't complete
+        RestAssured.given().get("/saga/manualSaga/true").then()
+                .statusCode(200);
+
+        Awaitility.await().pollInterval(1, TimeUnit.SECONDS).atMost(10, TimeUnit.MINUTES).untilAsserted(
+                () -> RestAssured.get("/saga/manualCompleted")
+                        .then()
+                        .statusCode(200)
+                        .body(Matchers.is("true")));
+
+    }
+
+    @Test
+    public void testManualFailure() throws InterruptedException {
+
+        //start saga action, which won't complete
+        RestAssured.given().get("/saga/manualSaga/false").then()
+                .statusCode(200);
+
+        //wait some time and the saga should not be completed
+        Thread.sleep(10000);
+
+        RestAssured.get("/saga/manualCompleted")
+                .then()
+                .statusCode(200)
+                .body(Matchers.is("false"));
+    }
 
 }

@@ -28,6 +28,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.camel.CamelContext;
 import org.apache.camel.quarkus.component.saga.it.lra.LraCreditService;
+import org.apache.camel.quarkus.component.saga.it.lra.LraService;
 import org.apache.camel.quarkus.component.saga.it.lra.LraTicketService;
 import org.jboss.logging.Logger;
 
@@ -53,6 +54,9 @@ public class SagaResource {
 
     @Inject
     LraTicketService lraTicketService;
+
+    @Inject
+    LraService lraService;
 
     @Path("/load/component/saga")
     @GET
@@ -151,24 +155,25 @@ public class SagaResource {
         return Response.ok().entity(o).build();
     }
 
-    @Path("/manualSaga")
+    @Path("/manualSaga/{complete}")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public Response manualSaga() throws InterruptedException {
+    public Response manualSaga(@PathParam("complete") boolean complete) throws InterruptedException {
 
-        Object o = context.createFluentProducerTemplate().to("direct:manualSaga")
-                .withHeader("timeout", 10000)
+        lraService.setCompleted(false);
+
+        context.createFluentProducerTemplate().to("direct:manualSaga")
+                .withHeader("shouldComplete", complete)
                 .request();
-        return Response.ok().entity(o).build();
+
+        return Response.ok().build();
     }
 
-    @Path("/manualStep")
+    @Path("/manualCompleted")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public Response manualStep() throws InterruptedException {
+    public Response manualCompensated() throws InterruptedException {
 
-        Object o = context.createFluentProducerTemplate().to("direct:manualStep")
-                .request();
-        return Response.ok().entity(o).build();
+        return Response.ok().entity(lraService.isCompleted()).build();
     }
 }

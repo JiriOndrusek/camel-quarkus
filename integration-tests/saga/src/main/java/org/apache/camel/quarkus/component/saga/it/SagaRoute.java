@@ -25,6 +25,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.SagaCompletionMode;
 import org.apache.camel.model.SagaPropagation;
 import org.apache.camel.quarkus.component.saga.it.lra.LraCreditService;
+import org.apache.camel.quarkus.component.saga.it.lra.LraService;
 import org.apache.camel.quarkus.component.saga.it.lra.LraTicketService;
 import org.apache.camel.saga.CamelSagaService;
 import org.apache.camel.saga.InMemorySagaService;
@@ -36,6 +37,9 @@ public class SagaRoute extends RouteBuilder {
 
     @Inject
     CreditService creditService;
+
+    @Inject
+    LraService lraService;
 
     @Inject
     LraCreditService lraCreditService;
@@ -74,7 +78,7 @@ public class SagaRoute extends RouteBuilder {
         from("direct:finalize").saga().propagation(SagaPropagation.MANDATORY).choice()
                 .when(header("fail").isEqualTo(true)).to("saga:COMPENSATE").end();
 
-        // ---------------------- LRA -------------------------------------
+        // ---------------------- LRA with JMS -------------------------------------
 
         from("direct:lraSaga")
                 .saga()
@@ -163,7 +167,7 @@ public class SagaRoute extends RouteBuilder {
                 .timeout(5, TimeUnit.SECONDS) // newOrder requires that the saga is completed within 5 seconds
                 .propagation(SagaPropagation.REQUIRES_NEW)
                 .compensation("direct:cancelOrderTimeout5sec")
-                .bean(lraCreditService, "sleep10seconds")
+                .bean(lraService, "sleep")
                 .setBody(constant("success"))
                 .log("Order ${body} created");
 
@@ -178,34 +182,21 @@ public class SagaRoute extends RouteBuilder {
         from("direct:manualSaga")
                 .saga()
                 .completionMode(SagaCompletionMode.MANUAL)
-                .compensation("direct:manualSagaCompensate")
-                .completion("direct:manualCompletion")
-                .timeout(20, TimeUnit.SECONDS)
-                //sleep instead of an action
-                .bean(lraCreditService, "sleep10seconds")
-                .setBody(constant("success"));
+                .completion("seda:manualSagaComplete")
+                .to("seda:manualSagaProcessOrder");
 
-        from("direct:manualCompensate")
+        from("seda:manualSagaProcessOrder") // an asynchronous callback
                 .saga()
                 .propagation(SagaPropagation.MANDATORY)
-                .setBody(constant("completedWithFailure"));
-
-        from("direct:manualCompletion") // an asynchronous callback
-                .saga()
-                .propagation(SagaPropagation.MANDATORY)
+                .log("Processing manual saga order with complete set to ${header.shouldComplete}")
                 .choice()
-                .when(body().isEqualTo("success"))
-                .setBody(constant("completedWithSuccess"))
+                .when(header("shouldComplete").isEqualTo("true"))
                 .to("saga:complete") // complete the current saga manually (saga component)
                 .end();
 
-        from("direct:manualStep") // executed manually
-                .saga()
-                .propagation(SagaPropagation.MANDATORY)
-                .choice()
-                .when(body().isEqualTo("success"))
-                .to("saga:complete") // complete the current saga manually (saga component)
-                .end();
+        from("seda:manualSagaComplete") // an asynchronous callback
+                .log("Manual saga marked as completed")
+                .bean(lraService, "complete");
 
     }
 }

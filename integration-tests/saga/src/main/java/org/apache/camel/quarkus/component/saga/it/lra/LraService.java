@@ -16,46 +16,30 @@
  */
 package org.apache.camel.quarkus.component.saga.it.lra;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.camel.Header;
 
 @ApplicationScoped
 @RegisterForReflection
-public class LraCreditService {
+public class LraService {
 
-    private int totalCredit;
+    private boolean completed;
 
-    private Map<String, Integer> reservations = new HashMap<>();
-
-    public LraCreditService() {
-        this.totalCredit = 100;
+    public void sleep(@Header("timeout") long timeout) throws InterruptedException {
+        Thread.sleep(timeout);
     }
 
-    public synchronized void reserveCredit(@Header("Long-Running-Action") String id, @Header("amount") int amount) {
-        int credit = getCredit();
-        if (amount > credit) {
-            throw new IllegalStateException("Insufficient credit");
-        }
-        if (reservations.containsKey(id)) {
-            reservations.put(id, reservations.get(id) + amount);
-        } else {
-            reservations.put(id, amount);
-        }
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
     }
 
-    public synchronized void refundCredit(@Header("Long-Running-Action") String id) {
-        reservations.remove(id);
+    public boolean isCompleted() {
+        return completed;
     }
 
-    public synchronized int getCredit() {
-        return totalCredit - reservations.values().stream().reduce(0, (a, b) -> a + b);
+    public void complete() {
+        this.completed = true;
     }
 
-    public void setTotalCredit(int totalCredit) {
-        this.totalCredit = totalCredit;
-    }
 }
