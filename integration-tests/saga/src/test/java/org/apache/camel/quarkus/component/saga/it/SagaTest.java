@@ -116,5 +116,59 @@ class SagaTest {
                 .then()
                 .statusCode(500);
     }
+    //
+    //    @Test
+    //    public void testManualFailure() {
+    //
+    //        //start saga action, which is confirmed manually (and takes 10 seconds to finish)
+    //        ExecutorService executor = Executors.newSingleThreadExecutor();
+    //        Future<String> manualSagaResult = executor.submit(
+    //                () -> {
+    //                    ValidatableResponse r = RestAssured.given().get("/saga/manualSaga").then();
+    //
+    //                    return r.statusCode(200).extract().asString();
+    //                });
+    //
+    //        //do not confirm the action
+    //
+    //        //wait 15 seconds to status 200 without confirmed body
+    //        Assertions.assertThrows(Exception.class,
+    //                () -> {
+    //                    Awaitility.await()
+    //                            .atMost(Duration.ofSeconds(15))
+    //                            .pollDelay(Duration.ofSeconds(1))
+    //                            .until(() -> {
+    //                                String st = manualSagaResult.get();
+    //                                return st.startsWith("completed");
+    //                            });
+    //                });
+    //
+    //    }
+    //
+    //    @Test
+    //    public void testManualWithConfirmation() throws InterruptedException {
+    //
+    //
+    //        //start saga action, which is confirmed manually (and takes 10 seconds to finish)
+    //        ExecutorService executor = Executors.newSingleThreadExecutor();
+    //        Future<String> manualSagaResult = executor.submit(
+    //                () ->
+    //                        RestAssured.given().get("/saga/manualSaga").then().statusCode(200).extract().asString()
+    //                );
+    //
+    //        Thread.sleep(10000);
+    //        //confirm the action
+    //        String s = RestAssured.get("/saga/manualStep")
+    //                .then()
+    //                .statusCode(200)
+    //                .extract().toString();
+    //
+    //        //wait 15 seconds to status 200 confirmed success
+    //        Awaitility.await()
+    //                    .atMost(Duration.ofSeconds(15))
+    //                    .pollDelay(Duration.ofSeconds(1))
+    //                    .until(() -> "completedWithSuccess".equals(manualSagaResult.get()));
+    //
+    //    }
 
 }

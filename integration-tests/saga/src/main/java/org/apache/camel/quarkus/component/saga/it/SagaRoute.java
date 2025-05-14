@@ -22,6 +22,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.model.SagaCompletionMode;
 import org.apache.camel.model.SagaPropagation;
 import org.apache.camel.quarkus.component.saga.it.lra.LraCreditService;
 import org.apache.camel.quarkus.component.saga.it.lra.LraTicketService;
@@ -167,6 +168,44 @@ public class SagaRoute extends RouteBuilder {
                 .log("Order ${body} created");
 
         from("direct:cancelOrderTimeout5sec")
+                .saga()
+                .propagation(SagaPropagation.MANDATORY)
                 .setBody(constant("failure"));
+
+        // ----------------- manual ----------------------------------
+
+        //use seda
+        from("direct:manualSaga")
+                .saga()
+                .completionMode(SagaCompletionMode.MANUAL)
+                .compensation("direct:manualSagaCompensate")
+                .completion("direct:manualCompletion")
+                .timeout(20, TimeUnit.SECONDS)
+                //sleep instead of an action
+                .bean(lraCreditService, "sleep10seconds")
+                .setBody(constant("success"));
+
+        from("direct:manualCompensate")
+                .saga()
+                .propagation(SagaPropagation.MANDATORY)
+                .setBody(constant("completedWithFailure"));
+
+        from("direct:manualCompletion") // an asynchronous callback
+                .saga()
+                .propagation(SagaPropagation.MANDATORY)
+                .choice()
+                .when(body().isEqualTo("success"))
+                .setBody(constant("completedWithSuccess"))
+                .to("saga:complete") // complete the current saga manually (saga component)
+                .end();
+
+        from("direct:manualStep") // executed manually
+                .saga()
+                .propagation(SagaPropagation.MANDATORY)
+                .choice()
+                .when(body().isEqualTo("success"))
+                .to("saga:complete") // complete the current saga manually (saga component)
+                .end();
+
     }
 }

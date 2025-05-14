@@ -150,4 +150,25 @@ public class SagaResource {
                 .request();
         return Response.ok().entity(o).build();
     }
+
+    @Path("/manualSaga")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response manualSaga() throws InterruptedException {
+
+        Object o = context.createFluentProducerTemplate().to("direct:manualSaga")
+                .withHeader("timeout", 10000)
+                .request();
+        return Response.ok().entity(o).build();
+    }
+
+    @Path("/manualStep")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response manualStep() throws InterruptedException {
+
+        Object o = context.createFluentProducerTemplate().to("direct:manualStep")
+                .request();
+        return Response.ok().entity(o).build();
+    }
 }
