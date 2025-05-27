@@ -14,17 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.debezium.oracle.deployment;
+package org.apache.camel.quarkus.component.debezium.common.it.postgres;
 
-import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.test.junit.QuarkusIntegrationTest;
+import org.junit.jupiter.api.Disabled;
 
-class DebeziumOracleProcessor {
+@Disabled("https://github.com/apache/camel-quarkus/issues/4638")
+@QuarkusIntegrationTest
+class DebeziumPostgresIT extends DebeziumOracleTest {
 
-    private static final String FEATURE = "camel-debezium-oracle";
-
-    @BuildStep
-    FeatureBuildItem feature() {
-        return new FeatureBuildItem(FEATURE);
-    }
 }
