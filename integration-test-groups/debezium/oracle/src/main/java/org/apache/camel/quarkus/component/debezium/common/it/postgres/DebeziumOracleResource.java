@@ -47,25 +47,18 @@ public class DebeziumOracleResource extends AbstractDebeziumResource {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String receive() {
-        String msg = super.receive();
-        System.out.println("received:----------------------------" + msg);
-        return msg;
+        return super.receive();
     }
 
     @Override
     protected String getEndpointUrl(String hostname, String port, String username, String password, String databaseServerName,
             String offsetStorageFileName) {
+        //we have oracle-xe - multitenant, so we need to configure pdbname and use CDB (FREE in xe) as dbName
         return super.getEndpointUrl(hostname, port, "c##dbzuser", "dbz", databaseServerName, offsetStorageFileName)
-                + "&databaseDbname=FREE"// + DB_NAME
-                //                + "&databaseDbname=CDB\\$ROOT"// + DB_NAME
-                + "&databasePdbName=oracle" +
-                "" //+ DB_NAME
+                + "&databaseDbname=FREE"
+                + "&databasePdbName=" + DB_NAME
                 + "&schemaHistoryInternal=" + FileSchemaHistory.class.getName()
                 + "&schemaHistoryInternalFileFilename=" + config.getValue(PROPERTY_DB_HISTORY_FILE, String.class);
-        //        return super.getEndpointUrl(hostname, port, username, password, databaseServerName, offsetStorageFileName)
-        //                + "&databaseDbname=" + DB_NAME
-        //                + "&schemaHistoryInternal=" + FileSchemaHistory.class.getName()
-        //                + "&schemaHistoryInternalFileFilename=" + config.getValue(PROPERTY_DB_HISTORY_FILE, String.class);
     }
 
 }

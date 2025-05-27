@@ -66,7 +66,7 @@ public class DebeziumOracleTestResource extends AbstractDebeziumTestResource<Gen
         try {
             properties = super.start();
         } catch (Exception e) {
-            LOG.warn("todo");
+            LOG.warn(e.getMessage());
             throw e;
         }
 

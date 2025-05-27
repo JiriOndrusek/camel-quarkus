@@ -66,12 +66,10 @@ public abstract class AbstractDebeziumTest {
 
     @Test
     @Order(1)
-    public void testInsert() throws SQLException, InterruptedException {
+    public void testInsert() throws SQLException {
         isInitialized("Test 'testInsert' is skipped, because container is not running.");
-        Thread.sleep(5000);
         String suffix = UUID.randomUUID().toString();
         insertCompany(COMPANY_1 + "_" + suffix, CITY_1);
-        Thread.sleep(5000);
         Awaitility.await().pollDelay(Duration.ofMillis(250)).atMost(Duration.ofMinutes(1)).untilAsserted(() -> {
             receiveResponse()
                     .then()
