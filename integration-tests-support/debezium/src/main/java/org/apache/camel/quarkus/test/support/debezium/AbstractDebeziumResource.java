@@ -52,10 +52,6 @@ public abstract class AbstractDebeziumResource {
     @Inject
     CamelContext camelContext;
 
-    @Inject
-    @DataSource("oracle")
-    AgroalDataSource oracleDataSource;
-
     public AbstractDebeziumResource(Type type) {
         this.type = type;
     }

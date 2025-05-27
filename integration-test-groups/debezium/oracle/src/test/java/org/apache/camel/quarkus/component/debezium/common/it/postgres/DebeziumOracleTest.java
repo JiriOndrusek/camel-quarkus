@@ -22,18 +22,13 @@ import java.sql.SQLException;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.RestAssured;
 import org.apache.camel.quarkus.test.support.debezium.AbstractDebeziumTest;
 import org.apache.camel.quarkus.test.support.debezium.Type;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.logging.Logger;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 import static org.hamcrest.Matchers.*;
@@ -53,39 +48,40 @@ class DebeziumOracleTest extends AbstractDebeziumTest {
     @BeforeAll
     public static void setUp() throws SQLException {
         Config config = ConfigProvider.getConfig();
-        final String jdbcUrl = config.getValue("quarkus.datasource.oracle.jdbc.url", String.class);
-        connection = DriverManager.getConnection(jdbcUrl, DebeziumOracleTestResource.DB_USERNAME, DebeziumOracleTestResource.DB_PASSWORD);
+        final String jdbcUrl = config.getValue(Type.oracle.getPropertyJdbc(), String.class);
+        connection = DriverManager.getConnection(jdbcUrl, DebeziumOracleTestResource.DB_USERNAME,
+                DebeziumOracleTestResource.DB_PASSWORD);
     }
 
-//    @Disabled("https://github.com/apache/camel-quarkus/issues/6911")
-//    @Test
-//    @Override
-//    public void testUpdate() throws SQLException {
-//    }
-//
-//    @Disabled("https://github.com/apache/camel-quarkus/issues/6911")
-//    @Test
-//    @Override
-//    public void testDelete() throws SQLException {
-//    }
-//
-//    @Test
-//    @Order(4)
-//    public void testAdditionalProperty() {
-//        //https://github.com/apache/camel-quarkus/issues/3488
-//        RestAssured.get(Type.postgres.getComponent() + "/getAdditionalProperties")
-//                .then()
-//                .statusCode(200)
-//                .body("'database.connectionTimeZone'", is("CET"));
-//    }
-//
-//    @AfterAll
-//    public static void cleanUp() throws SQLException {
-//        if (connection != null) {
-//            connection.close();
-//        }
-//    }
-//
+    //    @Disabled("https://github.com/apache/camel-quarkus/issues/6911")
+    //    @Test
+    //    @Override
+    //    public void testUpdate() throws SQLException {
+    //    }
+    //
+    //    @Disabled("https://github.com/apache/camel-quarkus/issues/6911")
+    //    @Test
+    //    @Override
+    //    public void testDelete() throws SQLException {
+    //    }
+    //
+    //    @Test
+    //    @Order(4)
+    //    public void testAdditionalProperty() {
+    //        //https://github.com/apache/camel-quarkus/issues/3488
+    //        RestAssured.get(Type.postgres.getComponent() + "/getAdditionalProperties")
+    //                .then()
+    //                .statusCode(200)
+    //                .body("'database.connectionTimeZone'", is("CET"));
+    //    }
+    //
+    //    @AfterAll
+    //    public static void cleanUp() throws SQLException {
+    //        if (connection != null) {
+    //            connection.close();
+    //        }
+    //    }
+    //
     @Override
     protected Connection getConnection() {
         return connection;

@@ -51,14 +51,6 @@ public abstract class AbstractDebeziumTestResource<T extends GenericContainer<?>
 
     protected abstract String getPassword();
 
-    protected String getHost() {
-        return container.getHost();
-    }
-
-    protected int getExtPort() {
-        return container.getMappedPort(getPort());
-    };
-
     protected abstract int getPort();
 
     @Override
@@ -73,8 +65,8 @@ public abstract class AbstractDebeziumTestResource<T extends GenericContainer<?>
             }
 
             Map<String, String> map = CollectionHelper.mapOf(
-                    type.getPropertyHostname(), getHost(),
-                    type.getPropertyPort(), getExtPort() + "",
+                    type.getPropertyHostname(), container.getHost(),
+                    type.getPropertyPort(), container.getMappedPort(getPort()) + "",
                     type.getPropertyOffsetFileName(), storeFile.toString(),
                     type.getPropertyJdbc(), getJdbcUrl());
 

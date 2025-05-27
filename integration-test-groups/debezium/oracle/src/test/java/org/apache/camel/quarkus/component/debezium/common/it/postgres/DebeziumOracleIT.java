@@ -21,6 +21,6 @@ import org.junit.jupiter.api.Disabled;
 
 @Disabled("https://github.com/apache/camel-quarkus/issues/4638")
 @QuarkusIntegrationTest
-class DebeziumPostgresIT extends DebeziumOracleTest {
+class DebeziumOracleIT extends DebeziumOracleTest {
 
 }

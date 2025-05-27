@@ -15,4 +15,4 @@
 -- limitations under the License.
 --
 
-CREATE TABLE company(name VARCHAR2(50), city VARCHAR2(50) NOT NULL, PRIMARY KEY(name))
+CREATE TABLE company(name VARCHAR2(50), city VARCHAR2(50) NOT NULL, PRIMARY KEY(name));

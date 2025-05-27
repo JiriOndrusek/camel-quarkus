@@ -20,13 +20,27 @@ package org.apache.camel.quarkus.component.debezium.common.it.postgres;
 import org.apache.camel.quarkus.test.support.debezium.AbstractDebeziumTestResource;
 import org.apache.camel.quarkus.test.support.debezium.Type;
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
 
 public class DebeziumOracleTestResource extends AbstractDebeziumTestResource<GenericContainer<?>> {
 
+    private static final Logger LOG = LoggerFactory.getLogger(DebeziumOracleTestResource.class);
     public static final String DB_USERNAME = "oracleUser";
     public static final String DB_PASSWORD = "changeit";
-    //    private static final int DB_PORT = 5432;
+    private static final String ORACLE_IMAGE = ConfigProvider.getConfig().getValue("oracle-debezium.container.image",
+            String.class);
+    private static final int DB_PORT = 1521;
+    private Path historyFile;
 
     public DebeziumOracleTestResource() {
         super(Type.oracle);
@@ -34,25 +48,60 @@ public class DebeziumOracleTestResource extends AbstractDebeziumTestResource<Gen
 
     @Override
     protected GenericContainer<?> createContainer() {
-        return null;
+        DockerImageName imageName = DockerImageName.parse(ORACLE_IMAGE)
+                .asCompatibleSubstituteFor("gvenzl/oracle-xe");
+        return new org.testcontainers.containers.OracleContainer(imageName)
+                .withUsername(DB_USERNAME)
+                .withPassword(DB_PASSWORD)
+                .withDatabaseName(DebeziumOracleResource.DB_NAME)
+                .withCopyFileToContainer(
+                        MountableFile.forClasspathResource("initOraclePermissions.sql"),
+                        "/docker-entrypoint-initdb.d/init.sql"
+                )
+                .withLogConsumer(new Slf4jLogConsumer(LOG))
+                .withInitScript("initOracle.sql");
     }
 
     @Override
-    protected String getHost() {
-        return "localhost";
+    public Map<String, String> start() {
+        Map<String, String> properties;
+        try {
+            properties = super.start();
+        } catch (Exception e) {
+            LOG.warn("todo");
+            throw e;
+        }
+
+        try {
+            historyFile = Files.createTempFile(getClass().getSimpleName() + "-history-file-", "");
+
+            properties.put(DebeziumOracleResource.PROPERTY_DB_HISTORY_FILE, historyFile.toString());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return properties;
     }
 
     @Override
-    protected int getExtPort() {
-        return 12345;
+    public void stop() {
+        super.stop();
+
+        try {
+            if (historyFile != null) {
+                Files.deleteIfExists(historyFile);
+            }
+        } catch (Exception e) {
+            // ignored
+        }
     }
+
 
     @Override
     protected String getJdbcUrl() {
-//        return ConfigProvider.getConfig().getValue("quarkus.datasource.oracle.jdbc.url", String.class);
-        return "jdbc:oracle:thin:@localhost:12345/oracle";
+        return "jdbc:oracle:thin:%s/%s@%s:%d/oracle".formatted(DB_USERNAME, DB_PASSWORD, container.getHost(),
+                container.getMappedPort(DB_PORT));
     }
-
 
     @Override
     protected String getUsername() {
@@ -66,6 +115,6 @@ public class DebeziumOracleTestResource extends AbstractDebeziumTestResource<Gen
 
     @Override
     protected int getPort() {
-        return 12345;
+        return DB_PORT;
     }
 }

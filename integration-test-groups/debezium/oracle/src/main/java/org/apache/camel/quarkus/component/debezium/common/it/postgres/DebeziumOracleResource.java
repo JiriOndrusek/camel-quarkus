@@ -16,24 +16,32 @@
  */
 package org.apache.camel.quarkus.component.debezium.common.it.postgres;
 
+import io.debezium.storage.file.history.FileSchemaHistory;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import org.apache.camel.quarkus.test.support.debezium.AbstractDebeziumResource;
 import org.apache.camel.quarkus.test.support.debezium.Type;
+import org.eclipse.microprofile.config.Config;
 
 @Path("/debezium-oracle")
 @ApplicationScoped
 public class DebeziumOracleResource extends AbstractDebeziumResource {
 
-    public static final String DB_NAME = "oracleDbName";
+    public static final String PROPERTY_DB_HISTORY_FILE = DebeziumOracleResource.class.getSimpleName()
+            + "_databaseHistoryFileFilename";
+
+    @Inject
+    Config config;
+
+    public static final String DB_NAME = "oracle";
 
     public DebeziumOracleResource() {
         super(Type.oracle);
     }
-
 
     @Path("/receive")
     @GET
@@ -45,10 +53,10 @@ public class DebeziumOracleResource extends AbstractDebeziumResource {
     @Override
     protected String getEndpointUrl(String hostname, String port, String username, String password, String databaseServerName,
             String offsetStorageFileName) {
-        return super.getEndpointUrl(hostname, port, username, password, databaseServerName, offsetStorageFileName)
-                + "&databaseDbname=" + DB_NAME;
+        return super.getEndpointUrl(hostname, port, "c##dbzuser", "dbz", databaseServerName, offsetStorageFileName)
+                + "&databaseDbname=" + DB_NAME
+                + "&schemaHistoryInternal=" + FileSchemaHistory.class.getName()
+                + "&schemaHistoryInternalFileFilename=" + config.getValue(PROPERTY_DB_HISTORY_FILE, String.class);
     }
-
-
 
 }
