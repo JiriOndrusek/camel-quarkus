@@ -17,20 +17,19 @@
 
 package org.apache.camel.quarkus.component.debezium.common.it.postgres;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
+
 import org.apache.camel.quarkus.test.support.debezium.AbstractDebeziumTestResource;
 import org.apache.camel.quarkus.test.support.debezium.Type;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Map;
 
 public class DebeziumOracleTestResource extends AbstractDebeziumTestResource<GenericContainer<?>> {
 
@@ -56,9 +55,8 @@ public class DebeziumOracleTestResource extends AbstractDebeziumTestResource<Gen
                 .withDatabaseName(DebeziumOracleResource.DB_NAME)
                 .withCopyFileToContainer(
                         MountableFile.forClasspathResource("initOraclePermissions.sql"),
-                        "/docker-entrypoint-initdb.d/init.sql"
-                )
-                .withLogConsumer(new Slf4jLogConsumer(LOG))
+                        "/docker-entrypoint-initdb.d/init.sql")
+                //                .withLogConsumer(new Slf4jLogConsumer(LOG))
                 .withInitScript("initOracle.sql");
     }
 
@@ -95,7 +93,6 @@ public class DebeziumOracleTestResource extends AbstractDebeziumTestResource<Gen
             // ignored
         }
     }
-
 
     @Override
     protected String getJdbcUrl() {
