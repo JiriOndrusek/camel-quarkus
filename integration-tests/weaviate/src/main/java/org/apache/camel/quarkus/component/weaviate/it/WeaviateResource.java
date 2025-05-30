@@ -16,54 +16,44 @@
  */
 package org.apache.camel.quarkus.component.weaviate.it;
 
-import java.net.URI;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-
-import org.apache.camel.ConsumerTemplate;
-import org.apache.camel.ProducerTemplate;
+import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.component.weaviate.WeaviateVectorDb;
+import org.apache.camel.component.weaviate.WeaviateVectorDbAction;
 import org.jboss.logging.Logger;
 
 @Path("/weaviate")
 @ApplicationScoped
 public class WeaviateResource {
 
+    public static final String WEAVIATE_ENDPOINT_URL = "cq.weaviate.endpoint.url";
+    public static final String WEAVIATE_ENDPOINT_HOST = "cq.weaviate.endpoint.host";
+    public static final String WEAVIATE_ENDPOINT_PORT = "cq.weaviate.endpoint.port";
+
     private static final Logger LOG = Logger.getLogger(WeaviateResource.class);
 
     @Inject
-    ProducerTemplate producerTemplate;
+    CamelContext context;
 
-    @Inject
-    ConsumerTemplate consumerTemplate;
-
-    @Path("/get")
+    @Path("/createCollection/{name}")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public String get() throws Exception {
-        final String message = consumerTemplate.receiveBodyNoWait("weaviate:--fix-me--", String.class);
-        LOG.infof("Received from weaviate: %s", message);
-        return message;
-    }
+    public Response loadComponentSaga(@PathParam("name") String name) throws Exception {
 
-    @Path("/post")
-    @POST
-    @Consumes(MediaType.TEXT_PLAIN)
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response post(String message) throws Exception {
-        LOG.infof("Sending to weaviate: %s", message);
-        final String response = producerTemplate.requestBody("weaviate:--fix-me--", message, String.class);
-        LOG.infof("Got response from weaviate: %s", response);
-        return Response
-                .created(new URI("https://camel.apache.org/"))
-                .entity(response)
-                .build();
+        Exchange result = context.createFluentProducerTemplate()
+                .to("weaviate:test-collection")
+                .withHeader(WeaviateVectorDb.Headers.ACTION, WeaviateVectorDbAction.CREATE_COLLECTION)
+                .withHeader(WeaviateVectorDb.Headers.COLLECTION_NAME, name)
+                .request(Exchange.class);
+
+        return Response.ok().entity(result.getIn().getBody(String.class)).build();
     }
 }
