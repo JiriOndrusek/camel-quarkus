@@ -19,85 +19,99 @@ package org.apache.camel.quarkus.component.weaviate.it;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import io.restassured.response.ValidatableResponse;
+import io.weaviate.client.base.Result;
+import io.weaviate.client.v1.data.model.WeaviateObject;
+import org.apache.camel.Exchange;
+import org.apache.camel.component.weaviate.WeaviateVectorDb;
+import org.apache.camel.component.weaviate.WeaviateVectorDbAction;
 import org.hamcrest.Matchers;
+import org.hamcrest.core.Is;
+import org.hamcrest.text.IsEmptyString;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.condition.DisabledIfSystemProperties;
+import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @QuarkusTest
-@QuarkusTestResource(WeaviateTestResource.class)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@EnabledIfEnvironmentVariable(named = "weaviate.host", matches = ".+")
+@EnabledIfEnvironmentVariable(named = "weaviate.apikey", matches = ".+")
 class WeaviateTest {
 
-    @Test
-    @Order(1)
-    public void createCollection() {
-        RestAssured.get("/weaviate/createCollection/test-collection")
-                .then()
-                .statusCode(200)
-                .body(Matchers.is("false"));
+    private static final String COLLECTION_NAME = "WeaviateCQCollection";
 
-        //        assertThat(result).isNotNull();
-        //        Result<Boolean> res = (Result<Boolean>) result.getIn().getBody();
-        //        assertThat(!res.hasErrors());
-        //        assertThat(res.getResult() == true);
-        //        assertThat(result.getException()).isNull();
+
+
+
+    @Test
+    public void crud() {
+        List<Float> values = Arrays.asList(1.0f, 2.0f, 3.0f);
+        Map<String, String> properties = Map.of("sky", "blue", "age", "34");
+
+
+        //tests
+        createCollection();
+
+        try {
+            String entryId = createEntry(values, properties);
+
+            queryById(entryId)
+                    .body("result", Matchers.hasSize(1))
+                    .body("result", Matchers.hasItem(entryId));
+
+            updateById(entryId);
+
+
+
+        } finally {
+            deleteCollection();
+        }
     }
-    //
-    //    @Test
-    //    @Order(2)
-    //    public void create() {
-    //
-    //        List<Float> elements = Arrays.asList(1.0f, 2.0f, 3.0f);
-    //
-    //        HashMap<String, String> map = new HashMap<String, String>();
-    //        map.put("sky", "blue");
-    //        map.put("age", "34");
-    //
-    //        Exchange result = fluentTemplate
-    //                .to("weaviate:test-collection")
-    //                .withHeader(WeaviateVectorDb.Headers.ACTION, WeaviateVectorDbAction.CREATE)
-    //                .withBody(elements)
-    //                .withHeader(WeaviateVectorDb.Headers.COLLECTION_NAME, COLLECTION)
-    //                .withHeader(WeaviateVectorDb.Headers.PROPERTIES, map)
-    //                .request(Exchange.class);
-    //
-    //        assertThat(result).isNotNull();
-    //
-    //        Result<WeaviateObject> res = (Result<WeaviateObject>) result.getIn().getBody();
-    //        CREATEID = res.getResult().getId();
-    //
-    //        assertThat(!res.hasErrors());
-    //        assertThat(res != null);
-    //    }
-    //
-    //    @Test
-    //    @Order(8)
-    //    public void queryByVector() {
-    //
-    //        List<Float> elements = Arrays.asList(1.0f, 2.0f, 3.2f);
-    //
-    //        HashMap<String, String> map = new HashMap<String, String>();
-    //        map.put("sky", "blue");
-    //
-    //        Exchange result = fluentTemplate
-    //                .to("weaviate:test-collection")
-    //                .withHeader(WeaviateVectorDb.Headers.ACTION, WeaviateVectorDbAction.QUERY)
-    //                .withBody(
-    //                        elements)
-    //                .withHeader(WeaviateVectorDb.Headers.COLLECTION_NAME, COLLECTION)
-    //                .withHeader(WeaviateVectorDb.Headers.QUERY_TOP_K, 20)
-    //                .withHeader(WeaviateVectorDb.Headers.FIELDS, map)
-    //                .request(Exchange.class);
-    //
-    //        assertThat(result).isNotNull();
-    //        List<Float> vector = (List<Float>) result.getIn().getBody();
-    //        assertThat(vector.get(0) == 1.0f);
-    //        assertThat(vector.get(1) == 2.0f);
-    //        assertThat(vector.get(2) == 3.0f);
-    //    }
-    //
+
+
+
+
+//    @Test
+//    @Order(7)
+//    public void updateById() {
+//
+//        List<Float> elements = Arrays.asList(1.0f, 2.0f, 3.0f);
+//
+//        HashMap<String, String> map = new HashMap<String, String>();
+//        map.put("dog", "dachshund");
+//
+//        Exchange result = fluentTemplate.to(
+//                        "weaviate:test-collection?scheme={{weaviate.scheme}}&host={{weaviate.host}}&apiKey={{weaviate.apikey}}")
+//                .withHeader(WeaviateVectorDb.Headers.ACTION, WeaviateVectorDbAction.UPDATE_BY_ID)
+//                .withBody(elements)
+//                .withHeader(WeaviateVectorDb.Headers.COLLECTION_NAME, COLLECTION)
+//                .withHeader(WeaviateVectorDb.Headers.INDEX_ID, CREATEID)
+//                .withHeader(WeaviateVectorDb.Headers.PROPERTIES, map)
+//                .request(Exchange.class);
+//
+//        assertThat(result).isNotNull();
+//
+//        Result<Boolean> res = (Result<Boolean>) result.getIn().getBody();
+//        assertThat(!res.hasErrors());
+//        assertThat(res.getResult() == true);
+//        assertThat(result.getException()).isNull();
+//    }
+
+
+
+
+
     //    @Test
     //    @Order(9)
     //    public void deleteById() {
@@ -117,20 +131,96 @@ class WeaviateTest {
     //        assertThat(result.getException()).isNull();
     //    }
     //
-    //    @Test
-    //    @Order(10)
-    //    public void deleteCollection() {
-    //        Exchange result = fluentTemplate
-    //                .to("weaviate:test-collection")
-    //                .withHeader(WeaviateVectorDb.Headers.ACTION, WeaviateVectorDbAction.DELETE_COLLECTION)
-    //                .withHeader(WeaviateVectorDb.Headers.COLLECTION_NAME, COLLECTION)
-    //                .request(Exchange.class);
-    //
-    //        assertThat(result).isNotNull();
-    //        Result<Boolean> res = (Result<Boolean>) result.getIn().getBody();
-    //        assertThat(!res.hasErrors());
-    //        assertThat(res.getResult() == true);
-    //        assertThat(result.getException()).isNull();
-    //    }
+
+
+    private void createCollection() {
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(Map.of(WeaviateVectorDb.Headers.ACTION, WeaviateVectorDbAction.CREATE_COLLECTION,
+                        WeaviateVectorDb.Headers.COLLECTION_NAME, COLLECTION_NAME))
+                .post("/weaviate/request")
+                .then()
+                .statusCode(200)
+                .body("error", IsEmptyString.emptyOrNullString())
+                .body("result", Matchers.is(true));
+    }
+
+
+    private void deleteCollection() {
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(Map.of(WeaviateVectorDb.Headers.ACTION, WeaviateVectorDbAction.DELETE_COLLECTION,
+                        WeaviateVectorDb.Headers.COLLECTION_NAME, COLLECTION_NAME))
+                .post("/weaviate/request")
+                .then()
+                .statusCode(200)
+                .body("error", IsEmptyString.emptyOrNullString())
+                .body("result", Matchers.is(true));
+    }
+
+    private String createEntry(List<Float> values, Map<String, String> properties) {
+
+        Map<String, Object> payload = Map.of(
+                "body", values,
+                WeaviateVectorDb.Headers.ACTION, WeaviateVectorDbAction.CREATE,
+                WeaviateVectorDb.Headers.COLLECTION_NAME, COLLECTION_NAME,
+                WeaviateVectorDb.Headers.PROPERTIES, properties
+        );
+
+        String createdId = RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(payload)
+                .post("/weaviate/request")
+                .then()
+                .statusCode(200)
+                .body("error", IsEmptyString.emptyOrNullString())
+                .extract().path("result");
+
+        Assertions.assertNotNull(createdId);
+
+        return createdId;
+    }
+
+
+    public ValidatableResponse queryById(String id) {
+        Map<String, Object> payload = Map.of(
+                WeaviateVectorDb.Headers.ACTION, WeaviateVectorDbAction.QUERY_BY_ID,
+                WeaviateVectorDb.Headers.COLLECTION_NAME, COLLECTION_NAME,
+                WeaviateVectorDb.Headers.INDEX_ID, id);
+
+
+        return RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(payload)
+                .post("/weaviate/request")
+                .then()
+                .statusCode(200)
+                .body("error", IsEmptyString.emptyOrNullString());
+    }
+
+    private ValidatableResponse updateById(String id) {
+
+        List<Float> elements = Arrays.asList(1.0f, 2.0f, 3.0f);
+
+        HashMap<String, String> map = new HashMap<String, String>();
+        map.put("dog", "dachshund");
+
+        Map<String, Object> payload = Map.of(
+                WeaviateVectorDb.Headers.ACTION, WeaviateVectorDbAction.UPDATE_BY_ID,
+                WeaviateVectorDb.Headers.COLLECTION_NAME, COLLECTION_NAME,
+                WeaviateVectorDb.Headers.INDEX_ID, id,
+                WeaviateVectorDb.Headers.PROPERTIES, map);
+
+
+        return RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(payload)
+                .post("/weaviate/request")
+                .then()
+                .statusCode(200)
+                .body("error", IsEmptyString.emptyOrNullString());
+    }
 
 }
+
+

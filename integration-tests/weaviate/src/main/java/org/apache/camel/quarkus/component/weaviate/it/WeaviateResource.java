@@ -16,24 +16,29 @@
  */
 package org.apache.camel.quarkus.component.weaviate.it;
 
+import io.weaviate.client.base.Result;
+import io.weaviate.client.v1.data.model.WeaviateObject;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
-import org.apache.camel.component.weaviate.WeaviateVectorDb;
-import org.apache.camel.component.weaviate.WeaviateVectorDbAction;
 import org.jboss.logging.Logger;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Path("/weaviate")
 @ApplicationScoped
 public class WeaviateResource {
 
+    //todo container tests
     public static final String WEAVIATE_ENDPOINT_URL = "cq.weaviate.endpoint.url";
     public static final String WEAVIATE_ENDPOINT_HOST = "cq.weaviate.endpoint.host";
     public static final String WEAVIATE_ENDPOINT_PORT = "cq.weaviate.endpoint.port";
@@ -43,17 +48,45 @@ public class WeaviateResource {
     @Inject
     CamelContext context;
 
-    @Path("/createCollection/{name}")
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response loadComponentSaga(@PathParam("name") String name) throws Exception {
+    @Path("/request")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response request(Map<String, Object> testHeaders) {
+        Map<String, Object> headers = new HashMap<>(testHeaders);
 
-        Exchange result = context.createFluentProducerTemplate()
-                .to("weaviate:test-collection")
-                .withHeader(WeaviateVectorDb.Headers.ACTION, WeaviateVectorDbAction.CREATE_COLLECTION)
-                .withHeader(WeaviateVectorDb.Headers.COLLECTION_NAME, name)
+        Object body = headers.get("body");
+        headers.remove("body");
+
+        //convert Double to Float in body list (for create)
+        if(body instanceof List) {
+            body = ((List) body).stream().map(o -> o instanceof Double ? ((Double)o).floatValue() : o).collect(Collectors.toList());
+        }
+
+        Exchange response = context.createFluentProducerTemplate()
+                .to("weaviate:test-collection?scheme=https&host={{weaviate.host}}&apiKey={{weaviate.apikey}}")
+                .withBody(body)
+                .withHeaders(headers)
                 .request(Exchange.class);
 
-        return Response.ok().entity(result.getIn().getBody(String.class)).build();
+        Result<?> result = response.getIn().getBody(Result.class);
+        LOG.infof("Response for collections with headers (%s) is: \"%s\".", headers, result);
+
+        if(result != null) {
+            HashMap<String, Object> map = new HashMap();
+            map.put("error", result.getError() == null ? "" : result.getError());
+
+            if(result.getResult() instanceof Boolean) {
+                map.put("result", result.getResult());
+            } else if(result.getResult() instanceof WeaviateObject) {
+                map.put("result", ((WeaviateObject) result.getResult()).getId());
+                map.put("resultProperties", ((WeaviateObject) result.getResult()).getProperties());
+            } else if(result.getResult() instanceof List)
+                map.put("result", ((List) result.getResult()).stream().map(o -> o instanceof WeaviateObject ? ((WeaviateObject) o).getId() : "").collect(Collectors.toList()));
+
+            return Response.ok(map).build();
+        }
+
+        return Response.status(500).entity("Empty result").build();
     }
+
 }
