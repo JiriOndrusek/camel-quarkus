@@ -30,6 +30,7 @@ import org.hamcrest.Matchers;
 import org.hamcrest.core.Is;
 import org.hamcrest.text.IsEmptyString;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -49,95 +50,47 @@ import java.util.Map;
 @EnabledIfEnvironmentVariable(named = "weaviate.apikey", matches = ".+")
 class WeaviateTest {
 
-    private static final String COLLECTION_NAME = "WeaviateCQCollection";
-
-
 
 
     @Test
-    public void crud() {
+    public void simpleCrud() {
+        String collectionName = "WeaviateCQCollectionCrud";
         List<Float> values = Arrays.asList(1.0f, 2.0f, 3.0f);
         Map<String, String> properties = Map.of("sky", "blue", "age", "34");
-
+        Map<String, String> updatedProperties = Map.of("dog", "dachshund");
 
         //tests
-        createCollection();
+        createCollection(collectionName);
 
         try {
-            String entryId = createEntry(values, properties);
+            String id = createEntry(collectionName, values, properties);
 
-            queryById(entryId)
-                    .body("result", Matchers.hasSize(1))
-                    .body("result", Matchers.hasItem(entryId));
+            queryById(collectionName, id)
+                    .body("result", Matchers.hasSize(1));
 
-            updateById(entryId);
+            updateById(collectionName, id, values, updatedProperties);
 
+            deleteById(collectionName, id);
 
+            queryById(collectionName, id)
+                    .body("result", Matchers.nullValue());
 
         } finally {
-            deleteCollection();
+            deleteCollection(collectionName);
         }
     }
 
+    @Test
+    public void queryByVector() {
+
+    }
 
 
-
-//    @Test
-//    @Order(7)
-//    public void updateById() {
-//
-//        List<Float> elements = Arrays.asList(1.0f, 2.0f, 3.0f);
-//
-//        HashMap<String, String> map = new HashMap<String, String>();
-//        map.put("dog", "dachshund");
-//
-//        Exchange result = fluentTemplate.to(
-//                        "weaviate:test-collection?scheme={{weaviate.scheme}}&host={{weaviate.host}}&apiKey={{weaviate.apikey}}")
-//                .withHeader(WeaviateVectorDb.Headers.ACTION, WeaviateVectorDbAction.UPDATE_BY_ID)
-//                .withBody(elements)
-//                .withHeader(WeaviateVectorDb.Headers.COLLECTION_NAME, COLLECTION)
-//                .withHeader(WeaviateVectorDb.Headers.INDEX_ID, CREATEID)
-//                .withHeader(WeaviateVectorDb.Headers.PROPERTIES, map)
-//                .request(Exchange.class);
-//
-//        assertThat(result).isNotNull();
-//
-//        Result<Boolean> res = (Result<Boolean>) result.getIn().getBody();
-//        assertThat(!res.hasErrors());
-//        assertThat(res.getResult() == true);
-//        assertThat(result.getException()).isNull();
-//    }
-
-
-
-
-
-    //    @Test
-    //    @Order(9)
-    //    public void deleteById() {
-    //
-    //        Exchange result = fluentTemplate
-    //                .to("weaviate:test-collection")
-    //                .withHeader(WeaviateVectorDb.Headers.ACTION, WeaviateVectorDbAction.DELETE_BY_ID)
-    //                .withHeader(WeaviateVectorDb.Headers.COLLECTION_NAME, COLLECTION)
-    //                .withHeader(WeaviateVectorDb.Headers.INDEX_ID, CREATEID)
-    //                .request(Exchange.class);
-    //
-    //        assertThat(result).isNotNull();
-    //        Result<Boolean> res = (Result<Boolean>) result.getIn().getBody();
-    //
-    //        assertThat(!res.hasErrors());
-    //        assertThat(res.getResult() == true);
-    //        assertThat(result.getException()).isNull();
-    //    }
-    //
-
-
-    private void createCollection() {
+    private void createCollection(String name) {
         RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(Map.of(WeaviateVectorDb.Headers.ACTION, WeaviateVectorDbAction.CREATE_COLLECTION,
-                        WeaviateVectorDb.Headers.COLLECTION_NAME, COLLECTION_NAME))
+                        WeaviateVectorDb.Headers.COLLECTION_NAME, name))
                 .post("/weaviate/request")
                 .then()
                 .statusCode(200)
@@ -146,11 +99,11 @@ class WeaviateTest {
     }
 
 
-    private void deleteCollection() {
+    private void deleteCollection(String name) {
         RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(Map.of(WeaviateVectorDb.Headers.ACTION, WeaviateVectorDbAction.DELETE_COLLECTION,
-                        WeaviateVectorDb.Headers.COLLECTION_NAME, COLLECTION_NAME))
+                        WeaviateVectorDb.Headers.COLLECTION_NAME, name))
                 .post("/weaviate/request")
                 .then()
                 .statusCode(200)
@@ -158,12 +111,12 @@ class WeaviateTest {
                 .body("result", Matchers.is(true));
     }
 
-    private String createEntry(List<Float> values, Map<String, String> properties) {
+    private String createEntry(String collectionName, List<Float> values, Map<String, String> properties) {
 
         Map<String, Object> payload = Map.of(
                 "body", values,
                 WeaviateVectorDb.Headers.ACTION, WeaviateVectorDbAction.CREATE,
-                WeaviateVectorDb.Headers.COLLECTION_NAME, COLLECTION_NAME,
+                WeaviateVectorDb.Headers.COLLECTION_NAME, collectionName,
                 WeaviateVectorDb.Headers.PROPERTIES, properties
         );
 
@@ -182,10 +135,10 @@ class WeaviateTest {
     }
 
 
-    public ValidatableResponse queryById(String id) {
+    public ValidatableResponse queryById(String collectionName, String id) {
         Map<String, Object> payload = Map.of(
                 WeaviateVectorDb.Headers.ACTION, WeaviateVectorDbAction.QUERY_BY_ID,
-                WeaviateVectorDb.Headers.COLLECTION_NAME, COLLECTION_NAME,
+                WeaviateVectorDb.Headers.COLLECTION_NAME, collectionName,
                 WeaviateVectorDb.Headers.INDEX_ID, id);
 
 
@@ -198,18 +151,15 @@ class WeaviateTest {
                 .body("error", IsEmptyString.emptyOrNullString());
     }
 
-    private ValidatableResponse updateById(String id) {
+    private ValidatableResponse updateById(String collectionName, String id, List<Float> values, Map<String, String> properties) {
 
-        List<Float> elements = Arrays.asList(1.0f, 2.0f, 3.0f);
-
-        HashMap<String, String> map = new HashMap<String, String>();
-        map.put("dog", "dachshund");
 
         Map<String, Object> payload = Map.of(
+                "body", values,
                 WeaviateVectorDb.Headers.ACTION, WeaviateVectorDbAction.UPDATE_BY_ID,
-                WeaviateVectorDb.Headers.COLLECTION_NAME, COLLECTION_NAME,
+                WeaviateVectorDb.Headers.COLLECTION_NAME, collectionName,
                 WeaviateVectorDb.Headers.INDEX_ID, id,
-                WeaviateVectorDb.Headers.PROPERTIES, map);
+                WeaviateVectorDb.Headers.PROPERTIES, properties);
 
 
         return RestAssured.given()
@@ -219,6 +169,22 @@ class WeaviateTest {
                 .then()
                 .statusCode(200)
                 .body("error", IsEmptyString.emptyOrNullString());
+    }
+
+    public void deleteById(String collectionName, String id) {
+
+        Map<String, Object> payload = Map.of(
+                WeaviateVectorDb.Headers.ACTION, WeaviateVectorDbAction.DELETE_BY_ID,
+                WeaviateVectorDb.Headers.COLLECTION_NAME, collectionName,
+                WeaviateVectorDb.Headers.INDEX_ID, id);
+
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(payload)
+                .post("/weaviate/request")
+                .then().statusCode(200)
+                .body("error", IsEmptyString.emptyOrNullString())
+                .body("result", Matchers.is(true));
     }
 
 }

@@ -81,7 +81,10 @@ public class WeaviateResource {
                 map.put("result", ((WeaviateObject) result.getResult()).getId());
                 map.put("resultProperties", ((WeaviateObject) result.getResult()).getProperties());
             } else if(result.getResult() instanceof List)
-                map.put("result", ((List) result.getResult()).stream().map(o -> o instanceof WeaviateObject ? ((WeaviateObject) o).getId() : "").collect(Collectors.toList()));
+                map.put("result", ((List) result.getResult()).stream()
+                        .map(o -> o instanceof WeaviateObject ?
+                                Map.of(((WeaviateObject)o).getId(), ((WeaviateObject)o).getProperties().size()) : "")
+                        .collect(Collectors.toList()));
 
             return Response.ok(map).build();
         }
