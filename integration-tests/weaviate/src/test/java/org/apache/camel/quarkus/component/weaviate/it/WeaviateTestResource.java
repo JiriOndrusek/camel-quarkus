@@ -28,8 +28,6 @@ import org.testcontainers.weaviate.WeaviateContainer;
 
 public class WeaviateTestResource implements QuarkusTestResourceLifecycleManager {
 
-    public static final String CONTAINER_ACCESS_KEY = "MINIO_ACCESS_KEY";
-    public static final String CONTAINER_SECRET_KEY = "MINIO_SECRET_KEY";
     private static final DockerImageName WEAVIATE_IMAGE = DockerImageName
             .parse(ConfigProvider.getConfig().getValue("weaviate.container.image", String.class))
             .asCompatibleSubstituteFor("semitechnologies/weaviate");
@@ -42,9 +40,7 @@ public class WeaviateTestResource implements QuarkusTestResourceLifecycleManager
         container.start();
 
         return Map.of(
-                WeaviateResource.WEAVIATE_ENDPOINT_URL, container.getHttpHostAddress(),
-                WeaviateResource.WEAVIATE_ENDPOINT_HOST, container.getHttpHostAddress(),
-                WeaviateResource.WEAVIATE_ENDPOINT_PORT, String.valueOf(getWeaviatePort()));
+                WeaviateResource.WEAVIATE_HOST_ADDRESS, container.getHttpHostAddress());
     }
 
     private int getWeaviatePort() {
