@@ -5,8 +5,8 @@ cqArtifactIdBase: weaviate
 cqNativeSupported: true
 cqStatus: Stable
 cqDeprecated: false
-cqJvmSince: 3.23.0
-cqNativeSince: 3.23.0
+cqJvmSince: 3.24.0
+cqNativeSince: 3.24.0
 cqCamelPartName: weaviate
 cqCamelPartTitle: weaviate
 cqCamelPartDescription: Perform operations on the Weaviate Vector Database.

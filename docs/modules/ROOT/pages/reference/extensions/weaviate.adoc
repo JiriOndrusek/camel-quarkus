@@ -9,12 +9,12 @@
 :cq-status-deprecation: Stable
 :cq-description: Perform operations on the Weaviate Vector Database.
 :cq-deprecated: false
-:cq-jvm-since: 3.23.0
-:cq-native-since: 3.23.0
+:cq-jvm-since: 3.24.0
+:cq-native-since: 3.24.0
 
 ifeval::[{doc-show-badges} == true]
 [.badges]
-[.badge-key]##JVM since##[.badge-supported]##3.23.0## [.badge-key]##Native since##[.badge-supported]##3.23.0##
+[.badge-key]##JVM since##[.badge-supported]##3.24.0## [.badge-key]##Native since##[.badge-supported]##3.24.0##
 endif::[]
 
 Perform operations on the Weaviate Vector Database.

@@ -29,12 +29,14 @@ import org.apache.camel.component.weaviate.WeaviateVectorDb;
 import org.apache.camel.component.weaviate.WeaviateVectorDbAction;
 import org.hamcrest.Matchers;
 import org.hamcrest.text.IsEmptyString;
+import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 @QuarkusTestResource(WeaviateTestResource.class)
 class WeaviateTest {
+    private static final Logger LOG = Logger.getLogger(WeaviateTest.class);
 
     @Test
     public void simpleCrud() {
@@ -43,9 +45,12 @@ class WeaviateTest {
         Map<String, String> properties = Map.of("sky", "blue", "age", "34");
         Map<String, String> updatedProperties = Map.of("dog", "dachshund");
 
-        createCollection(collectionName);
-
+        boolean collectionCreated = false;
         try {
+            createCollection(collectionName);
+            LOG.infof("Collection created: %s", collectionName);
+            collectionCreated = true;
+
             String id = createEntry(collectionName, values, properties);
 
             queryById(collectionName, id)
@@ -53,13 +58,16 @@ class WeaviateTest {
                     .body("result." + id, Matchers.aMapWithSize(2))
                     .body("result." + id, Matchers.hasKey("sky"))
                     .body("result." + id, Matchers.hasKey("age"))
-                    .body("result." + id, Matchers.hasKey("age"));
+                    .body("result." + id, Matchers.not(Matchers.hasKey("dog")));
 
             updateById(collectionName, id, values, updatedProperties);
 
             queryById(collectionName, id)
                     .body("result", Matchers.aMapWithSize(1))
-                    .body("result." + id, Matchers.aMapWithSize(3));
+                    .body("result." + id, Matchers.aMapWithSize(3))
+                    .body("result." + id, Matchers.hasKey("sky"))
+                    .body("result." + id, Matchers.hasKey("age"))
+                    .body("result." + id, Matchers.hasKey("dog"));
 
             deleteById(collectionName, id);
 
@@ -67,13 +75,49 @@ class WeaviateTest {
                     .body("result", Matchers.nullValue());
 
         } finally {
-            deleteCollection(collectionName);
+            if (collectionCreated) {
+                deleteCollection(collectionName);
+            }
         }
     }
 
     @Test
     public void queryByVector() {
+        String collectionName = "WeaviateCQCollectionVector";
+        List<Float> values = Arrays.asList(1.0f, 2.0f, 3.0f);
+        Map<String, String> properties = Map.of("sky", "blue", "age", "34");
+        Map<String, String> updatedProperties = Map.of("dog", "dachshund");
 
+        boolean collectionCreated = false;
+        try {
+            createCollection(collectionName);
+            LOG.infof("Collection created: %s", collectionName);
+            collectionCreated = true;
+
+            createEntry(collectionName, Arrays.asList(0.1f, 0.2f, 0.3f),
+                    Map.of("title", "First Article", "content", "The content of the first article."));
+            createEntry(collectionName, Arrays.asList(0.2f, 0.3f, 0.4f),
+                    Map.of("title", "Second Article", "content", "The content of the second article."));
+            createEntry(collectionName, Arrays.asList(0.3f, 0.4f, 0.5f),
+                    Map.of("title", "Third Article", "content", "The content of the third article."));
+
+            queryByVector(collectionName, Arrays.asList(0.15f, 0.25f, 0.35f), Map.of("title", "", "content", ""))
+                    .body("result.data.Get." + collectionName, Matchers.hasSize(2))
+                    .body("result.data.Get." + collectionName + "[0]", Matchers.aMapWithSize(2))
+                    .body("result.data.Get." + collectionName + "[0].title", Matchers.equalTo("Second Article"))
+                    .body("result.data.Get." + collectionName + "[1].title", Matchers.equalTo("First Article"));
+
+            queryByVector(collectionName, Arrays.asList(0.3f, 0.4f, 0.5f), Map.of("title", "", "content", ""))
+                    .body("result.data.Get." + collectionName, Matchers.hasSize(2))
+                    .body("result.data.Get." + collectionName + "[0]", Matchers.aMapWithSize(2))
+                    .body("result.data.Get." + collectionName + "[0].title", Matchers.equalTo("Third Article"))
+                    .body("result.data.Get." + collectionName + "[1].title", Matchers.equalTo("Second Article"));
+
+        } finally {
+            if (collectionCreated) {
+                deleteCollection(collectionName);
+            }
+        }
     }
 
     private void createCollection(String name) {
@@ -137,7 +181,7 @@ class WeaviateTest {
                 .body("error", IsEmptyString.emptyOrNullString());
     }
 
-    private ValidatableResponse updateById(String collectionName, String id, List<Float> values,
+    private void updateById(String collectionName, String id, List<Float> values,
             Map<String, String> properties) {
 
         Map<String, Object> payload = Map.of(
@@ -147,7 +191,7 @@ class WeaviateTest {
                 WeaviateVectorDb.Headers.INDEX_ID, id,
                 WeaviateVectorDb.Headers.PROPERTIES, properties);
 
-        return RestAssured.given()
+        RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .post("/weaviate/request")
@@ -172,4 +216,21 @@ class WeaviateTest {
                 .body("result", Matchers.is(true));
     }
 
+    private ValidatableResponse queryByVector(String collectionName, List<Float> values, Map<String, String> fields) {
+
+        Map<String, Object> payload = Map.of(
+                "body", values,
+                WeaviateVectorDb.Headers.ACTION, WeaviateVectorDbAction.QUERY,
+                WeaviateVectorDb.Headers.COLLECTION_NAME, collectionName,
+                WeaviateVectorDb.Headers.QUERY_TOP_K, 2,
+                WeaviateVectorDb.Headers.FIELDS, fields);
+
+        return RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(payload)
+                .post("/weaviate/request")
+                .then()
+                .statusCode(200)
+                .body("error", IsEmptyString.emptyOrNullString());
+    }
 }

@@ -16,12 +16,13 @@
  */
 package org.apache.camel.quarkus.component.weaviate.it;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
+import org.apache.camel.quarkus.test.mock.backend.MockBackendUtils;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.weaviate.WeaviateContainer;
@@ -32,25 +33,36 @@ public class WeaviateTestResource implements QuarkusTestResourceLifecycleManager
             .parse(ConfigProvider.getConfig().getValue("weaviate.container.image", String.class))
             .asCompatibleSubstituteFor("semitechnologies/weaviate");
 
-    private WeaviateContainer container = new WeaviateContainer(WEAVIATE_IMAGE)
+    private final WeaviateContainer container = new WeaviateContainer(WEAVIATE_IMAGE)
             .withStartupTimeout(Duration.ofMinutes(3L));
 
     @Override
     public Map<String, String> start() {
-        container.start();
+        //detect real/mock backend
+        Optional<String> apiKey = ConfigProvider.getConfig().getOptionalValue(WeaviateResource.WEAVIATE_API_KEY_ENV,
+                String.class);
+        Optional<String> hostKey = ConfigProvider.getConfig().getOptionalValue(WeaviateResource.WEAVIATE_HOST_ENV,
+                String.class);
 
-        return Map.of(
-                WeaviateResource.WEAVIATE_HOST_ADDRESS, container.getHttpHostAddress());
-    }
+        final boolean startMockBackend = MockBackendUtils.startMockBackend(false);
+        final boolean realApiProvided = apiKey.isPresent() && hostKey.isPresent();
+        final boolean usingMockBackend = startMockBackend && !realApiProvided;
 
-    private int getWeaviatePort() {
-        URL url = null;
-        try {
-            url = new URL("http://" + container.getHttpHostAddress());
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
+        if (usingMockBackend) {
+            MockBackendUtils.logMockBackendUsed();
+            container.start();
+
+            return Map.of(
+                    WeaviateResource.WEAVIATE_CONTAINER_ADDRESS, container.getHttpHostAddress());
+        } else if (!startMockBackend && !realApiProvided) {
+            throw new IllegalStateException(
+                    "Set %s and %s env vars if you set CAMEL_QUARKUS_START_MOCK_BACKEND=false"
+                            .formatted(WeaviateResource.WEAVIATE_API_KEY_ENV, WeaviateResource.WEAVIATE_HOST_ENV));
+        } else {
+            MockBackendUtils.logRealBackendUsed();
         }
-        return url.getPort();
+
+        return Collections.emptyMap();
     }
 
     @Override
@@ -59,9 +71,4 @@ public class WeaviateTestResource implements QuarkusTestResourceLifecycleManager
             container.stop();
         }
     }
-    //
-    //    @Override
-    //    public void inject(Object testInstance) {
-    //        ((MinioTest) testInstance).setEndpoint(endpoint);
-    //    }
 }

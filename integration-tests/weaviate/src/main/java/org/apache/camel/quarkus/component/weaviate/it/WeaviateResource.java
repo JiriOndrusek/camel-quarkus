@@ -19,10 +19,12 @@ package org.apache.camel.quarkus.component.weaviate.it;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import io.weaviate.client.base.Result;
 import io.weaviate.client.v1.data.model.WeaviateObject;
+import io.weaviate.client.v1.graphql.model.GraphQLResponse;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
@@ -32,20 +34,24 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
-import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 @Path("/weaviate")
 @ApplicationScoped
 public class WeaviateResource {
 
-    //todo container tests
-    public static final String WEAVIATE_HOST_ADDRESS = "cq.weaviate.host.address";
+    public static final String WEAVIATE_CONTAINER_ADDRESS = "cq.weaviate.container.address";
+    public static final String WEAVIATE_API_KEY_ENV = "WEAVIATE_API_KEY";
+    public static final String WEAVIATE_HOST_ENV = "WEAVIATE_HOST";
 
     private static final Logger LOG = Logger.getLogger(WeaviateResource.class);
 
     @Inject
     CamelContext context;
+
+    @ConfigProperty(name = WEAVIATE_CONTAINER_ADDRESS)
+    Optional<String> weaviateContainerAddress;
 
     @Path("/request")
     @POST
@@ -58,19 +64,18 @@ public class WeaviateResource {
 
         //convert Double to Float in body list (for create)
         if (body instanceof List) {
-            body = ((List) body).stream().map(o -> o instanceof Double ? ((Double) o).floatValue() : o)
+            body = ((List<?>) body).stream().map(o -> o instanceof Double ? ((Double) o).floatValue() : o)
                     .collect(Collectors.toList());
         }
 
         Exchange response = context.createFluentProducerTemplate()
                 .to(getUrl())
-                //                .to("weaviate:test-collection?scheme=https&host={{weaviate.host}}&apiKey={{weaviate.apikey}}")
                 .withBody(body)
                 .withHeaders(headers)
                 .request(Exchange.class);
 
         Result<?> result = response.getIn().getBody(Result.class);
-        LOG.infof("Response for collections with headers (%s) is: \"%s\".", headers, result);
+        LOG.debugf("Response for collections with headers (%s) is: \"%s\".", headers, result);
 
         if (result != null) {
             HashMap<String, Object> map = new HashMap();
@@ -82,8 +87,12 @@ public class WeaviateResource {
                 map.put("result", ((WeaviateObject) result.getResult()).getId());
                 map.put("resultProperties", ((WeaviateObject) result.getResult()).getProperties());
             } else if (result.getResult() instanceof List) {
+                @SuppressWarnings("unchecked")
                 List<WeaviateObject> objects = (List<WeaviateObject>) result.getResult();
-                map.put("result", objects.stream().collect(Collectors.toMap(o -> o.getId(), o -> o.getProperties())));
+                map.put("result",
+                        objects.stream().collect(Collectors.toMap(WeaviateObject::getId, WeaviateObject::getProperties)));
+            } else if (result.getResult() instanceof GraphQLResponse) {
+                map.put("result", result.getResult());
             }
 
             return Response.ok(map).build();
@@ -93,10 +102,12 @@ public class WeaviateResource {
     }
 
     private String getUrl() {
-        String address = ConfigProvider.getConfig().getValue(WEAVIATE_HOST_ADDRESS, String.class);
-        return "weaviate:test-collection?host=" + address;
-        // if api key is present, use
-        //        "weaviate:test-collection?scheme=https&host={{weaviate.host}}&apiKey={{weaviate.apikey}}"
+        if (weaviateContainerAddress.isPresent()) {
+            return "weaviate:test-collection?host=" + weaviateContainerAddress.get();
+        }
+
+        return "weaviate:test-collection?scheme=https&host={{%s}}&apiKey={{%s}}".formatted(WEAVIATE_HOST_ENV,
+                WEAVIATE_API_KEY_ENV);
     }
 
 }
