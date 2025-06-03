@@ -50,7 +50,10 @@ class WeaviateTest {
 
             queryById(collectionName, id)
                     .body("result", Matchers.aMapWithSize(1))
-                    .body("result." + id, Matchers.aMapWithSize(2));
+                    .body("result." + id, Matchers.aMapWithSize(2))
+                    .body("result." + id, Matchers.hasKey("sky"))
+                    .body("result." + id, Matchers.hasKey("age"))
+                    .body("result." + id, Matchers.hasKey("age"));
 
             updateById(collectionName, id, values, updatedProperties);
 
