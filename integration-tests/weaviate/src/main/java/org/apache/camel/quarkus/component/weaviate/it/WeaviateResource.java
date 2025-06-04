@@ -103,7 +103,7 @@ public class WeaviateResource {
 
     private String getUrl() {
         if (weaviateContainerAddress.isPresent()) {
-            return "weaviate:test-collection?host=" + weaviateContainerAddress.get();
+            return "weaviate:test-collection?scheme=http&host=" + weaviateContainerAddress.get();
         }
 
         return "weaviate:test-collection?scheme=https&host={{%s}}&apiKey={{%s}}".formatted(WEAVIATE_HOST_ENV,

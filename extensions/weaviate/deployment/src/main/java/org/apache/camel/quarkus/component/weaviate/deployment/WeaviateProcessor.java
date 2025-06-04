@@ -17,7 +17,11 @@
 package org.apache.camel.quarkus.component.weaviate.deployment;
 
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import org.jboss.jandex.IndexView;
 
 class WeaviateProcessor {
 
@@ -27,4 +31,32 @@ class WeaviateProcessor {
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
     }
+
+    @BuildStep
+    ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
+        IndexView index = combinedIndex.getIndex();
+
+        String[] dtos = index.getKnownClasses().stream()
+                .map(ci -> ci.name().toString())
+                .filter(n -> n.startsWith("io.weaviate.client.v1.misc.model")
+                        || n.startsWith("io.weaviate.client.v1.schema.model")
+                        || n.startsWith("io.weaviate.client.v1.data.model")
+                        || n.startsWith("io.weaviate.client.v1.graphql.model"))
+                .sorted()
+                .peek(n -> System.out.println(n))
+                .toArray(String[]::new);
+
+        return ReflectiveClassBuildItem.builder(dtos).methods().fields().build();
+    }
+
+    @BuildStep
+    IndexDependencyBuildItem registerDependencyForIndex() {
+        return new IndexDependencyBuildItem("io.weaviate", "client");
+    }
+
+    //    @BuildStep
+    //    RuntimeInitializedClassBuildItem runtimeInitializedClasses() {
+    //        return new RuntimeInitializedClassBuildItem(WeaviateProtoSearchGet.SearchRequest.class.getCanonicalName());
+    //    }
+
 }

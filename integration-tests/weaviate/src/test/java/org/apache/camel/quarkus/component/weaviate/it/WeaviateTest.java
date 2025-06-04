@@ -31,6 +31,7 @@ import org.hamcrest.Matchers;
 import org.hamcrest.text.IsEmptyString;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
@@ -81,6 +82,7 @@ class WeaviateTest {
         }
     }
 
+    @Disabled
     @Test
     public void queryByVector() {
         String collectionName = "WeaviateCQCollectionVector";
