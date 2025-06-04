@@ -31,7 +31,6 @@ import org.hamcrest.Matchers;
 import org.hamcrest.text.IsEmptyString;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
@@ -41,7 +40,7 @@ class WeaviateTest {
 
     @Test
     public void simpleCrud() {
-        String collectionName = "WeaviateCQCollectionCrud";
+        String collectionName = "WeaviateCQCollectionCrud" + System.currentTimeMillis();
         List<Float> values = Arrays.asList(1.0f, 2.0f, 3.0f);
         Map<String, String> properties = Map.of("sky", "blue", "age", "34");
         Map<String, String> updatedProperties = Map.of("dog", "dachshund");
@@ -82,13 +81,9 @@ class WeaviateTest {
         }
     }
 
-    @Disabled
     @Test
     public void queryByVector() {
-        String collectionName = "WeaviateCQCollectionVector";
-        List<Float> values = Arrays.asList(1.0f, 2.0f, 3.0f);
-        Map<String, String> properties = Map.of("sky", "blue", "age", "34");
-        Map<String, String> updatedProperties = Map.of("dog", "dachshund");
+        String collectionName = "WeaviateCQCollectionVector" + System.currentTimeMillis();
 
         boolean collectionCreated = false;
         try {

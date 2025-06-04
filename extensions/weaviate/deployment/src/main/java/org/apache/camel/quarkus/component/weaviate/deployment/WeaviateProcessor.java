@@ -38,12 +38,9 @@ class WeaviateProcessor {
 
         String[] dtos = index.getKnownClasses().stream()
                 .map(ci -> ci.name().toString())
-                .filter(n -> n.startsWith("io.weaviate.client.v1.misc.model")
-                        || n.startsWith("io.weaviate.client.v1.schema.model")
-                        || n.startsWith("io.weaviate.client.v1.data.model")
-                        || n.startsWith("io.weaviate.client.v1.graphql.model"))
+                .filter(n -> n.startsWith("io.weaviate.client.v1.")
+                        && n.contains(".model"))
                 .sorted()
-                .peek(n -> System.out.println(n))
                 .toArray(String[]::new);
 
         return ReflectiveClassBuildItem.builder(dtos).methods().fields().build();
@@ -53,10 +50,4 @@ class WeaviateProcessor {
     IndexDependencyBuildItem registerDependencyForIndex() {
         return new IndexDependencyBuildItem("io.weaviate", "client");
     }
-
-    //    @BuildStep
-    //    RuntimeInitializedClassBuildItem runtimeInitializedClasses() {
-    //        return new RuntimeInitializedClassBuildItem(WeaviateProtoSearchGet.SearchRequest.class.getCanonicalName());
-    //    }
-
 }
