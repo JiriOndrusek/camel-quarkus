@@ -16,12 +16,16 @@
  */
 package org.apache.camel.quarkus.component.azure.storage.datalake.deployment;
 
+import com.azure.core.annotation.ServiceInterface;
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.annotations.ExecutionTime;
-import io.quarkus.deployment.annotations.Record;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
-import io.quarkus.deployment.pkg.steps.NativeOrNativeSourcesBuild;
-import org.apache.camel.quarkus.core.JvmOnlyRecorder;
+import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.NativeImageProxyDefinitionBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
 import org.jboss.logging.Logger;
 
 class AzureStorageDatalakeProcessor {
@@ -29,18 +33,51 @@ class AzureStorageDatalakeProcessor {
     private static final Logger LOG = Logger.getLogger(AzureStorageDatalakeProcessor.class);
     private static final String FEATURE = "camel-azure-storage-datalake";
 
+    private static final DotName SERVICE_INSTANCE_ANNOTATION = DotName.createSimple(ServiceInterface.class.getName());
+
     @BuildStep
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
     }
 
-    /**
-     * Remove this once this extension starts supporting the native mode.
-     */
-    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class)
-    @Record(value = ExecutionTime.RUNTIME_INIT)
-    void warnJvmInNative(JvmOnlyRecorder recorder) {
-        JvmOnlyRecorder.warnJvmInNative(LOG, FEATURE); // warn at build time
-        recorder.warnJvmInNative(FEATURE); // warn at runtime
+    @BuildStep
+    ReflectiveClassBuildItem registerForReflection() {
+        return ReflectiveClassBuildItem.builder("com.azure.storage.file.datalake.implementation.ServicesImpl$ServicesService")
+                .methods().fields()
+                .build();
     }
+
+    @BuildStep
+    ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
+        IndexView index = combinedIndex.getIndex();
+
+        String[] dtos = index.getKnownClasses().stream()
+                .map(ci -> ci.name().toString())
+                .filter(n -> n.startsWith("com.azure.storage.file.datalake.implementation.models"))
+                .sorted()
+                .peek(System.out::println)
+                .toArray(String[]::new);
+
+        return ReflectiveClassBuildItem.builder(dtos).methods().fields().build();
+    }
+
+    @BuildStep
+    void registerBeanHandlersForReflection(BuildProducer<NativeImageProxyDefinitionBuildItem> proxiesProducer,
+            BuildProducer<ReflectiveClassBuildItem> reflectiveProdicer,
+            CombinedIndexBuildItem combinedIndex) {
+        IndexView index = combinedIndex.getIndex();
+
+        index.getAnnotations(SERVICE_INSTANCE_ANNOTATION).stream()
+                .map(annotationInstance -> annotationInstance.target().asClass().name().toString())
+                .peek(className -> System.out.println("----" + className))
+                .forEach(ci -> {
+                    proxiesProducer.produce(new NativeImageProxyDefinitionBuildItem(ci));
+                });
+    }
+
+    @BuildStep
+    IndexDependencyBuildItem registerDependencyForIndex() {
+        return new IndexDependencyBuildItem("com.azure", "azure-storage-file-datalake");
+    }
+
 }

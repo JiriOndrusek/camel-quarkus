@@ -40,53 +40,53 @@ class AzureStorageDatalakeTest {
         final String filesystem = "cqfs" + RandomStringUtils.randomNumeric(16);
         final String filename = "file" + RandomStringUtils.randomNumeric(16);
 
-        /* The filesystem does not exist initially */
+        System.out.println("/* The filesystem does not exist initially */");
         RestAssured.get("/azure-storage-datalake/filesystem/" + filesystem)
                 .then()
                 .statusCode(200)
                 .body("", Matchers.not(Matchers.hasItem(filesystem)));
 
         try {
-            /* Create the filesystem */
+            System.out.println("/* Create the filesystem */");
             RestAssured.given()
                     .post("/azure-storage-datalake/filesystem/" + filesystem)
                     .then()
                     .statusCode(201);
 
-            /* Now it should exist */
+            System.out.println("/* Now it should exist */");
             RestAssured.get("/azure-storage-datalake/filesystem/" + filesystem)
                     .then()
                     .statusCode(200)
                     .body("", Matchers.hasItem(filesystem));
 
-            /* No paths yet */
+            System.out.println("/* No paths yet */");
             RestAssured.get("/azure-storage-datalake/filesystem/" + filesystem + "/paths")
                     .then()
                     .statusCode(200)
                     .body("", Matchers.hasSize(0));
 
             String content = "Hello " + RandomStringUtils.randomNumeric(16);
-            /* Upload */
+            System.out.println("/* Upload */");
             RestAssured.given()
                     .body(content)
                     .post("/azure-storage-datalake/filesystem/" + filesystem + "/path/" + filename)
                     .then()
                     .statusCode(201);
 
-            /* The path occurs in the list */
+            System.out.println("/* The path occurs in the list */");
             RestAssured.get("/azure-storage-datalake/filesystem/" + filesystem + "/paths")
                     .then()
                     .statusCode(200)
                     .body("", Matchers.hasItem(filename));
 
-            /* Get the file */
+            System.out.println("/* Get the file */");
             RestAssured.given()
                     .get("/azure-storage-datalake/filesystem/" + filesystem + "/path/" + filename)
                     .then()
                     .statusCode(200)
                     .body(Matchers.is(content));
 
-            /* Consumer */
+            System.out.println("/* Consumer */");
             RestAssured.given()
                     .get("/azure-storage-datalake/consumer/" + filesystem + "/path/" + filename)
                     .then()
@@ -94,7 +94,7 @@ class AzureStorageDatalakeTest {
                     .body(Matchers.is(content));
 
         } finally {
-            /* Clean up */
+            System.out.println("/* Clean up */");
 
             try {
                 RestAssured.given()
