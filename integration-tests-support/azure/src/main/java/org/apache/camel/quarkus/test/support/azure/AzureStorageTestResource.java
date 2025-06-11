@@ -93,6 +93,10 @@ public class AzureStorageTestResource implements QuarkusTestResourceLifecycleMan
     public Map<String, String> start() {
         final SmallRyeConfig config = ConfigUtils.configBuilder(true, LaunchMode.NORMAL).build();
 
+        //in case of datalake, precedens have  AZURE_STORAGE_DATALAKE_ACCOUNT_NAME
+
+
+
         final String realAzureStorageAccountName = System.getenv("AZURE_STORAGE_ACCOUNT_NAME");
         final boolean realCredentialsProvided = realAzureStorageAccountName != null
                 && System.getenv("AZURE_STORAGE_ACCOUNT_KEY") != null;
