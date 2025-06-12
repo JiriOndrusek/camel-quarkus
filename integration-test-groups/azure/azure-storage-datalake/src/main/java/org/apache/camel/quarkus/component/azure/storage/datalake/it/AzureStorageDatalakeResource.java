@@ -18,6 +18,7 @@ package org.apache.camel.quarkus.component.azure.storage.datalake.it;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.azure.core.http.policy.HttpLogDetailLevel;
@@ -56,21 +57,21 @@ public class AzureStorageDatalakeResource {
     ConsumerTemplate consumerTemplate;
 
     @ConfigProperty(name = "azure.storage.account-name")
-    String azureStorageAccountName;
+    Optional<String> azureStorageAccountName;
 
     @ConfigProperty(name = "azure.storage.account-key")
-    String azureStorageAccountKey;
+    Optional<String> azureStorageAccountKey;
 
     @ConfigProperty(name = "azure.datalake.service.url")
-    String serviceUrl;
+    Optional<String> serviceUrl;
 
     @jakarta.enterprise.inject.Produces
     @Named("azureDatalakeServiceClient")
     public DataLakeServiceClient createDatalakeServiceClient() throws Exception {
-        StorageSharedKeyCredential credentials = new StorageSharedKeyCredential(azureStorageAccountName,
-                azureStorageAccountKey);
+        StorageSharedKeyCredential credentials = new StorageSharedKeyCredential(azureStorageAccountName.get(),
+                azureStorageAccountKey.get());
         return new DataLakeServiceClientBuilder()
-                .endpoint(serviceUrl)
+                .endpoint(serviceUrl.get())
                 .credential(credentials)
                 .httpLogOptions(new HttpLogOptions().setLogLevel(HttpLogDetailLevel.BODY_AND_HEADERS).setPrettyPrintBody(true))
                 .buildClient();

@@ -1,1 +1,24 @@
-todo
+There is no test container (nor Azurite), which supportd azure-storage-datalake.
+
+
+=== Real Azure API
+
+To run the tests against the real Azure API, you need to
+
+* Export Your credentials (azure account key and account name)
+
+[source,shell]
+----
+export AZURE_STORAGE_ACCOUNT_KEY=<your-account-key>
+export AZURE_STORAGE_ACCOUNT_NAME=<your-acount-name>
+----
+
+In case your azure configuration does not allow running all azure grouped tests together  with one account.
+
+Export Your credentials via *datalake* specific variables
+
+[source,shell]
+----
+export AZURE_STORAGE_DATALAKE_ACCOUNT_KEY=<your-account-key>
+export AZURE_STORAGE_DATALAKE_ACCOUNT_NAME=<your-acount-name>
+----

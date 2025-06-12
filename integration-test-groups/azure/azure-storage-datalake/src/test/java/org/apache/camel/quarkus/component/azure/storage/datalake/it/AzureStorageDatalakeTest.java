@@ -18,22 +18,29 @@ package org.apache.camel.quarkus.component.azure.storage.datalake.it;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
 import io.restassured.RestAssured;
-import org.apache.camel.quarkus.test.support.azure.AzureStorageTestResource;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.Matchers;
 import org.jboss.logging.Logger;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
-// Datalake not supported by Azurite https://github.com/Azure/Azurite/issues/553
-@EnabledIfEnvironmentVariable(named = "AZURE_STORAGE_ACCOUNT_NAME", matches = ".+")
-@EnabledIfEnvironmentVariable(named = "AZURE_STORAGE_ACCOUNT_KEY", matches = ".+")
+//Disable tests dynamically in beforeEach method, to reflect preferred env name, see RADME.adoc
 @QuarkusTest
-@QuarkusTestResource(AzureStorageTestResource.class)
+@QuarkusTestResource(AzureStorageDatalakeTestResource.class)
+@TestProfile(AzureStorageDatalakeTestProfile.class)
 class AzureStorageDatalakeTest {
 
     private static final Logger LOG = Logger.getLogger(AzureStorageDatalakeTest.class);
+
+    private boolean disabled;
+
+    @BeforeEach
+    public void beforeEach() {
+        Assumptions.assumeFalse(disabled, "test");
+    }
 
     @Test
     public void crud() {
@@ -113,4 +120,7 @@ class AzureStorageDatalakeTest {
 
     }
 
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
+    }
 }
