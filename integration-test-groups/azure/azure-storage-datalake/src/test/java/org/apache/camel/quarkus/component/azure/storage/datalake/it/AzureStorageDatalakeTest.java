@@ -16,13 +16,21 @@
  */
 package org.apache.camel.quarkus.component.azure.storage.datalake.it;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
+
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import org.apache.camel.component.azure.storage.datalake.DataLakeConstants;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.Matchers;
 import org.jboss.logging.Logger;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,7 +56,7 @@ class AzureStorageDatalakeTest {
     @Test
     public void crud() {
         final String filesystem = "cqfs" + RandomStringUtils.randomNumeric(16);
-        final String filename = "file" + RandomStringUtils.randomNumeric(16);
+        final String filename = "file.txt";
 
         /* The filesystem does not exist initially */
         RestAssured.get("/azure-storage-datalake/filesystem/" + filesystem)
@@ -114,6 +122,174 @@ class AzureStorageDatalakeTest {
             } catch (Exception e) {
                 LOG.warnf(e, "Could not delete file '%s' in file system %s", filename, filesystem);
             }
+
+            RestAssured.given()
+                    .delete("/azure-storage-datalake/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(204);
+        }
+
+    }
+
+    @Test
+    public void downloadTest() throws IOException {
+        final String filesystem = "cqfs" + RandomStringUtils.randomNumeric(16);
+        final String filename = "file.txt";
+        String content = "Hello " + RandomStringUtils.randomNumeric(16);
+
+        /* The filesystem does not exist initially */
+        RestAssured.get("/azure-storage-datalake/filesystem/" + filesystem)
+                .then()
+                .statusCode(200)
+                .body("", Matchers.not(Matchers.hasItem(filesystem)));
+
+        try {
+            /* Create the filesystem */
+            RestAssured.given()
+                    .post("/azure-storage-datalake/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(201);
+
+            /* Upload */
+            RestAssured.given()
+                    .body(content)
+                    .post("/azure-storage-datalake/filesystem/" + filesystem + "/path/" + filename)
+                    .then()
+                    .statusCode(201);
+
+            /* Download to file */
+            RestAssured.get("/azure-storage-datalake/downloadFileViaRoute/" + filesystem + "/" + filename)
+                    .then()
+                    .statusCode(200);
+
+            Path path = Path.of("target/test-files/" + filename);
+            Assertions.assertTrue(Files.exists(path));
+            Assertions.assertEquals(content, Files.readString(path));
+
+        } finally {
+            /* Clean up */
+
+            try {
+                RestAssured.given()
+                        .delete("/azure-storage-datalake/filesystem/" + filesystem + "/path/" + filename)
+                        .then()
+                        .statusCode(204);
+            } catch (Exception e) {
+                LOG.warnf(e, "Could not delete file '%s' in file system %s", filename, filesystem);
+            }
+
+            RestAssured.given()
+                    .delete("/azure-storage-datalake/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(204);
+        }
+
+    }
+
+    @Test
+    public void operationsTest() throws IOException {
+        final String filesystem = "cqfs" + RandomStringUtils.randomNumeric(16);
+        final String filename = "file.txt";
+        String content = "Uploaded by Camel!";
+
+        /* Operations */
+
+        RestAssured.get("/azure-storage-datalake/filesystem/" + filesystem)
+                .then()
+                .statusCode(200)
+                .body("", Matchers.not(Matchers.hasItem(filesystem)));
+
+        try {
+            System.out.println("/*createFileSystem*/");
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .body(Map.of(DataLakeConstants.FILESYSTEM_NAME, filesystem))
+                    .post("/azure-storage-datalake/route/datalakeCreateFilesystem/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(200);
+
+            System.out.println("/*listFileSystem */");
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .post("/azure-storage-datalake/route/datalakeListFileSystem/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(200)
+                    .body("", Matchers.hasItem(filesystem));
+
+            //            System.out.println("/*upload*/");
+            //            RestAssured.given()
+            //                    .contentType(ContentType.JSON)
+            //                    .body(Collections.emptyMap())
+            //                    .post("/azure-storage-datalake/route/datalakeUpload/filesystem/" + filesystem)
+            //                    .then()
+            //                    .statusCode(200);
+            //            RestAssured.given()
+            //                    .contentType(ContentType.JSON)
+            //                    .post("/azure-storage-datalake/route/datalakeListFileSystem/filesystem/" + filesystem)
+            //                    .then()
+            //                    .statusCode(200)
+            //                    .body("", Matchers.hasItem(filename));
+
+            /*listPaths - covered by CRUD */
+
+            /*getFile - covered by CRUD */
+
+            System.out.println("/*downloadToFile*/");
+            //            Files.createDirectory(Path.of("target", "operation-files"));
+            //            RestAssured.given()
+            //                    .get("/azure-storage-datalake/filesystem/" + filesystem + "/downloadToFile/" + filename
+            //                            + "/to/operation-files")
+            //                    .then()
+            //                    .statusCode(200);
+            //            Path path = Path.of("target", "operation-files", filename);
+            //            Assertions.assertTrue(Files.exists(path));
+            //            Assertions.assertEquals(content, Files.readString(path));
+            //
+            //            /*downloadLink*/
+            //            RestAssured.given()
+            //                    .get("/azure-storage-datalake/filesystem/" + filesystem + "/downloadLink/" + filename)
+            //                    .then()
+            //                    .statusCode(200)
+            //                    .body(Matchers.startsWith("https://camelquarkusdatalake"));
+            //
+            //            /*deleteFile*/
+            //            //            RestAssured.given()
+            //            //                    .delete("/azure-storage-datalake/filesystem/" + filesystem + "/path/" + filename)
+            //            //                    .then()
+            //            //                    .statusCode(204);
+            //            //            RestAssured.get("/azure-storage-datalake/filesystem/" + filesystem + "/paths")
+            //            //                    .then()
+            //            //                    .statusCode(200)
+            //            //                    .body("", Matchers.hasSize(0));
+            //
+            //            /*appendToFile*/
+            //            //            RestAssured.given()
+            //            //                    .body(content)
+            //            //                    .post("/azure-storage-datalake/filesystem/" + filesystem + "/path/" + filename)
+            //            //                    .then()
+            //            //                    .statusCode(201);
+            //
+            //            /*flushToFile*/
+            //
+            //            /*uploadFromFile*/
+            //
+            //            /*openQueryInputStream*/
+            //
+            //            /*createFile*/
+            //
+            //            /*deleteDirectory*/
+
+        } finally {
+            /* Clean up */
+
+            //            try {
+            //                RestAssured.given()
+            //                        .delete("/azure-storage-datalake/filesystem/" + filesystem + "/path/" + filename)
+            //                        .then()
+            //                        .statusCode(204);
+            //            } catch (Exception e) {
+            //                LOG.warnf(e, "Could not delete file '%s' in file system %s", filename, filesystem);
+            //            }
 
             RestAssured.given()
                     .delete("/azure-storage-datalake/filesystem/" + filesystem)

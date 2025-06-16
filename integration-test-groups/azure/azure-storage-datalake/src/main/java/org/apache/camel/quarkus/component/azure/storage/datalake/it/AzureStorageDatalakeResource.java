@@ -17,7 +17,9 @@
 package org.apache.camel.quarkus.component.azure.storage.datalake.it;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -167,6 +169,93 @@ public class AzureStorageDatalakeResource {
                 "azure-storage-datalake://" + azureStorageAccountName + "/" + filesystem
                         + "?serviceClient=#azureDatalakeServiceClient&fileName=" + filename,
                 10000, String.class);
+    }
+
+    @Path("/downloadFileViaRoute/{filesystem}/{file}")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response downloadFleViaRoute(@PathParam("filesystem") String filesystem,
+            @PathParam("file") String file) throws Exception {
+        Object o = producerTemplate.requestBodyAndHeaders(
+                "direct:downloadFile", null,
+                Map.of("filesystemName", filesystem, "fileName", file, "accountName", azureStorageAccountName,
+                        DataLakeConstants.DATALAKE_OPERATION, DataLakeOperationsDefinition.getFile));
+        return Response.ok().build();
+    }
+
+    @Path("/filesystem/{filesystem}/downloadToFile/{filename}/to/{targetDir}")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response downloadToFile(@PathParam("filesystem") String filesystem,
+            @PathParam("filename") String filename,
+            @PathParam("targetDir") String targetDir) throws Exception {
+        producerTemplate.requestBodyAndHeader(
+                componentUri(filesystem, DataLakeOperationsDefinition.downloadToFile) + "&fileDir=target/" + targetDir,
+                null,
+                DataLakeConstants.FILE_NAME,
+                filename);
+
+        return Response.ok().build();
+    }
+
+    @Path("/filesystem/{filesystem}/downloadLink/{filename}")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response downloadLink(@PathParam("filesystem") String filesystem,
+            @PathParam("filename") String filename) throws Exception {
+        String s = producerTemplate.requestBodyAndHeader(
+                componentUri(filesystem, DataLakeOperationsDefinition.downloadLink),
+                null,
+                DataLakeConstants.FILE_NAME,
+                filename,
+                String.class);
+
+        return Response.ok(s).build();
+    }
+
+    @Path("/filesystem/{filesystem}/downloadLink/{filename}")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response appendToFile(@PathParam("filesystem") String filesystem,
+            @PathParam("filename") String filename,
+            String toAppend) throws Exception {
+        String s = producerTemplate.requestBodyAndHeader(
+                componentUri(filesystem, DataLakeOperationsDefinition.deleteFile),
+                null,
+                DataLakeConstants.FILE_NAME,
+                filename,
+                String.class);
+
+        return Response.ok(s).build();
+    }
+
+    @Path("/route/{route}/filesystem/{filesystem}")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object consumer(@PathParam("route") String routeName,
+            @PathParam("filesystem") String filesystem,
+            Map<String, Object> headers) throws Exception {
+
+        Map<String, Object> _headers = new HashMap();
+        if (headers != null) {
+            _headers.putAll(headers);
+        }
+        _headers.put("filesystemName", filesystem);
+        _headers.put("accountName", azureStorageAccountName);
+
+        Object o = producerTemplate.requestBodyAndHeaders(
+                "direct:" + routeName,
+                null,
+                _headers);
+
+        switch (routeName) {
+        case "datalakeListFileSystem":
+            return ((List<FileSystemItem>) o).stream()
+                    .map(FileSystemItem::getName)
+                    .collect(Collectors.toList());
+        }
+
+        return String.valueOf(o);
     }
 
     private String componentUri(final String filesystem, final DataLakeOperationsDefinition operation) {
