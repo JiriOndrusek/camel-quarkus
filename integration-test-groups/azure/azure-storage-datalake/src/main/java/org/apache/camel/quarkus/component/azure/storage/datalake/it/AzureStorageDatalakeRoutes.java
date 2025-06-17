@@ -30,11 +30,19 @@ public class AzureStorageDatalakeRoutes extends RouteBuilder {
                     exchange.getIn().setHeader(DataLakeConstants.LIST_FILESYSTEMS_OPTIONS,
                             new ListFileSystemsOptions().setMaxResultsPerPage(10));
                 })
-                .toF("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=listFileSystem&serviceClient=#azureDatalakeServiceClient");
+                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=listFileSystem&serviceClient=#azureDatalakeServiceClient");
 
         //createFileSystem
         from("direct:datalakeCreateFilesystem")
-                .toF("azure-storage-datalake://${header.accountName}?operation=createFileSystem&serviceClient=#azureDatalakeServiceClient");
+                .toD("azure-storage-datalake://${header.accountName}?operation=createFileSystem&serviceClient=#azureDatalakeServiceClient");
+
+        //listPaths
+        from("direct:datalakeListPaths")
+                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=listPaths&serviceClient=#azureDatalakeServiceClient");
+
+        //getFile
+        from("direct:datalakeGetFile")
+                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=getFile&fileName=test.txt&serviceClient=#azureDatalakeServiceClient");
 
         //upload
         from("direct:datalakeUpload")
@@ -43,6 +51,6 @@ public class AzureStorageDatalakeRoutes extends RouteBuilder {
                     final InputStream inputStream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
                     exchange.getIn().setBody(inputStream);
                 })
-                .toF("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=upload&fileName=test.txt&serviceClient=#azureDatalakeServiceClient");
+                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=upload&fileName=test.txt&serviceClient=#azureDatalakeServiceClient");
     }
 }

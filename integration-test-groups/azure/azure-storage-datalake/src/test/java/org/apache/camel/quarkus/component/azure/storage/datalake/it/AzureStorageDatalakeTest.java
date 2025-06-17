@@ -19,6 +19,7 @@ package org.apache.camel.quarkus.component.azure.storage.datalake.it;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Map;
 
 import io.quarkus.test.common.QuarkusTestResource;
@@ -189,10 +190,10 @@ class AzureStorageDatalakeTest {
     @Test
     public void operationsTest() throws IOException {
         final String filesystem = "cqfs" + RandomStringUtils.randomNumeric(16);
-        final String filename = "file.txt";
+        final String filename = "test.txt";
         String content = "Uploaded by Camel!";
 
-        /* Operations */
+        LOG.info("testing operations");
 
         RestAssured.get("/azure-storage-datalake/filesystem/" + filesystem)
                 .then()
@@ -200,7 +201,7 @@ class AzureStorageDatalakeTest {
                 .body("", Matchers.not(Matchers.hasItem(filesystem)));
 
         try {
-            System.out.println("/*createFileSystem*/");
+            LOG.info("step - createFileSystem");
             RestAssured.given()
                     .contentType(ContentType.JSON)
                     .body(Map.of(DataLakeConstants.FILESYSTEM_NAME, filesystem))
@@ -208,7 +209,7 @@ class AzureStorageDatalakeTest {
                     .then()
                     .statusCode(200);
 
-            System.out.println("/*listFileSystem */");
+            LOG.info("step - listFileSystem");
             RestAssured.given()
                     .contentType(ContentType.JSON)
                     .post("/azure-storage-datalake/route/datalakeListFileSystem/filesystem/" + filesystem)
@@ -216,23 +217,40 @@ class AzureStorageDatalakeTest {
                     .statusCode(200)
                     .body("", Matchers.hasItem(filesystem));
 
-            //            System.out.println("/*upload*/");
-            //            RestAssured.given()
-            //                    .contentType(ContentType.JSON)
-            //                    .body(Collections.emptyMap())
-            //                    .post("/azure-storage-datalake/route/datalakeUpload/filesystem/" + filesystem)
-            //                    .then()
-            //                    .statusCode(200);
-            //            RestAssured.given()
-            //                    .contentType(ContentType.JSON)
-            //                    .post("/azure-storage-datalake/route/datalakeListFileSystem/filesystem/" + filesystem)
-            //                    .then()
-            //                    .statusCode(200)
-            //                    .body("", Matchers.hasItem(filename));
+            LOG.info("step - upload");
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .body(Collections.emptyMap())
+                    .post("/azure-storage-datalake/route/datalakeUpload/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(200);
 
-            /*listPaths - covered by CRUD */
+            LOG.info("step - listPaths");
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .body(Collections.emptyMap())
+                    .post("/azure-storage-datalake/route/datalakeListPaths/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(200)
+                    .body("", Matchers.hasItem(filename));
 
-            /*getFile - covered by CRUD */
+            LOG.info("step - getFile - via OutputStream");
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .queryParam("useOutputStream", true)
+                    .post("/azure-storage-datalake/route/datalakeGetFile/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(200)
+                    .body(Matchers.is(content));
+
+            LOG.info("step - getFile - via InputStream");
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .body(Collections.emptyMap())
+                    .post("/azure-storage-datalake/route/datalakeGetFile/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(200)
+                    .body(Matchers.is(content));
 
             System.out.println("/*downloadToFile*/");
             //            Files.createDirectory(Path.of("target", "operation-files"));
