@@ -44,10 +44,38 @@ public class AzureStorageDatalakeRoutes extends RouteBuilder {
         from("direct:datalakeGetFile")
                 .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=getFile&fileName=test.txt&serviceClient=#azureDatalakeServiceClient");
 
+        //deleteFile
+        from("direct:datalakeDeleteFile")
+                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=deleteFile&fileName=test.txt&serviceClient=#azureDatalakeServiceClient");
+
+        //downloadToFile
+        from("direct:datalakeDownloadToFile")
+                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=downloadToFile&fileName=test.txt&fileDir=target/operation-files&serviceClient=#azureDatalakeServiceClient");
+
+        //downloadLink
+        from("direct:datalakeDownloadLink")
+                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=downloadLink&fileName=test.txt&serviceClient=#azureDatalakeServiceClient");
+
+        //appendToFile
+        from("direct:datalakeAppendToFile")
+                .process(exchange -> {
+                    final String data = exchange.getIn().getHeader("append", String.class);
+                    final InputStream inputStream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
+                    exchange.getIn().setBody(inputStream);
+                })
+                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=appendToFile&fileName=test.txt&serviceClient=#azureDatalakeServiceClient");
+
+        //flushToFile
+        from("direct:datalakeFlushToFile")
+                .process(exchange -> {
+                    exchange.getIn().setHeader(DataLakeConstants.POSITION, 0);
+                })
+                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=flushToFile&fileName=test.txt&serviceClient=#azureDatalakeServiceClient");
+
         //upload
         from("direct:datalakeUpload")
                 .process(exchange -> {
-                    final String data = "Uploaded by Camel!";
+                    final String data = "1";
                     final InputStream inputStream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
                     exchange.getIn().setBody(inputStream);
                 })

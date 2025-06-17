@@ -29,6 +29,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.component.azure.storage.datalake.DataLakeConstants;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.hamcrest.Matchers;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Assertions;
@@ -191,7 +192,7 @@ class AzureStorageDatalakeTest {
     public void operationsTest() throws IOException {
         final String filesystem = "cqfs" + RandomStringUtils.randomNumeric(16);
         final String filename = "test.txt";
-        String content = "Uploaded by Camel!";
+        String content = "1";
 
         LOG.info("testing operations");
 
@@ -252,33 +253,80 @@ class AzureStorageDatalakeTest {
                     .statusCode(200)
                     .body(Matchers.is(content));
 
-            System.out.println("/*downloadToFile*/");
-            //            Files.createDirectory(Path.of("target", "operation-files"));
-            //            RestAssured.given()
-            //                    .get("/azure-storage-datalake/filesystem/" + filesystem + "/downloadToFile/" + filename
-            //                            + "/to/operation-files")
-            //                    .then()
-            //                    .statusCode(200);
-            //            Path path = Path.of("target", "operation-files", filename);
-            //            Assertions.assertTrue(Files.exists(path));
-            //            Assertions.assertEquals(content, Files.readString(path));
-            //
-            //            /*downloadLink*/
-            //            RestAssured.given()
-            //                    .get("/azure-storage-datalake/filesystem/" + filesystem + "/downloadLink/" + filename)
-            //                    .then()
-            //                    .statusCode(200)
-            //                    .body(Matchers.startsWith("https://camelquarkusdatalake"));
-            //
-            //            /*deleteFile*/
-            //            //            RestAssured.given()
-            //            //                    .delete("/azure-storage-datalake/filesystem/" + filesystem + "/path/" + filename)
-            //            //                    .then()
-            //            //                    .statusCode(204);
-            //            //            RestAssured.get("/azure-storage-datalake/filesystem/" + filesystem + "/paths")
-            //            //                    .then()
-            //            //                    .statusCode(200)
-            //            //                    .body("", Matchers.hasSize(0));
+            LOG.info("step - downloadToFile");
+            Files.createDirectory(Path.of("target", "operation-files"));
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .body(Collections.emptyMap())
+                    .post("/azure-storage-datalake/route/datalakeDownloadToFile/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(200)
+                    .body(Matchers.is(content));
+
+            Path path = Path.of("target", "operation-files", filename);
+            Assertions.assertTrue(Files.exists(path));
+            Assertions.assertEquals(content, Files.readString(path));
+
+            LOG.info("step - downloadLink");
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .body(Collections.emptyMap())
+                    .post("/azure-storage-datalake/route/datalakeDownloadLink/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(200)
+                    .body(Matchers.startsWith(
+                            "https://" + ConfigProvider.getConfig().getValue("azure.storage.account-name", String.class)));
+
+            LOG.info("step - appendToFile");
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .body(Map.of("append", "2", "CamelAzureStorageDataLakeFileOffset", 0))
+                    .post("/azure-storage-datalake/route/datalakeAppendToFile/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(200);
+            //append does not happen without flush
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .body(Map.of("CamelAzureStorageDataLakeRetainCommitedData", false))
+                    .post("/azure-storage-datalake/route/datalakeGetFile/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(200)
+                    .body(Matchers.is(content));
+
+            LOG.info("step - datalakeFlushToFile");
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .body(Collections.emptyMap())
+                    .post("/azure-storage-datalake/route/datalakeFlushToFile/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(200);
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .queryParam("useOutputStream", true)
+                    .body(Collections.emptyMap())
+                    .post("/azure-storage-datalake/route/datalakeGetFile/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(200)
+                    .body(Matchers.is(content));
+
+            LOG.info("step - deleteFile");
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .body(Collections.emptyMap())
+                    .post("/azure-storage-datalake/route/datalakeDeleteFile/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(200)
+                    .body(Matchers.is("true"));
+
+            LOG.info("step - listPaths");
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .body(Collections.emptyMap())
+                    .post("/azure-storage-datalake/route/datalakeListPaths/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(200)
+                    .body("", Matchers.not(Matchers.hasItem(filename)));
+
             //
             //            /*appendToFile*/
             //            //            RestAssured.given()
