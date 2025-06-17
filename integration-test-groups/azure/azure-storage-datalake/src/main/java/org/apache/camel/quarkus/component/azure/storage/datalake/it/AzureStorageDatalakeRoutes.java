@@ -3,6 +3,7 @@ package org.apache.camel.quarkus.component.azure.storage.datalake.it;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 import com.azure.storage.file.datalake.models.ListFileSystemsOptions;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -11,6 +12,9 @@ import org.apache.camel.component.azure.storage.datalake.DataLakeConstants;
 
 @ApplicationScoped
 public class AzureStorageDatalakeRoutes extends RouteBuilder {
+
+    public static String FILE_CONTENT = "Hello World!" + UUID.randomUUID();
+    public static String FILE_NAME = "operations.txt";
 
     @Override
     public void configure() throws Exception {
@@ -42,19 +46,23 @@ public class AzureStorageDatalakeRoutes extends RouteBuilder {
 
         //getFile
         from("direct:datalakeGetFile")
-                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=getFile&fileName=test.txt&serviceClient=#azureDatalakeServiceClient");
+                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=getFile&fileName="
+                        + FILE_NAME + "&serviceClient=#azureDatalakeServiceClient");
 
         //deleteFile
         from("direct:datalakeDeleteFile")
-                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=deleteFile&fileName=test.txt&serviceClient=#azureDatalakeServiceClient");
+                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=deleteFile&fileName="
+                        + FILE_NAME + "&serviceClient=#azureDatalakeServiceClient");
 
         //downloadToFile
         from("direct:datalakeDownloadToFile")
-                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=downloadToFile&fileName=test.txt&fileDir=target/operation-files&serviceClient=#azureDatalakeServiceClient");
+                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=downloadToFile&fileName="
+                        + FILE_NAME + "&fileDir=target/operation-files&serviceClient=#azureDatalakeServiceClient");
 
         //downloadLink
         from("direct:datalakeDownloadLink")
-                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=downloadLink&fileName=test.txt&serviceClient=#azureDatalakeServiceClient");
+                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=downloadLink&fileName="
+                        + FILE_NAME + "&serviceClient=#azureDatalakeServiceClient");
 
         //appendToFile
         from("direct:datalakeAppendToFile")
@@ -63,22 +71,24 @@ public class AzureStorageDatalakeRoutes extends RouteBuilder {
                     final InputStream inputStream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
                     exchange.getIn().setBody(inputStream);
                 })
-                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=appendToFile&fileName=test.txt&serviceClient=#azureDatalakeServiceClient");
+                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=appendToFile&fileName="
+                        + FILE_NAME + "&serviceClient=#azureDatalakeServiceClient");
 
         //flushToFile
         from("direct:datalakeFlushToFile")
                 .process(exchange -> {
-                    exchange.getIn().setHeader(DataLakeConstants.POSITION, 0);
+                    exchange.getIn().setHeader(DataLakeConstants.POSITION, 8);
                 })
-                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=flushToFile&fileName=test.txt&serviceClient=#azureDatalakeServiceClient");
+                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=flushToFile&fileName="
+                        + FILE_NAME + "&serviceClient=#azureDatalakeServiceClient");
 
         //upload
         from("direct:datalakeUpload")
                 .process(exchange -> {
-                    final String data = "1";
-                    final InputStream inputStream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
+                    final InputStream inputStream = new ByteArrayInputStream(FILE_CONTENT.getBytes(StandardCharsets.UTF_8));
                     exchange.getIn().setBody(inputStream);
                 })
-                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=upload&fileName=test.txt&serviceClient=#azureDatalakeServiceClient");
+                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=upload&fileName="
+                        + FILE_NAME + "&serviceClient=#azureDatalakeServiceClient");
     }
 }

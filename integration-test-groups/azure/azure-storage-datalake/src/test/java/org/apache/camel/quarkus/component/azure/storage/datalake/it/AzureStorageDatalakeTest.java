@@ -191,8 +191,8 @@ class AzureStorageDatalakeTest {
     @Test
     public void operationsTest() throws IOException {
         final String filesystem = "cqfs" + RandomStringUtils.randomNumeric(16);
-        final String filename = "test.txt";
-        String content = "1";
+        final String filename = AzureStorageDatalakeRoutes.FILE_NAME;
+        String content = AzureStorageDatalakeRoutes.FILE_CONTENT;
 
         LOG.info("testing operations");
 
@@ -280,7 +280,7 @@ class AzureStorageDatalakeTest {
             LOG.info("step - appendToFile");
             RestAssured.given()
                     .contentType(ContentType.JSON)
-                    .body(Map.of("append", "2", "CamelAzureStorageDataLakeFileOffset", 0))
+                    .body(Map.of("append", "appended"))
                     .post("/azure-storage-datalake/route/datalakeAppendToFile/filesystem/" + filesystem)
                     .then()
                     .statusCode(200);
@@ -307,7 +307,7 @@ class AzureStorageDatalakeTest {
                     .post("/azure-storage-datalake/route/datalakeGetFile/filesystem/" + filesystem)
                     .then()
                     .statusCode(200)
-                    .body(Matchers.is(content));
+                    .body(Matchers.is(content + "appended"));
 
             LOG.info("step - deleteFile");
             RestAssured.given()
