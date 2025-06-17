@@ -375,52 +375,24 @@ class AzureStorageDatalakeTest {
                     .body("", Matchers.hasItem("test"))
                     .body("", Matchers.hasItem("emptyTest"));
 
-            //            LOG.info("step - deleteDirectory");
-            //            RestAssured.given()
-            //                    .contentType(ContentType.JSON)
-            //                    .body(Map.of(DataLakeConstants.DIRECTORY_NAME, "emptyTest"))
-            //                    .post("/azure-storage-datalake/route/datalakeDeleteDirectory/filesystem/" + filesystem)
-            //                    .then()
-            //                    .statusCode(200);
-            //            RestAssured.given()
-            //                    .contentType(ContentType.JSON)
-            //                    .body(Collections.emptyMap())
-            //                    .post("/azure-storage-datalake/route/datalakeListPaths/filesystem/" + filesystem)
-            //                    .then()
-            //                    .statusCode(200)
-            //                    .body("", Matchers.hasItem("test"))
-            //                    .body("", Matchers.not(Matchers.hasItem("emptyTest")));
-
-            //
-            //            /*appendToFile*/
-            //            //            RestAssured.given()
-            //            //                    .body(content)
-            //            //                    .post("/azure-storage-datalake/filesystem/" + filesystem + "/path/" + filename)
-            //            //                    .then()
-            //            //                    .statusCode(201);
-            //
-            //            /*flushToFile*/
-            //
-            //            /*uploadFromFile*/
-            //
-            //            /*openQueryInputStream*/
-            //
-            //            /*createFile*/
-            //
-            //            /*deleteDirectory*/
+            LOG.info("step - deleteDirectory");
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .body(Map.of(DataLakeConstants.DIRECTORY_NAME, "emptyTest", "CamelAzureStorageDataLakeRecursive", true))
+                    .post("/azure-storage-datalake/route/datalakeDeleteDirectory/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(200);
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .body(Collections.emptyMap())
+                    .post("/azure-storage-datalake/route/datalakeListPaths/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(200)
+                    .body("", Matchers.hasItem("test"))
+                    .body("", Matchers.not(Matchers.hasItem("emptyTest")));
 
         } finally {
             /* Clean up */
-
-            //            try {
-            //                RestAssured.given()
-            //                        .delete("/azure-storage-datalake/filesystem/" + filesystem + "/path/" + filename)
-            //                        .then()
-            //                        .statusCode(204);
-            //            } catch (Exception e) {
-            //                LOG.warnf(e, "Could not delete file '%s' in file system %s", filename, filesystem);
-            //            }
-
             RestAssured.given()
                     .delete("/azure-storage-datalake/filesystem/" + filesystem)
                     .then()

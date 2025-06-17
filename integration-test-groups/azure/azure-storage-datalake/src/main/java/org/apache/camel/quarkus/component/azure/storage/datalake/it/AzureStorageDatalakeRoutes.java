@@ -14,10 +14,10 @@ import org.apache.camel.component.azure.storage.datalake.DataLakeConstants;
 @ApplicationScoped
 public class AzureStorageDatalakeRoutes extends RouteBuilder {
 
-    public static String FILE_CONTENT = "Hello World!" + UUID.randomUUID();
-    public static String FILE_NAME = "operations.txt";
-    public static String FILE_NAME2 = "test/file.txt";
-    private static String CLIENT_SUFFIX = "&serviceClient=#azureDatalakeServiceClient";
+    public static final String FILE_CONTENT = "Hello World!" + UUID.randomUUID();
+    public static final String FILE_NAME = "operations.txt";
+    public static final String FILE_NAME2 = "test/file.txt";
+    private static final String CLIENT_SUFFIX = "&serviceClient=#azureDatalakeServiceClient";
 
     @Override
     public void configure() throws Exception {
@@ -116,9 +116,9 @@ public class AzureStorageDatalakeRoutes extends RouteBuilder {
                 .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=createFile&fileName=${header.fileName}"
                         + CLIENT_SUFFIX);
 
-        //        //deleteDirectory
-        //        from("direct:datalakeDeleteDirectory")
-        //                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=deleteDirectory"
-        //                        + CLIENT_SUFFIX);
+        //deleteDirectory
+        from("direct:datalakeDeleteDirectory")
+                .toD("azure-storage-datalake://${header.accountName}/${header.filesystemName}?operation=deleteDirectory"
+                        + CLIENT_SUFFIX);
     }
 }
