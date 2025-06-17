@@ -16,11 +16,13 @@
  */
 package org.apache.camel.quarkus.component.azure.storage.datalake.it;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
+import java.util.UUID;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -239,6 +241,7 @@ class AzureStorageDatalakeTest {
             RestAssured.given()
                     .contentType(ContentType.JSON)
                     .queryParam("useOutputStream", true)
+                    .body(Map.of("fileName", AzureStorageDatalakeRoutes.FILE_NAME))
                     .post("/azure-storage-datalake/route/datalakeGetFile/filesystem/" + filesystem)
                     .then()
                     .statusCode(200)
@@ -247,14 +250,15 @@ class AzureStorageDatalakeTest {
             LOG.info("step - getFile - via InputStream");
             RestAssured.given()
                     .contentType(ContentType.JSON)
-                    .body(Collections.emptyMap())
+                    .body(Map.of("fileName", AzureStorageDatalakeRoutes.FILE_NAME))
                     .post("/azure-storage-datalake/route/datalakeGetFile/filesystem/" + filesystem)
                     .then()
                     .statusCode(200)
                     .body(Matchers.is(content));
 
             LOG.info("step - downloadToFile");
-            Files.createDirectory(Path.of("target", "operation-files"));
+            Path tmpFolder = Path.of("target", "operation-files");
+            Files.createDirectory(tmpFolder);
             RestAssured.given()
                     .contentType(ContentType.JSON)
                     .body(Collections.emptyMap())
@@ -287,7 +291,7 @@ class AzureStorageDatalakeTest {
             //append does not happen without flush
             RestAssured.given()
                     .contentType(ContentType.JSON)
-                    .body(Map.of("CamelAzureStorageDataLakeRetainCommitedData", false))
+                    .body(Map.of("fileName", AzureStorageDatalakeRoutes.FILE_NAME))
                     .post("/azure-storage-datalake/route/datalakeGetFile/filesystem/" + filesystem)
                     .then()
                     .statusCode(200)
@@ -303,11 +307,20 @@ class AzureStorageDatalakeTest {
             RestAssured.given()
                     .contentType(ContentType.JSON)
                     .queryParam("useOutputStream", true)
-                    .body(Collections.emptyMap())
+                    .body(Map.of("fileName", AzureStorageDatalakeRoutes.FILE_NAME))
                     .post("/azure-storage-datalake/route/datalakeGetFile/filesystem/" + filesystem)
                     .then()
                     .statusCode(200)
                     .body(Matchers.is(content + "appended"));
+
+            LOG.info("step - openQueryInputStream");
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .body(Collections.emptyMap())
+                    .post("/azure-storage-datalake/route/openQueryInputStream/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(200)
+                    .body(Matchers.is(content + "appended\n"));
 
             LOG.info("step - deleteFile");
             RestAssured.given()
@@ -326,6 +339,57 @@ class AzureStorageDatalakeTest {
                     .then()
                     .statusCode(200)
                     .body("", Matchers.not(Matchers.hasItem(filename)));
+
+            LOG.info("step - uploadFromFile");
+            File f = File.createTempFile("uploadFromFile", ".txt", tmpFolder.toFile());
+            String content2 = UUID.randomUUID().toString();
+            Files.writeString(f.toPath(), content2);
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .body(Map.of(DataLakeConstants.PATH, f.getAbsolutePath()))
+                    .post("/azure-storage-datalake/route/datalakeUploadFromFile/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(200);
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .queryParam("useOutputStream", true)
+                    .body(Map.of("fileName", AzureStorageDatalakeRoutes.FILE_NAME2))
+                    .post("/azure-storage-datalake/route/datalakeGetFile/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(200)
+                    .body(Matchers.is(content2));
+
+            LOG.info("step - createFile");
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .body(Map.of("fileName", "emptyFile.txt", DataLakeConstants.DIRECTORY_NAME, "emptyTest"))
+                    .post("/azure-storage-datalake/route/datalakeCreateFile/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(200);
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .body(Collections.emptyMap())
+                    .post("/azure-storage-datalake/route/datalakeListPaths/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(200)
+                    .body("", Matchers.hasItem("test"))
+                    .body("", Matchers.hasItem("emptyTest"));
+
+            //            LOG.info("step - deleteDirectory");
+            //            RestAssured.given()
+            //                    .contentType(ContentType.JSON)
+            //                    .body(Map.of(DataLakeConstants.DIRECTORY_NAME, "emptyTest"))
+            //                    .post("/azure-storage-datalake/route/datalakeDeleteDirectory/filesystem/" + filesystem)
+            //                    .then()
+            //                    .statusCode(200);
+            //            RestAssured.given()
+            //                    .contentType(ContentType.JSON)
+            //                    .body(Collections.emptyMap())
+            //                    .post("/azure-storage-datalake/route/datalakeListPaths/filesystem/" + filesystem)
+            //                    .then()
+            //                    .statusCode(200)
+            //                    .body("", Matchers.hasItem("test"))
+            //                    .body("", Matchers.not(Matchers.hasItem("emptyTest")));
 
             //
             //            /*appendToFile*/

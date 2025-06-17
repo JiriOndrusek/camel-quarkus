@@ -250,6 +250,8 @@ public class AzureStorageDatalakeResource {
         _headers.put("filesystemName", filesystem);
         _headers.put("accountName", azureStorageAccountName.get());
 
+        System.out.println(_headers);
+
         Exchange exchange = producerTemplate.request(
                 "direct:" + routeName,
                 e -> {
