@@ -51821,10 +51821,10 @@ Supported protocols include Echo, Finger, FTP, NNTP, NTP, POP3(S), SMTP(S), Teln
         </reference>
       </externalReferences>
     </component>
-    <component type="library" bom-ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury-parent@3.25.0-SNAPSHOT?type=pom">
+    <component type="library" bom-ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory-parent@3.25.0-SNAPSHOT?type=pom">
       <publisher>The Apache Software Foundation</publisher>
       <group>org.apache.camel.quarkus</group>
-      <name>camel-quarkus-fury-parent</name>
+      <name>camel-quarkus-fory-parent</name>
       <version>3.25.0-SNAPSHOT</version>
       <description>Maven plugins configuration</description>
       <licenses>
@@ -51833,10 +51833,10 @@ Supported protocols include Echo, Finger, FTP, NNTP, NTP, POP3(S), SMTP(S), Teln
           <url>https://www.apache.org/licenses/LICENSE-2.0</url>
         </license>
       </licenses>
-      <purl>pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury-parent@3.25.0-SNAPSHOT?type=pom</purl>
+      <purl>pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory-parent@3.25.0-SNAPSHOT?type=pom</purl>
       <externalReferences>
         <reference type="website">
-          <url>http://camel.apache.org/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fury-parent</url>
+          <url>http://camel.apache.org/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fory-parent</url>
         </reference>
         <reference type="distribution-intake">
           <url>https://repository.apache.org/service/local/staging/deploy/maven2</url>
@@ -51848,26 +51848,26 @@ Supported protocols include Echo, Finger, FTP, NNTP, NTP, POP3(S), SMTP(S), Teln
           <url>dev-subscribe@camel.apache.org</url>
         </reference>
         <reference type="vcs">
-          <url>https://github.com/apache/camel-quarkus/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fury-parent</url>
+          <url>https://github.com/apache/camel-quarkus/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fory-parent</url>
         </reference>
       </externalReferences>
     </component>
-    <component type="library" bom-ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury@3.25.0-SNAPSHOT?type=jar">
+    <component type="library" bom-ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory@3.25.0-SNAPSHOT?type=jar">
       <publisher>The Apache Software Foundation</publisher>
       <group>org.apache.camel.quarkus</group>
-      <name>camel-quarkus-fury</name>
+      <name>camel-quarkus-fory</name>
       <version>3.25.0-SNAPSHOT</version>
-      <description>Serialize and deserialize messages using Apache Fury</description>
+      <description>Serialize and deserialize messages using Apache Fory</description>
       <licenses>
         <license>
           <id>Apache-2.0</id>
           <url>https://www.apache.org/licenses/LICENSE-2.0</url>
         </license>
       </licenses>
-      <purl>pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury@3.25.0-SNAPSHOT?type=jar</purl>
+      <purl>pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory@3.25.0-SNAPSHOT?type=jar</purl>
       <externalReferences>
         <reference type="website">
-          <url>http://camel.apache.org/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fury-parent/camel-quarkus-fury</url>
+          <url>http://camel.apache.org/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fory-parent/camel-quarkus-fory</url>
         </reference>
         <reference type="distribution-intake">
           <url>https://repository.apache.org/service/local/staging/deploy/maven2</url>
@@ -51879,7 +51879,7 @@ Supported protocols include Echo, Finger, FTP, NNTP, NTP, POP3(S), SMTP(S), Teln
           <url>dev-subscribe@camel.apache.org</url>
         </reference>
         <reference type="vcs">
-          <url>https://github.com/apache/camel-quarkus/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fury-parent/camel-quarkus-fury</url>
+          <url>https://github.com/apache/camel-quarkus/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fory-parent/camel-quarkus-fory</url>
         </reference>
       </externalReferences>
     </component>
@@ -51917,14 +51917,14 @@ Supported protocols include Echo, Finger, FTP, NNTP, NTP, POP3(S), SMTP(S), Teln
         </reference>
       </externalReferences>
     </component>
-    <component type="library" bom-ref="pkg:maven/org.apache.fury/fury-core@0.10.2?type=jar">
+    <component type="library" bom-ref="pkg:maven/org.apache.fory/fory-core@0.10.2?type=jar">
       <publisher>The Apache Software Foundation</publisher>
-      <group>org.apache.fury</group>
-      <name>fury-core</name>
+      <group>org.apache.fory</group>
+      <name>fory-core</name>
       <version>0.10.2</version>
-      <description>Apache Fury™ is a blazingly fast multi-language serialization framework powered by jit and zero-copy.
+      <description>Apache Fory™ is a blazingly fast multi-language serialization framework powered by jit and zero-copy.
 
-    Apache Fury (incubating) is an effort undergoing incubation at the Apache
+    Apache Fory (incubating) is an effort undergoing incubation at the Apache
     Software Foundation (ASF), sponsored by the Apache Incubator PMC.
 
     Incubation is required of all newly accepted projects until a further review
@@ -51950,10 +51950,10 @@ Supported protocols include Echo, Finger, FTP, NNTP, NTP, POP3(S), SMTP(S), Teln
           <id>Apache-2.0</id>
         </license>
       </licenses>
-      <purl>pkg:maven/org.apache.fury/fury-core@0.10.2?type=jar</purl>
+      <purl>pkg:maven/org.apache.fory/fory-core@0.10.2?type=jar</purl>
       <externalReferences>
         <reference type="website">
-          <url>https://github.com/apache/fury/fury-core</url>
+          <url>https://github.com/apache/fory/fory-core</url>
         </reference>
         <reference type="distribution-intake">
           <url>https://repository.apache.org/service/local/staging/deploy/maven2</url>
@@ -51962,16 +51962,16 @@ Supported protocols include Echo, Finger, FTP, NNTP, NTP, POP3(S), SMTP(S), Teln
           <url>https://mail-archives.apache.org/mod_mbox/www-announce/</url>
         </reference>
         <reference type="vcs">
-          <url>https://github.com/apache/fury/fury-core</url>
+          <url>https://github.com/apache/fory/fory-core</url>
         </reference>
       </externalReferences>
     </component>
-    <component type="library" bom-ref="pkg:maven/org.apache.camel/camel-fury@4.12.0?type=jar">
+    <component type="library" bom-ref="pkg:maven/org.apache.camel/camel-fory@4.12.0?type=jar">
       <publisher>The Apache Software Foundation</publisher>
       <group>org.apache.camel</group>
-      <name>camel-fury</name>
+      <name>camel-fory</name>
       <version>4.12.0</version>
-      <description>Camel Fury support</description>
+      <description>Camel Fory support</description>
       <scope>required</scope>
       <hashes>
         <hash alg="MD5">0b06d0eec73f635ba3aa541701451bb0</hash>
@@ -51989,10 +51989,10 @@ Supported protocols include Echo, Finger, FTP, NNTP, NTP, POP3(S), SMTP(S), Teln
           <url>https://www.apache.org/licenses/LICENSE-2.0</url>
         </license>
       </licenses>
-      <purl>pkg:maven/org.apache.camel/camel-fury@4.12.0?type=jar</purl>
+      <purl>pkg:maven/org.apache.camel/camel-fory@4.12.0?type=jar</purl>
       <externalReferences>
         <reference type="website">
-          <url>https://www.apache.org/camel/camel-parent/components/camel-fury/</url>
+          <url>https://www.apache.org/camel/camel-parent/components/camel-fory/</url>
         </reference>
         <reference type="distribution-intake">
           <url>https://repository.apache.org/service/local/staging/deploy/maven2</url>
@@ -52001,14 +52001,14 @@ Supported protocols include Echo, Finger, FTP, NNTP, NTP, POP3(S), SMTP(S), Teln
           <url>https://mail-archives.apache.org/mod_mbox/www-announce/</url>
         </reference>
         <reference type="vcs">
-          <url>https://github.com/apache/maven-apache-parent/tree/apache-34/camel/camel-parent/components/camel-fury</url>
+          <url>https://github.com/apache/maven-apache-parent/tree/apache-34/camel/camel-parent/components/camel-fory</url>
         </reference>
       </externalReferences>
     </component>
-    <component type="library" bom-ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury-deployment@3.25.0-SNAPSHOT?type=jar">
+    <component type="library" bom-ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory-deployment@3.25.0-SNAPSHOT?type=jar">
       <publisher>The Apache Software Foundation</publisher>
       <group>org.apache.camel.quarkus</group>
-      <name>camel-quarkus-fury-deployment</name>
+      <name>camel-quarkus-fory-deployment</name>
       <version>3.25.0-SNAPSHOT</version>
       <description>Maven plugins configuration</description>
       <licenses>
@@ -52017,10 +52017,10 @@ Supported protocols include Echo, Finger, FTP, NNTP, NTP, POP3(S), SMTP(S), Teln
           <url>https://www.apache.org/licenses/LICENSE-2.0</url>
         </license>
       </licenses>
-      <purl>pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury-deployment@3.25.0-SNAPSHOT?type=jar</purl>
+      <purl>pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory-deployment@3.25.0-SNAPSHOT?type=jar</purl>
       <externalReferences>
         <reference type="website">
-          <url>http://camel.apache.org/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fury-parent/camel-quarkus-fury-deployment</url>
+          <url>http://camel.apache.org/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fory-parent/camel-quarkus-fory-deployment</url>
         </reference>
         <reference type="distribution-intake">
           <url>https://repository.apache.org/service/local/staging/deploy/maven2</url>
@@ -52032,7 +52032,7 @@ Supported protocols include Echo, Finger, FTP, NNTP, NTP, POP3(S), SMTP(S), Teln
           <url>dev-subscribe@camel.apache.org</url>
         </reference>
         <reference type="vcs">
-          <url>https://github.com/apache/camel-quarkus/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fury-parent/camel-quarkus-fury-deployment</url>
+          <url>https://github.com/apache/camel-quarkus/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fory-parent/camel-quarkus-fory-deployment</url>
         </reference>
       </externalReferences>
     </component>
@@ -52064,10 +52064,10 @@ Supported protocols include Echo, Finger, FTP, NNTP, NTP, POP3(S), SMTP(S), Teln
           <url>https://quarkiverse.io</url>
         </reference>
         <reference type="issue-tracker">
-          <url>https://github.com/quarkiverse/quarkus-fury</url>
+          <url>https://github.com/quarkiverse/quarkus-fory</url>
         </reference>
         <reference type="vcs">
-          <url>https://github.com/quarkiverse/quarkus-fury</url>
+          <url>https://github.com/quarkiverse/quarkus-fory</url>
         </reference>
       </externalReferences>
     </component>
@@ -118381,22 +118381,22 @@ Roster, Chat and other functionality.</description>
         </reference>
       </externalReferences>
     </component>
-    <component type="library" bom-ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-fury@3.25.0-SNAPSHOT?type=jar">
+    <component type="library" bom-ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-fory@3.25.0-SNAPSHOT?type=jar">
       <publisher>The Apache Software Foundation</publisher>
       <group>org.apache.camel.quarkus</group>
-      <name>camel-quarkus-integration-test-fury</name>
+      <name>camel-quarkus-integration-test-fory</name>
       <version>3.25.0-SNAPSHOT</version>
-      <description>Integration tests for Camel Quarkus Fury extension</description>
+      <description>Integration tests for Camel Quarkus Fory extension</description>
       <licenses>
         <license>
           <id>Apache-2.0</id>
           <url>https://www.apache.org/licenses/LICENSE-2.0</url>
         </license>
       </licenses>
-      <purl>pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-fury@3.25.0-SNAPSHOT?type=jar</purl>
+      <purl>pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-fory@3.25.0-SNAPSHOT?type=jar</purl>
       <externalReferences>
         <reference type="website">
-          <url>http://camel.apache.org/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-build-parent-it/camel-quarkus-integration-test-fury</url>
+          <url>http://camel.apache.org/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-build-parent-it/camel-quarkus-integration-test-fory</url>
         </reference>
         <reference type="distribution-intake">
           <url>https://repository.apache.org/service/local/staging/deploy/maven2</url>
@@ -118408,7 +118408,7 @@ Roster, Chat and other functionality.</description>
           <url>dev-subscribe@camel.apache.org</url>
         </reference>
         <reference type="vcs">
-          <url>https://github.com/apache/camel-quarkus/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-build-parent-it/camel-quarkus-integration-test-fury</url>
+          <url>https://github.com/apache/camel-quarkus/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-build-parent-it/camel-quarkus-integration-test-fory</url>
         </reference>
       </externalReferences>
     </component>
@@ -131188,7 +131188,7 @@ Roster, Chat and other functionality.</description>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-fop@3.25.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-freemarker@3.25.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-ftp@3.25.0-SNAPSHOT?type=jar"/>
-      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-fury@3.25.0-SNAPSHOT?type=jar"/>
+      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-fory@3.25.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-geocoder@3.25.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-git@3.25.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-github@3.25.0-SNAPSHOT?type=jar"/>
@@ -132154,7 +132154,7 @@ Roster, Chat and other functionality.</description>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fop-parent@3.25.0-SNAPSHOT?type=pom"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-freemarker-parent@3.25.0-SNAPSHOT?type=pom"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-ftp-parent@3.25.0-SNAPSHOT?type=pom"/>
-      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury-parent@3.25.0-SNAPSHOT?type=pom"/>
+      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory-parent@3.25.0-SNAPSHOT?type=pom"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-jsonpath-parent@3.25.0-SNAPSHOT?type=pom"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-geocoder-parent@3.25.0-SNAPSHOT?type=pom"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-git-parent@3.25.0-SNAPSHOT?type=pom"/>
@@ -138953,36 +138953,36 @@ Roster, Chat and other functionality.</description>
       <dependency ref="pkg:maven/io.quarkus/quarkus-arc-deployment@3.24.0?type=jar"/>
       <dependency ref="pkg:maven/io.quarkiverse.jsch/quarkus-jsch@3.0.15?type=jar"/>
     </dependency>
-    <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury-parent@3.25.0-SNAPSHOT?type=pom">
-      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury@3.25.0-SNAPSHOT?type=jar"/>
-      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury-deployment@3.25.0-SNAPSHOT?type=jar"/>
+    <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory-parent@3.25.0-SNAPSHOT?type=pom">
+      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory@3.25.0-SNAPSHOT?type=jar"/>
+      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory-deployment@3.25.0-SNAPSHOT?type=jar"/>
     </dependency>
-    <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury@3.25.0-SNAPSHOT?type=jar">
-      <dependency ref="pkg:maven/io.quarkiverse.fury/quarkus-fury@0.3.2?type=jar"/>
+    <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory@3.25.0-SNAPSHOT?type=jar">
+      <dependency ref="pkg:maven/io.quarkiverse.fury/quarkus-fory@0.3.2?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-core@3.25.0-SNAPSHOT?type=jar"/>
-      <dependency ref="pkg:maven/org.apache.camel/camel-fury@4.12.0?type=jar"/>
+      <dependency ref="pkg:maven/org.apache.camel/camel-fory@4.12.0?type=jar"/>
     </dependency>
-    <dependency ref="pkg:maven/io.quarkiverse.fury/quarkus-fury@0.3.2?type=jar">
+    <dependency ref="pkg:maven/io.quarkiverse.fury/quarkus-fory@0.3.2?type=jar">
       <dependency ref="pkg:maven/io.quarkus/quarkus-arc@3.24.0?type=jar"/>
-      <dependency ref="pkg:maven/org.apache.fury/fury-core@0.10.2?type=jar"/>
+      <dependency ref="pkg:maven/org.apache.fory/fory-core@0.10.2?type=jar"/>
       <dependency ref="pkg:maven/jakarta.ws.rs/jakarta.ws.rs-api@3.1.0?type=jar"/>
     </dependency>
-    <dependency ref="pkg:maven/org.apache.fury/fury-core@0.10.2?type=jar">
+    <dependency ref="pkg:maven/org.apache.fory/fory-core@0.10.2?type=jar">
       <dependency ref="pkg:maven/com.google.guava/guava@33.4.8-jre?type=jar"/>
     </dependency>
-    <dependency ref="pkg:maven/org.apache.camel/camel-fury@4.12.0?type=jar">
+    <dependency ref="pkg:maven/org.apache.camel/camel-fory@4.12.0?type=jar">
       <dependency ref="pkg:maven/org.apache.camel/camel-support@4.12.0?type=jar"/>
     </dependency>
-    <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury-deployment@3.25.0-SNAPSHOT?type=jar">
-      <dependency ref="pkg:maven/io.quarkiverse.fury/quarkus-fury-deployment@0.3.2?type=jar"/>
+    <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory-deployment@3.25.0-SNAPSHOT?type=jar">
+      <dependency ref="pkg:maven/io.quarkiverse.fury/quarkus-fory-deployment@0.3.2?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-core-deployment@3.25.0-SNAPSHOT?type=jar"/>
-      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury@3.25.0-SNAPSHOT?type=jar"/>
+      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory@3.25.0-SNAPSHOT?type=jar"/>
     </dependency>
-    <dependency ref="pkg:maven/io.quarkiverse.fury/quarkus-fury-deployment@0.3.2?type=jar">
+    <dependency ref="pkg:maven/io.quarkiverse.fury/quarkus-fory-deployment@0.3.2?type=jar">
       <dependency ref="pkg:maven/io.quarkus/quarkus-arc-deployment@3.24.0?type=jar"/>
       <dependency ref="pkg:maven/io.quarkus/quarkus-resteasy-common-spi@3.24.0?type=jar"/>
       <dependency ref="pkg:maven/io.quarkus/quarkus-rest-spi-deployment@3.24.0?type=jar"/>
-      <dependency ref="pkg:maven/io.quarkiverse.fury/quarkus-fury@0.3.2?type=jar"/>
+      <dependency ref="pkg:maven/io.quarkiverse.fury/quarkus-fory@0.3.2?type=jar"/>
     </dependency>
     <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-jsonpath-parent@3.25.0-SNAPSHOT?type=pom">
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-jsonpath@3.25.0-SNAPSHOT?type=jar"/>
@@ -148442,9 +148442,9 @@ Roster, Chat and other functionality.</description>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-log@3.25.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/io.quarkus/quarkus-resteasy@3.24.0?type=jar"/>
     </dependency>
-    <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-fury@3.25.0-SNAPSHOT?type=jar">
+    <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-fory@3.25.0-SNAPSHOT?type=jar">
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-direct@3.25.0-SNAPSHOT?type=jar"/>
-      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury@3.25.0-SNAPSHOT?type=jar"/>
+      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory@3.25.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/io.quarkus/quarkus-resteasy@3.24.0?type=jar"/>
     </dependency>
     <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-geocoder@3.25.0-SNAPSHOT?type=jar">

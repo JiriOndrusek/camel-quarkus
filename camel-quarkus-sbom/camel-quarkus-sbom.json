@@ -89045,10 +89045,10 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury-parent@3.25.0-SNAPSHOT?type=pom",
+      "bom-ref" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory-parent@3.25.0-SNAPSHOT?type=pom",
       "publisher" : "The Apache Software Foundation",
       "group" : "org.apache.camel.quarkus",
-      "name" : "camel-quarkus-fury-parent",
+      "name" : "camel-quarkus-fory-parent",
       "version" : "3.25.0-SNAPSHOT",
       "description" : "Maven plugins configuration",
       "licenses" : [
@@ -89059,11 +89059,11 @@
           }
         }
       ],
-      "purl" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury-parent@3.25.0-SNAPSHOT?type=pom",
+      "purl" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory-parent@3.25.0-SNAPSHOT?type=pom",
       "externalReferences" : [
         {
           "type" : "website",
-          "url" : "http://camel.apache.org/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fury-parent"
+          "url" : "http://camel.apache.org/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fory-parent"
         },
         {
           "type" : "distribution-intake",
@@ -89079,18 +89079,18 @@
         },
         {
           "type" : "vcs",
-          "url" : "https://github.com/apache/camel-quarkus/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fury-parent"
+          "url" : "https://github.com/apache/camel-quarkus/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fory-parent"
         }
       ]
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury@3.25.0-SNAPSHOT?type=jar",
+      "bom-ref" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory@3.25.0-SNAPSHOT?type=jar",
       "publisher" : "The Apache Software Foundation",
       "group" : "org.apache.camel.quarkus",
-      "name" : "camel-quarkus-fury",
+      "name" : "camel-quarkus-fory",
       "version" : "3.25.0-SNAPSHOT",
-      "description" : "Serialize and deserialize messages using Apache Fury",
+      "description" : "Serialize and deserialize messages using Apache Fory",
       "licenses" : [
         {
           "license" : {
@@ -89099,11 +89099,11 @@
           }
         }
       ],
-      "purl" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury@3.25.0-SNAPSHOT?type=jar",
+      "purl" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory@3.25.0-SNAPSHOT?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
-          "url" : "http://camel.apache.org/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fury-parent/camel-quarkus-fury"
+          "url" : "http://camel.apache.org/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fory-parent/camel-quarkus-fory"
         },
         {
           "type" : "distribution-intake",
@@ -89119,7 +89119,7 @@
         },
         {
           "type" : "vcs",
-          "url" : "https://github.com/apache/camel-quarkus/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fury-parent/camel-quarkus-fury"
+          "url" : "https://github.com/apache/camel-quarkus/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fory-parent/camel-quarkus-fory"
         }
       ]
     },
@@ -89127,7 +89127,7 @@
       "type" : "library",
       "bom-ref" : "pkg:maven/io.quarkiverse.fury/quarkus-fury@0.3.2?type=jar",
       "group" : "io.quarkiverse.fury",
-      "name" : "quarkus-fury",
+      "name" : "quarkus-fory",
       "version" : "0.3.2",
       "description" : "A blazingly fast multi-language serialization framework powered by JIT and zero-copy",
       "scope" : "required",
@@ -89190,12 +89190,12 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/org.apache.fury/fury-core@0.10.2?type=jar",
+      "bom-ref" : "pkg:maven/org.apache.fory/fory-core@0.10.2?type=jar",
       "publisher" : "The Apache Software Foundation",
-      "group" : "org.apache.fury",
-      "name" : "fury-core",
+      "group" : "org.apache.fory",
+      "name" : "fory-core",
       "version" : "0.10.2",
-      "description" : "Apache Fury™ is a blazingly fast multi-language serialization framework powered by jit and zero-copy. Apache Fury (incubating) is an effort undergoing incubation at the Apache Software Foundation (ASF), sponsored by the Apache Incubator PMC. Incubation is required of all newly accepted projects until a further review indicates that the infrastructure, communications, and decision making process have stabilized in a manner consistent with other successful ASF projects. While incubation status is not necessarily a reflection of the completeness or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.",
+      "description" : "Apache Fory™ is a blazingly fast multi-language serialization framework powered by jit and zero-copy. Apache Fory (incubating) is an effort undergoing incubation at the Apache Software Foundation (ASF), sponsored by the Apache Incubator PMC. Incubation is required of all newly accepted projects until a further review indicates that the infrastructure, communications, and decision making process have stabilized in a manner consistent with other successful ASF projects. While incubation status is not necessarily a reflection of the completeness or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.",
       "scope" : "required",
       "hashes" : [
         {
@@ -89238,11 +89238,11 @@
           }
         }
       ],
-      "purl" : "pkg:maven/org.apache.fury/fury-core@0.10.2?type=jar",
+      "purl" : "pkg:maven/org.apache.fory/fory-core@0.10.2?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
-          "url" : "https://github.com/apache/fury/fury-core"
+          "url" : "https://github.com/apache/fory/fory-core"
         },
         {
           "type" : "distribution-intake",
@@ -89254,18 +89254,18 @@
         },
         {
           "type" : "vcs",
-          "url" : "https://github.com/apache/fury/fury-core"
+          "url" : "https://github.com/apache/fory/fory-core"
         }
       ]
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/org.apache.camel/camel-fury@4.12.0?type=jar",
+      "bom-ref" : "pkg:maven/org.apache.camel/camel-fory@4.12.0?type=jar",
       "publisher" : "The Apache Software Foundation",
       "group" : "org.apache.camel",
-      "name" : "camel-fury",
+      "name" : "camel-fory",
       "version" : "4.12.0",
-      "description" : "Camel Fury support",
+      "description" : "Camel Fory support",
       "scope" : "required",
       "hashes" : [
         {
@@ -89309,11 +89309,11 @@
           }
         }
       ],
-      "purl" : "pkg:maven/org.apache.camel/camel-fury@4.12.0?type=jar",
+      "purl" : "pkg:maven/org.apache.camel/camel-fory@4.12.0?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
-          "url" : "https://www.apache.org/camel/camel-parent/components/camel-fury/"
+          "url" : "https://www.apache.org/camel/camel-parent/components/camel-fory/"
         },
         {
           "type" : "distribution-intake",
@@ -89325,16 +89325,16 @@
         },
         {
           "type" : "vcs",
-          "url" : "https://github.com/apache/maven-apache-parent/tree/apache-34/camel/camel-parent/components/camel-fury"
+          "url" : "https://github.com/apache/maven-apache-parent/tree/apache-34/camel/camel-parent/components/camel-fory"
         }
       ]
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury-deployment@3.25.0-SNAPSHOT?type=jar",
+      "bom-ref" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory-deployment@3.25.0-SNAPSHOT?type=jar",
       "publisher" : "The Apache Software Foundation",
       "group" : "org.apache.camel.quarkus",
-      "name" : "camel-quarkus-fury-deployment",
+      "name" : "camel-quarkus-fory-deployment",
       "version" : "3.25.0-SNAPSHOT",
       "description" : "Maven plugins configuration",
       "licenses" : [
@@ -89345,11 +89345,11 @@
           }
         }
       ],
-      "purl" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury-deployment@3.25.0-SNAPSHOT?type=jar",
+      "purl" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory-deployment@3.25.0-SNAPSHOT?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
-          "url" : "http://camel.apache.org/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fury-parent/camel-quarkus-fury-deployment"
+          "url" : "http://camel.apache.org/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fory-parent/camel-quarkus-fory-deployment"
         },
         {
           "type" : "distribution-intake",
@@ -89365,15 +89365,15 @@
         },
         {
           "type" : "vcs",
-          "url" : "https://github.com/apache/camel-quarkus/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fury-parent/camel-quarkus-fury-deployment"
+          "url" : "https://github.com/apache/camel-quarkus/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-fory-parent/camel-quarkus-fory-deployment"
         }
       ]
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/io.quarkiverse.fury/quarkus-fury-deployment@0.3.2?type=jar",
+      "bom-ref" : "pkg:maven/io.quarkiverse.fury/quarkus-fory-deployment@0.3.2?type=jar",
       "group" : "io.quarkiverse.fury",
-      "name" : "quarkus-fury-deployment",
+      "name" : "quarkus-fory-deployment",
       "version" : "0.3.2",
       "description" : "Parent POM for Quarkiverse projects that includes the default release and artifact publishing related configuration",
       "scope" : "required",
@@ -89418,7 +89418,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/io.quarkiverse.fury/quarkus-fury-deployment@0.3.2?type=jar",
+      "purl" : "pkg:maven/io.quarkiverse.fury/quarkus-fory-deployment@0.3.2?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -89426,11 +89426,11 @@
         },
         {
           "type" : "issue-tracker",
-          "url" : "https://github.com/quarkiverse/quarkus-fury"
+          "url" : "https://github.com/quarkiverse/quarkus-fory"
         },
         {
           "type" : "vcs",
-          "url" : "https://github.com/quarkiverse/quarkus-fury"
+          "url" : "https://github.com/quarkiverse/quarkus-fory"
         }
       ]
     },
@@ -197946,12 +197946,12 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-fury@3.25.0-SNAPSHOT?type=jar",
+      "bom-ref" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-fory@3.25.0-SNAPSHOT?type=jar",
       "publisher" : "The Apache Software Foundation",
       "group" : "org.apache.camel.quarkus",
-      "name" : "camel-quarkus-integration-test-fury",
+      "name" : "camel-quarkus-integration-test-fory",
       "version" : "3.25.0-SNAPSHOT",
-      "description" : "Integration tests for Camel Quarkus Fury extension",
+      "description" : "Integration tests for Camel Quarkus Fory extension",
       "licenses" : [
         {
           "license" : {
@@ -197960,11 +197960,11 @@
           }
         }
       ],
-      "purl" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-fury@3.25.0-SNAPSHOT?type=jar",
+      "purl" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-fory@3.25.0-SNAPSHOT?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
-          "url" : "http://camel.apache.org/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-build-parent-it/camel-quarkus-integration-test-fury"
+          "url" : "http://camel.apache.org/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-build-parent-it/camel-quarkus-integration-test-fory"
         },
         {
           "type" : "distribution-intake",
@@ -197980,7 +197980,7 @@
         },
         {
           "type" : "vcs",
-          "url" : "https://github.com/apache/camel-quarkus/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-build-parent-it/camel-quarkus-integration-test-fury"
+          "url" : "https://github.com/apache/camel-quarkus/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-build-parent-it/camel-quarkus-integration-test-fory"
         }
       ]
     },
@@ -215981,7 +215981,7 @@
         "pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-fop@3.25.0-SNAPSHOT?type=jar",
         "pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-freemarker@3.25.0-SNAPSHOT?type=jar",
         "pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-ftp@3.25.0-SNAPSHOT?type=jar",
-        "pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-fury@3.25.0-SNAPSHOT?type=jar",
+        "pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-fory@3.25.0-SNAPSHOT?type=jar",
         "pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-geocoder@3.25.0-SNAPSHOT?type=jar",
         "pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-git@3.25.0-SNAPSHOT?type=jar",
         "pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-github@3.25.0-SNAPSHOT?type=jar",
@@ -217403,7 +217403,7 @@
         "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fop-parent@3.25.0-SNAPSHOT?type=pom",
         "pkg:maven/org.apache.camel.quarkus/camel-quarkus-freemarker-parent@3.25.0-SNAPSHOT?type=pom",
         "pkg:maven/org.apache.camel.quarkus/camel-quarkus-ftp-parent@3.25.0-SNAPSHOT?type=pom",
-        "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury-parent@3.25.0-SNAPSHOT?type=pom",
+        "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory-parent@3.25.0-SNAPSHOT?type=pom",
         "pkg:maven/org.apache.camel.quarkus/camel-quarkus-jsonpath-parent@3.25.0-SNAPSHOT?type=pom",
         "pkg:maven/org.apache.camel.quarkus/camel-quarkus-geocoder-parent@3.25.0-SNAPSHOT?type=pom",
         "pkg:maven/org.apache.camel.quarkus/camel-quarkus-git-parent@3.25.0-SNAPSHOT?type=pom",
@@ -228056,55 +228056,55 @@
       ]
     },
     {
-      "ref" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury-parent@3.25.0-SNAPSHOT?type=pom",
+      "ref" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory-parent@3.25.0-SNAPSHOT?type=pom",
       "dependsOn" : [
-        "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury@3.25.0-SNAPSHOT?type=jar",
-        "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury-deployment@3.25.0-SNAPSHOT?type=jar"
+        "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory@3.25.0-SNAPSHOT?type=jar",
+        "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory-deployment@3.25.0-SNAPSHOT?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury@3.25.0-SNAPSHOT?type=jar",
+      "ref" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory@3.25.0-SNAPSHOT?type=jar",
       "dependsOn" : [
-        "pkg:maven/io.quarkiverse.fury/quarkus-fury@0.3.2?type=jar",
+        "pkg:maven/io.quarkiverse.fury/quarkus-fory@0.3.2?type=jar",
         "pkg:maven/org.apache.camel.quarkus/camel-quarkus-core@3.25.0-SNAPSHOT?type=jar",
-        "pkg:maven/org.apache.camel/camel-fury@4.12.0?type=jar"
+        "pkg:maven/org.apache.camel/camel-fory@4.12.0?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/io.quarkiverse.fury/quarkus-fury@0.3.2?type=jar",
+      "ref" : "pkg:maven/io.quarkiverse.fury/quarkus-fory@0.3.2?type=jar",
       "dependsOn" : [
         "pkg:maven/io.quarkus/quarkus-arc@3.24.0?type=jar",
-        "pkg:maven/org.apache.fury/fury-core@0.10.2?type=jar",
+        "pkg:maven/org.apache.fory/fory-core@0.10.2?type=jar",
         "pkg:maven/jakarta.ws.rs/jakarta.ws.rs-api@3.1.0?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/org.apache.fury/fury-core@0.10.2?type=jar",
+      "ref" : "pkg:maven/org.apache.fory/fory-core@0.10.2?type=jar",
       "dependsOn" : [
         "pkg:maven/com.google.guava/guava@33.4.8-jre?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/org.apache.camel/camel-fury@4.12.0?type=jar",
+      "ref" : "pkg:maven/org.apache.camel/camel-fory@4.12.0?type=jar",
       "dependsOn" : [
         "pkg:maven/org.apache.camel/camel-support@4.12.0?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury-deployment@3.25.0-SNAPSHOT?type=jar",
+      "ref" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory-deployment@3.25.0-SNAPSHOT?type=jar",
       "dependsOn" : [
-        "pkg:maven/io.quarkiverse.fury/quarkus-fury-deployment@0.3.2?type=jar",
+        "pkg:maven/io.quarkiverse.fury/quarkus-fory-deployment@0.3.2?type=jar",
         "pkg:maven/org.apache.camel.quarkus/camel-quarkus-core-deployment@3.25.0-SNAPSHOT?type=jar",
-        "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury@3.25.0-SNAPSHOT?type=jar"
+        "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory@3.25.0-SNAPSHOT?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/io.quarkiverse.fury/quarkus-fury-deployment@0.3.2?type=jar",
+      "ref" : "pkg:maven/io.quarkiverse.fury/quarkus-fory-deployment@0.3.2?type=jar",
       "dependsOn" : [
         "pkg:maven/io.quarkus/quarkus-arc-deployment@3.24.0?type=jar",
         "pkg:maven/io.quarkus/quarkus-resteasy-common-spi@3.24.0?type=jar",
         "pkg:maven/io.quarkus/quarkus-rest-spi-deployment@3.24.0?type=jar",
-        "pkg:maven/io.quarkiverse.fury/quarkus-fury@0.3.2?type=jar"
+        "pkg:maven/io.quarkiverse.fury/quarkus-fory@0.3.2?type=jar"
       ]
     },
     {
@@ -243254,10 +243254,10 @@
       ]
     },
     {
-      "ref" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-fury@3.25.0-SNAPSHOT?type=jar",
+      "ref" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-fory@3.25.0-SNAPSHOT?type=jar",
       "dependsOn" : [
         "pkg:maven/org.apache.camel.quarkus/camel-quarkus-direct@3.25.0-SNAPSHOT?type=jar",
-        "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fury@3.25.0-SNAPSHOT?type=jar",
+        "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory@3.25.0-SNAPSHOT?type=jar",
         "pkg:maven/io.quarkus/quarkus-resteasy@3.24.0?type=jar"
       ]
     },
