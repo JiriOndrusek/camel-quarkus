@@ -89125,8 +89125,8 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/io.quarkiverse.fury/quarkus-fury@0.3.2?type=jar",
-      "group" : "io.quarkiverse.fury",
+      "bom-ref" : "pkg:maven/io.quarkiverse.fory/quarkus-fory@0.3.2?type=jar",
+      "group" : "io.quarkiverse.fory",
       "name" : "quarkus-fory",
       "version" : "0.3.2",
       "description" : "A blazingly fast multi-language serialization framework powered by JIT and zero-copy",
@@ -89172,7 +89172,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/io.quarkiverse.fury/quarkus-fury@0.3.2?type=jar",
+      "purl" : "pkg:maven/io.quarkiverse.fory/quarkus-fory@0.3.2?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -89180,11 +89180,11 @@
         },
         {
           "type" : "issue-tracker",
-          "url" : "https://github.com/quarkiverse/quarkus-fury"
+          "url" : "https://github.com/quarkiverse/quarkus-fory"
         },
         {
           "type" : "vcs",
-          "url" : "https://github.com/quarkiverse/quarkus-fury"
+          "url" : "https://github.com/quarkiverse/quarkus-fory"
         }
       ]
     },
@@ -89371,8 +89371,8 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/io.quarkiverse.fury/quarkus-fory-deployment@0.3.2?type=jar",
-      "group" : "io.quarkiverse.fury",
+      "bom-ref" : "pkg:maven/io.quarkiverse.fory/quarkus-fory-deployment@0.3.2?type=jar",
+      "group" : "io.quarkiverse.fory",
       "name" : "quarkus-fory-deployment",
       "version" : "0.3.2",
       "description" : "Parent POM for Quarkiverse projects that includes the default release and artifact publishing related configuration",
@@ -89418,7 +89418,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/io.quarkiverse.fury/quarkus-fory-deployment@0.3.2?type=jar",
+      "purl" : "pkg:maven/io.quarkiverse.fory/quarkus-fory-deployment@0.3.2?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -228069,13 +228069,13 @@
     {
       "ref" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory@3.25.0-SNAPSHOT?type=jar",
       "dependsOn" : [
-        "pkg:maven/io.quarkiverse.fury/quarkus-fory@0.3.2?type=jar",
+        "pkg:maven/io.quarkiverse.fory/quarkus-fory@0.3.2?type=jar",
         "pkg:maven/org.apache.camel.quarkus/camel-quarkus-core@3.25.0-SNAPSHOT?type=jar",
         "pkg:maven/org.apache.camel/camel-fory@4.12.0?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/io.quarkiverse.fury/quarkus-fory@0.3.2?type=jar",
+      "ref" : "pkg:maven/io.quarkiverse.fory/quarkus-fory@0.3.2?type=jar",
       "dependsOn" : [
         "pkg:maven/io.quarkus/quarkus-arc@3.24.0?type=jar",
         "pkg:maven/org.apache.fory/fory-core@0.10.2?type=jar",
@@ -228097,18 +228097,18 @@
     {
       "ref" : "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory-deployment@3.25.0-SNAPSHOT?type=jar",
       "dependsOn" : [
-        "pkg:maven/io.quarkiverse.fury/quarkus-fory-deployment@0.3.2?type=jar",
+        "pkg:maven/io.quarkiverse.fory/quarkus-fory-deployment@0.3.2?type=jar",
         "pkg:maven/org.apache.camel.quarkus/camel-quarkus-core-deployment@3.25.0-SNAPSHOT?type=jar",
         "pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory@3.25.0-SNAPSHOT?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/io.quarkiverse.fury/quarkus-fory-deployment@0.3.2?type=jar",
+      "ref" : "pkg:maven/io.quarkiverse.fory/quarkus-fory-deployment@0.3.2?type=jar",
       "dependsOn" : [
         "pkg:maven/io.quarkus/quarkus-arc-deployment@3.24.0?type=jar",
         "pkg:maven/io.quarkus/quarkus-resteasy-common-spi@3.24.0?type=jar",
         "pkg:maven/io.quarkus/quarkus-rest-spi-deployment@3.24.0?type=jar",
-        "pkg:maven/io.quarkiverse.fury/quarkus-fory@0.3.2?type=jar"
+        "pkg:maven/io.quarkiverse.fory/quarkus-fory@0.3.2?type=jar"
       ]
     },
     {
