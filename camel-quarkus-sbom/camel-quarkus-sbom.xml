@@ -51883,9 +51883,9 @@ Supported protocols include Echo, Finger, FTP, NNTP, NTP, POP3(S), SMTP(S), Teln
         </reference>
       </externalReferences>
     </component>
-    <component type="library" bom-ref="pkg:maven/io.quarkiverse.fury/quarkus-fury@0.3.2?type=jar">
-      <group>io.quarkiverse.fury</group>
-      <name>quarkus-fury</name>
+    <component type="library" bom-ref="pkg:maven/io.quarkiverse.fory/quarkus-fory@0.3.2?type=jar">
+      <group>io.quarkiverse.fory</group>
+      <name>quarkus-fory</name>
       <version>0.3.2</version>
       <description>A blazingly fast multi-language serialization framework powered by JIT and zero-copy</description>
       <scope>required</scope>
@@ -51904,16 +51904,16 @@ Supported protocols include Echo, Finger, FTP, NNTP, NTP, POP3(S), SMTP(S), Teln
           <id>Apache-2.0</id>
         </license>
       </licenses>
-      <purl>pkg:maven/io.quarkiverse.fury/quarkus-fury@0.3.2?type=jar</purl>
+      <purl>pkg:maven/io.quarkiverse.fory/quarkus-fory@0.3.2?type=jar</purl>
       <externalReferences>
         <reference type="website">
           <url>https://quarkiverse.io</url>
         </reference>
         <reference type="issue-tracker">
-          <url>https://github.com/quarkiverse/quarkus-fury</url>
+          <url>https://github.com/quarkiverse/quarkus-fory</url>
         </reference>
         <reference type="vcs">
-          <url>https://github.com/quarkiverse/quarkus-fury</url>
+          <url>https://github.com/quarkiverse/quarkus-fory</url>
         </reference>
       </externalReferences>
     </component>
@@ -52036,9 +52036,9 @@ Supported protocols include Echo, Finger, FTP, NNTP, NTP, POP3(S), SMTP(S), Teln
         </reference>
       </externalReferences>
     </component>
-    <component type="library" bom-ref="pkg:maven/io.quarkiverse.fury/quarkus-fury-deployment@0.3.2?type=jar">
-      <group>io.quarkiverse.fury</group>
-      <name>quarkus-fury-deployment</name>
+    <component type="library" bom-ref="pkg:maven/io.quarkiverse.fory/quarkus-fory-deployment@0.3.2?type=jar">
+      <group>io.quarkiverse.fory</group>
+      <name>quarkus-fory-deployment</name>
       <version>0.3.2</version>
       <description>Parent POM for Quarkiverse projects that includes the default release and artifact publishing related
     configuration</description>
@@ -52058,7 +52058,7 @@ Supported protocols include Echo, Finger, FTP, NNTP, NTP, POP3(S), SMTP(S), Teln
           <id>Apache-2.0</id>
         </license>
       </licenses>
-      <purl>pkg:maven/io.quarkiverse.fury/quarkus-fury-deployment@0.3.2?type=jar</purl>
+      <purl>pkg:maven/io.quarkiverse.fory/quarkus-fory-deployment@0.3.2?type=jar</purl>
       <externalReferences>
         <reference type="website">
           <url>https://quarkiverse.io</url>
@@ -138958,11 +138958,11 @@ Roster, Chat and other functionality.</description>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory-deployment@3.25.0-SNAPSHOT?type=jar"/>
     </dependency>
     <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory@3.25.0-SNAPSHOT?type=jar">
-      <dependency ref="pkg:maven/io.quarkiverse.fury/quarkus-fory@0.3.2?type=jar"/>
+      <dependency ref="pkg:maven/io.quarkiverse.fory/quarkus-fory@0.3.2?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-core@3.25.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel/camel-fory@4.12.0?type=jar"/>
     </dependency>
-    <dependency ref="pkg:maven/io.quarkiverse.fury/quarkus-fory@0.3.2?type=jar">
+    <dependency ref="pkg:maven/io.quarkiverse.fory/quarkus-fory@0.3.2?type=jar">
       <dependency ref="pkg:maven/io.quarkus/quarkus-arc@3.24.0?type=jar"/>
       <dependency ref="pkg:maven/org.apache.fory/fory-core@0.10.2?type=jar"/>
       <dependency ref="pkg:maven/jakarta.ws.rs/jakarta.ws.rs-api@3.1.0?type=jar"/>
@@ -138974,15 +138974,15 @@ Roster, Chat and other functionality.</description>
       <dependency ref="pkg:maven/org.apache.camel/camel-support@4.12.0?type=jar"/>
     </dependency>
     <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory-deployment@3.25.0-SNAPSHOT?type=jar">
-      <dependency ref="pkg:maven/io.quarkiverse.fury/quarkus-fory-deployment@0.3.2?type=jar"/>
+      <dependency ref="pkg:maven/io.quarkiverse.fory/quarkus-fory-deployment@0.3.2?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-core-deployment@3.25.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-fory@3.25.0-SNAPSHOT?type=jar"/>
     </dependency>
-    <dependency ref="pkg:maven/io.quarkiverse.fury/quarkus-fory-deployment@0.3.2?type=jar">
+    <dependency ref="pkg:maven/io.quarkiverse.fory/quarkus-fory-deployment@0.3.2?type=jar">
       <dependency ref="pkg:maven/io.quarkus/quarkus-arc-deployment@3.24.0?type=jar"/>
       <dependency ref="pkg:maven/io.quarkus/quarkus-resteasy-common-spi@3.24.0?type=jar"/>
       <dependency ref="pkg:maven/io.quarkus/quarkus-rest-spi-deployment@3.24.0?type=jar"/>
-      <dependency ref="pkg:maven/io.quarkiverse.fury/quarkus-fory@0.3.2?type=jar"/>
+      <dependency ref="pkg:maven/io.quarkiverse.fory/quarkus-fory@0.3.2?type=jar"/>
     </dependency>
     <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-jsonpath-parent@3.25.0-SNAPSHOT?type=pom">
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-jsonpath@3.25.0-SNAPSHOT?type=jar"/>
