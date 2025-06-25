@@ -468,11 +468,33 @@ class AzureStorageDatalakeTest {
                     .then()
                     .statusCode(200);
 
+            //client secret
+
+            // SHARED_KEY_CREDENTIAL
+            LOG.info("step - SHARED_KEY_CREDENTIAL - listPaths");
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .body(Collections.emptyMap())
+                    .post("/azure-storage-datalake/route/datalakeSharedKeyCredentialsListPaths/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(200)
+                    .body("", Matchers.hasItem(filename));
+
+            // AZURE_IDENTITY
+
             LOG.info("step - SAS - listPaths");
             RestAssured.given()
                     .contentType(ContentType.JSON)
                     .body(Collections.emptyMap())
                     .post("/azure-storage-datalake/route/datalakeSasListPaths/filesystem/" + filesystem)
+                    .then()
+                    .statusCode(200)
+                    .body("", Matchers.hasItem(filename));
+            LOG.info("step - client instance - autowired - listPaths");
+            RestAssured.given()
+                    .contentType(ContentType.JSON)
+                    .body(Collections.emptyMap())
+                    .post("/azure-storage-datalake/route/datalakeClientInstanceListPaths/filesystem/" + filesystem)
                     .then()
                     .statusCode(200)
                     .body("", Matchers.hasItem(filename));

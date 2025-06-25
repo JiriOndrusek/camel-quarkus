@@ -24,16 +24,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.azure.core.http.policy.HttpLogDetailLevel;
-import com.azure.core.http.policy.HttpLogOptions;
-import com.azure.storage.common.StorageSharedKeyCredential;
-import com.azure.storage.file.datalake.DataLakeServiceClient;
-import com.azure.storage.file.datalake.DataLakeServiceClientBuilder;
 import com.azure.storage.file.datalake.models.FileSystemItem;
 import com.azure.storage.file.datalake.models.PathItem;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.inject.Named;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -48,9 +42,6 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.component.azure.storage.datalake.CredentialType;
-import org.apache.camel.component.azure.storage.datalake.DataLakeComponent;
-import org.apache.camel.component.azure.storage.datalake.DataLakeConfiguration;
 import org.apache.camel.component.azure.storage.datalake.DataLakeConstants;
 import org.apache.camel.component.azure.storage.datalake.DataLakeOperationsDefinition;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -70,47 +61,6 @@ public class AzureStorageDatalakeResource {
 
     @ConfigProperty(name = "azure.storage.account-name")
     Optional<String> azureStorageAccountName;
-
-    @ConfigProperty(name = "azure.storage.account-key")
-    Optional<String> azureStorageAccountKey;
-
-    @ConfigProperty(name = "azure.datalake.service.url")
-    Optional<String> serviceUrl;
-
-    @jakarta.enterprise.inject.Produces
-    @Named("azureDatalakeServiceClient")
-    public DataLakeServiceClient createDatalakeServiceClient() throws Exception {
-        StorageSharedKeyCredential credentials = new StorageSharedKeyCredential(azureStorageAccountName.get(),
-                azureStorageAccountKey.get());
-        return new DataLakeServiceClientBuilder()
-                .endpoint(serviceUrl.get())
-                .credential(credentials)
-                .httpLogOptions(new HttpLogOptions().setLogLevel(HttpLogDetailLevel.BODY_AND_HEADERS).setPrettyPrintBody(true))
-                .buildClient();
-    }
-
-    @jakarta.enterprise.inject.Produces
-    @Named("azureDatalakeSasComponent")
-    public DataLakeComponent azureDatalakeSasComponent() throws Exception {
-        DataLakeComponent dc = new DataLakeComponent();
-
-        dc.setAutowiredEnabled(false);
-        DataLakeConfiguration configuration = new DataLakeConfiguration();
-        configuration.setCredentialType(CredentialType.AZURE_SAS);
-        configuration.setSasSignature(AzureStorageDatalakeUtil.getSasToken());
-        dc.setConfiguration(configuration);
-
-        return dc;
-    }
-    //
-    //    @jakarta.enterprise.inject.Produces
-    //    @Named("azureDatalakeNoAuthClient")
-    //    public DataLakeServiceClient createDatalakeSasClient() throws Exception {
-    //        return new DataLakeServiceClientBuilder()
-    //                .endpoint(serviceUrl.get())
-    //                .httpLogOptions(new HttpLogOptions().setLogLevel(HttpLogDetailLevel.BODY_AND_HEADERS).setPrettyPrintBody(true))
-    //                .buildClient();
-    //    }
 
     @Path("/filesystem/{filesystem}")
     @POST
@@ -237,16 +187,16 @@ public class AzureStorageDatalakeResource {
             return ((List<FileSystemItem>) o).stream()
                     .map(FileSystemItem::getName)
                     .collect(Collectors.toList());
-        case "datalakeListPaths":
-        case "datalakeSasListPaths":
-            return ((List<PathItem>) o).stream()
-                    .map(PathItem::getName)
-                    .collect(Collectors.toList());
         case "datalakeGetFile":
             if (useOutputStream) {
                 return inMemoryStream.toString();
             }
             break;
+        }
+        if (routeName.endsWith("ListPaths")) {
+            return ((List<PathItem>) o).stream()
+                    .map(PathItem::getName)
+                    .collect(Collectors.toList());
         }
 
         return exchange.getIn().getBody(String.class);
