@@ -30,6 +30,11 @@ public class AzureStorageDatalakeUtil {
                 .orElseGet(() -> System.getenv("AZURE_STORAGE_ACCOUNT_KEY"));
     }
 
+    public static String getSasToken() {
+        return Optional.ofNullable(System.getenv("AZURE_STORAGE_DATALAKE_SAS_TOKEN"))
+                .orElseGet(() -> System.getenv("AZURE_STORAGE_SAS_TOKEN"));
+    }
+
     public static boolean isRalAccountProvided() {
         String realAzureStorageAccountName = AzureStorageDatalakeUtil.getRealAccountNameFromEnv();
         String realAzureStorageAccountKey = AzureStorageDatalakeUtil.getRealAccountKeyFromEnv();

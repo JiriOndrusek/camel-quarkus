@@ -48,6 +48,9 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.component.azure.storage.datalake.CredentialType;
+import org.apache.camel.component.azure.storage.datalake.DataLakeComponent;
+import org.apache.camel.component.azure.storage.datalake.DataLakeConfiguration;
 import org.apache.camel.component.azure.storage.datalake.DataLakeConstants;
 import org.apache.camel.component.azure.storage.datalake.DataLakeOperationsDefinition;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -85,6 +88,29 @@ public class AzureStorageDatalakeResource {
                 .httpLogOptions(new HttpLogOptions().setLogLevel(HttpLogDetailLevel.BODY_AND_HEADERS).setPrettyPrintBody(true))
                 .buildClient();
     }
+
+    @jakarta.enterprise.inject.Produces
+    @Named("azureDatalakeSasComponent")
+    public DataLakeComponent azureDatalakeSasComponent() throws Exception {
+        DataLakeComponent dc = new DataLakeComponent();
+
+        dc.setAutowiredEnabled(false);
+        DataLakeConfiguration configuration = new DataLakeConfiguration();
+        configuration.setCredentialType(CredentialType.AZURE_SAS);
+        configuration.setSasSignature(AzureStorageDatalakeUtil.getSasToken());
+        dc.setConfiguration(configuration);
+
+        return dc;
+    }
+    //
+    //    @jakarta.enterprise.inject.Produces
+    //    @Named("azureDatalakeNoAuthClient")
+    //    public DataLakeServiceClient createDatalakeSasClient() throws Exception {
+    //        return new DataLakeServiceClientBuilder()
+    //                .endpoint(serviceUrl.get())
+    //                .httpLogOptions(new HttpLogOptions().setLogLevel(HttpLogDetailLevel.BODY_AND_HEADERS).setPrettyPrintBody(true))
+    //                .buildClient();
+    //    }
 
     @Path("/filesystem/{filesystem}")
     @POST
@@ -212,6 +238,7 @@ public class AzureStorageDatalakeResource {
                     .map(FileSystemItem::getName)
                     .collect(Collectors.toList());
         case "datalakeListPaths":
+        case "datalakeSasListPaths":
             return ((List<PathItem>) o).stream()
                     .map(PathItem::getName)
                     .collect(Collectors.toList());
