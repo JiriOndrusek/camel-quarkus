@@ -17,11 +17,9 @@
 package org.apache.camel.quarkus.component.mail.microsoft.oauth.deployment;
 
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.annotations.ExecutionTime;
-import io.quarkus.deployment.annotations.Record;
+import io.quarkus.deployment.builditem.ExtensionSslNativeSupportBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
-import io.quarkus.deployment.pkg.steps.NativeOrNativeSourcesBuild;
-import org.apache.camel.quarkus.core.JvmOnlyRecorder;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import org.jboss.logging.Logger;
 
 class MailMicrosoftOauthProcessor {
@@ -34,13 +32,17 @@ class MailMicrosoftOauthProcessor {
         return new FeatureBuildItem(FEATURE);
     }
 
-    /**
-     * Remove this once this extension starts supporting the native mode.
-     */
-    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class)
-    @Record(value = ExecutionTime.RUNTIME_INIT)
-    void warnJvmInNative(JvmOnlyRecorder recorder) {
-        JvmOnlyRecorder.warnJvmInNative(LOG, FEATURE); // warn at build time
-        recorder.warnJvmInNative(FEATURE); // warn at runtime
+    @BuildStep
+    ExtensionSslNativeSupportBuildItem enableSSLNativeSupport() {
+        // Required by TimeZoneUpdater$UrlBuilder.toUrl
+        return new ExtensionSslNativeSupportBuildItem(FEATURE);
     }
+
+    //Cannot construct instance of `com.microsoft.aad.msal4j.AadInstanceDiscoveryResponse`
+    @BuildStep
+    ReflectiveClassBuildItem registerForReflection() {
+        return ReflectiveClassBuildItem.builder("com.microsoft.aad.msal4j.AadInstanceDiscoveryResponse")
+                .build();
+    }
+
 }
