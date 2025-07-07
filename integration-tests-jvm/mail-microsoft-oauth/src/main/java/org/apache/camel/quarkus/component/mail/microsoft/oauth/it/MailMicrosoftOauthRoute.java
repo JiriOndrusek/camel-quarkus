@@ -36,10 +36,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 @ApplicationScoped
 public class MailMicrosoftOauthRoute extends RouteBuilder {
 
-    @Inject
-    @Named("mailReceivedMessages")
-    List<Map<String, Object>> mailReceivedMessages;
-
     @ConfigProperty(name = MailMicrosoftOauthResource.TEST_SUBJECT_PROPERTY)
     String testSubject;
 
@@ -57,19 +53,7 @@ public class MailMicrosoftOauthRoute extends RouteBuilder {
                 + "&searchTerm.subject=" + testSubject.substring(1))
                 .id("receiverRoute")
                 .autoStartup(false)
-                .process(exchange -> handleMail(exchange));
-    }
-
-    private Map<String, Object> handleMail(Exchange exchange) throws MessagingException {
-        Map<String, Object> result = new HashMap<>();
-        MailMessage mailMessage = exchange.getMessage(MailMessage.class);
-
-        result.put("subject", mailMessage.getMessage().getSubject());
-        result.put("content", mailMessage.getBody(String.class).trim());
-
-        mailReceivedMessages.add(result);
-
-        return result;
+                .to("mock:receivedMessages");
     }
 
     static class Producers {

@@ -18,10 +18,11 @@ package org.apache.camel.quarkus.component.mail.microsoft.oauth.it;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.inject.Named;
+import jakarta.mail.MessagingException;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -29,6 +30,8 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.camel.CamelContext;
+import org.apache.camel.component.mail.MailMessage;
+import org.apache.camel.component.mock.MockEndpoint;
 
 @Path("/mail-microsoft-oauth")
 @ApplicationScoped
@@ -39,10 +42,6 @@ public class MailMicrosoftOauthResource {
     public static final String CLIENT_SECRET_PROPERTY = "cq.mail.microsoft.oauth.client.secret";
     public static final String TENANT_ID_PROPERTY = "cq.mail.microsoft.oauth.tenant.id";
     public static final String TEST_SUBJECT_PROPERTY = "cq.mail.microsoft.oauth.test.subject";
-
-    @Inject
-    @Named("mailReceivedMessages")
-    List<Map<String, Object>> mailReceivedMessages;
 
     @Inject
     CamelContext context;
@@ -59,8 +58,20 @@ public class MailMicrosoftOauthResource {
     @Path("/getReceived")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Map<String, Object>> getReceived() {
-        return mailReceivedMessages;
+    public List<Map<String,String>> getReceived() {
+
+        MockEndpoint mockResult = context.getEndpoint("mock:receivedMessages", MockEndpoint.class);
+        return mockResult.getExchanges().stream().map(
+                e -> {
+                    MailMessage mailMessage = e.getMessage(MailMessage.class);
+                    try {
+                        return Map.of("subject", mailMessage.getMessage().getSubject(),
+                                "content", mailMessage.getBody(String.class).trim());
+                    } catch (MessagingException ex) {
+                        return Map.of("subject", "Error: " + ex.getMessage(),
+                                "content", mailMessage.getBody(String.class).trim());
+                    }
+                }).collect(Collectors.toList());
     }
 
     @GET
