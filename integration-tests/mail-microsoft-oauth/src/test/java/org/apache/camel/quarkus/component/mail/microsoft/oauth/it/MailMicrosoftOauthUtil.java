@@ -32,14 +32,13 @@ import org.eclipse.microprofile.config.ConfigProvider;
 
 public class MailMicrosoftOauthUtil {
 
-    public static void sendMessage(String content) {
+    public static void sendMessage(String subject, String content) {
 
         Config config = ConfigProvider.getConfig();
         String email = config.getValue(MailMicrosoftOauthResource.USERNAME_PROPERTY, String.class);
         String clientId = config.getValue(MailMicrosoftOauthResource.CLIENT_ID_PROPERTY, String.class);
         String clientSecret = config.getValue(MailMicrosoftOauthResource.CLIENT_SECRET_PROPERTY, String.class);
         String tenantId = config.getValue(MailMicrosoftOauthResource.TENANT_ID_PROPERTY, String.class);
-        String testSubject = config.getValue(MailMicrosoftOauthResource.TEST_SUBJECT_PROPERTY, String.class);
 
         ClientSecretCredential graph = new ClientSecretCredentialBuilder()
                 .clientId(clientId)
@@ -51,7 +50,7 @@ public class MailMicrosoftOauthUtil {
 
         SendMailPostRequestBody sendMailPostRequestBody = new SendMailPostRequestBody();
         Message message = new Message();
-        message.setSubject(testSubject);
+        message.setSubject(subject);
         ItemBody body = new ItemBody();
         body.setContentType(BodyType.Text);
         body.setContent(content);

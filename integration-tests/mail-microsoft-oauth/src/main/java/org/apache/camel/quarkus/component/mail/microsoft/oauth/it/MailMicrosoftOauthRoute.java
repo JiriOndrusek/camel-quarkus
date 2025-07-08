@@ -16,25 +16,15 @@
  */
 package org.apache.camel.quarkus.component.mail.microsoft.oauth.it;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
-import jakarta.inject.Named;
-import jakarta.inject.Singleton;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
 public class MailMicrosoftOauthRoute extends RouteBuilder {
 
-    @ConfigProperty(name = MailMicrosoftOauthResource.TEST_SUBJECT_PROPERTY)
-    String testSubject;
-
+    public static final String TEST_SUBJECT = "CamelQuarkus" + System.currentTimeMillis();
     @Inject
     CamelContext camelContext;
 
@@ -43,22 +33,12 @@ public class MailMicrosoftOauthRoute extends RouteBuilder {
         fromF("imaps://outlook.office365.com:993"
                 + "?authenticator=#auth"
                 + "&mail.imaps.auth.mechanisms=XOAUTH2"
-                + "&debugMode=true"
                 + "&delete=true"
                 //search pattern works on contains and not  start with
-                + "&searchTerm.subject=" + testSubject.substring(1))
+                + "&searchTerm.subject=" + TEST_SUBJECT.substring(1))
                 .id("receiverRoute")
                 .autoStartup(false)
                 .to("mock:receivedMessages");
     }
 
-    static class Producers {
-
-        @Singleton
-        @Produces
-        @Named("mailReceivedMessages")
-        List<Map<String, Object>> mailReceivedMessages() {
-            return new CopyOnWriteArrayList<>();
-        }
-    }
 }

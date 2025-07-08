@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import jakarta.json.bind.JsonbBuilder;
@@ -35,7 +34,6 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 @EnabledIfEnvironmentVariable(named = "CQ_MAIL_MICROSOFT_OAUTH_CLIENT_SECRET", matches = ".+")
 @EnabledIfEnvironmentVariable(named = "CQ_MAIL_MICROSOFT_OAUTH_TENANT_ID", matches = ".+")
 @QuarkusTest
-@QuarkusTestResource(MailMicrosoftOathTestResource.class)
 class MailMicrosoftOauthTest {
 
     @SuppressWarnings("unchecked")
@@ -45,7 +43,7 @@ class MailMicrosoftOauthTest {
         final String content = "Test email!" + UUID.randomUUID();
 
         //send an email
-        MailMicrosoftOauthUtil.sendMessage(content);
+        MailMicrosoftOauthUtil.sendMessage(MailMicrosoftOauthRoute.TEST_SUBJECT, content);
 
         //start route
         startRoute("receiverRoute");
