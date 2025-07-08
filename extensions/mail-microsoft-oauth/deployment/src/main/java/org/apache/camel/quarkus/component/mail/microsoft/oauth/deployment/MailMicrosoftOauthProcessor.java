@@ -17,9 +17,12 @@
 package org.apache.camel.quarkus.component.mail.microsoft.oauth.deployment;
 
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.ExtensionSslNativeSupportBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import org.jboss.jandex.IndexView;
 import org.jboss.logging.Logger;
 
 class MailMicrosoftOauthProcessor {
@@ -38,11 +41,40 @@ class MailMicrosoftOauthProcessor {
         return new ExtensionSslNativeSupportBuildItem(FEATURE);
     }
 
-    //Cannot construct instance of `com.microsoft.aad.msal4j.AadInstanceDiscoveryResponse`
+    //        //Cannot construct instance of `com.microsoft.aad.msal4j.AadInstanceDiscoveryResponse`
+    //        @BuildStep
+    //        ReflectiveClassBuildItem registerForReflection() {
+    //            return ReflectiveClassBuildItem.builder("com.microsoft.aad.msal4j.AadInstanceDiscoveryResponse")
+    //                    .build();
+    //        }
+
+    //    //hunch com.microsoft.aad.msal4j.AadInstanceDiscoveryResponse
+    //    @BuildStep
+    //    ReflectiveClassBuildItem registerAadInstanceDiscoveryResponseForReflection() {
+    //        return ReflectiveClassBuildItem.builder("com.microsoft.aad.msal4j.OidcDiscoveryResponse").fields().methods()
+    //                .build();
+    //    }
+
+    //[Correlation ID: 94babc5f-8706-4058-9045-fcf56162f9fd] Execution of class com.microsoft.aad.msal4j.AcquireTokenByClientCredentialSupplier failed: null
+
     @BuildStep
-    ReflectiveClassBuildItem registerForReflection() {
-        return ReflectiveClassBuildItem.builder("com.microsoft.aad.msal4j.AadInstanceDiscoveryResponse")
-                .build();
+    ReflectiveClassBuildItem registerForReflection(CombinedIndexBuildItem combinedIndex) {
+        IndexView index = combinedIndex.getIndex();
+
+        //todo fuse only required ones
+        String[] dtos = index.getKnownClasses().stream()
+                .map(ci -> ci.name().toString())
+                .filter(n -> n.startsWith("com.microsoft.aad.msal4j"))
+                .sorted()
+                .peek(System.out::println)
+                .toArray(String[]::new);
+
+        return ReflectiveClassBuildItem.builder(dtos).methods().fields().build();
+    }
+
+    @BuildStep
+    IndexDependencyBuildItem registerDependencyForIndex() {
+        return new IndexDependencyBuildItem("com.microsoft.azure", "msal4j");
     }
 
 }

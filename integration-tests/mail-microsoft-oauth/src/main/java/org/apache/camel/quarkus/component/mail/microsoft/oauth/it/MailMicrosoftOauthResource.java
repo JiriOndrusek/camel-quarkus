@@ -58,7 +58,7 @@ public class MailMicrosoftOauthResource {
     @Path("/getReceived")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Map<String,String>> getReceived() {
+    public List<Map<String, String>> getReceived() {
 
         MockEndpoint mockResult = context.getEndpoint("mock:receivedMessages", MockEndpoint.class);
         return mockResult.getExchanges().stream().map(

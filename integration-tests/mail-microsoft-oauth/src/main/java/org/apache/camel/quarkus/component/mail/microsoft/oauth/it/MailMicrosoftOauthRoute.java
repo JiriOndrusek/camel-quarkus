@@ -16,7 +16,6 @@
  */
 package org.apache.camel.quarkus.component.mail.microsoft.oauth.it;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -26,11 +25,8 @@ import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
-import jakarta.mail.MessagingException;
 import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.mail.MailMessage;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped

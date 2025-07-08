@@ -27,7 +27,11 @@ import jakarta.enterprise.inject.spi.CDI;
 public class QuarkusVertxProvider implements VertxProvider {
     @Override
     public Vertx createVertx() {
-        BeanManager beanManager = CDI.current().getBeanManager();
+        System.out.println("--- createVertx");
+        CDI<Object> cdi = CDI.current();
+        System.out.println("--- cdi: " + cdi);
+        BeanManager beanManager = cdi.getBeanManager();
+        System.out.println("--- beanManager: " + beanManager);
         Set<Bean<?>> beans = beanManager.getBeans(Vertx.class);
         if (beans.isEmpty()) {
             throw new IllegalStateException("Failed to discover Vert.x bean from the CDI bean manager");

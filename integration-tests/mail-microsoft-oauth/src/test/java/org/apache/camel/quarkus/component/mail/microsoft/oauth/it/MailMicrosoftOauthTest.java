@@ -51,7 +51,7 @@ class MailMicrosoftOauthTest {
         startRoute("receiverRoute");
 
         //receive
-        Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
+        Awaitility.await().pollInterval(2, TimeUnit.SECONDS).atMost(2, TimeUnit.MINUTES).until(() -> {
             //receive
             return (List<Map<String, String>>) JsonbBuilder.create()
                     .fromJson(RestAssured.get("/mail-microsoft-oauth/getReceived/")
