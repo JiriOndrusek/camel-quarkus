@@ -74,22 +74,22 @@
             <artifactId>microsoft-graph-auth</artifactId>
             <scope>test</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.apache.camel.quarkus</groupId>-->
-<!--            <artifactId>camel-quarkus-support-azure-core-http-client-vertx</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>com.azure</groupId>-->
-<!--            <artifactId>azure-identity</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <artifactId>azure-core-http-netty</artifactId>-->
-<!--                    <groupId>com.azure</groupId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-identity</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>azure-core-http-netty</artifactId>
+                    <groupId>com.azure</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-core-http-vertx</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <profiles>
