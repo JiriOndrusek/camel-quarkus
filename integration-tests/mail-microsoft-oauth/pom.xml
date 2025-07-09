@@ -23,21 +23,25 @@
         <groupId>org.apache.camel.quarkus</groupId>
         <artifactId>camel-quarkus-build-parent-it</artifactId>
         <version>3.25.0-SNAPSHOT</version>
-        <relativePath>../../../poms/build-parent-it/pom.xml</relativePath>
+        <relativePath>../../poms/build-parent-it/pom.xml</relativePath>
     </parent>
 
-    <artifactId>camel-quarkus-integration-test-azure-storage-queue</artifactId>
-    <name>Camel Quarkus :: Integration Tests :: Azure Storage Queue Service</name>
-    <description>Integration tests for Camel Quarkus Azure Storage Queue Service extension</description>
+    <artifactId>camel-quarkus-integration-test-mail-microsoft-oauth</artifactId>
+    <name>Camel Quarkus :: Integration Tests :: Mail Microsoft Oauth</name>
+    <description>Integration tests for Camel Quarkus Mail Microsoft Oauth extension</description>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
-            <artifactId>camel-quarkus-azure-storage-queue</artifactId>
+            <artifactId>camel-quarkus-mail-microsoft-oauth</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-resteasy-jackson</artifactId>
+            <artifactId>quarkus-resteasy</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-jsonb</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
@@ -61,13 +65,29 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.camel.quarkus</groupId>
-            <artifactId>camel-quarkus-integration-tests-support-azure</artifactId>
+            <groupId>com.microsoft.graph</groupId>
+            <artifactId>microsoft-graph</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.camel.quarkus</groupId>
-            <artifactId>camel-quarkus-mail-microsoft-oauth</artifactId>
+            <groupId>com.microsoft.graph</groupId>
+            <artifactId>microsoft-graph-auth</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-identity</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>azure-core-http-netty</artifactId>
+                    <groupId>com.azure</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-core-http-vertx</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -111,7 +131,7 @@
                 <!-- The following dependencies guarantee that this module is built after them. You can update them by running `mvn process-resources -Pformat -N` from the source tree root directory -->
                 <dependency>
                     <groupId>org.apache.camel.quarkus</groupId>
-                    <artifactId>camel-quarkus-azure-storage-queue-deployment</artifactId>
+                    <artifactId>camel-quarkus-mail-microsoft-oauth-deployment</artifactId>
                     <version>${project.version}</version>
                     <type>pom</type>
                     <scope>test</scope>
@@ -137,17 +157,5 @@
                 </dependency>
             </dependencies>
         </profile>
-        <profile>
-            <id>skip-testcontainers-tests</id>
-            <activation>
-                <property>
-                    <name>skip-testcontainers-tests</name>
-                </property>
-            </activation>
-            <properties>
-                <skipTests>true</skipTests>
-            </properties>
-        </profile>
     </profiles>
-
 </project>
