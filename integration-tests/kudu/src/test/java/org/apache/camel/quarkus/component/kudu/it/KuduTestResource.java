@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Ports;
@@ -43,7 +44,6 @@ import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.utility.MountableFile;
-import org.testcontainers.utility.TestcontainersConfiguration;
 
 import static org.apache.camel.quarkus.component.kudu.it.KuduInfrastructureTestHelper.DOCKER_HOST;
 import static org.apache.camel.quarkus.component.kudu.it.KuduInfrastructureTestHelper.KUDU_TABLET_NETWORK_ALIAS;
@@ -177,6 +177,31 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
         final String tServerHttpAuthority = tabletContainer.getHost() + ":"
                 + tabletContainer.getMappedPort(KUDU_TABLET_HTTP_PORT);
         LOG.info("Kudu tablet server HTTP accessible at " + tServerHttpAuthority);
+
+        try {
+            String missingPrincipal = "kudu/" + masterContainer.getContainerName().substring(1)
+                    + "." + ((Network.NetworkImpl) kuduNetwork).getName() + "@EXAMPLE.COM";
+            kdcServer.createPrincipal(missingPrincipal, "changeit");
+
+            kdcServer.exportPrincipals("principals2.keytab");
+
+            masterContainer.copyFileToContainer(MountableFile.forClasspathResource("/kerby/principals2.keytab", 800),
+                    "/home/kudu/principals2.keytab");
+            masterContainer.execInContainer("chown", "kudu:kudu", "/home/kudu/principals2.keytab");
+            //
+            //            masterContainer.copyFileToContainer(MountableFile.forHostPath("/kerby/principals2.keytab"),
+            //                    "/home/kudu/principals2.keytab");
+            //
+            //            masterContainer.execInContainer("klist", "-k", "/home/kudu/principals2.keytab");
+
+            System.out.println("");
+        } catch (KrbException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         return CollectionHelper.mapOf(
                 KUDU_AUTHORITY_CONFIG_KEY, masterRpcAuthority,
