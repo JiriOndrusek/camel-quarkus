@@ -26,6 +26,7 @@ import javax.security.auth.kerberos.KerberosTicket;
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.Configuration;
 import javax.security.auth.login.LoginContext;
+import javax.security.auth.login.LoginException;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -56,12 +57,15 @@ class KuduTest {
 
     @BeforeAll
     static void setup() {
+        System.out.println("**********************************************************");
+        System.out.println("******************* BEFORE ALL    ***********************");
+        System.out.println("**********************************************************");
         String authority = ConfigProvider.getConfig().getValue(KuduRoute.KUDU_AUTHORITY_CONFIG_KEY, String.class);
         client = new KuduClient.KuduClientBuilder(authority).requireAuthentication(true).build();
         // Obtain Kerberos credentials programmatically
         TgtTicket ticket = null;
         try {
-            ticket = new KerbyClient(KuduTest.class.getResource("/kerby").getFile()).authenticate("localhost", "changeit");
+            ticket = new KerbyClient(KuduTest.class.getResource("/kerby").getFile()).authenticate("user", "changeit");
 
             Configuration.setConfiguration(new Configuration() {
                 @Override
@@ -74,7 +78,7 @@ class KuduTest {
                 }
             });
             LoginContext lc = new LoginContext("kerberos",
-                    new NamePasswordCbHandler("kudu/user@EXAMPLE.COM", "changeit".toCharArray()));
+                    new NamePasswordCbHandler("user@EXAMPLE.COM", "changeit".toCharArray()));
             lc.login();
             Subject subj = lc.getSubject();
             Set<Object> privateCredentials = subj.getPrivateCredentials();
@@ -85,6 +89,26 @@ class KuduTest {
 
             client = Subject.doAs(subj, (PrivilegedAction<KuduClient>) () -> new KuduClient.KuduClientBuilder(authority)
                     .requireAuthentication(true).build());
+
+            Integer size = Subject.doAs(subj, (PrivilegedAction<Integer>) () -> {
+                try {
+                    return new KuduClient.KuduClientBuilder(authority)
+                            .requireAuthentication(true).build().getTablesList().getTablesList().size();
+                } catch (KuduException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            Subject.doAs(subj, (PrivilegedAction<Integer>) () -> {
+                try {
+                    return new KuduClient.KuduClientBuilder(authority)
+                            .requireAuthentication(true).build().getTablesList().getTablesList().size();
+                } catch (KuduException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            System.out.println("******************* BEFORE ALL END ***********************");
         } catch (Exception e) {
 
             throw new RuntimeException(e);
@@ -103,8 +127,14 @@ class KuduTest {
     }
 
     @BeforeEach
-    void beforeEach() throws KuduException {
+    void beforeEach() throws Exception {
+        System.out.println("");
+        System.out.println("");
+        System.out.println("**********************************************************");
+        System.out.println("******************* BEFORE EACH    ***********************");
+        System.out.println("**********************************************************");
         createTable();
+        System.out.println("******************* BEFORE EACH END    ***********************");
     }
 
     @AfterEach
@@ -118,7 +148,12 @@ class KuduTest {
         }
     }
 
-    void createTable() throws KuduException {
+    void createTable() throws KuduException, LoginException {
+
+        LoginContext login = new LoginContext("ExampleLoginContextName");
+        login.login();
+        int size = client.getTablesList().getTablesList().size();
+
         assertEquals(0, client.getTablesList().getTablesList().size());
         RestAssured.put("/kudu/createTable")
                 .then()

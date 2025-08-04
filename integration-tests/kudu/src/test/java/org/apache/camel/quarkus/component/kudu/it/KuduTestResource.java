@@ -17,6 +17,7 @@
 
 package org.apache.camel.quarkus.component.kudu.it;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -37,13 +38,14 @@ import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.BindMode;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.utility.MountableFile;
-import org.testcontainers.utility.TestcontainersConfiguration;
 
 import static org.apache.camel.quarkus.component.kudu.it.KuduInfrastructureTestHelper.DOCKER_HOST;
 import static org.apache.camel.quarkus.component.kudu.it.KuduInfrastructureTestHelper.KUDU_TABLET_NETWORK_ALIAS;
@@ -78,8 +80,9 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
             kdcServer.startServer(kerbyDir);
 
             kdcServer.createPrincipal("kudu/user@EXAMPLE.COM", "changeit");
-            kdcServer.createPrincipal("localhost@EXAMPLE.COM", "changeit");
-            kdcServer.createPrincipal("kudu/localhost@EXAMPLE.COM", "changeit");
+            kdcServer.createPrincipal("user@EXAMPLE.COM", "changeit");
+            //            kdcServer.createPrincipal("localhost@EXAMPLE.COM", "changeit");
+            //            kdcServer.createPrincipal("kudu/localhost@EXAMPLE.COM", "changeit");
             kdcServer.createPrincipal("kudu@EXAMPLE.COM", "changeit");
             kdcServer.createPrincipal("kudu/" + KUDU_MASTER_NETWORK_ALIAS + "@EXAMPLE.COM",
                     "changeit"); //equivalent to hostname of container
@@ -93,17 +96,25 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
 
             String content = new String(Files.readAllBytes(path), charset);
             content = content.replaceAll("localhost", IpAddressHelper.getHost4Address());
-            //            content = content.replaceAll("default_realm = EXAMPLE.COM",
+            //            content = cntent.replaceAll("default_realm = EXAMPLE.COM",
             //                    "default_realm = EXAMPLE.COM\n   allow_weak_crypto = true");
             Files.write(path, content.getBytes(charset));
 
+            Path principalsPath = Path.of(getClass().getResource("/kerby/principals.keytab").getFile());
+            Files.createDirectory(
+                    new File(principalsPath.getParent().getParent().toAbsolutePath() + "/kerby-tservers").toPath());
+            Path tserversPath = new File(
+                    principalsPath.getParent().getParent().toAbsolutePath() + "/kerby-tservers/principals.keytab").toPath();
+            Files.write(tserversPath, Files.readAllBytes(principalsPath));
         } catch (IOException | KrbException e) {
             throw new RuntimeException(e);
         }
 
-        masterContainer = new GenericContainer<>(new ImageFromDockerfile()
-                .withDockerfile(Path.of(this.getClass().getResource("/kerby/Dockerfile").getFile())))
+        masterContainer = new GenericContainer<>(KUDU_IMAGE)
                 .withCommand("master")
+                .withFileSystemBind(
+                        getClass().getResource("/kerby").getPath(),
+                        "/home/kudu", BindMode.READ_WRITE)
                 .withExposedPorts(KUDU_MASTER_RPC_PORT, KUDU_MASTER_HTTP_PORT)
                 .withEnv("MASTER_ARGS", "--unlock_unsafe_flags=true " +
                         "--rpc_authentication=required " +
@@ -133,7 +144,28 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
             cmd.withHostName(KUDU_TABLET_NETWORK_ALIAS).withHostConfig(hostConfig);
         };
 
+        try {
+            String missingPrincipal = "kudu/" + masterContainer.getContainerName().substring(1)
+                    + "." + ((Network.NetworkImpl) kuduNetwork).getName() + "@EXAMPLE.COM";
+            String missingPrincipal2 = "krbtqt/" + ((Network.NetworkImpl) kuduNetwork).getName() + "@EXAMPLE.COM";
+            kdcServer.createPrincipal(missingPrincipal, "changeit");
+            kdcServer.createPrincipal(missingPrincipal2, "changeit");
+
+            kdcServer.exportPrincipals("principals.keytab");
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+
+        //new GenericContainer<>(new ImageFromDockerfile()
+        //                .withDockerfile(Path.of(this.getClass().getResource("/kerby/Dockerfile").getFile())))
+        //                .withCommand("tserver")
+
         // Setup the Kudu tablet server container
+        //        tabletContainer = new GenericContainer<>(KUDU_IMAGE)
+        //                .withCommand("tserver")
+        //                .withFileSystemBind(
+        //                        getClass().getResource("/kerby-tservers").getPath(),
+        //                        "/home/kudu", BindMode.READ_WRITE)
         tabletContainer = new GenericContainer<>(new ImageFromDockerfile()
                 .withDockerfile(Path.of(this.getClass().getResource("/kerby/Dockerfile").getFile())))
                 .withCommand("tserver")
@@ -177,6 +209,24 @@ public class KuduTestResource implements QuarkusTestResourceLifecycleManager {
         final String tServerHttpAuthority = tabletContainer.getHost() + ":"
                 + tabletContainer.getMappedPort(KUDU_TABLET_HTTP_PORT);
         LOG.info("Kudu tablet server HTTP accessible at " + tServerHttpAuthority);
+
+        try {
+            String missingPrincipal3 = "kudu/" + tabletContainer.getContainerName().substring(1)
+                    + "." + ((Network.NetworkImpl) kuduNetwork).getName() + "@EXAMPLE.COM";
+            kdcServer.createPrincipal(missingPrincipal3, "changeit");
+
+            kdcServer.exportPrincipals("principals.keytab");
+
+            Container.ExecResult er = masterContainer.execInContainer("klist", "-k", "/home/kudu/principals.keytab");
+
+            System.out.println("********************************************");
+            System.out.println(er.getStdout());
+            System.out.println(er.getStderr());
+
+            System.out.println("");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         return CollectionHelper.mapOf(
                 KUDU_AUTHORITY_CONFIG_KEY, masterRpcAuthority,
