@@ -16,11 +16,8 @@
  */
 package org.apache.camel.quarkus.component.debezium.postgres.deployment;
 
-import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
-import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
-import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 
 class DebeziumPostgresProcessor {
 
@@ -31,17 +28,27 @@ class DebeziumPostgresProcessor {
         return new FeatureBuildItem(FEATURE);
     }
 
-    @BuildStep
-    ReflectiveClassBuildItem reflectiveClasses() {
-        return ReflectiveClassBuildItem.builder(new String[] { "io.debezium.connector.postgresql.PostgresConnector",
-                "io.debezium.connector.postgresql.PostgresConnectorTask",
-                "io.debezium.connector.postgresql.PostgresSourceInfoStructMaker",
-                "io.debezium.pipeline.txmetadata.DefaultTransactionMetadataFactory",
-                "io.debezium.schema.SchemaTopicNamingStrategy" }).build();
-    }
+    //    @BuildStep
+    //    ReflectiveClassBuildItem reflectiveClasses() {
+    //        return ReflectiveClassBuildItem.builder(new String[] { "io.debezium.connector.postgresql.PostgresConnector",
+    //                "io.debezium.connector.postgresql.PostgresConnectorTask",
+    //                "io.debezium.connector.postgresql.PostgresSourceInfoStructMaker",
+    //                "io.debezium.pipeline.txmetadata.DefaultTransactionMetadataFactory",
+    //                "io.debezium.schema.SchemaTopicNamingStrategy" }).build();
+    //    }
+    //
+    //    @BuildStep
+    //    void addDependencies(BuildProducer<IndexDependencyBuildItem> indexDependency) {
+    //        indexDependency.produce(new IndexDependencyBuildItem("io.debezium", "debezium-connector-postgres"));
+    //
+    //    @BuildStep
+    //    ExcludedTypeBuildItem disableEngineAutoproducing() {
+    //        return new ExcludedTypeBuildItem("io.quarkus.debezium.engine.PostgresEngineProducer");
+    //    }
 
-    @BuildStep
-    void addDependencies(BuildProducer<IndexDependencyBuildItem> indexDependency) {
-        indexDependency.produce(new IndexDependencyBuildItem("io.debezium", "debezium-connector-postgres"));
-    }
+    //    @BuildStep
+    //    RemovedResourceBuildItem removeEngineRecorder() {
+    //        return new RemovedResourceBuildItem(ArtifactKey.ga("io.debezium.quarkus", "quarkus-debezium-engine"),
+    //                Collections.singleton("io.quarkus.debezium.engine.DebeziumRecorder"));
+    //    }
 }

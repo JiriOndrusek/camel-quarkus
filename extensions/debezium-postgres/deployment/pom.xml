@@ -36,11 +36,11 @@
         </dependency>
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
-            <artifactId>camel-quarkus-support-debezium-deployment</artifactId>
+            <artifactId>camel-quarkus-debezium-postgres</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.camel.quarkus</groupId>
-            <artifactId>camel-quarkus-debezium-postgres</artifactId>
+            <groupId>io.debezium.quarkus</groupId>
+            <artifactId>quarkus-debezium-postgres-deployment</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
