@@ -16,8 +16,12 @@
  */
 package org.apache.camel.quarkus.component.zipfile.deployment;
 
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
+import org.apache.commons.compress.compressors.zstandard.ZstdCompressorInputStream;
 
 class ZipfileProcessor {
 
@@ -26,6 +30,18 @@ class ZipfileProcessor {
     @BuildStep
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
+    }
+
+    @BuildStep
+    RuntimeInitializedClassBuildItem runtimeInitializedClasses() {
+        return new RuntimeInitializedClassBuildItem(ZstdCompressorInputStream.class.getCanonicalName());
+    }
+
+    @BuildStep
+    void reflectiveClasses(BuildProducer<ReflectiveClassBuildItem> reflectiveClasses) {
+        reflectiveClasses.produce(ReflectiveClassBuildItem.builder(
+                "com.github.luben.zstd.ZstdInputStream")
+                .build());
     }
 
 }
