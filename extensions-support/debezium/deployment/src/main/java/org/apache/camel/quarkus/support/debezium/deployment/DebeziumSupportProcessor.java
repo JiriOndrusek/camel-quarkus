@@ -42,6 +42,7 @@ import io.debezium.snapshot.mode.SchemaOnlyRecoverySnapshotter;
 import io.debezium.snapshot.mode.SchemaOnlySnapshotter;
 import io.debezium.snapshot.mode.WhenNeededSnapshotter;
 import io.debezium.snapshot.spi.SnapshotLock;
+import io.debezium.storage.file.history.FileSchemaHistory;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
@@ -75,13 +76,11 @@ public class DebeziumSupportProcessor {
         String[] dtos = index.getKnownClasses().stream().map(ci -> ci.name().toString())
                 .filter(n -> n.startsWith("org.apache.kafka.connect.json")
                         || n.startsWith("io.debezium.engine.spi"))
-                .sorted()
                 .toArray(String[]::new);
         reflectiveClasses.produce(ReflectiveClassBuildItem.builder(dtos).fields().build());
 
         dtos = index.getAllKnownImplementations(DotName.createSimple(SnapshotLock.class.getName())).stream()
                 .map(ci -> ci.name().toString())
-                .sorted()
                 .toArray(String[]::new);
         reflectiveClasses.produce(ReflectiveClassBuildItem.builder(dtos).fields().build());
 
@@ -126,7 +125,11 @@ public class DebeziumSupportProcessor {
                 JmxSignalChannel.class,
                 InProcessSignalChannel.class,
                 StandardActionProvider.class,
-                SourceTask.class)
+                SourceTask.class,
+                ConvertingAsyncEngineBuilderFactory.class,
+                DefaultTransactionMetadataFactory.class,
+                SchemaTopicNamingStrategy.class,
+                FileSchemaHistory.class)
                 .build());
     }
 

@@ -21,6 +21,7 @@ import io.debezium.connector.oracle.OracleConnectorTask;
 import io.debezium.connector.oracle.OracleSourceInfoStructMaker;
 import io.debezium.connector.oracle.logminer.buffered.BufferedLogMinerAdapter;
 import io.debezium.connector.oracle.snapshot.query.SelectAllSnapshotQuery;
+import io.debezium.storage.kafka.history.KafkaSchemaHistory;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
@@ -44,7 +45,8 @@ class DebeziumOracleProcessor {
                 OracleConnectorTask.class,
                 OracleSourceInfoStructMaker.class,
                 SelectAllSnapshotQuery.class,
-                BufferedLogMinerAdapter.class).build());
+                BufferedLogMinerAdapter.class,
+                KafkaSchemaHistory.class).build());
     }
 
     @BuildStep
