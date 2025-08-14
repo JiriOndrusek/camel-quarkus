@@ -47,7 +47,7 @@ class DebeziumSqlserverProcessor {
                 "io.debezium.connector.sqlserver.snapshot.lock.NoSnapshotLock",
                 "io.debezium.connector.sqlserver.snapshot.lock.ExclusiveSnapshotLock",
                 "io.debezium.connector.sqlserver.snapshot.query.SelectAllSnapshotQuery")
-                .build());
+                .methods().fields().build());
     }
 
     @BuildStep

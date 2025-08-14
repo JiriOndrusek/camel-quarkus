@@ -36,3 +36,12 @@ final class MetricsConfigSubstitutions {
     }
 
 }
+
+@TargetClass(className = "com.mysql.cj.protocol.a.authentication.AuthenticationOciClient")
+final class AuthenticationOciClientSubst {
+
+    @Substitute
+    private void loadOciConfig() {
+        //do nothing
+    }
+}
