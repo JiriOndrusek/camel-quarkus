@@ -6993,7 +6993,7 @@
       <dependency>
         <groupId>com.microsoft.azure</groupId>
         <artifactId>msal4j</artifactId>
-        <version>1.21.0</version>
+        <version>1.22.0</version>
         <exclusions>
           <exclusion>
             <groupId>com.github.stephenc.jcip</groupId>
@@ -7119,12 +7119,12 @@
       <dependency>
         <groupId>io.projectreactor</groupId>
         <artifactId>reactor-core</artifactId>
-        <version>3.4.41</version>
+        <version>3.7.8</version>
       </dependency>
       <dependency>
         <groupId>io.projectreactor.netty</groupId>
         <artifactId>reactor-netty</artifactId>
-        <version>1.2.9</version>
+        <version>1.2.10</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.fory</groupId>
@@ -7546,7 +7546,7 @@
       <dependency>
         <groupId>org.jgroups</groupId>
         <artifactId>jgroups</artifactId>
-        <version>5.4.8.Final</version>
+        <version>5.4.11.Final</version>
       </dependency>
       <dependency>
         <groupId>org.jolokia</groupId>
@@ -7616,7 +7616,7 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-aop</artifactId>
-        <version>6.2.10</version>
+        <version>6.2.11</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -7631,7 +7631,7 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-expression</artifactId>
-        <version>6.2.10</version>
+        <version>6.2.11</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -7642,7 +7642,7 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-jdbc</artifactId>
-        <version>6.2.10</version>
+        <version>6.2.11</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -7657,7 +7657,7 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-jms</artifactId>
-        <version>6.2.10</version>
+        <version>6.2.11</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -7672,7 +7672,7 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-messaging</artifactId>
-        <version>6.2.10</version>
+        <version>6.2.11</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -7687,7 +7687,7 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-tx</artifactId>
-        <version>6.2.10</version>
+        <version>6.2.11</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -7702,7 +7702,7 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-web</artifactId>
-        <version>6.2.10</version>
+        <version>6.2.11</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -7721,7 +7721,7 @@
       <dependency>
         <groupId>org.springframework.data</groupId>
         <artifactId>spring-data-redis</artifactId>
-        <version>3.5.3</version>
+        <version>3.5.4</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework</groupId>
@@ -8657,87 +8657,97 @@
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-alpn-client</artifactId>
-        <version>12.1.0</version>
+        <version>12.1.1</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-client</artifactId>
-        <version>12.1.0</version>
+        <version>12.1.1</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-http</artifactId>
-        <version>12.1.0</version>
+        <version>12.1.1</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-io</artifactId>
-        <version>12.1.0</version>
+        <version>12.1.1</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-security</artifactId>
-        <version>12.1.0</version>
+        <version>12.1.1</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-server</artifactId>
-        <version>12.1.0</version>
+        <version>12.1.1</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-session</artifactId>
-        <version>12.1.0</version>
+        <version>12.1.1</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-util</artifactId>
-        <version>12.1.0</version>
+        <version>12.1.1</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-util-ajax</artifactId>
-        <version>12.1.0</version>
+        <version>12.1.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.compression</groupId>
+        <artifactId>jetty-compression-common</artifactId>
+        <version>12.1.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.compression</groupId>
+        <artifactId>jetty-compression-gzip</artifactId>
+        <version>12.1.1</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty.websocket</groupId>
         <artifactId>jetty-websocket-core-common</artifactId>
-        <version>12.1.0</version>
+        <version>12.1.1</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty.websocket</groupId>
         <artifactId>jetty-websocket-core-server</artifactId>
-        <version>12.1.0</version>
+        <version>12.1.1</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty.websocket</groupId>
         <artifactId>jetty-websocket-jetty-api</artifactId>
-        <version>12.1.0</version>
+        <version>12.1.1</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty.websocket</groupId>
         <artifactId>jetty-websocket-jetty-common</artifactId>
-        <version>12.1.0</version>
+        <version>12.1.1</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty.websocket</groupId>
         <artifactId>jetty-websocket-jetty-server</artifactId>
-        <version>12.1.0</version>
+        <version>12.1.1</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-core</artifactId>
-        <version>1.55.5</version>
+        <version>1.56.0</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-core-amqp</artifactId>
-        <version>2.10.0</version>
+        <version>2.11.0</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-core-http-vertx</artifactId>
-        <version>1.0.5</version>
+        <version>1.1.0</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
@@ -8747,7 +8757,7 @@
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-identity</artifactId>
-        <version>1.16.2</version>
+        <version>1.17.0</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
@@ -8757,52 +8767,52 @@
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-messaging-eventhubs</artifactId>
-        <version>5.20.4</version>
+        <version>5.21.0</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-messaging-eventhubs-checkpointstore-blob</artifactId>
-        <version>1.20.8</version>
+        <version>1.21.0</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-messaging-servicebus</artifactId>
-        <version>7.17.12</version>
+        <version>7.17.14</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-security-keyvault-secrets</artifactId>
-        <version>4.10.1</version>
+        <version>4.10.2</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-storage-blob</artifactId>
-        <version>12.31.1</version>
+        <version>12.31.2</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-storage-common</artifactId>
-        <version>12.30.1</version>
+        <version>12.30.2</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-storage-file-datalake</artifactId>
-        <version>12.24.1</version>
+        <version>12.24.2</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-storage-file-share</artifactId>
-        <version>12.27.1</version>
+        <version>12.27.2</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-storage-internal-avro</artifactId>
-        <version>12.16.1</version>
+        <version>12.16.2</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
         <artifactId>azure-storage-queue</artifactId>
-        <version>12.26.1</version>
+        <version>12.26.2</version>
       </dependency>
       <dependency>
         <groupId>com.azure</groupId>
