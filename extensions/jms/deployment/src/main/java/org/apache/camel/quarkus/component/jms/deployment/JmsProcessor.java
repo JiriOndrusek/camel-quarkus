@@ -21,11 +21,9 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
-import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import org.apache.camel.quarkus.component.jms.CamelJmsRecorder;
 import org.apache.camel.quarkus.core.deployment.spi.CamelContextCustomizerBuildItem;
 import org.apache.camel.quarkus.core.deployment.spi.CamelSerializationBuildItem;
-import org.apache.camel.support.ClassicUuidGenerator;
 
 class JmsProcessor {
 
@@ -50,13 +48,5 @@ class JmsProcessor {
         } catch (ClassNotFoundException e) {
             // Only create the JMS component customizer if the ActiveMQ Artemis RA is available
         }
-    }
-
-    @BuildStep
-    void runtimeInitializedClasses(BuildProducer<RuntimeInitializedClassBuildItem> runtimeInitializedClass) {
-        runtimeInitializedClass.produce(new RuntimeInitializedClassBuildItem(ClassicUuidGenerator.class.getName()));
-        //todo quick fix, jgroups should not be mentioned here, but the quarkus-artemis is on org.jgroups:jgroups:jar:5.3.13.Final
-        // and Camel (and CQ) uses 5.4.11.Final; when a newer quarkus-artemis is released with the newer jgroups, this workaround can be removed
-        runtimeInitializedClass.produce(new RuntimeInitializedClassBuildItem("org.jgroups.util.Util"));
     }
 }
