@@ -27,7 +27,6 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
 import org.jboss.logging.Logger;
@@ -48,7 +47,7 @@ public class OauthResource {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String get() throws Exception {
-        final String message = consumerTemplate.receiveBodyNoWait("oauth:--fix-me--", String.class);
+        final String message = consumerTemplate.receiveBodyNoWait("direct:plain", String.class);
         LOG.infof("Received from oauth: %s", message);
         return message;
     }

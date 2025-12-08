@@ -16,31 +16,47 @@
  */
 package org.apache.camel.quarkus.component.oauth.it;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
-
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+
 @QuarkusTest
+@QuarkusTestResource(OauthKeycloakTestResource.class)
 class OauthTest {
 
     @Test
-    void test() {
-        final String msg = java.util.UUID.randomUUID().toString().replace("-", "");
+    void testPlain() {
         RestAssured.given()
-                .contentType(ContentType.TEXT)
-                .body(msg)
-                .post("/oauth/post")
+                .param("name", "Kermit")
+                .get("/plain")
                 .then()
-                .statusCode(201);
-
-        Assertions.fail("Add some assertions to " + getClass().getName());
-
-        RestAssured.get("/oauth/get")
-                .then()
-                .statusCode(200);
+                .statusCode(200)
+                .body(equalTo("Hello Kermit - No auth"));
     }
+
+    @Test
+    void testCredentials() {
+
+        String bearerToken = RestAssured.given()
+                .get("/credentials")
+                .then()
+                .statusCode(200)
+                .body(notNullValue())
+                .extract().asString();
+
+         RestAssured.given()
+                .param("name", "SecuredKermit")
+                .param("Authorization", bearerToken)
+                .get("/bearer")
+                .then()
+                .statusCode(200)
+                .body(equalTo("Hello SecuredKermit - bearerToken"));
+    }
+
+//    todo test protected. certificate and fips (fips should be probably different issue)
 
 }
