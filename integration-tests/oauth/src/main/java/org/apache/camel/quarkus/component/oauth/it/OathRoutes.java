@@ -6,7 +6,6 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.oauth.OAuthBearerTokenProcessor;
 import org.apache.camel.oauth.OAuthClientCredentialsProcessor;
-import org.apache.camel.oauth.OAuthCodeFlowCallback;
 
 @ApplicationScoped
 public class OathRoutes extends RouteBuilder {
@@ -31,24 +30,14 @@ public class OathRoutes extends RouteBuilder {
                     exc.getIn().setBody(authToken);
                 });
 
-        from("platform-http:/protected")
-                .routeId("protected")
-                // Obtain an Authorization Token
-                .process(new OAuthCodeFlowCallback())
-                // Extract the Authorization Token
-                .process(exc -> {
-                    var msg = exc.getMessage();
-                    var authToken = msg.getHeader("Authorization", String.class);
-                    //                    context.getGlobalOptions().put("Authorization", authToken);
-                })
-                .setBody(simple("${body} - OAuthClientCredentials"));
-
         from("platform-http:/bearer")
                 .routeId("bearer")
                 .process(e -> {
                     camelContext.getGlobalOptions().put("Authorization", e.getIn().getHeader("Authorization", String.class));
                 })
                 .process(new OAuthBearerTokenProcessor())
+                .process(e -> camelContext.getGlobalOptions().remove("Authorization"))
                 .setBody(simple("Hello ${header.name} - bearerToken"));
+
     }
 }

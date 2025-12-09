@@ -33,13 +33,12 @@ class OauthTest {
         RestAssured.given()
                 .param("name", "Kermit")
                 .get("/plain")
-                .then()
-                .statusCode(200)
+                .then().statusCode(200)
                 .body(equalTo("Hello Kermit - No auth"));
     }
 
     @Test
-    void testCredentials() {
+    void testCredentialsAndBearer() {
 
         String bearerToken = RestAssured.given()
                 .get("/credentials")
@@ -48,7 +47,7 @@ class OauthTest {
                 .body(notNullValue())
                 .extract().asString();
 
-         RestAssured.given()
+        RestAssured.given()
                 .param("name", "SecuredKermit")
                 .param("Authorization", bearerToken)
                 .get("/bearer")
@@ -57,6 +56,6 @@ class OauthTest {
                 .body(equalTo("Hello SecuredKermit - bearerToken"));
     }
 
-//    todo test protected. certificate and fips (fips should be probably different issue)
+    //    todo test certificate and fips (fips should be probably different issue)
 
 }

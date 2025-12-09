@@ -107,6 +107,7 @@ public class OauthKeycloakTestResource implements QuarkusTestResourceLifecycleMa
         properties.put(CAMEL_OAUTH_BASE_URI, realmUrl);
         properties.put(CAMEL_OAUTH_CLIENT_ID, clientId);
         properties.put(CAMEL_OAUTH_CLIENT_SECRET, clientSecret);
+        properties.put(CAMEL_OAUTH_LOGOUT_REDIRECT_URI, "logout");
 
         //        properties.put("kafka.bootstrap.servers", this.kafka.getBootstrapServers());
         //        properties.put("camel.component.kafka.brokers", kafka.getBootstrapServers());
