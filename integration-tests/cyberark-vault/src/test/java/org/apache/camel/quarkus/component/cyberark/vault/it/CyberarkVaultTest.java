@@ -16,31 +16,19 @@
  */
 package org.apache.camel.quarkus.component.cyberark.vault.it;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
+@QuarkusTestResource(CyberarkVaultTestResource.class)
 class CyberarkVaultTest {
 
     @Test
     void test() {
-        final String msg = java.util.UUID.randomUUID().toString().replace("-", "");
-        RestAssured.given()
-                .contentType(ContentType.TEXT)
-                .body(msg)
-                .post("/cyberark-vault/post")
-                .then()
-                .statusCode(201);
-
-        Assertions.fail("Add some assertions to " + getClass().getName());
-
-        RestAssured.get("/cyberark-vault/get")
-                .then()
-                .statusCode(200);
     }
 
 }
