@@ -29,14 +29,25 @@ import org.apache.camel.quarkus.test.mock.backend.MockBackendUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.ComposeContainer;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
 
 public class CyberarkVaultTestResource implements QuarkusTestResourceLifecycleManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(CyberarkVaultTestResource.class);
     private static final int SERVICEBUS_INNER_PORT = 5672;
     private Map<String, String> initArgs = new LinkedHashMap<>();
-    private ComposeContainer container;
+
+
+    private PostgreSQLContainer database;
+    private GenericContainer conjur;
+    private GenericContainer client;
+    private GenericContainer nginx;
+    private GenericContainer jenkins;
+    private GenericContainer secretless;
+    private GenericContainer petStore;
 
     @Override
     public void init(Map<String, String> initArgs) {
@@ -45,46 +56,88 @@ public class CyberarkVaultTestResource implements QuarkusTestResourceLifecycleMa
 
     @Override
     public Map<String, String> start() {
-        //        final SmallRyeConfig config = ConfigUtils.configBuilder(true, LaunchMode.NORMAL).build();
-        //todo use cyberark names
+        Network conjurNetwork = Network.newNetwork();
+
+
+
+//
+//        //        final SmallRyeConfig config = ConfigUtils.configBuilder(true, LaunchMode.NORMAL).build();
+//        //todo use cyberark names
         final boolean realCredentialsProvided = System.getenv("AZURE_SERVICEBUS_CONNECTION_STRING") != null
                 && System.getenv("AZURE_SERVICEBUS_QUEUE_NAME") != null;
         final boolean startMockBackend = MockBackendUtils.startMockBackend(false);
         final Map<String, String> result = new LinkedHashMap<>();
         if (startMockBackend && !realCredentialsProvided) {
             MockBackendUtils.logMockBackendUsed();
-            try {
-                //copy docker-compose to tmp location
-                File dockerComposeFile, configFile;
-                try (InputStream inYaml = getClass().getClassLoader().getResourceAsStream("docker-compose.yaml");) {
-                    dockerComposeFile = File.createTempFile("cyberark-docker-compose-", ".yaml");
-                    Files.copy(inYaml, dockerComposeFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                }
 
-                container = new ComposeContainer(dockerComposeFile)
-                        //                        .withEnv("ACCEPT_EULA", "Y")
-                        //                        .withEnv("SERVICEBUS_EMULATOR_IMAGE",
-                        //                                config.getValue("servicebus-emulator.container.image", String.class))
-                        //                        .withEnv("SQL_EDGE_IMAGE", config.getValue("azure-sql-edge.container.image", String.class))
-                        //                        .withEnv("CONFIG_FILE", configFile.getAbsolutePath())
-                        //                        .withEnv("MSSQL_SA_PASSWORD", "12345678923456y!43")
-                        //                        .withExposedService("emulator", SERVICEBUS_INNER_PORT)
-                        .withLocalCompose(true)
-                        .withLogConsumer("conjur_server", new Slf4jLogConsumer(LOGGER))
-                        .waitingFor("conjur_server", Wait.forLogMessage(".*Emulator Service is Successfully Up!.*", 1));
 
-                container.start();
+            PostgreSQLContainer<?> database = new PostgreSQLContainer<>(DockerImageName.parse("postgres:10"))
+                    .withNetwork(conjurNetwork)
+                    .withNetworkAliases("database")
+                    .withDatabaseName("postgres")
+                    .withUsername("postgres")
+                    .withPassword("conjur");
 
-                //                String connectionString = "Endpoint=sb://%s:%d;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;"
-                //                        .formatted(container.getServiceHost("emulator", SERVICEBUS_INNER_PORT),
-                //                                container.getServicePort("emulator", SERVICEBUS_INNER_PORT));
-                //                result.put("azure.servicebus.connection.string", connectionString);
-                //                result.put("azure.servicebus.queue.name", "queue.1");
-                //                result.put("azure.servicebus.topic.name", "topic.1");
-                //                result.put("azure.servicebus.topic.subscription.name", "subscription.1");
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            conjur = new GenericContainer<>(DockerImageName.parse("cyberark/conjur"))
+                    .withNetwork(conjurNetwork)
+                    .withEnv("DATABASE_URL", "postgres://postgres@database/postgres")
+                    .withEnv("CONJUR_DATA_KEY", "Eb/J6DQkr+/zBowIL8+5+kG8zAqUSVnN/VW3rySRwoM=")
+                    .withExposedPorts(80)
+                    .dependsOn(database);
+
+            client = new GenericContainer<>(DockerImageName.parse("conjurinc/cli5"))
+                    .withNetwork(conjurNetwork)
+                    .dependsOn(conjur);
+
+            nginx = new GenericContainer<>(DockerImageName.parse("nginx:1.13.6-alpine"))
+                    .withNetwork(conjurNetwork)
+                    .withExposedPorts(8443)
+                    .dependsOn(conjur);
+
+            jenkins = new GenericContainer<>(DockerImageName.parse("jenkins/jenkins:lts"))
+                    .withNetwork(conjurNetwork)
+                    .withExposedPorts(8080);
+
+            secretless = new GenericContainer<>(DockerImageName.parse("cyberark/secretless-broker:latest"))
+                    .withNetwork(conjurNetwork)
+                    .dependsOn(conjur);
+
+            petStore = new GenericContainer<>(DockerImageName.parse("cyberark/demo-app:latest"))
+                    .withNetwork(conjurNetwork)
+                    .withExposedPorts(8080)
+                    .dependsOn(secretless);
+//            try {
+//                //copy docker-compose to tmp location
+//                File dockerComposeFile, configFile;
+//                try (InputStream inYaml = getClass().getClassLoader().getResourceAsStream("docker-compose.yaml");) {
+//                    dockerComposeFile = File.createTempFile("cyberark-docker-compose-", ".yaml");
+//                    Files.copy(inYaml, dockerComposeFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+//                }
+//
+//                container = new ComposeContainer(dockerComposeFile)
+//                        //                        .withEnv("ACCEPT_EULA", "Y")
+//                        //                        .withEnv("SERVICEBUS_EMULATOR_IMAGE",
+//                        //                                config.getValue("servicebus-emulator.container.image", String.class))
+//                        //                        .withEnv("SQL_EDGE_IMAGE", config.getValue("azure-sql-edge.container.image", String.class))
+//                        //                        .withEnv("CONFIG_FILE", configFile.getAbsolutePath())
+//                        //                        .withEnv("MSSQL_SA_PASSWORD", "12345678923456y!43")
+//                        //                        .withExposedService("emulator", SERVICEBUS_INNER_PORT)
+//                        .withLocalCompose(true)
+//                        .withLogConsumer("conjur_server", new Slf4jLogConsumer(LOGGER))
+//                        .waitingFor("conjur_server", Wait.forLogMessage(".*Emulator Service is Successfully Up!.*", 1));
+//
+//                container.start();
+//
+//                //                String connectionString = "Endpoint=sb://%s:%d;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;"
+//                //                        .formatted(container.getServiceHost("emulator", SERVICEBUS_INNER_PORT),
+//                //                                container.getServicePort("emulator", SERVICEBUS_INNER_PORT));
+//                //                result.put("azure.servicebus.connection.string", connectionString);
+//                //                result.put("azure.servicebus.queue.name", "queue.1");
+//                //                result.put("azure.servicebus.topic.name", "topic.1");
+//                //                result.put("azure.servicebus.topic.subscription.name", "subscription.1");
+//            } catch (Exception e) {
+//                throw new RuntimeException(e);
+//            }
         } else {
             if (!startMockBackend && !realCredentialsProvided) {
                 throw new IllegalStateException(
