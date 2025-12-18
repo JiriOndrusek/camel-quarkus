@@ -29,8 +29,10 @@ import org.apache.camel.quarkus.test.mock.backend.MockBackendUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.ComposeContainer;
+import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
@@ -71,19 +73,24 @@ public class CyberarkVaultTestResource implements QuarkusTestResourceLifecycleMa
             MockBackendUtils.logMockBackendUsed();
 
 
-            PostgreSQLContainer<?> database = new PostgreSQLContainer<>(DockerImageName.parse("postgres:10"))
+            PostgreSQLContainer<?> database = new PostgreSQLContainer<>(DockerImageName.parse("postgres:15"))
                     .withNetwork(conjurNetwork)
-                    .withNetworkAliases("database")
-                    .withDatabaseName("postgres")
+                    .withNetworkAliases("postgres")
                     .withUsername("postgres")
-                    .withPassword("conjur");
+                    .withPassword("SuperSecretPg");
 
-            conjur = new GenericContainer<>(DockerImageName.parse("cyberark/conjur"))
-                    .withNetwork(conjurNetwork)
-                    .withEnv("DATABASE_URL", "postgres://postgres@database/postgres")
+            database.start();
+
+            conjur = new GenericContainer<>(DockerImageName.parse("cyberark/conjur").toString());
+            conjur.withNetwork(conjurNetwork)
+                    .withEnv("DATABASE_URL", "postgres://postgres:SuperSecretPg@database/postgres")
                     .withEnv("CONJUR_DATA_KEY", "Eb/J6DQkr+/zBowIL8+5+kG8zAqUSVnN/VW3rySRwoM=")
-                    .withExposedPorts(80)
-                    .dependsOn(database);
+                    .dependsOn(database)
+                    .withLogConsumer(new Slf4jLogConsumer(LOGGER))
+                    .withCommand("server")
+                            .withExposedPorts(80);
+
+            conjur.start();
 
             client = new GenericContainer<>(DockerImageName.parse("conjurinc/cli5"))
                     .withNetwork(conjurNetwork)
@@ -106,7 +113,15 @@ public class CyberarkVaultTestResource implements QuarkusTestResourceLifecycleMa
                     .withNetwork(conjurNetwork)
                     .withExposedPorts(8080)
                     .dependsOn(secretless);
-//            try {
+
+            conjur.start();
+            client.start();
+            nginx.start();
+            jenkins.start();
+            secretless.start();
+            petStore.start();
+
+            //            try {
 //                //copy docker-compose to tmp location
 //                File dockerComposeFile, configFile;
 //                try (InputStream inYaml = getClass().getClassLoader().getResourceAsStream("docker-compose.yaml");) {
@@ -151,8 +166,26 @@ public class CyberarkVaultTestResource implements QuarkusTestResourceLifecycleMa
     public void stop() {
         try {
 
-            if (container != null) {
-                container.stop();
+            if (database != null) {
+                database.stop();
+            }
+            if (conjur != null) {
+                conjur.stop();
+            }
+            if (client != null) {
+                client.stop();
+            }
+            if (nginx != null) {
+                nginx.stop();
+            }
+            if (jenkins != null) {
+                jenkins.stop();
+            }
+            if (secretless != null) {
+                secretless.stop();
+            }
+            if (petStore != null) {
+                petStore.stop();
             }
 
         } catch (Exception e) {
