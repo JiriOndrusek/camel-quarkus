@@ -1,0 +1,2 @@
+Network failure trying to make a proxied request from WireMock to http://localhost:8080//authn/myConjurAccount/user%2FDave%40BotApp/authenticate
+Connect to http://localhost:8080 failed: Connection refused

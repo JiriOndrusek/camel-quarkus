@@ -16,18 +16,16 @@
  */
 package org.apache.camel.quarkus.component.cyberark.vault.it;
 
-import java.net.URI;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
 import org.jboss.logging.Logger;
 
@@ -40,29 +38,22 @@ public class CyberarkVaultResource {
     @Inject
     ProducerTemplate producerTemplate;
 
-    @Inject
-    ConsumerTemplate consumerTemplate;
-
-    @Path("/get")
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public String get() throws Exception {
-        final String message = consumerTemplate.receiveBodyNoWait("cyberark-vault:--fix-me--", String.class);
-        LOG.infof("Received from cyberark-vault: %s", message);
-        return message;
-    }
-
-    @Path("/post")
+    @Path("/createSecret/{authorized}")
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
+    public Response createSecret(String secret, @PathParam("authorized") boolean authorized) {
+        try {
+            producerTemplate.requestBody("direct:createSecret" + (authorized ? "" : "Unauthorized"), secret, String.class);
+        } catch (RuntimeException e) {
+            return Response.serverError().entity(e.getCause().getCause().getMessage()).build();
+        }
+        return Response.ok().build();
+    }
+
+    @Path("/getSecret")
+    @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public Response post(String message) throws Exception {
-        LOG.infof("Sending to cyberark-vault: %s", message);
-        final String response = producerTemplate.requestBody("cyberark-vault:--fix-me--", message, String.class);
-        LOG.infof("Got response from cyberark-vault: %s", response);
-        return Response
-                .created(new URI("https://camel.apache.org/"))
-                .entity(response)
-                .build();
+    public String getSecret() {
+        return producerTemplate.requestBody("direct:getSecret", "", String.class);
     }
 }
