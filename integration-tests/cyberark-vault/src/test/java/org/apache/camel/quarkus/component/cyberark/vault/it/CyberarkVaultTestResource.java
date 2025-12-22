@@ -27,13 +27,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
-import org.apache.camel.component.cyberark.vault.client.ConjurClient;
-import org.apache.camel.component.cyberark.vault.client.impl.ConjurClientImpl;
 import org.apache.camel.quarkus.test.mock.backend.MockBackendUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.Container;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
 public class CyberarkVaultTestResource implements QuarkusTestResourceLifecycleManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(CyberarkVaultTestResource.class);
@@ -66,7 +67,7 @@ public class CyberarkVaultTestResource implements QuarkusTestResourceLifecycleMa
                     dockerComposeFile = File.createTempFile("cyberark-docker-compose-", ".yaml", tempDir.toFile());
                     Files.copy(inYaml, dockerComposeFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 }
-                //                FileUtils.copyDirectory(new File(getClass().getResource("/conf").getFile()), tempDir.resolve("conf").toFile());
+                FileUtils.copyDirectory(new File(getClass().getResource("/conf").getFile()), tempDir.resolve("conf").toFile());
 
                 container = new ComposeContainer(dockerComposeFile)
                         //                        .withEnv("ACCEPT_EULA", "Y")
@@ -76,15 +77,22 @@ public class CyberarkVaultTestResource implements QuarkusTestResourceLifecycleMa
                         //                        .withEnv("CONFIG_FILE", configFile.getAbsolutePath())
                         //                        .withEnv("MSSQL_SA_PASSWORD", "12345678923456y!43")
                         //                        .withExposedService("emulator", SERVICEBUS_INNER_PORT)
-                        .withLocalCompose(true);
-                //                        .withLogConsumer("conjur_server", new Slf4jLogConsumer(LOGGER))
-                //                        .waitingFor("conjur_server", Wait.forLogMessage(".*Emulator Service is Successfully Up!.*", 1));
+                        .withLocalCompose(true)
+                        .withLogConsumer("conjur", new Slf4jLogConsumer(LOGGER))
+                        .waitingFor("conjur", Wait.forLogMessage(".*Listening on http://0.0.0.0:80.*", 1));
 
                 container.start();
-                Thread.sleep(10000);
 
-                Container.ExecResult er = container.getContainerByServiceName("conjur_server").get()
+                Container.ExecResult er = container.getContainerByServiceName("conjurr").get()
                         .execInContainer("conjurctl", "account", "create", "myConjurAccount");
+
+                System.out.println("result: " + er.getExitCode());
+                System.out.println(er.getStdout());
+                System.out.println("------------");
+                System.out.println(er.getStderr());
+
+                er = container.getContainerByServiceName("client").get()
+                        .execInContainer("conjur", "init", "-i", "-u", "http://localhost", "-a", "myConjurAccount");
 
                 System.out.println("result: " + er.getExitCode());
                 System.out.println(er.getStdout());
@@ -98,18 +106,18 @@ public class CyberarkVaultTestResource implements QuarkusTestResourceLifecycleMa
                 //                result.put("azure.servicebus.queue.name", "queue.1");
                 //                result.put("azure.servicebus.topic.name", "topic.1");
                 //                result.put("azure.servicebus.topic.subscription.name", "subscription.1");
-
-                //todo create policy
-                ConjurClient conjurClient;
-
-                String url = "http://localhost:8080/";
-                String account = "myConjurAccount";
-//                String authToken = this.configuration.getAuthToken();
-                String apiKey = this.configuration.getApiKey();
-                String username = this.configuration.getUsername();
-                String password = this.configuration.getPassword() ;
-//                this.conjurClient = ConjurClientFactory.createWithApiKey(url, account, username, apiKey);
-                conjurClient = new ConjurClientImpl(url, account, username, (String)null, apiKey, (String)null);
+                //
+                //                //todo create policy
+                //                ConjurClient conjurClient;
+                //
+                //                String url = "http://localhost:8080/";
+                //                String account = "myConjurAccount";
+                ////                String authToken = this.configuration.getAuthToken();
+                //                String apiKey = this.configuration.getApiKey();
+                //                String username = this.configuration.getUsername();
+                //                String password = this.configuration.getPassword() ;
+                ////                this.conjurClient = ConjurClientFactory.createWithApiKey(url, account, username, apiKey);
+                //                conjurClient = new ConjurClientImpl(url, account, username, (String)null, apiKey, (String)null);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

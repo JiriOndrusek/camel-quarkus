@@ -29,6 +29,7 @@ public class CyberArkRoutes extends RouteBuilder {
                 .log("Secret created/updated");
 
         from("direct:createSecretUnauthorized")
+                .log("************************************************ unauthorized ****************************")
                 .toF("cyberark-vault:secret?operation=createSecret&secretId=BotApp/secretVar&url=%s&account=%s&username=%s&apiKey=%s",
                         url, account, readUsername, readApiKey)
                 .log("Secret created/updated");
