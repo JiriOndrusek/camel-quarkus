@@ -36,7 +36,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 
 @QuarkusTest
-@QuarkusTestResource(CyberarkVaultWireMockTestResource.class)
+@QuarkusTestResource(CyberarkVaultDockerComposeTestResource.class)
 class CyberarkVaultTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(CyberarkVaultTest.class);

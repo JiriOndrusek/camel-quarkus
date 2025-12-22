@@ -32,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.Container;
-import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
 public class CyberarkVaultTestResource implements QuarkusTestResourceLifecycleManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(CyberarkVaultTestResource.class);
@@ -65,7 +64,7 @@ public class CyberarkVaultTestResource implements QuarkusTestResourceLifecycleMa
                     dockerComposeFile = File.createTempFile("cyberark-docker-compose-", ".yaml", tempDir.toFile());
                     Files.copy(inYaml, dockerComposeFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 }
-                FileUtils.copyDirectory(new File(getClass().getResource("/conf").getFile()), tempDir.resolve("conf").toFile());
+                //                FileUtils.copyDirectory(new File(getClass().getResource("/conf").getFile()), tempDir.resolve("conf").toFile());
 
                 container = new ComposeContainer(dockerComposeFile)
                         //                        .withEnv("ACCEPT_EULA", "Y")
