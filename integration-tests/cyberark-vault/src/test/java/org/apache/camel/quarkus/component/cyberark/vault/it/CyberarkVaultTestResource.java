@@ -27,6 +27,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
+import org.apache.camel.component.cyberark.vault.client.ConjurClient;
+import org.apache.camel.component.cyberark.vault.client.impl.ConjurClientImpl;
 import org.apache.camel.quarkus.test.mock.backend.MockBackendUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,6 +98,18 @@ public class CyberarkVaultTestResource implements QuarkusTestResourceLifecycleMa
                 //                result.put("azure.servicebus.queue.name", "queue.1");
                 //                result.put("azure.servicebus.topic.name", "topic.1");
                 //                result.put("azure.servicebus.topic.subscription.name", "subscription.1");
+
+                //todo create policy
+                ConjurClient conjurClient;
+
+                String url = "http://localhost:8080/";
+                String account = "myConjurAccount";
+//                String authToken = this.configuration.getAuthToken();
+                String apiKey = this.configuration.getApiKey();
+                String username = this.configuration.getUsername();
+                String password = this.configuration.getPassword() ;
+//                this.conjurClient = ConjurClientFactory.createWithApiKey(url, account, username, apiKey);
+                conjurClient = new ConjurClientImpl(url, account, username, (String)null, apiKey, (String)null);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
