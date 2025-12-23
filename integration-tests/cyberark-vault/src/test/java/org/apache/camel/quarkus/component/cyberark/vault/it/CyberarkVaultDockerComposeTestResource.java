@@ -18,7 +18,6 @@
 package org.apache.camel.quarkus.component.cyberark.vault.it;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,6 +31,7 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.ComposeContainer;
@@ -42,14 +42,7 @@ import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
 public class CyberarkVaultDockerComposeTestResource implements QuarkusTestResourceLifecycleManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(CyberarkVaultDockerComposeTestResource.class);
-    private static final int SERVICEBUS_INNER_PORT = 5672;
-    private Map<String, String> initArgs = new LinkedHashMap<>();
     private ComposeContainer container;
-
-    @Override
-    public void init(Map<String, String> initArgs) {
-        this.initArgs = initArgs;
-    }
 
     @Override
     public Map<String, String> start() {
@@ -67,21 +60,15 @@ public class CyberarkVaultDockerComposeTestResource implements QuarkusTestResour
             FileUtils.copyDirectory(new File(getClass().getResource("/conf").getFile()), tempDir.resolve("conf").toFile());
 
             container = new ComposeContainer(dockerComposeFile)
-                    //                        .withEnv("ACCEPT_EULA", "Y")
-                    //                        .withEnv("SERVICEBUS_EMULATOR_IMAGE",
-                    //                                config.getValue("servicebus-emulator.container.image", String.class))
-                    //                        .withEnv("SQL_EDGE_IMAGE", config.getValue("azure-sql-edge.container.image", String.class))
-                    //                        .withEnv("CONFIG_FILE", configFile.getAbsolutePath())
-                    //                        .withEnv("MSSQL_SA_PASSWORD", "12345678923456y!43")
-                    //                        .withExposedService("emulator", SERVICEBUS_INNER_PORT)
                     .withLocalCompose(true)
-                    .withLogConsumer("conjur", new Slf4jLogConsumer(LOGGER))
+                    .withExposedService("conjur", 80)
                     .waitingFor("conjur", Wait.forLogMessage(".* Listening on http.*", 1));
 
             container.start();
 
             Container.ExecResult er = container.getContainerByServiceName("conjur").get()
                     .execInContainer("conjurctl", "account", "create", "myConjurAccount");
+            Assertions.assertEquals(0, er.getExitCode(), );
             //admin key is the last word from stdout
             String adminKey = new LinkedList<>(Arrays.asList(er.getStdout().split("\\s"))).getLast();
             result.put("conjur.account", "myConjurAccount");
@@ -91,12 +78,16 @@ public class CyberarkVaultDockerComposeTestResource implements QuarkusTestResour
             System.out.println(er.getStderr());
 
             er = container.getContainerByServiceName("client").get()
-                    .execInContainer("conjur", "init", "oss", "-u", "https://proxy", "-a", "myConjurAccount", "--self-signed");
+//                    .execInContainer("conjur", "init", "oss", "-u", "https://" + container.getServicePort("proxy", 443),
+                    .execInContainer("conjur", "init", "oss", "-u", "https://proxy",
+                            "-a", "myConjurAccount", "--self-signed");
 
             System.out.println("result: " + er.getExitCode());
             System.out.println(er.getStdout());
             System.out.println("------------");
             System.out.println(er.getStderr());
+
+
 
             er = container.getContainerByServiceName("client").get()
                     .execInContainer("conjur", "login", "-i", "admin", "-p", adminKey);
@@ -126,8 +117,8 @@ public class CyberarkVaultDockerComposeTestResource implements QuarkusTestResour
                 result.put("conjur.write.username", "user/Dave@BotApp");
                 result.put("conjur.write.apiKey",
                         jsonNode.get("created_roles").get("myConjurAccount:user:Dave@BotApp").get("api_key").textValue());
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
 
             er = container.getContainerByServiceName("client").get()
@@ -141,6 +132,9 @@ public class CyberarkVaultDockerComposeTestResource implements QuarkusTestResour
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+        result.put("conjur.url", "http://localhost:" + container.getServicePort("conjur", 80));
+
         return result;
     }
 
