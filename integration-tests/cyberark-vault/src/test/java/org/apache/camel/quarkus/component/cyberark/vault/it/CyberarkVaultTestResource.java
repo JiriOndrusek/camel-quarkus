@@ -23,110 +23,127 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.apache.camel.quarkus.test.mock.backend.MockBackendUtils;
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.Container;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
+/**
+ * Test resource is using opensource conjur. See the instructions from
+ * https://github.com/cyberark/conjur-quickstart?tab=readme-ov-file#setting-up-an-environment
+ *
+ * Important note. the docker-compose.yml, from the conjur, has to be stripped from container_name attributes.
+ */
 public class CyberarkVaultTestResource implements QuarkusTestResourceLifecycleManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(CyberarkVaultTestResource.class);
-    private static final int SERVICEBUS_INNER_PORT = 5672;
-    private Map<String, String> initArgs = new LinkedHashMap<>();
     private ComposeContainer container;
 
     @Override
-    public void init(Map<String, String> initArgs) {
-        this.initArgs = initArgs;
-    }
-
-    @Override
     public Map<String, String> start() {
-        //        final SmallRyeConfig config = ConfigUtils.configBuilder(true, LaunchMode.NORMAL).build();
-        //todo use cyberark names
-        final boolean realCredentialsProvided = System.getenv("AZURE_SERVICEBUS_CONNECTION_STRING") != null
-                && System.getenv("AZURE_SERVICEBUS_QUEUE_NAME") != null;
-        final boolean startMockBackend = MockBackendUtils.startMockBackend(false);
         final Map<String, String> result = new LinkedHashMap<>();
-        if (startMockBackend && !realCredentialsProvided) {
-            MockBackendUtils.logMockBackendUsed();
+
+        //if env properties are defined, use the real account
+        List<String> missingExternalProperties = Stream
+                .of("CQ_CONJUR_URL", "CQ_CONJUR_ACCOUNT", "CQ_CONJUR_READ_USER", "CQ_CONJUR_READ_USER_API_KEY",
+                        "CQ_CONJUR_READ_WRITE_USER", "CQ_CONJUR_READ_WRITE_USER_API_KEY")
+                .filter(prop -> {
+                    String value = System.getenv(prop);
+                    return value == null || value.isEmpty();
+                })
+                .toList();
+        if (missingExternalProperties.isEmpty()) {
+            MockBackendUtils.logRealBackendUsed();
+
+            result.put("quarkus.http.port", "0");
+            result.put("quarkus.http.test-port", "0");
+            return result;
+        }
+
+        if (missingExternalProperties.size() < 6) {
+            throw new RuntimeException(
+                    "Several environmental properties are missing (you have to provide either all of them or none." +
+                            "Missing properties are: " + String.join(",", missingExternalProperties));
+        }
+        MockBackendUtils.logMockBackendUsed();
+
+        try {
+            //copy docker-compose to tmp location
+            File dockerComposeFile, configFile;
+            //create tmp folder in target
+            Path targetDir = Paths.get("target");
+            Path tempDir = Files.createTempDirectory(targetDir, "docker-compose-");
+            try (InputStream inYaml = getClass().getClassLoader().getResourceAsStream("docker-compose.yml");) {
+                dockerComposeFile = File.createTempFile("docker-compose-", ".yml", tempDir.toFile());
+                Files.copy(inYaml, dockerComposeFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
+            FileUtils.copyDirectory(new File(getClass().getResource("/conf").getFile()), tempDir.resolve("conf").toFile());
+
+            container = new ComposeContainer(dockerComposeFile)
+                    .withLocalCompose(true)
+                    .withExposedService("conjur", 80)
+                    .waitingFor("conjur", Wait.forLogMessage(".* Listening on http.*", 1));
+
+            container.start();
+
+            Container.ExecResult er = container.getContainerByServiceName("conjur").get()
+                    .execInContainer("conjurctl", "account", "create", "myConjurAccount");
+            Assertions.assertEquals(0, er.getExitCode(), "Creation of account failed with: " + er.getStderr());
+            //admin key is the last word from stdout
+            String adminKey = new LinkedList<>(Arrays.asList(er.getStdout().split("\\s"))).getLast();
+
+            er = container.getContainerByServiceName("client").get()
+                    .execInContainer("conjur", "init", "oss", "-u", "https://proxy",
+                            "-a", "myConjurAccount", "--self-signed");
+            Assertions.assertEquals(0, er.getExitCode(), "Client init failed with: " + er.getStderr());
+
+            er = container.getContainerByServiceName("client").get()
+                    .execInContainer("conjur", "login", "-i", "admin", "-p", adminKey);
+            Assertions.assertEquals(0, er.getExitCode(), "Client login failed with: " + er.getStderr());
+
+            er = container.getContainerByServiceName("client").get()
+                    .execInContainer("conjur", "policy", "load", "-b", "root", "-f", "policy/BotApp.yml");
+            Assertions.assertEquals(0, er.getExitCode(), "Policy load failed with: " + er.getStderr());
+
+            ObjectMapper objectMapper = new ObjectMapper();
             try {
-                //copy docker-compose to tmp location
-                File dockerComposeFile, configFile;
-                //create tmp folder in target
-                Path targetDir = Paths.get("target");
-                Path tempDir = Files.createTempDirectory(targetDir, "docker-compose-");
-                try (InputStream inYaml = getClass().getClassLoader().getResourceAsStream("docker-compose.yaml");) {
-                    dockerComposeFile = File.createTempFile("cyberark-docker-compose-", ".yaml", tempDir.toFile());
-                    Files.copy(inYaml, dockerComposeFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                }
-                FileUtils.copyDirectory(new File(getClass().getResource("/conf").getFile()), tempDir.resolve("conf").toFile());
+                // Read JSON from a file
+                JsonNode jsonNode = objectMapper.readTree(er.getStdout());
+                jsonNode.get("created_roles").get("myConjurAccount:host:BotApp/myDemoApp").get("id");
 
-                container = new ComposeContainer(dockerComposeFile)
-                        //                        .withEnv("ACCEPT_EULA", "Y")
-                        //                        .withEnv("SERVICEBUS_EMULATOR_IMAGE",
-                        //                                config.getValue("servicebus-emulator.container.image", String.class))
-                        //                        .withEnv("SQL_EDGE_IMAGE", config.getValue("azure-sql-edge.container.image", String.class))
-                        //                        .withEnv("CONFIG_FILE", configFile.getAbsolutePath())
-                        //                        .withEnv("MSSQL_SA_PASSWORD", "12345678923456y!43")
-                        //                        .withExposedService("emulator", SERVICEBUS_INNER_PORT)
-                        .withLocalCompose(true)
-                        .withLogConsumer("conjur", new Slf4jLogConsumer(LOGGER))
-                        .waitingFor("conjur", Wait.forLogMessage(".*Listening on http://0.0.0.0:80.*", 1));
-
-                container.start();
-
-                Container.ExecResult er = container.getContainerByServiceName("conjurr").get()
-                        .execInContainer("conjurctl", "account", "create", "myConjurAccount");
-
-                System.out.println("result: " + er.getExitCode());
-                System.out.println(er.getStdout());
-                System.out.println("------------");
-                System.out.println(er.getStderr());
-
-                er = container.getContainerByServiceName("client").get()
-                        .execInContainer("conjur", "init", "-i", "-u", "http://localhost", "-a", "myConjurAccount");
-
-                System.out.println("result: " + er.getExitCode());
-                System.out.println(er.getStdout());
-                System.out.println("------------");
-                System.out.println(er.getStderr());
-
-                //                String connectionString = "Endpoint=sb://%s:%d;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;"
-                //                        .formatted(container.getServiceHost("emulator", SERVICEBUS_INNER_PORT),
-                //                                container.getServicePort("emulator", SERVICEBUS_INNER_PORT));
-                //                result.put("azure.servicebus.connection.string", connectionString);
-                //                result.put("azure.servicebus.queue.name", "queue.1");
-                //                result.put("azure.servicebus.topic.name", "topic.1");
-                //                result.put("azure.servicebus.topic.subscription.name", "subscription.1");
-                //
-                //                //todo create policy
-                //                ConjurClient conjurClient;
-                //
-                //                String url = "http://localhost:8080/";
-                //                String account = "myConjurAccount";
-                ////                String authToken = this.configuration.getAuthToken();
-                //                String apiKey = this.configuration.getApiKey();
-                //                String username = this.configuration.getUsername();
-                //                String password = this.configuration.getPassword() ;
-                ////                this.conjurClient = ConjurClientFactory.createWithApiKey(url, account, username, apiKey);
-                //                conjurClient = new ConjurClientImpl(url, account, username, (String)null, apiKey, (String)null);
+                result.put("conjur.read.username", "host/BotApp/myDemoApp");
+                result.put("conjur.read.apiKey",
+                        jsonNode.get("created_roles").get("myConjurAccount:host:BotApp/myDemoApp").get("api_key").textValue());
+                result.put("conjur.write.username", "user/Dave@BotApp");
+                result.put("conjur.write.apiKey",
+                        jsonNode.get("created_roles").get("myConjurAccount:user:Dave@BotApp").get("api_key").textValue());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-        } else {
-            if (!startMockBackend && !realCredentialsProvided) {
-                throw new IllegalStateException(
-                        "Set AZURE_SERVICEBUS_CONNECTION_STRING and AZURE_SERVICEBUS_QUEUE_NAME env vars if you set CAMEL_QUARKUS_START_MOCK_BACKEND=false");
-            }
+
+            container.getContainerByServiceName("client").get()
+                    .execInContainer("conjur", "logout");
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
+
+        result.put("conjur.account", "myConjurAccount");
+        result.put("conjur.url", "http://localhost:" + container.getServicePort("conjur", 80));
+
         return result;
     }
 

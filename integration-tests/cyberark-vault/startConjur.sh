@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# alternative way of running the tests.
+# script starts the conjur quickstart via docker compose and do all required configuration
+# after running it, please export  all 6 variables and then you can start the test
+# When asked `Select the environment you want to use:`
+# please choose `Conjur Open Source`
+
 echo "Temporary folder 'tmp' is used"
 mkdir tmp
 cd tmp
@@ -46,8 +52,14 @@ docker-compose exec client conjur policy load -b root -f policy/BotApp.yml > my_
 echo "Step 3: Logout of Conjur"
 docker-compose exec client conjur logout
 
+echo
+echo ------------ please export following properties ------------------------
+echo export CQ_CONJUR_URL=http://localhost:8080/
 echo export CQ_CONJUR_ACCOUNT=myConjurAccount
 echo export CQ_CONJUR_READ_USER=host/BotApp/myDemoApp
 echo export CQ_CONJUR_READ_USER_API_KEY=$(jq -r '.created_roles."myConjurAccount:host:BotApp/myDemoApp".api_key' my_app_data)
 echo export CQ_CONJUR_READ_WRITE_USER=user/Dave@BotApp
 echo export CQ_CONJUR_READ_WRITE_USER_API_KEY=$(jq -r '.created_roles."myConjurAccount:user:Dave@BotApp".api_key' my_app_data)
+echo "# to avoid port conflict with quarkus (against opensource conjur)"
+echo export QUARKUS_HTTP_PORT=0
+echo export QUARKUS_HTTPS_PORT=0
