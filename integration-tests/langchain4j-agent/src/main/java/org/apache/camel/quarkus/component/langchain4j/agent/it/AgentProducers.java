@@ -96,7 +96,7 @@ public class AgentProducers {
         return new PersistentChatMemoryStore();
     }
 
-    @Produces
+    //    @Produces
     RetrievalAugmentor retrievalAugmentor() throws IOException {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         try (InputStream stream = classLoader.getResourceAsStream("rag/company-knowledge-base.txt")) {
@@ -198,11 +198,10 @@ public class AgentProducers {
     @Produces
     @Identifier("agentWithRag")
     public Agent agentWithRag(
-            @Identifier("ollamaOrcaMiniModel") ChatModel chatModel,
-            RetrievalAugmentor retrievalAugmentor) {
+            @Identifier("ollamaOrcaMiniModel") ChatModel chatModel) throws IOException {
         return new AgentWithoutMemory(new AgentConfiguration()
                 .withChatModel(chatModel)
-                .withRetrievalAugmentor(retrievalAugmentor));
+                .withRetrievalAugmentor(retrievalAugmentor()));
     }
 
     @Produces

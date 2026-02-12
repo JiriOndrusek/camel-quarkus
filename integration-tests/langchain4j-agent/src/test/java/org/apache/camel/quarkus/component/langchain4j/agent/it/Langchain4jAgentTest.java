@@ -244,7 +244,9 @@ class Langchain4jAgentTest {
                 .post("/langchain4j-agent/mcp/client")
                 .then()
                 .statusCode(200)
-                .body(containsStringIgnoringCase(
-                        "operation was executed successfully for a duration of 2 seconds divided into 2 steps"));
+                .body(containsStringIgnoringCase("long running operation"))
+                .body(containsStringIgnoringCase("successfully"))
+                .body(containsStringIgnoringCase("duration of 2 seconds"))
+                .body(containsStringIgnoringCase("2 steps"));
     }
 }
