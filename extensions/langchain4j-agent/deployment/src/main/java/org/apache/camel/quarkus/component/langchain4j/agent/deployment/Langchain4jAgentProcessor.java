@@ -19,13 +19,25 @@ package org.apache.camel.quarkus.component.langchain4j.agent.deployment;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.swing.*;
+
+import dev.langchain4j.guardrail.Guardrail;
+import dev.langchain4j.guardrail.InputGuardrail;
+import dev.langchain4j.guardrail.OutputGuardrail;
+import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.annotations.ExecutionTime;
+import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.pkg.steps.NativeOrNativeSourcesBuild;
+import jakarta.inject.Singleton;
+import org.apache.camel.quarkus.component.langchain4j.agent.QuarkusLangchain4jRecorder;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
 
 class Langchain4jAgentProcessor {
     private static final String FEATURE = "camel-langchain4j-agent";
@@ -51,4 +63,52 @@ class Langchain4jAgentProcessor {
                 .methods(true)
                 .build();
     }
+
+    @BuildStep(onlyIf = QuarkusLangchain4jPresent.class)
+    @Record(ExecutionTime.STATIC_INIT)
+    void specifyHttpClient(QuarkusLangchain4jRecorder recorder) {
+        recorder.enforceJaxRsHttpClient();
+    }
+
+    @SuppressWarnings("unchecked")
+    @BuildStep
+    @Record(ExecutionTime.STATIC_INIT)
+    void registerLangChain4jAiServiceTypesForReflection(
+            CombinedIndexBuildItem combinedIndex,
+            BuildProducer<SyntheticBeanBuildItem> syntheticBeans,
+            QuarkusLangchain4jRecorder recorder) {
+        IndexView index = combinedIndex.getIndex();
+        // Guardrails are instantiated dynamically
+        Set<DotName> guardrailTypes = index.getAllKnownImplementations(InputGuardrail.class)
+                .stream()
+                .map(ClassInfo::name)
+                .collect(Collectors.toSet());
+
+        index.getAllKnownImplementations(OutputGuardrail.class)
+                .stream()
+                .map(ClassInfo::name)
+                .forEach(guardrailTypes::add);
+
+        guardrailTypes.stream()
+                .filter(s -> !s.toString().equals("dev.langchain4j.guardrail.JsonExtractorOutputGuardrail"))
+                .forEach(s -> {
+                    try {
+                        Class<Guardrail<?, ?>> guardrailClass;
+                        guardrailClass = (Class<Guardrail<?, ?>>) Thread.currentThread()
+                                .getContextClassLoader()
+                                .loadClass(s.toString());
+                        syntheticBeans
+                                .produce(SyntheticBeanBuildItem.configure(s)
+                                        .scope(Singleton.class)
+                                        .named("GuardrailSynthetic" + s.local())
+                                        .runtimeValue(recorder.instantiateGuardrails(guardrailClass))
+                                        .done());
+                    } catch (ClassNotFoundException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                });
+
+    }
+
 }
