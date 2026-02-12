@@ -56,7 +56,7 @@
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-langchain4j-tools</artifactId>
         </dependency>
-        <!-- resteasy-classic can not be used. Becouse ql4j depends on resteasy reactive-->
+        <!-- resteasy-classic can not be used, because ql4j depends on resteasy reactive-->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-rest</artifactId>
