@@ -37,8 +37,8 @@ final String excl = binding.properties.variables.'copy-tests.excludes'
 final String classNamePrefix = binding.properties.variables.'group-tests.class.name.prefix' ?: ""
 
 copyResources(sourceDir.resolve('src/main/resources'), destinationModuleDir.resolve('target/classes'), excl)
-copyResources(sourceDir.resolve('src/main/java'), destinationModuleDir.resolve('target/src/main/java'), excl)
-copyResources(sourceDir.resolve('src/test/java'), destinationModuleDir.resolve('target/src/test/java'), excl)
+copyResources(sourceDir.resolve('src/main/java'), destinationModuleDir.resolve('src/main/java'), excl)
+copyResources(sourceDir.resolve('src/test/java'), destinationModuleDir.resolve('src/test/java'), excl)
 copyResources(sourceDir.resolve('src/test/resources'), destinationModuleDir.resolve('target/test-classes'), excl)
 
 String scriptDir = new File(System.getProperty('maven.multiModuleProjectDirectory') + '/tooling/scripts')
