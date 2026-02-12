@@ -51,4 +51,5 @@ class Langchain4jAgentProcessor {
                 .methods(true)
                 .build();
     }
+
 }

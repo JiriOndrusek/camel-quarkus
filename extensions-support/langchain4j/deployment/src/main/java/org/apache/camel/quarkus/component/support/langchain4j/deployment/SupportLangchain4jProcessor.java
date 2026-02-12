@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import dev.langchain4j.agent.tool.Tool;
+import dev.langchain4j.guardrail.Guardrail;
 import dev.langchain4j.guardrail.InputGuardrail;
 import dev.langchain4j.guardrail.JsonExtractorOutputGuardrail;
 import dev.langchain4j.guardrail.OutputGuardrail;
@@ -33,10 +34,12 @@ import dev.langchain4j.service.MemoryId;
 import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
 import dev.langchain4j.service.V;
+import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
 import io.quarkus.bootstrap.model.ApplicationModel;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.annotations.BuildSteps;
+import io.quarkus.deployment.annotations.ExecutionTime;
+import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageProxyDefinitionBuildItem;
@@ -47,6 +50,7 @@ import io.quarkus.deployment.builditem.nativeimage.ServiceProviderBuildItem;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
 import io.quarkus.deployment.pkg.steps.NativeOrNativeSourcesBuild;
 import io.quarkus.maven.dependency.ResolvedDependency;
+import jakarta.inject.Singleton;
 import opennlp.tools.sentdetect.SentenceDetectorFactory;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
@@ -57,7 +61,6 @@ import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.MethodParameterInfo;
 import org.jboss.jandex.Type;
 
-@BuildSteps(onlyIf = NativeOrNativeSourcesBuild.class)
 class SupportLangchain4jProcessor {
     private static final Class<?>[] AI_SERVICE_ANNOTATION_CLASSES = {
             MemoryId.class,
@@ -66,7 +69,7 @@ class SupportLangchain4jProcessor {
             V.class
     };
 
-    @BuildStep
+    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class, onlyIfNot = QuarkusLangchain4jPresent.class)
     void indexDependencies(CurateOutcomeBuildItem curateOutcome, BuildProducer<IndexDependencyBuildItem> indexedDependencies) {
         ApplicationModel applicationModel = curateOutcome.getApplicationModel();
         for (ResolvedDependency dependency : applicationModel.getDependencies()) {
@@ -76,12 +79,12 @@ class SupportLangchain4jProcessor {
         }
     }
 
-    @BuildStep
+    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class, onlyIfNot = QuarkusLangchain4jPresent.class)
     ServiceProviderBuildItem registerServiceProviders() {
         return ServiceProviderBuildItem.allProvidersFromClassPath("dev.langchain4j.http.client.HttpClientBuilderFactory");
     }
 
-    @BuildStep
+    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class, onlyIfNot = QuarkusLangchain4jPresent.class)
     void registerLangChain4jJacksonTypesForReflection(
             CombinedIndexBuildItem combinedIndex,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
@@ -116,7 +119,7 @@ class SupportLangchain4jProcessor {
         ReflectiveClassBuildItem.builder(PropertyNamingStrategies.SnakeCaseStrategy.class).build();
     }
 
-    @BuildStep
+    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class, onlyIfNot = QuarkusLangchain4jPresent.class)
     void registerLangChain4jAiServiceTypesForReflection(
             CombinedIndexBuildItem combinedIndex,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
@@ -190,7 +193,7 @@ class SupportLangchain4jProcessor {
         reflectiveClass.produce(ReflectiveClassBuildItem.builder(guardrailTypes.toArray(new String[0])).build());
     }
 
-    @BuildStep
+    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class, onlyIfNot = QuarkusLangchain4jPresent.class)
     void registerCustomToolsForReflection(
             CombinedIndexBuildItem combinedIndex,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
@@ -210,17 +213,17 @@ class SupportLangchain4jProcessor {
                 .build());
     }
 
-    @BuildStep
+    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class, onlyIfNot = QuarkusLangchain4jPresent.class)
     void registerLangChain4jNlpTypesForReflection(BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
         reflectiveClass.produce(ReflectiveClassBuildItem.builder(SentenceDetectorFactory.class).build());
     }
 
-    @BuildStep
+    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class, onlyIfNot = QuarkusLangchain4jPresent.class)
     RuntimeInitializedClassBuildItem runtimeInitializedClasses() {
         return new RuntimeInitializedClassBuildItem("dev.langchain4j.internal.RetryUtils");
     }
 
-    @BuildStep
+    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class, onlyIfNot = QuarkusLangchain4jPresent.class)
     NativeImageResourcePatternsBuildItem nativeImageResources() {
         return NativeImageResourcePatternsBuildItem.builder()
                 .includeGlob("opennlp/*.bin")
@@ -230,5 +233,53 @@ class SupportLangchain4jProcessor {
     static Stream<ClassInfo> langChain4jTypesStream(Collection<ClassInfo> classes) {
         return classes.stream()
                 .filter(classInfo -> classInfo.name().toString().startsWith("dev.langchain4j"));
+    }
+
+    //--------------------- Following build steps are used in case Quarkus-lagchain4j is present (mandatory also for jvm)
+
+
+    @BuildStep(onlyIf = QuarkusLangchain4jPresent.class)
+    @Record(ExecutionTime.STATIC_INIT)
+    void specifyHttpClient(QuarkusLangchain4jRecorder recorder) {
+        recorder.enforceJaxRsHttpClient();
+    }
+
+    @SuppressWarnings("unchecked")
+    @BuildStep(onlyIf = QuarkusLangchain4jPresent.class)
+    @Record(ExecutionTime.STATIC_INIT)
+    void registerLangChain4jAiServiceTypesForReflection(
+            CombinedIndexBuildItem combinedIndex,
+            BuildProducer<SyntheticBeanBuildItem> syntheticBeans,
+            QuarkusLangchain4jRecorder recorder) {
+        IndexView index = combinedIndex.getIndex();
+        // Guardrails are instantiated dynamically
+        Set<DotName> guardrailTypes = index.getAllKnownImplementations(InputGuardrail.class)
+                .stream()
+                .map(ClassInfo::name)
+                .collect(Collectors.toSet());
+
+        index.getAllKnownImplementations(OutputGuardrail.class)
+                .stream()
+                .map(ClassInfo::name)
+                .forEach(guardrailTypes::add);
+
+        guardrailTypes.stream()
+                .filter(s -> !s.toString().equals("dev.langchain4j.guardrail.JsonExtractorOutputGuardrail"))
+                .forEach(s -> {
+                    try {
+                        Class<Guardrail<?, ?>> guardrailClass;
+                        guardrailClass = (Class<Guardrail<?, ?>>) Thread.currentThread()
+                                .getContextClassLoader()
+                                .loadClass(s.toString());
+                        syntheticBeans
+                                .produce(SyntheticBeanBuildItem.configure(s)
+                                        .scope(Singleton.class)
+                                        .named("GuardrailSynthetic" + s.local())
+                                        .runtimeValue(recorder.instantiateGuardrails(guardrailClass))
+                                        .done());
+                    } catch (ClassNotFoundException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
     }
 }
