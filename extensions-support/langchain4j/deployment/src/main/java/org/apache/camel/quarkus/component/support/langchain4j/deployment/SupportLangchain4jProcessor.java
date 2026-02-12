@@ -37,6 +37,8 @@ import io.quarkus.bootstrap.model.ApplicationModel;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.BuildSteps;
+import io.quarkus.deployment.annotations.ExecutionTime;
+import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageProxyDefinitionBuildItem;
@@ -66,7 +68,7 @@ class SupportLangchain4jProcessor {
             V.class
     };
 
-    @BuildStep
+    @BuildStep(onlyIfNot = QuarkusLangchain4jPresent.class)
     void indexDependencies(CurateOutcomeBuildItem curateOutcome, BuildProducer<IndexDependencyBuildItem> indexedDependencies) {
         ApplicationModel applicationModel = curateOutcome.getApplicationModel();
         for (ResolvedDependency dependency : applicationModel.getDependencies()) {
@@ -76,12 +78,12 @@ class SupportLangchain4jProcessor {
         }
     }
 
-    @BuildStep
+    @BuildStep(onlyIfNot = QuarkusLangchain4jPresent.class)
     ServiceProviderBuildItem registerServiceProviders() {
         return ServiceProviderBuildItem.allProvidersFromClassPath("dev.langchain4j.http.client.HttpClientBuilderFactory");
     }
 
-    @BuildStep
+    @BuildStep(onlyIfNot = QuarkusLangchain4jPresent.class)
     void registerLangChain4jJacksonTypesForReflection(
             CombinedIndexBuildItem combinedIndex,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
@@ -116,7 +118,7 @@ class SupportLangchain4jProcessor {
         ReflectiveClassBuildItem.builder(PropertyNamingStrategies.SnakeCaseStrategy.class).build();
     }
 
-    @BuildStep
+    @BuildStep(onlyIfNot = QuarkusLangchain4jPresent.class)
     void registerLangChain4jAiServiceTypesForReflection(
             CombinedIndexBuildItem combinedIndex,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
@@ -190,7 +192,7 @@ class SupportLangchain4jProcessor {
         reflectiveClass.produce(ReflectiveClassBuildItem.builder(guardrailTypes.toArray(new String[0])).build());
     }
 
-    @BuildStep
+    @BuildStep(onlyIfNot = QuarkusLangchain4jPresent.class)
     void registerCustomToolsForReflection(
             CombinedIndexBuildItem combinedIndex,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
@@ -210,17 +212,17 @@ class SupportLangchain4jProcessor {
                 .build());
     }
 
-    @BuildStep
+    @BuildStep(onlyIfNot = QuarkusLangchain4jPresent.class)
     void registerLangChain4jNlpTypesForReflection(BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
         reflectiveClass.produce(ReflectiveClassBuildItem.builder(SentenceDetectorFactory.class).build());
     }
 
-    @BuildStep
+    @BuildStep(onlyIfNot = QuarkusLangchain4jPresent.class)
     RuntimeInitializedClassBuildItem runtimeInitializedClasses() {
         return new RuntimeInitializedClassBuildItem("dev.langchain4j.internal.RetryUtils");
     }
 
-    @BuildStep
+    @BuildStep(onlyIfNot = QuarkusLangchain4jPresent.class)
     NativeImageResourcePatternsBuildItem nativeImageResources() {
         return NativeImageResourcePatternsBuildItem.builder()
                 .includeGlob("opennlp/*.bin")
@@ -230,5 +232,12 @@ class SupportLangchain4jProcessor {
     static Stream<ClassInfo> langChain4jTypesStream(Collection<ClassInfo> classes) {
         return classes.stream()
                 .filter(classInfo -> classInfo.name().toString().startsWith("dev.langchain4j"));
+    }
+
+    //    @BuildStep(onlyIf = QuarkusLangchain4jPresent.class)
+    @BuildStep
+    @Record(ExecutionTime.STATIC_INIT)
+    void specifyHttpClient(QuarkusLangchain4jRecorder recorder) {
+        recorder.enforceJaxRsHttpClient();
     }
 }
