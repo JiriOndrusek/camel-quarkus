@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 import dev.langchain4j.guardrail.InputGuardrail;
 import dev.langchain4j.guardrail.OutputGuardrail;
-import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
+import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
@@ -70,7 +70,7 @@ class Langchain4jAgentProcessor {
     @Record(ExecutionTime.RUNTIME_INIT)
     void registerLangChain4jAiServiceTypesForReflection(
             CombinedIndexBuildItem combinedIndex,
-            BuildProducer<SyntheticBeanBuildItem> syntheticBeans,
+            BuildProducer<AdditionalBeanBuildItem> additionalBeans,
             QuarkusLangchain4jRecorder recorder) {
         IndexView index = combinedIndex.getIndex();
         // Guardrails are instantiated dynamically
@@ -84,13 +84,10 @@ class Langchain4jAgentProcessor {
                 .map(ClassInfo::name)
                 .forEach(guardrailTypes::add);
 
-        //        guardrailTypes
-        //                .forEach(s -> SyntheticBeanBuildItem.configure(s)
-        //                        .scope(Singleton.class)
-        //                        .named("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" + s)
-        //                        .creator(GuardrailBeanCreator.class)
-        //                        .param("className", s.toString())
-        //                        .done());
+        //todo filter out some den.langchain possible also quarkiverse.langchain4j
+        guardrailTypes
+                .forEach(s -> additionalBeans.produce(AdditionalBeanBuildItem.builder()
+                        .addBeanClass(s.toString()).build()));
     }
 
 }
