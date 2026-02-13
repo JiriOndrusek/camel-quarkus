@@ -19,19 +19,21 @@ package org.apache.camel.quarkus.component.langchain4j.agent.deployment;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import dev.langchain4j.guardrail.InputGuardrail;
+import dev.langchain4j.guardrail.OutputGuardrail;
+import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
-import io.quarkus.deployment.builditem.RemovedResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.pkg.steps.NativeOrNativeSourcesBuild;
-import io.quarkus.maven.dependency.ArtifactKey;
 import org.apache.camel.quarkus.component.langchain4j.agent.QuarkusLangchain4jRecorder;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
 
 class Langchain4jAgentProcessor {
     private static final String FEATURE = "camel-langchain4j-agent";
@@ -63,4 +65,32 @@ class Langchain4jAgentProcessor {
     void specifyHttpClient(QuarkusLangchain4jRecorder recorder) {
         recorder.enforceJaxRsHttpClient();
     }
+
+    @BuildStep
+    @Record(ExecutionTime.RUNTIME_INIT)
+    void registerLangChain4jAiServiceTypesForReflection(
+            CombinedIndexBuildItem combinedIndex,
+            BuildProducer<SyntheticBeanBuildItem> syntheticBeans,
+            QuarkusLangchain4jRecorder recorder) {
+        IndexView index = combinedIndex.getIndex();
+        // Guardrails are instantiated dynamically
+        Set<DotName> guardrailTypes = index.getAllKnownImplementations(InputGuardrail.class)
+                .stream()
+                .map(ClassInfo::name)
+                .collect(Collectors.toSet());
+
+        index.getAllKnownImplementations(OutputGuardrail.class)
+                .stream()
+                .map(ClassInfo::name)
+                .forEach(guardrailTypes::add);
+
+        //        guardrailTypes
+        //                .forEach(s -> SyntheticBeanBuildItem.configure(s)
+        //                        .scope(Singleton.class)
+        //                        .named("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" + s)
+        //                        .creator(GuardrailBeanCreator.class)
+        //                        .param("className", s.toString())
+        //                        .done());
+    }
+
 }
