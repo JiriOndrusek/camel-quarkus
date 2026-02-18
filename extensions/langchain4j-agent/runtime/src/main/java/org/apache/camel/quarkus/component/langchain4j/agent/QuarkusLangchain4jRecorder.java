@@ -16,17 +16,12 @@ public class QuarkusLangchain4jRecorder {
         }
     }
 
-    public RuntimeValue<Guardrail<?, ?>> instantiateGuardrails(String guardrail) {
+    public RuntimeValue<Guardrail<?, ?>> instantiateGuardrails(Class<Guardrail<?, ?>> guardrailClass) {
 
         Class<?> cl = null;
         try {
-            cl = Class.forName(guardrail);
-
-            Object o = cl.getConstructor().newInstance();
+            Object o = guardrailClass.getConstructor().newInstance();
             return o instanceof Guardrail<?, ?> ? new RuntimeValue<>((Guardrail<?, ?>) o) : null;
-        } catch (ClassNotFoundException e) {
-            Logger.getLogger(QuarkusLangchain4jRecorder.class).debugf(e, "Can not find class %s", guardrail);
-            return null;
         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
                 | IllegalAccessException e) {
             Logger.getLogger(QuarkusLangchain4jRecorder.class).debugf(e,
