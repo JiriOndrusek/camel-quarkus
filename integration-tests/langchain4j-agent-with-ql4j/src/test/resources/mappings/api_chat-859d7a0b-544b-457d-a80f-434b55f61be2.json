@@ -1,0 +1,26 @@
+{
+  "id" : "859d7a0b-544b-457d-a80f-434b55f61be2",
+  "name" : "api_chat",
+  "request" : {
+    "url" : "/api/chat",
+    "method" : "POST",
+    "bodyPatterns" : [ {
+      "equalToJson" : "{\n  \"model\" : \"orca-mini\",\n  \"messages\" : [ {\n    \"role\" : \"user\",\n    \"content\" : \"Return an example JSON object about a person named 'John Doe' with the fields age and description\"\n  }, {\n    \"role\" : \"assistant\",\n    \"content\" : \" Sure, here's an example JSON object for John Doe with his age and description:\\n\\n```json\\n{\\n \\\"name\\\": \\\"John Doe\\\",\\n \\\"age\\\": 30,\\n \\\"description\\\": \\\"John Doe is a software engineer at XYZ Company. He enjoys hiking and playing video games in his free time.\\\"\\n}\\n```\",\n    \"tool_calls\" : [ ]\n  }, {\n    \"role\" : \"user\",\n    \"content\" : \"Make sure you return a valid JSON object following the specified format\"\n  } ],\n  \"options\" : {\n    \"temperature\" : 0.3,\n    \"stop\" : [ ]\n  },\n  \"stream\" : false,\n  \"tools\" : [ ]\n}",
+      "ignoreArrayOrder" : true,
+      "ignoreExtraElements" : false
+    } ]
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"model\":\"orca-mini\",\"created_at\":\"2026-02-18T12:31:50.774042991Z\",\"message\":{\"role\":\"assistant\",\"content\":\" Sure, here's a valid JSON object for John Doe with his age and description:\\n\\n```json\\n{\\n \\\"name\\\": \\\"John Doe\\\",\\n \\\"age\\\": 30,\\n \\\"description\\\": \\\"John Doe is a software engineer at XYZ Company. He enjoys hiking and playing video games in his free time.\\\"\\n}\\n```\"},\"done\":true,\"done_reason\":\"stop\",\"total_duration\":3283462149,\"load_duration\":11864645,\"prompt_eval_count\":164,\"prompt_eval_duration\":42788530,\"eval_count\":79,\"eval_duration\":3212610590}",
+    "headers" : {
+      "Date" : "Wed, 18 Feb 2026 12:31:50 GMT",
+      "Content-Type" : "application/json; charset=utf-8"
+    }
+  },
+  "uuid" : "859d7a0b-544b-457d-a80f-434b55f61be2",
+  "persistent" : true,
+  "scenarioName" : "scenario-1-api-chat",
+  "requiredScenarioState" : "scenario-1-api-chat-2",
+  "insertionIndex" : 3
+}
