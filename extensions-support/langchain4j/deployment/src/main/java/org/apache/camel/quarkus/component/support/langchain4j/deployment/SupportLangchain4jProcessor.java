@@ -69,7 +69,7 @@ class SupportLangchain4jProcessor {
             V.class
     };
 
-    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class, onlyIfNot = QuarkusLangchain4jPresent.class)
+    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class/*, onlyIfNot = QuarkusLangchain4jPresent.class*/)
     void indexDependencies(CurateOutcomeBuildItem curateOutcome, BuildProducer<IndexDependencyBuildItem> indexedDependencies) {
         ApplicationModel applicationModel = curateOutcome.getApplicationModel();
         for (ResolvedDependency dependency : applicationModel.getDependencies()) {
@@ -84,7 +84,7 @@ class SupportLangchain4jProcessor {
         return ServiceProviderBuildItem.allProvidersFromClassPath("dev.langchain4j.http.client.HttpClientBuilderFactory");
     }
 
-    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class, onlyIfNot = QuarkusLangchain4jPresent.class)
+    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class/* , onlyIfNot = QuarkusLangchain4jPresent.class*/)
     void registerLangChain4jJacksonTypesForReflection(
             CombinedIndexBuildItem combinedIndex,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
@@ -119,7 +119,7 @@ class SupportLangchain4jProcessor {
         ReflectiveClassBuildItem.builder(PropertyNamingStrategies.SnakeCaseStrategy.class).build();
     }
 
-    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class, onlyIfNot = QuarkusLangchain4jPresent.class)
+    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class/* , onlyIfNot = QuarkusLangchain4jPresent.class*/)
     void registerLangChain4jAiServiceTypesForReflection(
             CombinedIndexBuildItem combinedIndex,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
@@ -193,7 +193,7 @@ class SupportLangchain4jProcessor {
         reflectiveClass.produce(ReflectiveClassBuildItem.builder(guardrailTypes.toArray(new String[0])).build());
     }
 
-    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class, onlyIfNot = QuarkusLangchain4jPresent.class)
+    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class/* , onlyIfNot = QuarkusLangchain4jPresent.class*/)
     void registerCustomToolsForReflection(
             CombinedIndexBuildItem combinedIndex,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
@@ -213,17 +213,17 @@ class SupportLangchain4jProcessor {
                 .build());
     }
 
-    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class, onlyIfNot = QuarkusLangchain4jPresent.class)
+    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class/* , onlyIfNot = QuarkusLangchain4jPresent.class*/)
     void registerLangChain4jNlpTypesForReflection(BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
         reflectiveClass.produce(ReflectiveClassBuildItem.builder(SentenceDetectorFactory.class).build());
     }
 
-    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class, onlyIfNot = QuarkusLangchain4jPresent.class)
+    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class/* , onlyIfNot = QuarkusLangchain4jPresent.class*/)
     RuntimeInitializedClassBuildItem runtimeInitializedClasses() {
         return new RuntimeInitializedClassBuildItem("dev.langchain4j.internal.RetryUtils");
     }
 
-    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class, onlyIfNot = QuarkusLangchain4jPresent.class)
+    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class/* , onlyIfNot = QuarkusLangchain4jPresent.class*/)
     NativeImageResourcePatternsBuildItem nativeImageResources() {
         return NativeImageResourcePatternsBuildItem.builder()
                 .includeGlob("opennlp/*.bin")
@@ -237,17 +237,16 @@ class SupportLangchain4jProcessor {
 
     //--------------------- Following build steps are used in case Quarkus-lagchain4j is present (mandatory also for jvm)
 
-
     @BuildStep(onlyIf = QuarkusLangchain4jPresent.class)
     @Record(ExecutionTime.STATIC_INIT)
     void specifyHttpClient(QuarkusLangchain4jRecorder recorder) {
-        recorder.enforceJaxRsHttpClient();
+        recorder.enforceDevLanchainHttpBuilderFactory();
     }
 
     @SuppressWarnings("unchecked")
     @BuildStep(onlyIf = QuarkusLangchain4jPresent.class)
     @Record(ExecutionTime.STATIC_INIT)
-    void registerLangChain4jAiServiceTypesForReflection(
+    void syntheticBeansForGuardrails(
             CombinedIndexBuildItem combinedIndex,
             BuildProducer<SyntheticBeanBuildItem> syntheticBeans,
             QuarkusLangchain4jRecorder recorder) {

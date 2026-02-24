@@ -16,9 +16,13 @@
  */
 package org.apache.camel.quarkus.component.langchain4j.agent.deployment;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import dev.langchain4j.model.chat.ChatModel;
+import io.quarkus.arc.Arc;
+import io.quarkus.arc.InstanceHandle;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
@@ -51,5 +55,4 @@ class Langchain4jAgentProcessor {
                 .methods(true)
                 .build();
     }
-
 }

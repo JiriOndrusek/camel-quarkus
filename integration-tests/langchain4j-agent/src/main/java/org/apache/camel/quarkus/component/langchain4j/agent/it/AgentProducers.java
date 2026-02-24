@@ -58,6 +58,7 @@ import org.apache.camel.quarkus.component.langchain4j.agent.it.tool.AdditionTool
 import org.apache.camel.quarkus.component.langchain4j.agent.it.util.PersistentChatMemoryStore;
 import org.apache.camel.quarkus.component.langchain4j.agent.it.util.ProcessUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import io.quarkiverse.langchain4j.jaxrsclient.JaxRsHttpClientBuilder;
 
 import static java.time.Duration.ofSeconds;
 
@@ -76,6 +77,8 @@ public class AgentProducers {
                 .baseUrl(baseUrl)
                 .modelName("orca-mini")
                 .temperature(0.3)
+                .httpClientBuilder(new JaxRsHttpClientBuilder())
+//                .httpClientBuilder(new dev.langchain4j.http.client.jdk.JdkHttpClientBuilderFactory())
                 .build();
     }
 
@@ -88,6 +91,8 @@ public class AgentProducers {
                 .temperature(0.3)
                 .logResponses(true)
                 .logRequests(true)
+                .httpClientBuilder(new JaxRsHttpClientBuilder())
+//                .httpClientBuilder(new dev.langchain4j.http.client.jdk.JdkHttpClientBuilderFactory())
                 .build();
     }
 
@@ -110,6 +115,8 @@ public class AgentProducers {
 
             EmbeddingModel embeddingModel = OllamaEmbeddingModel.builder()
                     .baseUrl(baseUrl)
+                    .httpClientBuilder(new JaxRsHttpClientBuilder())
+//                    .httpClientBuilder(new dev.langchain4j.http.client.jdk.JdkHttpClientBuilderFactory())
                     .modelName("nomic-embed-text")
                     .timeout(Duration.ofSeconds(30))
                     .build();

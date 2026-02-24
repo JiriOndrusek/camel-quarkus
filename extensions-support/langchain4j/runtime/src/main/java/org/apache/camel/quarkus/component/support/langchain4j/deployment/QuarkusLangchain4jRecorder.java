@@ -9,11 +9,16 @@ import org.jboss.logging.Logger;
 
 @Recorder
 public class QuarkusLangchain4jRecorder {
-    public void enforceJaxRsHttpClient() {
+    public void enforceDevLanchainHttpBuilderFactory() {
+        System.out.println("----------------------------------------------------------------------------");
         if (System.getProperty("langchain4j.http.clientBuilderFactory") == null) {
             System.setProperty("langchain4j.http.clientBuilderFactory",
                     "io.quarkiverse.langchain4j.jaxrsclient.JaxRsHttpClientBuilderFactory");
+            //                    "dev.langchain4j.http.client.jdk.JdkHttpClientBuilderFactory");
+            System.out.println(
+                    "------------- client sys property set to \"io.quarkiverse.langchain4j.jaxrsclient.JaxRsHttpClientBuilderFactory\"");
         }
+        System.out.println("----------------------------------------------------------------------------");
     }
 
     public RuntimeValue<Guardrail<?, ?>> instantiateGuardrails(Class<Guardrail<?, ?>> guardrailClass) {
