@@ -30,6 +30,19 @@
     <name>Camel Quarkus :: Integration Tests :: LangChain4j Agent</name>
     <description>Integration tests for Camel Quarkus LangChain4j Agent extension</description>
 
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.quarkiverse.langchain4j</groupId>
+                <artifactId>quarkus-langchain4j-bom</artifactId>
+                <version>${quarkiverse-langchain4j.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    
     <dependencies>
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
@@ -75,6 +88,10 @@
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-integration-wiremock-support</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkiverse.langchain4j</groupId>
+            <artifactId>quarkus-langchain4j-jaxrs-client</artifactId>
         </dependency>
     </dependencies>
 
