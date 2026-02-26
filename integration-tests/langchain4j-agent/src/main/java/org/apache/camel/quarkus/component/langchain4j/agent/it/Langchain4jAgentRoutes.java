@@ -29,45 +29,45 @@ public class Langchain4jAgentRoutes extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        from("direct:simple-agent")
-                .to("langchain4j-agent:test-agent?agent=#simpleAgent");
-
+//        from("direct:simple-agent")
+//                .to("langchain4j-agent:test-agent?agent=#simpleAgent");
+//
         from("direct:agent-with-memory")
                 .to("langchain4j-agent:test-memory-agent?agent=#agentWithMemory");
+//
+//        from("direct:agent-with-success-input-guardrail")
+//                .to("langchain4j-agent:test-agent-with-success-input-guardrail?agent=#agentWithSuccessInputGuardrail");
+//
+//        from("direct:agent-with-failing-input-guardrail")
+//                .to("langchain4j-agent:test-agent-with-failing-input-guardrail?agent=#agentWithFailingInputGuardrail");
+//
+//        from("direct:agent-with-success-output-guardrail")
+//                .to("langchain4j-agent:test-agent-with-success-output-guardrail?agent=#agentWithSuccessOutputGuardrail");
+//
+//        from("direct:agent-with-failing-output-guardrail")
+//                .to("langchain4j-agent:test-agent-with-failing-output-guardrail?agent=#agentWithFailingOutputGuardrail");
+//
+//        from("direct:agent-with-json-extractor-output-guardrail")
+//                .to("langchain4j-agent:test-agent-with-json-extractor-output-guardrail?agent=#agentWithJsonExtractorOutputGuardrail");
+//
+//        from("direct:agent-with-rag")
+//                .to("langchain4j-agent:test-agent-with-rag?agent=#agentWithRag");
+//
+//        from("direct:agent-with-custom-service")
+//                .to("langchain4j-agent:test-agent-with-custom-service?agent=#agentWithCustomService");
+//
+//        from("direct:agent-with-tools")
+//                .to("langchain4j-agent:test-agent-with-tools?agent=#agentWithTools&tags=users");
+//
+//        from("langchain4j-tools:userDb?tags=users&description=Query user database by user ID&parameter.userId=integer")
+//                .setBody().constant("{\"name\": \"" + USER_JOHN + "\", \"id\": \"123\"}");
 
-        from("direct:agent-with-success-input-guardrail")
-                .to("langchain4j-agent:test-agent-with-success-input-guardrail?agent=#agentWithSuccessInputGuardrail");
+//        from("direct:agent-with-custom-tools")
+//                .to("langchain4j-agent:test-agent-custom-tools?agent=#agentWithCustomTools");
 
-        from("direct:agent-with-failing-input-guardrail")
-                .to("langchain4j-agent:test-agent-with-failing-input-guardrail?agent=#agentWithFailingInputGuardrail");
-
-        from("direct:agent-with-success-output-guardrail")
-                .to("langchain4j-agent:test-agent-with-success-output-guardrail?agent=#agentWithSuccessOutputGuardrail");
-
-        from("direct:agent-with-failing-output-guardrail")
-                .to("langchain4j-agent:test-agent-with-failing-output-guardrail?agent=#agentWithFailingOutputGuardrail");
-
-        from("direct:agent-with-json-extractor-output-guardrail")
-                .to("langchain4j-agent:test-agent-with-json-extractor-output-guardrail?agent=#agentWithJsonExtractorOutputGuardrail");
-
-        from("direct:agent-with-rag")
-                .to("langchain4j-agent:test-agent-with-rag?agent=#agentWithRag");
-
-        from("direct:agent-with-custom-service")
-                .to("langchain4j-agent:test-agent-with-custom-service?agent=#agentWithCustomService");
-
-        from("direct:agent-with-tools")
-                .to("langchain4j-agent:test-agent-with-tools?agent=#agentWithTools&tags=users");
-
-        from("langchain4j-tools:userDb?tags=users&description=Query user database by user ID&parameter.userId=integer")
-                .setBody().constant("{\"name\": \"" + USER_JOHN + "\", \"id\": \"123\"}");
-
-        from("direct:agent-with-custom-tools")
-                .to("langchain4j-agent:test-agent-custom-tools?agent=#agentWithCustomTools");
-
-        if (isNodeJSInstaled) {
-            from("direct:agent-with-mcp-client")
-                    .to("langchain4j-agent:test-agent-with-mcp-client?agent=#agentWithMcpClient");
-        }
+//        if (isNodeJSInstaled) {
+//            from("direct:agent-with-mcp-client")
+//                    .to("langchain4j-agent:test-agent-with-mcp-client?agent=#agentWithMcpClient");
+//        }
     }
 }

@@ -31,6 +31,7 @@ import dev.langchain4j.mcp.client.DefaultMcpClient;
 import dev.langchain4j.mcp.client.transport.stdio.StdioMcpTransport;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
+import dev.langchain4j.model.chat.Capability;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.ollama.OllamaChatModel;
@@ -44,6 +45,7 @@ import dev.langchain4j.store.memory.chat.ChatMemoryStore;
 import io.smallrye.common.annotation.Identifier;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Inject;
 import org.apache.camel.component.langchain4j.agent.api.Agent;
 import org.apache.camel.component.langchain4j.agent.api.AgentConfiguration;
 import org.apache.camel.component.langchain4j.agent.api.AgentWithMemory;
@@ -70,17 +72,20 @@ public class AgentProducers {
     @ConfigProperty(name = "nodejs.installed")
     boolean isNodeJSInstaled;
 
-    @Produces
-    @Identifier("ollamaOrcaMiniModel")
-    ChatModel ollamaOrcaMiniModel() {
-        return OllamaChatModel.builder()
-                .baseUrl(baseUrl)
-                .modelName("orca-mini")
-                .temperature(0.3)
-                .httpClientBuilder(new JaxRsHttpClientBuilder())
-//                .httpClientBuilder(new dev.langchain4j.http.client.jdk.JdkHttpClientBuilderFactory())
-                .build();
-    }
+    @Inject
+    ChatModel chatModel;
+
+//    @Produces
+//    @Identifier("ollamaOrcaMiniModel")
+//    ChatModel ollamaOrcaMiniModel() {
+//        return OllamaChatModel.builder()
+//                .baseUrl(baseUrl)
+//                .modelName("orca-mini")
+//                .temperature(0.3)
+//                .httpClientBuilder(new JaxRsHttpClientBuilder())
+////                .httpClientBuilder(new dev.langchain4j.http.client.jdk.JdkHttpClientBuilderFactory())
+//                .build();
+//    }
 
     @Produces
     @Identifier("granite4Model")
@@ -92,62 +97,70 @@ public class AgentProducers {
                 .logResponses(true)
                 .logRequests(true)
                 .httpClientBuilder(new JaxRsHttpClientBuilder())
+        .supportedCapabilities(Capability.RESPONSE_FORMAT_JSON_SCHEMA)
 //                .httpClientBuilder(new dev.langchain4j.http.client.jdk.JdkHttpClientBuilderFactory())
                 .build();
     }
 
-    @Produces
-    ChatMemoryStore chatMemoryStore() {
-        return new PersistentChatMemoryStore();
-    }
-
-    //    @Produces
-    RetrievalAugmentor retrievalAugmentor() throws IOException {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        try (InputStream stream = classLoader.getResourceAsStream("rag/company-knowledge-base.txt")) {
-            if (stream == null) {
-                throw new IllegalArgumentException("company-knowledge.txt not found");
-            }
-
-            Document document = Document.from(new String(stream.readAllBytes(), StandardCharsets.UTF_8));
-
-            List<TextSegment> segments = DocumentSplitters.recursive(300, 100).split(document);
-
-            EmbeddingModel embeddingModel = OllamaEmbeddingModel.builder()
-                    .baseUrl(baseUrl)
-                    .httpClientBuilder(new JaxRsHttpClientBuilder())
-//                    .httpClientBuilder(new dev.langchain4j.http.client.jdk.JdkHttpClientBuilderFactory())
-                    .modelName("nomic-embed-text")
-                    .timeout(Duration.ofSeconds(30))
-                    .build();
-
-            List<Embedding> embeddings = embeddingModel.embedAll(segments).content();
-
-            // Store in embedding store
-            EmbeddingStore<TextSegment> embeddingStore = new InMemoryEmbeddingStore<>();
-            embeddingStore.addAll(embeddings, segments);
-
-            // Create content retriever
-            EmbeddingStoreContentRetriever contentRetriever = EmbeddingStoreContentRetriever.builder()
-                    .embeddingStore(embeddingStore)
-                    .embeddingModel(embeddingModel)
-                    .maxResults(3)
-                    .minScore(0.6)
-                    .build();
-
-            // Create a RetrievalAugmentor that uses only a content retriever : naive rag scenario
-            return DefaultRetrievalAugmentor.builder()
-                    .contentRetriever(contentRetriever)
-                    .build();
-        }
-    }
-
-    @Produces
-    @Identifier("simpleAgent")
-    Agent simpleAgent(@Identifier("ollamaOrcaMiniModel") ChatModel chatModel) {
-        return new AgentWithoutMemory(new AgentConfiguration().withChatModel(chatModel));
-    }
-
+//    @Produces
+//    ChatMemoryStore chatMemoryStore() {
+//        return new PersistentChatMemoryStore();
+//    }
+//
+//    //    @Produces
+//    RetrievalAugmentor retrievalAugmentor() throws IOException {
+//        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+//        try (InputStream stream = classLoader.getResourceAsStream("rag/company-knowledge-base.txt")) {
+//            if (stream == null) {
+//                throw new IllegalArgumentException("company-knowledge.txt not found");
+//            }
+//
+//            Document document = Document.from(new String(stream.readAllBytes(), StandardCharsets.UTF_8));
+//
+//            List<TextSegment> segments = DocumentSplitters.recursive(300, 100).split(document);
+//
+//            EmbeddingModel embeddingModel = OllamaEmbeddingModel.builder()
+//                    .baseUrl(baseUrl)
+//                    .httpClientBuilder(new JaxRsHttpClientBuilder())
+////                    .httpClientBuilder(new dev.langchain4j.http.client.jdk.JdkHttpClientBuilderFactory())
+//                    .modelName("nomic-embed-text")
+//                    .timeout(Duration.ofSeconds(30))
+//                    .build();
+//
+//            List<Embedding> embeddings = embeddingModel.embedAll(segments).content();
+//
+//            // Store in embedding store
+//            EmbeddingStore<TextSegment> embeddingStore = new InMemoryEmbeddingStore<>();
+//            embeddingStore.addAll(embeddings, segments);
+//
+//            // Create content retriever
+//            EmbeddingStoreContentRetriever contentRetriever = EmbeddingStoreContentRetriever.builder()
+//                    .embeddingStore(embeddingStore)
+//                    .embeddingModel(embeddingModel)
+//                    .maxResults(3)
+//                    .minScore(0.6)
+//                    .build();
+//
+//            // Create a RetrievalAugmentor that uses only a content retriever : naive rag scenario
+//            return DefaultRetrievalAugmentor.builder()
+//                    .contentRetriever(contentRetriever)
+//                    .build();
+//        }
+//    }
+//
+//    @Produces
+//    @Identifier("simpleAgent")
+//    Agent simpleAgent(@Identifier("granite4Model") ChatModel chatModel, ChatMemoryStore chatMemoryStore) {
+//
+//        ChatMemoryProvider chatMemoryProvider = memoryId -> MessageWindowChatMemory.builder()
+//                .id(memoryId)
+//                .maxMessages(10)
+//                .chatMemoryStore(chatMemoryStore)
+//                .build();
+//
+//        return new AgentWithoutMemory(new AgentConfiguration().withChatModel(chatModel).withChatMemoryProvider(chatMemoryProvider));
+//    }
+//
     @Produces
     @Identifier("agentWithMemory")
     Agent agentWithMemory(@Identifier("granite4Model") ChatModel chatModel, ChatMemoryStore chatMemoryStore) {
@@ -161,99 +174,111 @@ public class AgentProducers {
                 .withChatModel(chatModel)
                 .withChatMemoryProvider(chatMemoryProvider));
     }
+//
+//    @Produces
+//    @Identifier("agentWithSuccessInputGuardrail")
+//    Agent agentWithSuccessInputGuardrail(@Identifier("ollamaOrcaMiniModel") ChatModel chatModel) {
+//        return new AgentWithoutMemory(new AgentConfiguration()
+//                .withChatModel(chatModel)
+//                .withInputGuardrailClasses(List.of(ValidationSuccessInputGuardrail.class)));
+//    }
+//
+//    @Produces
+//    @Identifier("agentWithFailingInputGuardrail")
+//    Agent agentWithFailingInputGuardrail(@Identifier("ollamaOrcaMiniModel") ChatModel chatModel) {
+//        return new AgentWithoutMemory(new AgentConfiguration()
+//                .withChatModel(chatModel)
+//                .withInputGuardrailClasses(List.of(ValidationFailureInputGuardrail.class)));
+//    }
+//
+//    @Produces
+//    @Identifier("agentWithSuccessOutputGuardrail")
+//    Agent agentWithSuccessOutputGuardrail(@Identifier("ollamaOrcaMiniModel") ChatModel chatModel) {
+//        return new AgentWithoutMemory(new AgentConfiguration()
+//                .withChatModel(chatModel)
+//                .withOutputGuardrailClasses(List.of(ValidationSuccessOutputGuardrail.class)));
+//    }
+//
+//    @Produces
+//    @Identifier("agentWithFailingOutputGuardrail")
+//    Agent agentWithFailingOutputGuardrail(@Identifier("ollamaOrcaMiniModel") ChatModel chatModel) {
+//        return new AgentWithoutMemory(new AgentConfiguration()
+//                .withChatModel(chatModel)
+//                .withOutputGuardrailClasses(List.of(ValidationFailureOutputGuardrail.class)));
+//    }
+//
+//    @Produces
+//    @Identifier("agentWithJsonExtractorOutputGuardrail")
+//    Agent agentWithJsonExtractorOutputGuardrail(@Identifier("ollamaOrcaMiniModel") ChatModel chatModel) {
+//        return new AgentWithoutMemory(new AgentConfiguration()
+//                .withChatModel(chatModel)
+//                .withOutputGuardrailClasses(List.of(TestPojoJsonExtractorOutputGuardrail.class)));
+//    }
+//
+//    @Produces
+//    @Identifier("agentWithRag")
+//    public Agent agentWithRag(
+//            @Identifier("ollamaOrcaMiniModel") ChatModel chatModel) throws IOException {
+//        return new AgentWithoutMemory(new AgentConfiguration()
+//                .withChatModel(chatModel)
+//                .withRetrievalAugmentor(retrievalAugmentor()));
+//    }
+//
+//    @Produces
+//    @Identifier("agentWithTools")
+//    public Agent agentWithTools(@Identifier("granite4Model") ChatModel chatModel) {
+//        return new AgentWithMemory(new AgentConfiguration().withChatModel(chatModel));
+//    }
+//
+//    @Produces
+//    @Identifier("agentWithCustomService")
+//    public Agent agentCustom(
+//            @Identifier("ollamaOrcaMiniModel") ChatModel chatModel,
+//            ObjectMapper objectMapper) {
+//        return new TestPojoAiAgent(new AgentConfiguration()
+//                .withChatModel(chatModel), objectMapper);
+//    }
 
-    @Produces
-    @Identifier("agentWithSuccessInputGuardrail")
-    Agent agentWithSuccessInputGuardrail(@Identifier("ollamaOrcaMiniModel") ChatModel chatModel) {
-        return new AgentWithoutMemory(new AgentConfiguration()
-                .withChatModel(chatModel)
-                .withInputGuardrailClasses(List.of(ValidationSuccessInputGuardrail.class)));
-    }
-
-    @Produces
-    @Identifier("agentWithFailingInputGuardrail")
-    Agent agentWithFailingInputGuardrail(@Identifier("ollamaOrcaMiniModel") ChatModel chatModel) {
-        return new AgentWithoutMemory(new AgentConfiguration()
-                .withChatModel(chatModel)
-                .withInputGuardrailClasses(List.of(ValidationFailureInputGuardrail.class)));
-    }
-
-    @Produces
-    @Identifier("agentWithSuccessOutputGuardrail")
-    Agent agentWithSuccessOutputGuardrail(@Identifier("ollamaOrcaMiniModel") ChatModel chatModel) {
-        return new AgentWithoutMemory(new AgentConfiguration()
-                .withChatModel(chatModel)
-                .withOutputGuardrailClasses(List.of(ValidationSuccessOutputGuardrail.class)));
-    }
-
-    @Produces
-    @Identifier("agentWithFailingOutputGuardrail")
-    Agent agentWithFailingOutputGuardrail(@Identifier("ollamaOrcaMiniModel") ChatModel chatModel) {
-        return new AgentWithoutMemory(new AgentConfiguration()
-                .withChatModel(chatModel)
-                .withOutputGuardrailClasses(List.of(ValidationFailureOutputGuardrail.class)));
-    }
-
-    @Produces
-    @Identifier("agentWithJsonExtractorOutputGuardrail")
-    Agent agentWithJsonExtractorOutputGuardrail(@Identifier("ollamaOrcaMiniModel") ChatModel chatModel) {
-        return new AgentWithoutMemory(new AgentConfiguration()
-                .withChatModel(chatModel)
-                .withOutputGuardrailClasses(List.of(TestPojoJsonExtractorOutputGuardrail.class)));
-    }
-
-    @Produces
-    @Identifier("agentWithRag")
-    public Agent agentWithRag(
-            @Identifier("ollamaOrcaMiniModel") ChatModel chatModel) throws IOException {
-        return new AgentWithoutMemory(new AgentConfiguration()
-                .withChatModel(chatModel)
-                .withRetrievalAugmentor(retrievalAugmentor()));
-    }
-
-    @Produces
-    @Identifier("agentWithTools")
-    public Agent agentWithTools(@Identifier("granite4Model") ChatModel chatModel) {
-        return new AgentWithoutMemory(new AgentConfiguration().withChatModel(chatModel));
-    }
-
-    @Produces
-    @Identifier("agentWithCustomService")
-    public Agent agentCustom(
-            @Identifier("ollamaOrcaMiniModel") ChatModel chatModel,
-            ObjectMapper objectMapper) {
-        return new TestPojoAiAgent(new AgentConfiguration()
-                .withChatModel(chatModel), objectMapper);
-    }
-
-    @Produces
-    @Identifier("agentWithCustomTools")
-    Agent agentWithCustomTools(@Identifier("granite4Model") ChatModel chatModel) {
-        return new AgentWithoutMemory(new AgentConfiguration()
-                .withChatModel(chatModel)
-                .withCustomTools(List.of(new AdditionTool())));
-    }
-
-    @Produces
-    @Identifier("agentWithMcpClient")
-    Agent agentWithMcpClient(@Identifier("granite4Model") ChatModel chatModel) {
-        if (isNodeJSInstaled) {
-            return new AgentWithoutMemory(new AgentConfiguration()
-                    .withChatModel(chatModel)
-                    .withMcpClient(new DefaultMcpClient.Builder()
-                            // Startup on Windows is really slow (around 1min).
-                            .initializationTimeout(Duration.ofSeconds(120))
-                            .transport(new StdioMcpTransport.Builder()
-                                    .command(List.of(ProcessUtils.getNpxExecutable(), "-y",
-                                            "@modelcontextprotocol/server-everything@2025.12.18"))
-                                    .logEvents(true)
-                                    .build())
-                            .build())
-                    .withMcpToolProviderFilter((mcpClient, toolSpecification) -> {
-                        String toolName = toolSpecification.name().toLowerCase();
-                        return toolName.contains("add") || toolName.contains("echo") || toolName.contains("long");
-                    }));
-        }
-        return null;
-    }
+//    @Produces
+//    @Identifier("agentWithCustomTools")
+//    Agent agentWithCustomTools(@Identifier("granite4Model") ChatModel chatModel2) {
+//        return new AgentWithoutMemory(new AgentConfiguration()
+//                .withChatModel(chatModel)
+//                .withCustomTools(List.of(new AdditionTool())));
+//    }
+//
+//    @Produces
+//    @Identifier("agentWithMcpClient")
+//    Agent agentWithMcpClient(@Identifier("granite4Model") ChatModel chatModel) {
+//        if (isNodeJSInstaled) {
+//            return new AgentWithoutMemory(new AgentConfiguration()
+//                    .withChatModel(chatModel)
+//                    .withMcpClient(new DefaultMcpClient.Builder()
+//                            // Startup on Windows is really slow (around 1min).
+//                            .initializationTimeout(Duration.ofSeconds(120))
+//                            .transport(new StdioMcpTransport.Builder()
+//                                    .command(List.of(ProcessUtils.getNpxExecutable(), "-y",
+//                                            "@modelcontextprotocol/server-everything@2025.12.18"))
+//                                    .logEvents(true)
+//                                    .build())
+//                            .build())
+//                    .withMcpToolProviderFilter((mcpClient, toolSpecification) -> {
+//                        String toolName = toolSpecification.name().toLowerCase();
+//                        return toolName.contains("add") || toolName.contains("echo") || toolName.contains("long");
+//                    }));
+//        }
+//        return null;
+//    }
+//
+//    @Produces
+//    @Identifier(("chatMemory"))
+//    MessageWindowChatMemory MessageWindowChatMemory(ChatMemoryStore chatMemoryStore) {
+//        return MessageWindowChatMemory.builder()
+//                .maxMessages(20)
+//                .id("default")
+//                .chatMemoryStore(chatMemoryStore)
+//                .build();
+//    }
 }
+
+//revert ql4j and try to use agent with memory for the tools

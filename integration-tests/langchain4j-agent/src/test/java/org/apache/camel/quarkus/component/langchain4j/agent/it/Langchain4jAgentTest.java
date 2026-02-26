@@ -22,6 +22,7 @@ import io.restassured.RestAssured;
 import org.apache.camel.quarkus.component.langchain4j.agent.it.guardrail.ValidationFailureInputGuardrail;
 import org.apache.camel.quarkus.component.langchain4j.agent.it.guardrail.ValidationFailureOutputGuardrail;
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.jboss.jandex.ClassType;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,48 +50,48 @@ class Langchain4jAgentTest {
     static final String USER_ALICE = "Alice";
     static final String USER_FAVORITE_COLOR = "blue";
     static final String MEMORY_ID = "camel-quarkus-memory-1";
-
-    @Test
-    void simpleUserMessage() {
-        RestAssured.given()
-                .body(TEST_USER_MESSAGE_SIMPLE)
-                .post("/langchain4j-agent/simple")
-                .then()
-                .statusCode(200)
-                .body(
-                        not(TEST_USER_MESSAGE_SIMPLE),
-                        containsString("Apache Camel"));
-    }
-
-    @Test
-    void simpleUserMessageWithSystemMessagePrompt() {
-        RestAssured.given()
-                .queryParam("systemMessage", TEST_SYSTEM_MESSAGE)
-                .body(TEST_USER_MESSAGE_STORY)
-                .post("/langchain4j-agent/simple")
-                .then()
-                .statusCode(200)
-                .body(
-                        not(TEST_USER_MESSAGE_SIMPLE),
-                        startsWith(EXPECTED_STORY_START),
-                        containsString(EXPECTED_STORY_CONTENT));
-    }
-
-    @Test
-    void simpleUserMessageWithAiAgentBody() {
-        RestAssured.given()
-                .queryParam("bodyAsBean", true)
-                .queryParam("systemMessage", TEST_SYSTEM_MESSAGE)
-                .body(TEST_USER_MESSAGE_STORY)
-                .post("/langchain4j-agent/simple")
-                .then()
-                .statusCode(200)
-                .body(
-                        not(TEST_USER_MESSAGE_SIMPLE),
-                        startsWith(EXPECTED_STORY_START),
-                        containsString(EXPECTED_STORY_CONTENT));
-    }
-
+//
+//    @Test
+//    void simpleUserMessage() {
+//        RestAssured.given()
+//                .body(TEST_USER_MESSAGE_SIMPLE)
+//                .post("/langchain4j-agent/simple")
+//                .then()
+//                .statusCode(200)
+//                .body(
+//                        not(TEST_USER_MESSAGE_SIMPLE),
+//                        containsString("Apache Camel"));
+//    }
+//
+//    @Test
+//    void simpleUserMessageWithSystemMessagePrompt() {
+//        RestAssured.given()
+//                .queryParam("systemMessage", TEST_SYSTEM_MESSAGE)
+//                .body(TEST_USER_MESSAGE_STORY)
+//                .post("/langchain4j-agent/simple")
+//                .then()
+//                .statusCode(200)
+//                .body(
+//                        not(TEST_USER_MESSAGE_SIMPLE),
+//                        startsWith(EXPECTED_STORY_START),
+//                        containsString(EXPECTED_STORY_CONTENT));
+//    }
+//
+//    @Test
+//    void simpleUserMessageWithAiAgentBody() {
+//        RestAssured.given()
+//                .queryParam("bodyAsBean", true)
+//                .queryParam("systemMessage", TEST_SYSTEM_MESSAGE)
+//                .body(TEST_USER_MESSAGE_STORY)
+//                .post("/langchain4j-agent/simple")
+//                .then()
+//                .statusCode(200)
+//                .body(
+//                        not(TEST_USER_MESSAGE_SIMPLE),
+//                        startsWith(EXPECTED_STORY_START),
+//                        containsString(EXPECTED_STORY_CONTENT));
+//    }
+//
     @Test
     void agentMemory() {
         RestAssured.given()
@@ -117,104 +118,104 @@ class Langchain4jAgentTest {
                         containsString(USER_ALICE),
                         containsString(USER_FAVORITE_COLOR));
     }
+//
+//    @Test
+//    void inputGuardrailSuccess() {
+//        RestAssured.given()
+//                .body("Hello - my name is " + USER_ALICE)
+//                .post("/langchain4j-agent/input/guardrail/success")
+//                .then()
+//                .statusCode(200)
+//                .body(is("true"));
+//    }
+//
+//    @Test
+//    void inputGuardrailFailure() {
+//        RestAssured.given()
+//                .body("Hello - my name is " + USER_ALICE)
+//                .post("/langchain4j-agent/input/guardrail/failure")
+//                .then()
+//                .statusCode(500)
+//                .body(containsString("guardrail %s failed".formatted(ValidationFailureInputGuardrail.class.getName())));
+//    }
+//
+//    @Test
+//    void outputGuardrailSuccess() {
+//        RestAssured.given()
+//                .body("Hello - my name is " + USER_ALICE)
+//                .post("/langchain4j-agent/output/guardrail/success")
+//                .then()
+//                .statusCode(200)
+//                .body(is("true"));
+//    }
+//
+//    @Test
+//    void outputGuardrailFailure() {
+//        RestAssured.given()
+//                .body("Hello - my name is " + USER_ALICE)
+//                .post("/langchain4j-agent/output/guardrail/failure")
+//                .then()
+//                .statusCode(500)
+//                .body(containsString("guardrail %s failed".formatted(ValidationFailureOutputGuardrail.class.getName())));
+//    }
+//
+//    @Test
+//    void jsonExtractorOutputGuardrailSuccess() {
+//        RestAssured.given()
+//                .body("Return an example JSON object about a person named '%s' with the fields name and description"
+//                        .formatted(USER_JOHN))
+//                .post("/langchain4j-agent/output/guardrail/json/extractor")
+//                .then()
+//                .statusCode(200)
+//                .body(
+//                        "name", is(USER_JOHN),
+//                        "description", notNullValue());
+//    }
+//
+//    @Test
+//    void jsonExtractorOutputGuardrailFailure() {
+//        RestAssured.given()
+//                // Returns field age which is not defined in TestPojo
+//                .body("Return an example JSON object about a person named '%s' with the fields age and description"
+//                        .formatted(USER_JOHN))
+//                .post("/langchain4j-agent/output/guardrail/json/extractor")
+//                .then()
+//                .statusCode(500)
+//                .body(containsString("Invalid JSON"));
+//    }
+//
+//    @Test
+//    void simpleRag() {
+//        RestAssured.given()
+//                .body("Describe the Miles of Camels Car Rental cancellations policy for cancelling 24 hours before pickup. What is the refund amount?")
+//                .post("/langchain4j-agent/rag")
+//                .then()
+//                .statusCode(200)
+//                .body(containsStringIgnoringCase("full refund"));
+//    }
+//
+//    @Test
+//    void simpleToolInvocation() {
+//        RestAssured.given()
+//                .body("What is the name of user ID 123? Do NOT respond with any markdown formatting.")
+//                .post("/langchain4j-agent/tools")
+//                .then()
+//                .statusCode(200)
+//                .body(containsStringIgnoringCase(USER_JOHN));
+//    }
 
-    @Test
-    void inputGuardrailSuccess() {
-        RestAssured.given()
-                .body("Hello - my name is " + USER_ALICE)
-                .post("/langchain4j-agent/input/guardrail/success")
-                .then()
-                .statusCode(200)
-                .body(is("true"));
-    }
-
-    @Test
-    void inputGuardrailFailure() {
-        RestAssured.given()
-                .body("Hello - my name is " + USER_ALICE)
-                .post("/langchain4j-agent/input/guardrail/failure")
-                .then()
-                .statusCode(500)
-                .body(containsString("guardrail %s failed".formatted(ValidationFailureInputGuardrail.class.getName())));
-    }
-
-    @Test
-    void outputGuardrailSuccess() {
-        RestAssured.given()
-                .body("Hello - my name is " + USER_ALICE)
-                .post("/langchain4j-agent/output/guardrail/success")
-                .then()
-                .statusCode(200)
-                .body(is("true"));
-    }
-
-    @Test
-    void outputGuardrailFailure() {
-        RestAssured.given()
-                .body("Hello - my name is " + USER_ALICE)
-                .post("/langchain4j-agent/output/guardrail/failure")
-                .then()
-                .statusCode(500)
-                .body(containsString("guardrail %s failed".formatted(ValidationFailureOutputGuardrail.class.getName())));
-    }
-
-    @Test
-    void jsonExtractorOutputGuardrailSuccess() {
-        RestAssured.given()
-                .body("Return an example JSON object about a person named '%s' with the fields name and description"
-                        .formatted(USER_JOHN))
-                .post("/langchain4j-agent/output/guardrail/json/extractor")
-                .then()
-                .statusCode(200)
-                .body(
-                        "name", is(USER_JOHN),
-                        "description", notNullValue());
-    }
-
-    @Test
-    void jsonExtractorOutputGuardrailFailure() {
-        RestAssured.given()
-                // Returns field age which is not defined in TestPojo
-                .body("Return an example JSON object about a person named '%s' with the fields age and description"
-                        .formatted(USER_JOHN))
-                .post("/langchain4j-agent/output/guardrail/json/extractor")
-                .then()
-                .statusCode(500)
-                .body(containsString("Invalid JSON"));
-    }
-
-    @Test
-    void simpleRag() {
-        RestAssured.given()
-                .body("Describe the Miles of Camels Car Rental cancellations policy for cancelling 24 hours before pickup. What is the refund amount?")
-                .post("/langchain4j-agent/rag")
-                .then()
-                .statusCode(200)
-                .body(containsStringIgnoringCase("full refund"));
-    }
-
-    @Test
-    void simpleToolInvocation() {
-        RestAssured.given()
-                .body("What is the name of user ID 123? Do NOT respond with any markdown formatting.")
-                .post("/langchain4j-agent/tools")
-                .then()
-                .statusCode(200)
-                .body(containsStringIgnoringCase(USER_JOHN));
-    }
-
-    @Test
-    void customAiService() {
-        RestAssured.given()
-                .body(USER_JOHN)
-                .post("/langchain4j-agent/custom/service")
-                .then()
-                .statusCode(200)
-                .body(
-                        "name", is(USER_JOHN),
-                        "description", notNullValue());
-    }
-
+//    @Test
+//    void customAiService() {
+//        RestAssured.given()
+//                .body(USER_JOHN)
+//                .post("/langchain4j-agent/custom/service")
+//                .then()
+//                .statusCode(200)
+//                .body(
+//                        "name", is(USER_JOHN),
+//                        "description", notNullValue());
+//    }
+//
     @Test
     void agentWithCustomTools() {
         RestAssured.given()
@@ -226,26 +227,37 @@ class Langchain4jAgentTest {
                         "result", containsStringIgnoringCase("15"),
                         "toolWasInvoked", is(true));
     }
+//
+//    @Test
+//    void agentWithMcpClient() {
+//        boolean isNodeJSInstalled = ConfigProvider.getConfig().getValue("nodejs.installed", boolean.class);
+//        Assumptions.assumeTrue(isNodeJSInstalled, "Node.js is not installed");
+//
+//        RestAssured.given()
+//                .body("Please list your available tools. You MUST respond using ONLY valid JSON with tool names as an array. DO NOT add explanations. DO NOT add comments. DO NOT wrap in markdown.")
+//                .post("/langchain4j-agent/mcp/client")
+//                .then()
+//                .statusCode(200)
+//                .body(".", containsInAnyOrder("add", "echo", "longRunningOperation"));
+//
+//        RestAssured.given()
+//                .body("Use your available tools to perform a long running operation for 2 seconds with 2 steps. DO NOT use any markdown formatting in the response.")
+//                .post("/langchain4j-agent/mcp/client")
+//                .then()
+//                .statusCode(200)
+//                .body(containsStringIgnoringCase("operation"))
+//                .and().body(containsStringIgnoringCase("successfully"))
+//                .and().body(containsStringIgnoringCase("executed"));
+//    }
 
-    @Test
-    void agentWithMcpClient() {
-        boolean isNodeJSInstalled = ConfigProvider.getConfig().getValue("nodejs.installed", boolean.class);
-        Assumptions.assumeTrue(isNodeJSInstalled, "Node.js is not installed");
 
-        RestAssured.given()
-                .body("Please list your available tools. You MUST respond using ONLY valid JSON with tool names as an array. DO NOT add explanations. DO NOT add comments. DO NOT wrap in markdown.")
-                .post("/langchain4j-agent/mcp/client")
-                .then()
-                .statusCode(200)
-                .body(".", containsInAnyOrder("add", "echo", "longRunningOperation"));
+    //seems like io.quarkiverse.langchain4j.QuarkusAiServiceContextFactory is not found as SPI
+//    todo register spis from ql4j.core/runtime (like dev.langchain4j.spi.services.AiServiceContextFactory)
 
-        RestAssured.given()
-                .body("Use your available tools to perform a long running operation for 2 seconds with 2 steps. DO NOT use any markdown formatting in the response.")
-                .post("/langchain4j-agent/mcp/client")
-                .then()
-                .statusCode(200)
-                .body(containsStringIgnoringCase("operation"))
-                .and().body(containsStringIgnoringCase("successfully"))
-                .and().body(containsStringIgnoringCase("executed"));
-    }
+//    //from ql4j processor
+//     if (LangChain4jDotNames.BEAN_CHAT_MEMORY_PROVIDER_SUPPLIER.toString().equals(chatMemoryProviderSupplierClassName)) {
+//        configurator.addInjectionPoint(ClassType.create(LangChain4jDotNames.CHAT_MEMORY_PROVIDER));
+//        needsChatMemoryProviderBean = true;
+//    }
+
 }

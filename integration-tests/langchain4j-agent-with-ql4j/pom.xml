@@ -27,7 +27,7 @@
     </parent>
 
     <artifactId>camel-quarkus-integration-test-langchain4j-agent</artifactId>
-    <name>Camel Quarkus :: Integration Tests :: LangChain4j Agent</name>
+    <name>Camel Quarkfus :: Integration Tests :: LangChain4j Agent</name>
     <description>Integration tests for Camel Quarkus LangChain4j Agent extension</description>
 
     <dependencyManagement>
