@@ -1,0 +1,24 @@
+{
+  "id" : "e690b4b3-5626-4e8b-a0e2-a7d72d394695",
+  "name" : "api_chat",
+  "request" : {
+    "url" : "/api/chat",
+    "method" : "POST",
+    "bodyPatterns" : [ {
+      "equalToJson" : "{\n  \"model\" : \"granite4:3b\",\n  \"messages\" : [ {\n    \"role\" : \"user\",\n    \"content\" : \"Use your available tools to perform a long running operation for 2 seconds with 2 steps. DO NOT use any markdown formatting in the response.\"\n  }, {\n    \"role\" : \"assistant\",\n    \"tool_calls\" : [ {\n      \"function\" : {\n        \"name\" : \"longRunningOperation\",\n        \"arguments\" : {\n          \"duration\" : 2,\n          \"steps\" : 2\n        }\n      }\n    } ]\n  }, {\n    \"role\" : \"tool\",\n    \"content\" : \"Long running operation completed. Duration: 2 seconds, Steps: 2.\"\n  } ],\n  \"options\" : {\n    \"temperature\" : 0.3,\n    \"top_k\" : 40,\n    \"top_p\" : 0.9,\n    \"stop\" : [ ]\n  },\n  \"stream\" : false,\n  \"tools\" : [ {\n    \"type\" : \"function\",\n    \"function\" : {\n      \"name\" : \"longRunningOperation\",\n      \"description\" : \"Demonstrates a long running operation with progress updates\",\n      \"parameters\" : {\n        \"type\" : \"object\",\n        \"properties\" : {\n          \"duration\" : {\n            \"type\" : \"number\",\n            \"description\" : \"Duration of the operation in seconds\"\n          },\n          \"steps\" : {\n            \"type\" : \"number\",\n            \"description\" : \"Number of steps in the operation\"\n          }\n        },\n        \"required\" : [ ]\n      }\n    }\n  }, {\n    \"type\" : \"function\",\n    \"function\" : {\n      \"name\" : \"add\",\n      \"description\" : \"Adds two numbers\",\n      \"parameters\" : {\n        \"type\" : \"object\",\n        \"properties\" : {\n          \"a\" : {\n            \"type\" : \"number\",\n            \"description\" : \"First number\"\n          },\n          \"b\" : {\n            \"type\" : \"number\",\n            \"description\" : \"Second number\"\n          }\n        },\n        \"required\" : [ \"a\", \"b\" ]\n      }\n    }\n  }, {\n    \"type\" : \"function\",\n    \"function\" : {\n      \"name\" : \"echo\",\n      \"description\" : \"Echoes back the input\",\n      \"parameters\" : {\n        \"type\" : \"object\",\n        \"properties\" : {\n          \"message\" : {\n            \"type\" : \"string\",\n            \"description\" : \"Message to echo\"\n          }\n        },\n        \"required\" : [ \"message\" ]\n      }\n    }\n  } ]\n}",
+      "ignoreArrayOrder" : true,
+      "ignoreExtraElements" : false
+    } ]
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"model\":\"granite4:3b\",\"created_at\":\"2026-02-26T13:48:46.753848124Z\",\"message\":{\"role\":\"assistant\",\"content\":\"The long running operation has been executed successfully with a total duration of 2 seconds divided into 2 steps. No further actions are required.\"},\"done\":true,\"done_reason\":\"stop\",\"total_duration\":1639331991,\"load_duration\":45401589,\"prompt_eval_count\":372,\"prompt_eval_duration\":421508131,\"eval_count\":29,\"eval_duration\":1153935850}",
+    "headers" : {
+      "Date" : "Thu, 26 Feb 2026 13:48:46 GMT",
+      "Content-Type" : "application/json; charset=utf-8"
+    }
+  },
+  "uuid" : "e690b4b3-5626-4e8b-a0e2-a7d72d394695",
+  "persistent" : true,
+  "insertionIndex" : 11
+}

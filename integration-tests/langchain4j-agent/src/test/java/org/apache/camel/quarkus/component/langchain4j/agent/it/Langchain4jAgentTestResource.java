@@ -39,6 +39,8 @@ public class Langchain4jAgentTestResource extends WireMockTestResourceLifecycleM
         String wiremockUrl = properties.get("wiremock.url");
         String url = wiremockUrl != null ? wiremockUrl : getRecordTargetBaseUrl();
         properties.put("langchain4j.ollama.base-url", url);
+        properties.put("quarkus.langchain4j.ollama.ollamaOrcaMiniModel.base-ur", url);
+        properties.put("quarkus.langchain4j.ollama.granite4Model.base-url", url);
         properties.put("nodejs.installed", isNodeJSInstallationExists().toString());
         return properties;
     }

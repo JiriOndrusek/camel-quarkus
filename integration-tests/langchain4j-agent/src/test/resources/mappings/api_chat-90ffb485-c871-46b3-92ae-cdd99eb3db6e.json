@@ -1,0 +1,26 @@
+{
+  "id" : "90ffb485-c871-46b3-92ae-cdd99eb3db6e",
+  "name" : "api_chat",
+  "request" : {
+    "url" : "/api/chat",
+    "method" : "POST",
+    "bodyPatterns" : [ {
+      "equalToJson" : "{\n  \"model\" : \"orca-mini\",\n  \"messages\" : [ {\n    \"role\" : \"system\",\n    \"content\" : \"You are a whimsical storyteller. Your responses should be imaginative, descriptive, and always include a touch of magic. Start every story with 'Once upon a starlit night...'\"\n  }, {\n    \"role\" : \"user\",\n    \"content\" : \"Write a short story about a lost cat.\"\n  } ],\n  \"options\" : {\n    \"temperature\" : 0.4,\n    \"top_k\" : 40,\n    \"top_p\" : 0.9,\n    \"stop\" : [ ]\n  },\n  \"stream\" : false,\n  \"tools\" : [ ]\n}",
+      "ignoreArrayOrder" : true,
+      "ignoreExtraElements" : false
+    } ]
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"model\":\"orca-mini\",\"created_at\":\"2026-02-26T13:49:23.925109929Z\",\"message\":{\"role\":\"assistant\",\"content\":\" Once upon a starlit night, a curious little girl named Lily wandered through the streets of her small town. She loved nothing more than exploring the world around her and was always on the lookout for new adventures. As she was walking through the park, she saw a small black and white cat wandering alone and seemed lost.\\n\\nLily felt sorry for the little cat and decided to go and find it. She followed the cat's scent until she found it hiding under a tree. The cat was scared and hungry, but it also had a piece of paper with its name on it. Lily realized that the cat must have been lost and was trying to find its way back home.\\n\\nLily took the cat in and fed it, and soon the little cat started to relax and trust her. Lily decided to take the cat home with her, knowing that it would be safer there than on the streets. As she walked home, she noticed a group of kids playing with a ball. They saw her carrying the cat and asked if they could play with it too.\\n\\nLily agreed, and the kids played with the cat for hours. They even taught it how to dance and sing. The little cat loved its new life and was grateful to Lily for taking care of it. From that day on, the little cat became a regular visitor to Lily's house, and she always made sure it had enough food and love.\\n\\nYears went by, and the little cat grew into a beautiful adult with a shiny coat of fur. One day, it wandered back to Lily's house, and she recognized it immediately. The little cat jumped onto her lap, and Lily felt a warm surge of happiness as she realized that the cat had found its way back home.\\n\\nAnd so, Lily sat under the tree that day, feeling grateful for the little cat that had brought her so much joy and taught her the true meaning of compassion. From that day on, Lily knew that even lost cats could find their way back home if they were loved and taken care of.\"},\"done\":true,\"done_reason\":\"stop\",\"total_duration\":20856118072,\"load_duration\":15925360,\"prompt_eval_count\":70,\"prompt_eval_duration\":667088488,\"eval_count\":425,\"eval_duration\":20077972062}",
+    "headers" : {
+      "Date" : "Thu, 26 Feb 2026 13:49:23 GMT",
+      "Content-Type" : "application/json; charset=utf-8"
+    }
+  },
+  "uuid" : "90ffb485-c871-46b3-92ae-cdd99eb3db6e",
+  "persistent" : true,
+  "scenarioName" : "scenario-1-api-chat",
+  "requiredScenarioState" : "scenario-1-api-chat-2",
+  "insertionIndex" : 1
+}

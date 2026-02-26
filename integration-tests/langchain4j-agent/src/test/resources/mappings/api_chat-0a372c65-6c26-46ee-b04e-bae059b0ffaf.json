@@ -1,0 +1,24 @@
+{
+  "id" : "0a372c65-6c26-46ee-b04e-bae059b0ffaf",
+  "name" : "api_chat",
+  "request" : {
+    "url" : "/api/chat",
+    "method" : "POST",
+    "bodyPatterns" : [ {
+      "equalToJson" : "{\n  \"model\" : \"granite4:3b\",\n  \"messages\" : [ {\n    \"role\" : \"user\",\n    \"content\" : \"Hello - my name is Alice\"\n  }, {\n    \"role\" : \"assistant\",\n    \"content\" : \"Hello Alice! It's nice to meet you. How can I assist you today?\",\n    \"tool_calls\" : [ ]\n  }, {\n    \"role\" : \"user\",\n    \"content\" : \"And my favorite color is blue\"\n  }, {\n    \"role\" : \"assistant\",\n    \"content\" : \"That's great, Alice! Blue is a beautiful and calming color. Is there anything specific about the color blue that interests you or any questions related to it?\",\n    \"tool_calls\" : [ ]\n  }, {\n    \"role\" : \"user\",\n    \"content\" : \"Now tell me about myself - what's my name and favorite color?\"\n  } ],\n  \"options\" : {\n    \"temperature\" : 0.3,\n    \"top_k\" : 40,\n    \"top_p\" : 0.9,\n    \"stop\" : [ ]\n  },\n  \"stream\" : false,\n  \"tools\" : [ ]\n}",
+      "ignoreArrayOrder" : true,
+      "ignoreExtraElements" : false
+    } ]
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"model\":\"granite4:3b\",\"created_at\":\"2026-02-26T13:49:02.391797925Z\",\"message\":{\"role\":\"assistant\",\"content\":\"Your name is Alice and your favorite color is blue. Is there anything else you'd like to know or discuss, Alice?\"},\"done\":true,\"done_reason\":\"stop\",\"total_duration\":1428178576,\"load_duration\":45161879,\"prompt_eval_count\":125,\"prompt_eval_duration\":353307082,\"eval_count\":26,\"eval_duration\":1012783813}",
+    "headers" : {
+      "Date" : "Thu, 26 Feb 2026 13:49:02 GMT",
+      "Content-Type" : "application/json; charset=utf-8"
+    }
+  },
+  "uuid" : "0a372c65-6c26-46ee-b04e-bae059b0ffaf",
+  "persistent" : true,
+  "insertionIndex" : 3
+}

@@ -1,0 +1,27 @@
+{
+  "id" : "32c271c6-5d04-4cf5-beb1-84e35ecf9b86",
+  "name" : "api_chat",
+  "request" : {
+    "url" : "/api/chat",
+    "method" : "POST",
+    "bodyPatterns" : [ {
+      "equalToJson" : "{\n  \"model\" : \"orca-mini\",\n  \"messages\" : [ {\n    \"role\" : \"system\",\n    \"content\" : \"You are a whimsical storyteller. Your responses should be imaginative, descriptive, and always include a touch of magic. Start every story with 'Once upon a starlit night...'\"\n  }, {\n    \"role\" : \"user\",\n    \"content\" : \"Write a short story about a lost cat.\"\n  } ],\n  \"options\" : {\n    \"temperature\" : 0.4,\n    \"top_k\" : 40,\n    \"top_p\" : 0.9,\n    \"stop\" : [ ]\n  },\n  \"stream\" : false,\n  \"tools\" : [ ]\n}",
+      "ignoreArrayOrder" : true,
+      "ignoreExtraElements" : false
+    } ]
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"model\":\"orca-mini\",\"created_at\":\"2026-02-26T13:48:33.975042791Z\",\"message\":{\"role\":\"assistant\",\"content\":\" Once upon a starlit night, a curious little girl named Lily discovered that her beloved pet cat had gone missing. She searched the entire house and garden, but there was no sign of her furry friend. As she sat alone in the living room, tears streaming down her face, she suddenly felt a soft paw on her leg.\\n\\nLily turned around to see her little brother, Max, standing there with a grin on his face. \\\"Found it!\\\" he exclaimed, holding up a tiny black and white kitten.\\n\\nLily's heart swelled with joy as she scooped up the tiny creature in her arms. \\\"Thank you, my dear brother,\\\" she said, cradling the kitten close to her heart. \\\"You saved me from feeling sad.\\\"\\n\\nAs they made their way back home, Lily couldn't help but wonder where the little kitten had come from. She knew that somewhere in the house was a clue that would lead them to finding her missing cat.\\n\\nThat night, as she lay in bed, she dreamed of a mysterious door hidden behind a bookshelf. In the dream, she saw a small light glowing at the other side of the door. She woke up feeling both excited and anxious.\\n\\nThe next day, Lily and Max set out to find the door. They searched high and low, but there was no sign of it. Just as they were about to give up, they stumbled upon an old attic room that they had never seen before. Inside, they found a small box with a note attached to it: \\\"If you find this box, bring it back to the door. You will be reunited with your cat.\\\"\\n\\nWith trembling hands, Lily opened the box and found a tiny white kitten nestled inside. She felt a surge of happiness as she realized that her missing cat had been found after all. She took the kitten back to the door and pushed it open.\\n\\nThere stood her beloved pet, purring contentedly in her arms. Lily was overjoyed and grateful for the little kitten who had brought her such joy during her time of sadness. From that day on, she knew that sometimes the most unexpected things can lead us to finding what we are looking for.\"},\"done\":true,\"done_reason\":\"stop\",\"total_duration\":22525910311,\"load_duration\":16027062,\"prompt_eval_count\":70,\"prompt_eval_duration\":630675143,\"eval_count\":472,\"eval_duration\":21774287666}",
+    "headers" : {
+      "Date" : "Thu, 26 Feb 2026 13:48:33 GMT",
+      "Content-Type" : "application/json; charset=utf-8"
+    }
+  },
+  "uuid" : "32c271c6-5d04-4cf5-beb1-84e35ecf9b86",
+  "persistent" : true,
+  "scenarioName" : "scenario-1-api-chat",
+  "requiredScenarioState" : "Started",
+  "newScenarioState" : "scenario-1-api-chat-2",
+  "insertionIndex" : 15
+}
