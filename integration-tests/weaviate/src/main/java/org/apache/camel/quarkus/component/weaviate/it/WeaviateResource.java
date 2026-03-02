@@ -21,9 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import io.weaviate.client.base.Result;
-import io.weaviate.client.v1.data.model.WeaviateObject;
-import io.weaviate.client.v1.graphql.model.GraphQLResponse;
+import io.weaviate.client6.v1.api.collections.WeaviateObject;
+import io.weaviate.client6.v1.api.collections.query.QueryResponse;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
@@ -69,30 +68,34 @@ public class WeaviateResource {
                 .withHeaders(headers)
                 .request(Exchange.class);
 
-        Result<?> result = response.getIn().getBody(Result.class);
+        Object result = response.getIn().getBody(Object.class);
         LOG.debugf("Response for collections with headers (%s) is: \"%s\".", headers, result);
 
         if (result != null) {
             HashMap<String, Object> map = new HashMap();
-            map.put("error", result.getError() == null ? "" : result.getError());
+            //            map.put("result", result);
+            //            map.put("error", result.getError() == null ? "" : result.getError());
 
-            if (result.getResult() instanceof Boolean) {
-                map.put("result", result.getResult());
-            } else if (result.getResult() instanceof WeaviateObject) {
-                map.put("result", ((WeaviateObject) result.getResult()).getId());
-                map.put("resultProperties", ((WeaviateObject) result.getResult()).getProperties());
-            } else if (result.getResult() instanceof List) {
-                @SuppressWarnings("unchecked")
-                List<WeaviateObject> objects = (List<WeaviateObject>) result.getResult();
-                map.put("result",
-                        objects.stream().collect(Collectors.toMap(WeaviateObject::getId, WeaviateObject::getProperties)));
-            } else if (result.getResult() instanceof GraphQLResponse) {
-                map.put("result", result.getResult());
+            //            map.put("error", result.getError() == null ? "" : result.getError());
+            //
+            if (result instanceof Boolean) {
+                map.put("result", result);
+            } else if (result instanceof WeaviateObject) {
+                map.put("result", ((WeaviateObject) result).uuid());
+                map.put("resultProperties", ((WeaviateObject) result).properties());
+            } else if (result instanceof List) {
+//                @SuppressWarnings("unchecked")
+                        map.put("result", result);
+//                List<WeaviateObject> objects = (List<WeaviateObject>) result;
+//                map.put("result",
+//                        objects.stream().collect(Collectors.toMap(WeaviateObject::uuid, WeaviateObject::properties)));
+            } else if (result instanceof QueryResponse<?>) {
+                map.put("result", result);
             }
 
             return Response.ok(map).build();
-        }
 
+        }
         return Response.status(500).entity("Empty result").build();
     }
 

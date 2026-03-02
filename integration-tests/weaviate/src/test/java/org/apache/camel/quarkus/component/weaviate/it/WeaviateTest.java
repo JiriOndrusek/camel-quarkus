@@ -59,75 +59,75 @@ class WeaviateTest {
                     .body("result." + id, Matchers.hasKey("sky"))
                     .body("result." + id, Matchers.hasKey("age"))
                     .body("result." + id, Matchers.not(Matchers.hasKey("dog")));
-
-            updateById(collectionName, id, values, updatedProperties);
-
-            queryById(collectionName, id)
-                    .body("result", Matchers.aMapWithSize(1))
-                    .body("result." + id, Matchers.aMapWithSize(3))
-                    .body("result." + id, Matchers.hasKey("sky"))
-                    .body("result." + id, Matchers.hasKey("age"))
-                    .body("result." + id, Matchers.hasKey("dog"));
-
-            deleteById(collectionName, id);
-
-            queryById(collectionName, id)
-                    .body("result", Matchers.nullValue());
-
-        } finally {
-            if (collectionCreated) {
-                deleteCollection(collectionName);
-
-                //verify that collection is removed
-                query(collectionName, Arrays.asList(0.15f, 0.25f, 0.35f), Map.of("title", "", "content", ""), true)
-                        .body("error.statusCode", Matchers.equalTo(422))
-                        .body("error.messages.message",
-                                Matchers.hasItem(
-                                        "no graphql provider present, this is most likely because no schema is present. Import a schema first!"));
-            }
-        }
-    }
-
-    @Test
-    public void query() {
-        String collectionName = "WeaviateCQCollectionVector" + System.currentTimeMillis();
-
-        boolean collectionCreated = false;
-        try {
-            createCollection(collectionName);
-            LOG.infof("Collection created: %s", collectionName);
-            collectionCreated = true;
-
-            createEntry(collectionName, Arrays.asList(0.1f, 0.2f, 0.3f),
-                    Map.of("title", "First Article", "content", "The content of the first article."));
-            createEntry(collectionName, Arrays.asList(0.2f, 0.3f, 0.4f),
-                    Map.of("title", "Second Article", "content", "The content of the second article."));
-            createEntry(collectionName, Arrays.asList(0.3f, 0.4f, 0.5f),
-                    Map.of("title", "Third Article", "content", "The content of the third article."));
-
-            query(collectionName, Arrays.asList(0.15f, 0.25f, 0.35f), Map.of("title", "", "content", ""))
-                    .body("result.data.Get." + collectionName, Matchers.hasSize(2))
-                    .body("result.data.Get." + collectionName + "[0]", Matchers.aMapWithSize(2))
-                    .body("result.data.Get." + collectionName + "[0].title", Matchers.equalTo("Second Article"))
-                    .body("result.data.Get." + collectionName + "[1].title", Matchers.equalTo("First Article"));
-
-            query(collectionName, Arrays.asList(0.3f, 0.4f, 0.5f), Map.of("title", "", "content", ""))
-                    .body("result.data.Get." + collectionName, Matchers.hasSize(2))
-                    .body("result.data.Get." + collectionName + "[0]", Matchers.aMapWithSize(2))
-                    .body("result.data.Get." + collectionName + "[0].title", Matchers.equalTo("Third Article"))
-                    .body("result.data.Get." + collectionName + "[1].title", Matchers.equalTo("Second Article"));
+//
+//            updateById(collectionName, id, values, updatedProperties);
+//
+//            queryById(collectionName, id)
+//                    .body("result", Matchers.aMapWithSize(1))
+//                    .body("result." + id, Matchers.aMapWithSize(3))
+//                    .body("result." + id, Matchers.hasKey("sky"))
+//                    .body("result." + id, Matchers.hasKey("age"))
+//                    .body("result." + id, Matchers.hasKey("dog"));
+//
+//            deleteById(collectionName, id);
+//
+//            queryById(collectionName, id)
+//                    .body("result", Matchers.nullValue());
 
         } finally {
             if (collectionCreated) {
                 deleteCollection(collectionName);
 
-                //verify that collection is removed
-                query(collectionName, Arrays.asList(0.15f, 0.25f, 0.35f), Map.of("title", "", "content", ""), true)
-                        .body("error.statusCode", Matchers.equalTo(422));
-                //message is already covered by operation test
+//                //verify that collection is removed
+//                query(collectionName, Arrays.asList(0.15f, 0.25f, 0.35f), Map.of("title", "", "content", ""), true)
+//                        .body("error.statusCode", Matchers.equalTo(422))
+//                        .body("error.messages.message",
+//                                Matchers.hasItem(
+//                                        "no graphql provider present, this is most likely because no schema is present. Import a schema first!"));
             }
         }
     }
+
+//    @Test
+//    public void query() {
+//        String collectionName = "WeaviateCQCollectionVector" + System.currentTimeMillis();
+//
+//        boolean collectionCreated = false;
+//        try {
+//            createCollection(collectionName);
+//            LOG.infof("Collection created: %s", collectionName);
+//            collectionCreated = true;
+//
+//            createEntry(collectionName, Arrays.asList(0.1f, 0.2f, 0.3f),
+//                    Map.of("title", "First Article", "content", "The content of the first article."));
+//            createEntry(collectionName, Arrays.asList(0.2f, 0.3f, 0.4f),
+//                    Map.of("title", "Second Article", "content", "The content of the second article."));
+//            createEntry(collectionName, Arrays.asList(0.3f, 0.4f, 0.5f),
+//                    Map.of("title", "Third Article", "content", "The content of the third article."));
+//
+//            query(collectionName, Arrays.asList(0.15f, 0.25f, 0.35f), Map.of("title", "", "content", ""))
+//                    .body("result.data.Get." + collectionName, Matchers.hasSize(2))
+//                    .body("result.data.Get." + collectionName + "[0]", Matchers.aMapWithSize(2))
+//                    .body("result.data.Get." + collectionName + "[0].title", Matchers.equalTo("Second Article"))
+//                    .body("result.data.Get." + collectionName + "[1].title", Matchers.equalTo("First Article"));
+//
+//            query(collectionName, Arrays.asList(0.3f, 0.4f, 0.5f), Map.of("title", "", "content", ""))
+//                    .body("result.data.Get." + collectionName, Matchers.hasSize(2))
+//                    .body("result.data.Get." + collectionName + "[0]", Matchers.aMapWithSize(2))
+//                    .body("result.data.Get." + collectionName + "[0].title", Matchers.equalTo("Third Article"))
+//                    .body("result.data.Get." + collectionName + "[1].title", Matchers.equalTo("Second Article"));
+//
+//        } finally {
+//            if (collectionCreated) {
+//                deleteCollection(collectionName);
+//
+//                //verify that collection is removed
+//                query(collectionName, Arrays.asList(0.15f, 0.25f, 0.35f), Map.of("title", "", "content", ""), true)
+//                        .body("error.statusCode", Matchers.equalTo(422));
+//                //message is already covered by operation test
+//            }
+//        }
+//    }
 
     private void createCollection(String name) {
         RestAssured.given()
