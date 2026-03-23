@@ -21,30 +21,25 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.SecureRandom;
 import java.security.Security;
-import java.security.Signature;
 import java.util.Base64;
-
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
+import java.util.HashMap;
+import java.util.Map;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
-import org.bouncycastle.jcajce.SecretKeyWithEncapsulation;
-import org.bouncycastle.jcajce.spec.KEMExtractSpec;
-import org.bouncycastle.jcajce.spec.KEMGenerateSpec;
 import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
 import org.bouncycastle.pqc.jcajce.spec.DilithiumParameterSpec;
+import org.bouncycastle.pqc.jcajce.spec.FalconParameterSpec;
 import org.bouncycastle.pqc.jcajce.spec.KyberParameterSpec;
+import org.bouncycastle.pqc.jcajce.spec.SPHINCSPlusParameterSpec;
 import org.jboss.logging.Logger;
 
 @Path("/pqc")
@@ -52,87 +47,210 @@ import org.jboss.logging.Logger;
 public class PqcResource {
 
     private static final Logger LOG = Logger.getLogger(PqcResource.class);
-    private static final String COMPONENT_PQC = "pqc";
     private static final String TEST_MESSAGE = "Hello Camel Quarkus PQC";
-
-    @Inject
-    CamelContext context;
 
     @Inject
     ProducerTemplate producerTemplate;
 
-    private KeyPair mlDsaKeyPair;
-    private KeyPair mlKemKeyPair;
-
     @PostConstruct
-    public void init() throws Exception {
+    public void init() {
         Security.addProvider(new BouncyCastlePQCProvider());
-
-        // Generate ML-DSA (Dilithium) key pair for signatures
-        KeyPairGenerator mlDsaGen = KeyPairGenerator.getInstance("Dilithium", "BCPQC");
-        mlDsaGen.initialize(DilithiumParameterSpec.dilithium2, new SecureRandom());
-        mlDsaKeyPair = mlDsaGen.generateKeyPair();
-
-        // Generate ML-KEM (Kyber) key pair for key encapsulation
-        KeyPairGenerator mlKemGen = KeyPairGenerator.getInstance("Kyber", "BCPQC");
-        mlKemGen.initialize(KyberParameterSpec.kyber512, new SecureRandom());
-        mlKemKeyPair = mlKemGen.generateKeyPair();
     }
 
-    @Path("/load/component/pqc")
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response loadComponentPqc() throws Exception {
-        if (context.getComponent(COMPONENT_PQC) != null) {
-            return Response.ok().build();
-        }
-        LOG.warnf("Could not load [%s] from the Camel context", COMPONENT_PQC);
-        return Response.status(500, COMPONENT_PQC + " could not be loaded from the Camel context").build();
+    // Register KeyPairs as CDI beans for Camel registry
+    @Produces
+    @Named("dilithiumKeyPair")
+    public KeyPair dilithiumKeyPair() throws Exception {
+        KeyPairGenerator gen = KeyPairGenerator.getInstance("Dilithium", "BCPQC");
+        gen.initialize(DilithiumParameterSpec.dilithium2, new SecureRandom());
+        return gen.generateKeyPair();
     }
 
-    @Path("/mldsa/sign")
+    @Produces
+    @Named("falconKeyPair")
+    public KeyPair falconKeyPair() throws Exception {
+        KeyPairGenerator gen = KeyPairGenerator.getInstance("Falcon", "BCPQC");
+        gen.initialize(FalconParameterSpec.falcon_512, new SecureRandom());
+        return gen.generateKeyPair();
+    }
+
+    @Produces
+    @Named("sphincsKeyPair")
+    public KeyPair sphincsKeyPair() throws Exception {
+        KeyPairGenerator gen = KeyPairGenerator.getInstance("SPHINCSPlus", "BCPQC");
+        gen.initialize(SPHINCSPlusParameterSpec.sha2_128f, new SecureRandom());
+        return gen.generateKeyPair();
+    }
+
+    @Produces
+    @Named("kyberKeyPair")
+    public KeyPair kyberKeyPair() throws Exception {
+        KeyPairGenerator gen = KeyPairGenerator.getInstance("Kyber", "BCPQC");
+        gen.initialize(KyberParameterSpec.kyber512, new SecureRandom());
+        return gen.generateKeyPair();
+    }
+
+    // Sign operation using ML-DSA (Dilithium)
+    @Path("/sign/dilithium")
     @POST
-    @Produces(MediaType.TEXT_PLAIN)
-    public String mlDsaSign() throws Exception {
-        Signature signature = Signature.getInstance("Dilithium", "BCPQC");
-        signature.initSign(mlDsaKeyPair.getPrivate());
-        signature.update(TEST_MESSAGE.getBytes(StandardCharsets.UTF_8));
-        byte[] signatureBytes = signature.sign();
-        return Base64.getEncoder().encodeToString(signatureBytes);
+    @jakarta.ws.rs.Produces(MediaType.TEXT_PLAIN)
+    public String signWithDilithium() {
+        byte[] signature = producerTemplate.requestBody(
+                "pqc:sign?operation=sign&signatureAlgorithm=Dilithium&keyPair=#dilithiumKeyPair",
+                TEST_MESSAGE.getBytes(StandardCharsets.UTF_8),
+                byte[].class);
+        return Base64.getEncoder().encodeToString(signature);
     }
 
-    @Path("/mldsa/verify")
+    // Verify operation using ML-DSA (Dilithium)
+    @Path("/verify/dilithium")
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
-    @Produces(MediaType.TEXT_PLAIN)
-    public boolean mlDsaVerify(String signatureBase64) throws Exception {
+    @jakarta.ws.rs.Produces(MediaType.TEXT_PLAIN)
+    public boolean verifyWithDilithium(String signatureBase64) {
         byte[] signatureBytes = Base64.getDecoder().decode(signatureBase64);
-        Signature signature = Signature.getInstance("Dilithium", "BCPQC");
-        signature.initVerify(mlDsaKeyPair.getPublic());
-        signature.update(TEST_MESSAGE.getBytes(StandardCharsets.UTF_8));
-        return signature.verify(signatureBytes);
+
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("CamelPqcSignature", signatureBytes);
+
+        Boolean result = producerTemplate.requestBodyAndHeaders(
+                "pqc:verify?operation=verify&signatureAlgorithm=Dilithium&keyPair=#dilithiumKeyPair",
+                TEST_MESSAGE.getBytes(StandardCharsets.UTF_8),
+                headers,
+                Boolean.class);
+        return Boolean.TRUE.equals(result);
     }
 
-    @Path("/mlkem/encapsulate")
+    // Sign operation using Falcon
+    @Path("/sign/falcon")
     @POST
-    @Produces(MediaType.TEXT_PLAIN)
-    public String mlKemEncapsulate() throws Exception {
-        KeyGenerator keyGen = KeyGenerator.getInstance("Kyber", "BCPQC");
-        keyGen.init(new KEMGenerateSpec(mlKemKeyPair.getPublic(), "AES"), new SecureRandom());
-        SecretKeyWithEncapsulation secEnc = (SecretKeyWithEncapsulation) keyGen.generateKey();
-        byte[] encapsulation = secEnc.getEncapsulation();
+    @jakarta.ws.rs.Produces(MediaType.TEXT_PLAIN)
+    public String signWithFalcon() {
+        byte[] signature = producerTemplate.requestBody(
+                "pqc:sign?operation=sign&signatureAlgorithm=Falcon&keyPair=#falconKeyPair",
+                TEST_MESSAGE.getBytes(StandardCharsets.UTF_8),
+                byte[].class);
+        return Base64.getEncoder().encodeToString(signature);
+    }
+
+    // Verify operation using Falcon
+    @Path("/verify/falcon")
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
+    @jakarta.ws.rs.Produces(MediaType.TEXT_PLAIN)
+    public boolean verifyWithFalcon(String signatureBase64) {
+        byte[] signatureBytes = Base64.getDecoder().decode(signatureBase64);
+
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("CamelPqcSignature", signatureBytes);
+
+        Boolean result = producerTemplate.requestBodyAndHeaders(
+                "pqc:verify?operation=verify&signatureAlgorithm=Falcon&keyPair=#falconKeyPair",
+                TEST_MESSAGE.getBytes(StandardCharsets.UTF_8),
+                headers,
+                Boolean.class);
+        return Boolean.TRUE.equals(result);
+    }
+
+    // Sign operation using SPHINCSPlus
+    @Path("/sign/sphincs")
+    @POST
+    @jakarta.ws.rs.Produces(MediaType.TEXT_PLAIN)
+    public String signWithSphincs() {
+        byte[] signature = producerTemplate.requestBody(
+                "pqc:sign?operation=sign&signatureAlgorithm=SPHINCSPlus&keyPair=#sphincsKeyPair",
+                TEST_MESSAGE.getBytes(StandardCharsets.UTF_8),
+                byte[].class);
+        return Base64.getEncoder().encodeToString(signature);
+    }
+
+    // Verify operation using SPHINCSPlus
+    @Path("/verify/sphincs")
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
+    @jakarta.ws.rs.Produces(MediaType.TEXT_PLAIN)
+    public boolean verifyWithSphincs(String signatureBase64) {
+        byte[] signatureBytes = Base64.getDecoder().decode(signatureBase64);
+
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("CamelPqcSignature", signatureBytes);
+
+        Boolean result = producerTemplate.requestBodyAndHeaders(
+                "pqc:verify?operation=verify&signatureAlgorithm=SPHINCSPlus&keyPair=#sphincsKeyPair",
+                TEST_MESSAGE.getBytes(StandardCharsets.UTF_8),
+                headers,
+                Boolean.class);
+        return Boolean.TRUE.equals(result);
+    }
+
+    // KEM: generateSecretKeyEncapsulation operation using Kyber with AES
+    @Path("/kem/encapsulate/kyber-aes")
+    @POST
+    @jakarta.ws.rs.Produces(MediaType.TEXT_PLAIN)
+    public String encapsulateKyberAes() {
+        byte[] encapsulation = producerTemplate.requestBody(
+                "pqc:encapsulate?operation=generateSecretKeyEncapsulation&keyEncapsulationAlgorithm=Kyber&symmetricKeyAlgorithm=AES&symmetricKeyLength=128&keyPair=#kyberKeyPair",
+                null,
+                byte[].class);
         return Base64.getEncoder().encodeToString(encapsulation);
     }
 
-    @Path("/mlkem/extract")
+    // KEM: extractSecretKeyEncapsulation operation using Kyber with AES
+    @Path("/kem/extract/kyber-aes")
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
-    @Produces(MediaType.TEXT_PLAIN)
-    public boolean mlKemExtract(String encapsulationBase64) throws Exception {
+    @jakarta.ws.rs.Produces(MediaType.TEXT_PLAIN)
+    public boolean extractKyberAes(String encapsulationBase64) {
         byte[] encapsulation = Base64.getDecoder().decode(encapsulationBase64);
-        KeyGenerator keyGen = KeyGenerator.getInstance("Kyber", "BCPQC");
-        keyGen.init(new KEMExtractSpec(mlKemKeyPair.getPrivate(), encapsulation, "AES"), new SecureRandom());
-        SecretKey secKey = keyGen.generateKey();
-        return secKey != null && secKey.getEncoded() != null;
+
+        byte[] secretKey = producerTemplate.requestBody(
+                "pqc:extract?operation=extractSecretKeyEncapsulation&keyEncapsulationAlgorithm=Kyber&symmetricKeyAlgorithm=AES&keyPair=#kyberKeyPair",
+                encapsulation,
+                byte[].class);
+        return secretKey != null && secretKey.length > 0;
+    }
+
+    // KEM: extractSecretKeyFromEncapsulation operation using Kyber with AES (stores key in header)
+    @Path("/kem/extract-to-header/kyber-aes")
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
+    @jakarta.ws.rs.Produces(MediaType.TEXT_PLAIN)
+    public boolean extractKyberAesToHeader(String encapsulationBase64) {
+        byte[] encapsulation = Base64.getDecoder().decode(encapsulationBase64);
+
+        Map<String, Object> headers = new HashMap<>();
+        producerTemplate.requestBodyAndHeaders(
+                "pqc:extractToHeader?operation=extractSecretKeyFromEncapsulation&keyEncapsulationAlgorithm=Kyber&symmetricKeyAlgorithm=AES&storeExtractedSecretKeyAsHeader=true&keyPair=#kyberKeyPair",
+                encapsulation,
+                headers);
+
+        Object extractedKey = headers.get("CamelPqcExtractedSecretKey");
+        return extractedKey != null;
+    }
+
+    // KEM with CHACHA7539
+    @Path("/kem/encapsulate/kyber-chacha")
+    @POST
+    @jakarta.ws.rs.Produces(MediaType.TEXT_PLAIN)
+    public String encapsulateKyberChacha() {
+        byte[] encapsulation = producerTemplate.requestBody(
+                "pqc:encapsulate?operation=generateSecretKeyEncapsulation&keyEncapsulationAlgorithm=Kyber&symmetricKeyAlgorithm=CHACHA7539&symmetricKeyLength=256&keyPair=#kyberKeyPair",
+                null,
+                byte[].class);
+        return Base64.getEncoder().encodeToString(encapsulation);
+    }
+
+    @Path("/kem/extract/kyber-chacha")
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
+    @jakarta.ws.rs.Produces(MediaType.TEXT_PLAIN)
+    public boolean extractKyberChacha(String encapsulationBase64) {
+        byte[] encapsulation = Base64.getDecoder().decode(encapsulationBase64);
+
+        byte[] secretKey = producerTemplate.requestBody(
+                "pqc:extract?operation=extractSecretKeyEncapsulation&keyEncapsulationAlgorithm=Kyber&symmetricKeyAlgorithm=CHACHA7539&keyPair=#kyberKeyPair",
+                encapsulation,
+                byte[].class);
+        return secretKey != null && secretKey.length > 0;
     }
 }
