@@ -1,0 +1,162 @@
+Module: integration-tests/pqc
+Command: mvn clean verify -Pnative -Ddocker -f integration-tests/pqc
+
+Return code: 1
+Success: False
+
+--- FAILURE ANALYSIS ---
+
+\[ERROR\].*:
+  [ERROR] Tests run: 6, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 6.108 s <<< FAILURE! -- in org.apache.camel.quarkus.component.pqc.it.PqcIT
+  [ERROR] org.apache.camel.quarkus.component.pqc.it.PqcIT.testKemEncapsulationWithKyberAes -- Time elapsed: 0.099 s <<< FAILURE!
+  [ERROR] org.apache.camel.quarkus.component.pqc.it.PqcIT.testKemExtractToHeaderWithKyberAes -- Time elapsed: 0.092 s <<< FAILURE!
+  [ERROR] org.apache.camel.quarkus.component.pqc.it.PqcIT.testKemEncapsulationWithKyberChacha -- Time elapsed: 0.066 s <<< FAILURE!
+  [ERROR] Failures: 
+  [ERROR]   PqcIT>PqcTest.testKemEncapsulationWithKyberAes:101 1 expectation failed.
+  [ERROR]   PqcIT>PqcTest.testKemEncapsulationWithKyberChacha:145 1 expectation failed.
+  [ERROR]   PqcIT>PqcTest.testKemExtractToHeaderWithKyberAes:123 1 expectation failed.
+  [ERROR] Tests run: 6, Failures: 3, Errors: 0, Skipped: 0
+  [ERROR] Failed to execute goal org.apache.maven.plugins:maven-failsafe-plugin:3.5.5:verify (default) on project camel-quarkus-integration-test-pqc: There are test failures.
+
+BUILD FAILURE:
+  BUILD FAILURE
+
+Tests run:.*Failures:.*Errors:.*:
+  Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.544 s -- in org.apache.camel.quarkus.component.pqc.it.PqcTest
+  Tests run: 6, Failures: 0, Errors: 0, Skipped: 0
+  Tests run: 6, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 6.108 s <<< FAILURE! -- in org.apache.camel.quarkus.component.pqc.it.PqcIT
+  Tests run: 6, Failures: 3, Errors: 0, Skipped: 0
+
+Caused by:.*:
+  Caused by: org.apache.camel.FailedToCreateProducerException: Failed to create Producer for endpoint: pqc://encapsulate?keyEncapsulationAlgorithm=KYBER&keyPair=%23kyberKeyPair&operation=generateSecretKeyEncapsulation&symmetricKeyAlgorithm=AES&symmetricKeyLength=128. Reason: java.lang.SecurityException: Attempted to verify a provider that was not registered at build time: BCPQC version 1.83. All security providers must be registered and verified during native image generation. Try adding the option: -H:AdditionalSecurityProviders=BCPQC version 1.83 and rebuild the image.
+  Caused by: java.lang.SecurityException: Attempted to verify a provider that was not registered at build time: BCPQC version 1.83. All security providers must be registered and verified during native image generation. Try adding the option: -H:AdditionalSecurityProviders=BCPQC version 1.83 and rebuild the image.
+  Caused by: org.apache.camel.FailedToCreateProducerException: Failed to create Producer for endpoint: pqc://encapsulate?keyEncapsulationAlgorithm=KYBER&keyPair=%23kyberKeyPair&operation=generateSecretKeyEncapsulation&symmetricKeyAlgorithm=AES&symmetricKeyLength=128. Reason: java.lang.SecurityException: Attempted to verify a provider that was not registered at build time: BCPQC version 1.83. All security providers must be registered and verified during native image generation. Try adding the option: -H:AdditionalSecurityProviders=BCPQC version 1.83 and rebuild the image.
+  Caused by: java.lang.SecurityException: Attempted to verify a provider that was not registered at build time: BCPQC version 1.83. All security providers must be registered and verified during native image generation. Try adding the option: -H:AdditionalSecurityProviders=BCPQC version 1.83 and rebuild the image.
+  Caused by: org.apache.camel.FailedToCreateProducerException: Failed to create Producer for endpoint: pqc://encapsulate?keyEncapsulationAlgorithm=KYBER&keyPair=%23kyberKeyPair&operation=generateSecretKeyEncapsulation&symmetricKeyAlgorithm=CHACHA7539&symmetricKeyLength=256. Reason: java.lang.SecurityException: Attempted to verify a provider that was not registered at build time: BCPQC version 1.83. All security providers must be registered and verified during native image generation. Try adding the option: -H:AdditionalSecurityProviders=BCPQC version 1.83 and rebuild the image.
+  Caused by: java.lang.SecurityException: Attempted to verify a provider that was not registered at build time: BCPQC version 1.83. All security providers must be registered and verified during native image generation. Try adding the option: -H:AdditionalSecurityProviders=BCPQC version 1.83 and rebuild the image.
+
+Exception.*:
+  ExceptionStackTraces -H:-UnlockExperimentalVMOptions -H:-AddAllCharsets --enable-url-protocols=http --enable-monitoring=heapdump,threaddump -H:+UnlockExperimentalVMOptions -H:-UseServiceLoaderFeature -H:-UnlockExperimentalVMOptions -J--add-exports=org.graalvm.nativeimage/org.graalvm.nativeimage.impl=ALL-UNNAMED --exclude-config io\.netty\.netty-codec /META-INF/native-image/io\.netty/netty-codec/generated/handlers/reflect-config\.json --exclude-config io\.netty\.netty-handler /META-INF/native-image/io\.netty/netty-handler/generated/handlers/reflect-config\.json camel-quarkus-integration-test-pqc-3.35.0-SNAPSHOT-runner -jar camel-quarkus-integration-test-pqc-3.35.0-SNAPSHOT-runner.jar
+  Exception: org.apache.camel.FailedToCreateProducerException: Failed to create Producer for endpoint: pqc://encapsulate?keyEncapsulationAlgorithm=KYBER&keyPair=%23kyberKeyPair&operation=generateSecretKeyEncapsulation&symmetricKeyAlgorithm=AES&symmetricKeyLength=128. Reason: java.lang.SecurityException: Attempted to verify a provider that was not registered at build time: BCPQC version 1.83. All security providers must be registered and verified during native image generation. Try adding the option: -H:AdditionalSecurityProviders=BCPQC version 1.83 and rebuild the image.
+  ExceptionHandler.handleApplicationException(ExceptionHandler.java:107)
+  ExceptionHandler.handleException(ExceptionHandler.java:344)
+  Exception(SynchronousDispatcher.java:205)
+  Exception: Failed to create Producer for endpoint: pqc://encapsulate?keyEncapsulationAlgorithm=KYBER&keyPair=%23kyberKeyPair&operation=generateSecretKeyEncapsulation&symmetricKeyAlgorithm=AES&symmetricKeyLength=128. Reason: java.lang.SecurityException: Attempted to verify a provider that was not registered at build time: BCPQC version 1.83. All security providers must be registered and verified during native image generation. Try adding the option: -H:AdditionalSecurityProviders=BCPQC version 1.83 and rebuild the image.
+  Exception: Attempted to verify a provider that was not registered at build time: BCPQC version 1.83. All security providers must be registered and verified during native image generation. Try adding the option: -H:AdditionalSecurityProviders=BCPQC version 1.83 and rebuild the image.
+  Exception: org.apache.camel.FailedToCreateProducerException: Failed to create Producer for endpoint: pqc://encapsulate?keyEncapsulationAlgorithm=KYBER&keyPair=%23kyberKeyPair&operation=generateSecretKeyEncapsulation&symmetricKeyAlgorithm=AES&symmetricKeyLength=128. Reason: java.lang.SecurityException: Attempted to verify a provider that was not registered at build time: BCPQC version 1.83. All security providers must be registered and verified during native image generation. Try adding the option: -H:AdditionalSecurityProviders=BCPQC version 1.83 and rebuild the image.
+  ExceptionHandler.handleApplicationException(ExceptionHandler.java:107)
+  ExceptionHandler.handleException(ExceptionHandler.java:344)
+
+\bat .*\(.*\.java:\d+\):
+  at org.jboss.resteasy.core.ExceptionHandler.handleApplicationException(ExceptionHandler.java:107)
+  at org.jboss.resteasy.core.ExceptionHandler.handleException(ExceptionHandler.java:344)
+  at org.jboss.resteasy.core.SynchronousDispatcher.writeException(SynchronousDispatcher.java:205)
+  at org.jboss.resteasy.core.SynchronousDispatcher.invoke(SynchronousDispatcher.java:452)
+  at org.jboss.resteasy.core.SynchronousDispatcher.lambda$invokePropagateNotFound$6(SynchronousDispatcher.java:275)
+  at org.jboss.resteasy.core.SynchronousDispatcher.lambda$preprocess$0(SynchronousDispatcher.java:154)
+  at org.jboss.resteasy.core.interception.jaxrs.PreMatchContainerRequestContext.filter(PreMatchContainerRequestContext.java:321)
+  at org.jboss.resteasy.core.SynchronousDispatcher.preprocess(SynchronousDispatcher.java:157)
+  at org.jboss.resteasy.core.SynchronousDispatcher.invokePropagateNotFound(SynchronousDispatcher.java:260)
+  at io.quarkus.resteasy.runtime.standalone.RequestDispatcher.service(RequestDispatcher.java:86)
+
+--- LAST 100 LINES OF OUTPUT ---
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.codehaus.groovy.runtime.callsite.PlainObjectMetaMethodSite.doInvoke(PlainObjectMetaMethodSite.java:43)
+	at org.codehaus.groovy.runtime.callsite.PogoMetaMethodSite$PogoCachedMethodSiteNoUnwrapNoCoerce.invoke(PogoMetaMethodSite.java:198)
+	at org.codehaus.groovy.runtime.callsite.PogoMetaMethodSite.callCurrent(PogoMetaMethodSite.java:62)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.callCurrent(AbstractCallSite.java:185)
+	at io.restassured.internal.ResponseSpecificationImpl.statusCode(ResponseSpecificationImpl.groovy:135)
+	at io.restassured.specification.ResponseSpecification$statusCode$1.callCurrent(Unknown Source)
+	at io.restassured.internal.ResponseSpecificationImpl.statusCode(ResponseSpecificationImpl.groovy:143)
+	at io.restassured.internal.ValidatableResponseOptionsImpl.statusCode(ValidatableResponseOptionsImpl.java:89)
+	at org.apache.camel.quarkus.component.pqc.it.PqcTest.testKemExtractToHeaderWithKyberAes(PqcTest.java:123)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at io.quarkus.test.junit.QuarkusTestExtension.interceptTestMethod(QuarkusTestExtension.java:836)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+[ERROR] org.apache.camel.quarkus.component.pqc.it.PqcIT.testKemEncapsulationWithKyberChacha -- Time elapsed: 0.066 s <<< FAILURE!
+java.lang.AssertionError: 
+1 expectation failed.
+Expected status code <200> but was <500>.
+
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486)
+	at org.codehaus.groovy.reflection.CachedConstructor.invoke(CachedConstructor.java:73)
+	at org.codehaus.groovy.reflection.CachedConstructor.doConstructorInvoke(CachedConstructor.java:60)
+	at org.codehaus.groovy.runtime.callsite.ConstructorSite$ConstructorSiteNoUnwrap.callConstructor(ConstructorSite.java:86)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.callConstructor(AbstractCallSite.java:277)
+	at io.restassured.internal.ResponseSpecificationImpl$HamcrestAssertionClosure.validate(ResponseSpecificationImpl.groovy:512)
+	at io.restassured.internal.ResponseSpecificationImpl$HamcrestAssertionClosure$validate$1.call(Unknown Source)
+	at io.restassured.internal.ResponseSpecificationImpl.validateResponseIfRequired(ResponseSpecificationImpl.groovy:696)
+	at io.restassured.internal.ResponseSpecificationImpl.this$2$validateResponseIfRequired(ResponseSpecificationImpl.groovy)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.codehaus.groovy.runtime.callsite.PlainObjectMetaMethodSite.doInvoke(PlainObjectMetaMethodSite.java:43)
+	at org.codehaus.groovy.runtime.callsite.PogoMetaMethodSite$PogoCachedMethodSiteNoUnwrapNoCoerce.invoke(PogoMetaMethodSite.java:198)
+	at org.codehaus.groovy.runtime.callsite.PogoMetaMethodSite.callCurrent(PogoMetaMethodSite.java:62)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.callCurrent(AbstractCallSite.java:185)
+	at io.restassured.internal.ResponseSpecificationImpl.statusCode(ResponseSpecificationImpl.groovy:135)
+	at io.restassured.specification.ResponseSpecification$statusCode$1.callCurrent(Unknown Source)
+	at io.restassured.internal.ResponseSpecificationImpl.statusCode(ResponseSpecificationImpl.groovy:143)
+	at io.restassured.internal.ValidatableResponseOptionsImpl.statusCode(ValidatableResponseOptionsImpl.java:89)
+	at org.apache.camel.quarkus.component.pqc.it.PqcTest.testKemEncapsulationWithKyberChacha(PqcTest.java:145)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at io.quarkus.test.junit.QuarkusTestExtension.interceptTestMethod(QuarkusTestExtension.java:836)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Failures: 
+[ERROR]   PqcIT>PqcTest.testKemEncapsulationWithKyberAes:101 1 expectation failed.
+Expected status code <200> but was <500>.
+
+[ERROR]   PqcIT>PqcTest.testKemEncapsulationWithKyberChacha:145 1 expectation failed.
+Expected status code <200> but was <500>.
+
+[ERROR]   PqcIT>PqcTest.testKemExtractToHeaderWithKyberAes:123 1 expectation failed.
+Expected status code <200> but was <500>.
+
+[INFO] 
+[ERROR] Tests run: 6, Failures: 3, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- failsafe:3.5.5:verify (default) @ camel-quarkus-integration-test-pqc ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  01:25 min
+[INFO] Finished at: 2026-03-25T15:34:35+01:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-failsafe-plugin:3.5.5:verify (default) on project camel-quarkus-integration-test-pqc: There are test failures.
+[ERROR] 
+[ERROR] See /home/jondruse/git/community/camel-quarkus/integration-tests/pqc/target/failsafe-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+
+======================================================================================
+  native.image.path was not set, making a guess for the correct path of native image
+  guessed path: /home/jondruse/git/community/camel-quarkus/integration-tests/pqc/target/camel-quarkus-integration-test-pqc-3.35.0-SNAPSHOT-runner
+======================================================================================
+Mar 25, 2026 3:34:30 PM org.jboss.logmanager.JBossLoggerFinder getLogger
+ERROR: The LogManager accessed before the "java.util.logging.manager" system property was set to "org.jboss.logmanager.LogManager". Results may be unexpected.
+======================================================================================
+  native.image.path was not set, making a guess for the correct path of native image
+  guessed path: /home/jondruse/git/community/camel-quarkus/integration-tests/pqc/target/camel-quarkus-integration-test-pqc-3.35.0-SNAPSHOT-runner
+======================================================================================
+======================================================================================
+  native.image.path was not set, making a guess for the correct path of native image
+  guessed path: /home/jondruse/git/community/camel-quarkus/integration-tests/pqc/target/camel-quarkus-integration-test-pqc-3.35.0-SNAPSHOT-runner
+======================================================================================
+======================================================================================
+  native.image.path was not set, making a guess for the correct path of native image
+  guessed path: /home/jondruse/git/community/camel-quarkus/integration-tests/pqc/target/camel-quarkus-integration-test-pqc-3.35.0-SNAPSHOT-runner
+======================================================================================
+

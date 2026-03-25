@@ -1,0 +1,53 @@
+## Failure summary
+The BCPQC security provider is not registered at GraalVM build time, causing `SecurityException` when native image runtime attempts to use KYBER key encapsulation algorithms, while signature algorithms (Dilithium, Falcon, SPHINCSPlus) pass because they don't trigger GraalVM's provider verification.
+
+## Relevant files
+- `extensions/pqc/deployment/src/main/java/org/apache/camel/quarkus/component/pqc/deployment/PqcProcessor.java` - Missing `NativeImageSecurityProviderBuildItem` for BCPQC provider
+- `integration-tests/pqc/src/main/resources/application.properties` - Contains commented fix: `#quarkus.native.additional-build-args=-H:AdditionalSecurityProviders=BCPQC`
+- `extensions/pqc/runtime/src/main/java/org/apache/camel/quarkus/component/pqc/PqcRecorder.java` - Runtime provider registration (necessary but insufficient for native)
+- `extensions/kudu/deployment/src/main/java/org/apache/camel/quarkus/component/kudu/deployment/KuduProcessor.java` - Reference pattern for `NativeImageSecurityProviderBuildItem` usage
+- `extensions-support/bouncycastle/deployment/src/main/java/org/apache/camel/quarkus/support/bouncycastle/deployment/BouncyCastleSupportProcessor.java` - Reference pattern for standard BC provider (note: BCPQC is different from BC)
+- `integration-tests/pqc/src/test/java/org/apache/camel/quarkus/component/pqc/it/PqcTest.java` - Test cases (3 Kyber KEM tests fail, 3 signature tests pass)
+- `integration-tests/crypto/pom.xml` - Reference for `quarkus.security.security-providers` property pattern
+
+## Key observations
+1. **Error is explicit**: GraalVM error message clearly states "BCPQC version 1.83" must be registered at build time with `-H:AdditionalSecurityProviders=BCPQC version 1.83`
+2. **Fix exists but commented out**: The application.properties has the exact fix commented out
+3. **Runtime-only registration is insufficient**: The PqcRecorder registers the provider at `STATIC_INIT`, but GraalVM requires build-time declaration via build items
+4. **Selective test failures indicate code path differences**: Kyber KEM operations (lines 228, 278 in PqcResource) trigger provider verification, but signature operations don't
+5. **Standard BC provider build item won't work**: BouncyCastleProviderBuildItem is for standard BC provider, not BCPQC
+6. **Provider name mismatch**: Code uses "BCPQC" but error shows "BCPQC version 1.83" - full provider name may need to be specified
+
+## Answers to research questions
+
+**1. What is the correct @BuildStep pattern to register "BCPQC version 1.83" for GraalVM native images?**
+
+Add this `@BuildStep` to `PqcProcessor.java`:
+```java
+@BuildStep
+NativeImageSecurityProviderBuildItem registerBcpqcSecurityProvider() {
+    return new NativeImageSecurityProviderBuildItem("org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider");
+}
+```
+
+The provider class name should be used (as in KuduProcessor pattern), not just "BCPQC". This tells GraalVM to register and verify the provider at build time.
+
+**2. Are there other Camel Quarkus extensions that register Bouncy Castle providers? What's the pattern?**
+
+Yes, found two patterns:
+- **Standard BC**: `extensions-support/bouncycastle` uses Quarkus' built-in `BouncyCastleProviderBuildItem` with conditional registration to avoid duplicates
+- **Other providers**: `extensions/kudu` uses `NativeImageSecurityProviderBuildItem` for SASL provider (line 59-61)
+
+For BCPQC (a separate provider from standard BC), use the Kudu pattern with `NativeImageSecurityProviderBuildItem`.
+
+**3. Beyond provider registration, does BCPQC require additional native image configuration?**
+
+Current configuration appears mostly sufficient:
+- ✅ Reflection: Already registered via `registerBouncyCastlePQCClasses()` (lines 49-61)
+- ✅ Runtime init: Provider registered at STATIC_INIT via recorder (lines 74-95)
+- ❌ **Missing**: Build-time security provider registration
+- Possibly needed: Resource bundles (check if BCPQC needs `NativeImageResourceBundleBuildItem` for security resources like sun.security.util.resources)
+
+**4. Should provider registration be conditional or always included?**
+
+**Always included** for this extension. Unlike the BouncyCastleSupport extension which conditionally registers to avoid conflicts with user-configured BC providers, the PQC extension is specifically for BCPQC algorithms, so the provider should always be registered when the extension is present. No conditional logic needed.

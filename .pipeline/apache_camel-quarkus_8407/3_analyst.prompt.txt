@@ -1,0 +1,39 @@
+You are a senior software engineer writing a fix plan.
+
+Repository: apache/camel-quarkus  |  Issue: #8407
+
+You have two inputs available in the .pipeline/ cache directory:
+  - .pipeline/apache_camel-quarkus_8407/1_orchestrator.txt  (research brief)
+  - .pipeline/apache_camel-quarkus_8407/2_researcher.txt    (codebase findings)
+
+Steps:
+1. Read both cache files above
+2. Write the fix plan below into a file and save it to .pipeline/apache_camel-quarkus_8407/plan_output.md
+3. The plan must use exactly this structure:
+
+# Fix plan: Provide native support for camel-pqc (Post-Quantique Crypto) component
+
+## Issue
+(one paragraph -- what is broken and why)
+
+## Root cause
+(precise technical explanation)
+
+## Proposed fix
+(step-by-step -- be specific about files and functions)
+
+## Files to change
+| File | What to change |
+|------|---------------|
+| ...  | ...           |
+
+## Edge cases to consider
+(list risks or edge cases in the fix)
+
+## Testing
+(what tests to write or update -- specific to mvn clean test / JUnit)
+
+Reference actual file names and function names from the research.
+A developer must be able to implement this without reading the original issue.
+
+When done, save the plan to .pipeline/apache_camel-quarkus_8407/plan_output.md .

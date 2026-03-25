@@ -1,0 +1,41 @@
+You are a senior software engineer writing a fix plan for a native test failure.
+
+Module: integration-tests/pqc
+Test command: mvn clean verify -Pnative -Ddocker -f integration-tests/pqc
+
+You have three inputs available in the .pipeline/ cache directory:
+  - .pipeline/native/integration-tests_pqc/initial_test_failure.txt  (test failure output)
+  - .pipeline/native/integration-tests_pqc/1_orchestrator.txt        (research brief)
+  - .pipeline/native/integration-tests_pqc/2_researcher.txt          (codebase findings)
+
+Steps:
+1. Read all three cache files above
+2. Write the fix plan below into a file and save it to .pipeline/native/integration-tests_pqc/plan_output.md
+3. The plan must use exactly this structure:
+
+# Fix plan: Native test failure in integration-tests/pqc
+
+## Problem
+(one paragraph -- what is failing and why)
+
+## Root cause
+(precise technical explanation of the native test failure)
+
+## Proposed fix
+(step-by-step -- be specific about files and changes)
+
+## Files to change
+| File | What to change |
+|------|---------------|
+| ...  | ...           |
+
+## Edge cases to consider
+(list risks or edge cases in the fix)
+
+## Testing
+(how to verify the fix works with mvn clean verify -Pnative -Ddocker -f integration-tests/pqc)
+
+Reference actual file names and function names from the research.
+A developer must be able to implement this without reading the original test output.
+
+When done, save the plan to .pipeline/native/integration-tests_pqc/plan_output.md .

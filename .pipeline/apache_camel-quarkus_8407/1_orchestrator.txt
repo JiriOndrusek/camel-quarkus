@@ -1,0 +1,21 @@
+# Research Brief: Native Support for camel-pqc Extension
+
+## Summary
+The camel-pqc (Post-Quantum Cryptography) extension currently only supports JVM mode and needs to be enabled for native compilation with GraalVM. Work has already begun: the extension has been promoted from `extensions-jvm/pqc` to `extensions/pqc` and `PcqProcessor` contains initial native support changes. The researcher needs to identify what additional GraalVM registrations and configurations are required to make the extension compile and run in native mode.
+
+## Type
+**Feature** - Native mode enablement for existing JVM-only extension
+
+## Focus Areas
+- `extensions/pqc/deployment/src/main/java/.../PcqProcessor.java` - review existing native config build steps
+- `extensions/pqc/runtime/` - identify classes using reflection, dynamic loading, or resources
+- `integration-tests/pqc/` - examine what the tests exercise to understand runtime requirements
+- Upstream `camel-pqc` component - understand what cryptographic providers, algorithms, and dynamic features it uses
+
+## Key Questions
+1. What reflection is needed? (crypto provider classes, algorithm implementations, key/cipher classes)
+2. What resources must be included? (provider configurations, algorithm mappings, security policies)
+3. Are there JCA/JCE service providers that need explicit registration via `ServiceProviderBuildItem`?
+4. Does pqc use dynamic proxies or require proxy registration?
+5. What BouncyCastle or other crypto library classes need `ReflectiveClassBuildItem` registration?
+6. Are there any JNI or native library dependencies that require special handling?

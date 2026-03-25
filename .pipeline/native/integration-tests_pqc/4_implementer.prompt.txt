@@ -1,0 +1,57 @@
+You are implementing a fix for a native test failure in integration-tests/pqc.
+
+Test command: mvn clean verify -Pnative -Ddocker -f integration-tests/pqc
+
+Fix plan:
+
+# Fix plan: Native test failure in integration-tests/pqc
+
+## Problem
+The PQC extension passes all 6 tests in JVM mode but fails 3 tests (testKemEncapsulationWithKyberAes, testKemExtractToHeaderWithKyberChacha, testKemExtractToHeaderWithKyberAes) in native mode with HTTP 500 errors. The underlying cause is a `java.lang.SecurityException` thrown when the native application attempts to use KYBER key encapsulation algorithms at runtime. The error message explicitly states: "Attempted to verify a provider that was not registered at build time: BCPQC version 1.83. All security providers must be registered and verified during native image generation."
+
+## Root cause
+GraalVM's security provider verification requires all Java security providers to be registered and verified during the native image build process, not just at runtime. The PQC extension currently registers the Bouncy Castle Post-Quantum Cryptography (BCPQC) provider at runtime via `PqcRecorder.java` using `STATIC_INIT`, but this is insufficient for native compilation. GraalVM needs a build-time declaration via `NativeImageSecurityProviderBuildItem` to include the provider in the native image's security provider registry. The three signature-based tests (Dilithium, Falcon, SPHINCSPlus) pass because they follow different code paths that don't trigger GraalVM's strict provider verification, while KYBER KEM operations explicitly verify the provider, exposing the missing build-time registration.
+
+## Proposed fix
+1. Add a new `@BuildStep` method to `extensions/pqc/deployment/src/main/java/org/apache/camel/quarkus/component/pqc/deployment/PqcProcessor.java`
+2. The build step should return a `NativeImageSecurityProviderBuildItem` configured with the fully-qualified class name of the BCPQC provider
+3. Remove the commented-out workaround from `integration-tests/pqc/src/main/resources/application.properties` if present (the proper fix makes it unnecessary)
+4. Follow the same pattern used in `extensions/kudu/deployment/src/main/java/org/apache/camel/quarkus/component/pqc/deployment/KuduProcessor.java` for security provider registration
+5. No conditional logic is needed - the provider should always be registered when the PQC extension is present
+
+## Files to change
+| File | What to change |
+|------|---------------|
+| `extensions/pqc/deployment/src/main/java/org/apache/camel/quarkus/component/pqc/deployment/PqcProcessor.java` | Add a new `@BuildStep` method named `registerBcpqcSecurityProvider()` that returns `new NativeImageSecurityProviderBuildItem("org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider")` |
+| `integration-tests/pqc/src/main/resources/application.properties` | Remove the commented line `#quarkus.native.additional-build-args=-H:AdditionalSecurityProviders=BCPQC` if it exists (the build item replaces this workaround) |
+
+## Edge cases to consider
+1. **Provider version specificity**: The error mentions "BCPQC version 1.83" but the fix uses the provider class name without version. This is correct - GraalVM determines the version from the loaded provider instance.
+2. **Dependency on standard BC**: Verify that BCPQC provider doesn't conflict with standard Bouncy Castle (BC) provider registration in `extensions-support/bouncycastle`. These are separate providers and should coexist without issues.
+3. **Multiple provider registrations**: Ensure no duplicate registration if the extension is included multiple times in different modules - GraalVM handles duplicates gracefully, but verify no warnings appear.
+4. **Resource bundles**: Monitor for potential `MissingResourceException` errors during native tests. BCPQC might require security resource bundles (like `sun.security.util.resources`) which would need `NativeImageResourceBundleBuildItem` registration.
+5. **Provider initialization order**: The existing `PqcRecorder` runtime registration at `STATIC_INIT` should remain - it complements the build-time registration and handles provider initialization.
+
+## Testing
+Run the full native test suite to verify all 6 tests pass:
+```bash
+mvn clean verify -Pnative -Ddocker -f integration-tests/pqc
+```
+
+Expected outcome:
+- **Before fix**: Tests run: 6, Failures: 3 (testKemEncapsulationWithKyberAes, testKemEncapsulationWithKyberChacha, testKemExtractToHeaderWithKyberAes fail with HTTP 500/SecurityException)
+- **After fix**: Tests run: 6, Failures: 0, Errors: 0, Skipped: 0 (all tests pass in both JVM and native mode)
+
+Verify the native image build log confirms BCPQC provider registration:
+```bash
+grep -i "BCPQC\|BouncyCastlePQC" integration-tests/pqc/target/*-native-image-source-jar/native-image.args
+```
+
+Spot-check specific endpoints that previously failed:
+- GET `/pqc/kem/kyber/aes/encapsulation` - should return HTTP 200
+- GET `/pqc/kem/kyber/chacha/encapsulation` - should return HTTP 200
+- GET `/pqc/kem/kyber/aes/extract-header` - should return HTTP 200
+
+
+Implement this fix now. Follow the plan closely.
+Make focused, minimal changes. Do not refactor unrelated code.
