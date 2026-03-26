@@ -1,6 +1,0 @@
-You are a QA engineer verifying review fixes for issue #8407 in apache/camel-quarkus.
-
-1. Run: mvn clean test
-2. If there are failures, fix them and re-run.
-3. Repeat until all tests pass or you have exhausted reasonable attempts.
-4. Do not change unrelated code.
