@@ -16,10 +16,8 @@
  */
 package org.apache.camel.quarkus.component.pqc.deployment;
 
-import java.security.Provider;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
@@ -32,7 +30,8 @@ import io.quarkus.deployment.builditem.ShutdownContextBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageSecurityProviderBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import org.apache.camel.quarkus.component.pqc.PqcRecorder;
-import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
+import org.bouncycastle.crypto.AsymmetricCipherKeyPairGenerator;
+import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.IndexView;
 import org.jboss.logging.Logger;
 
@@ -84,62 +83,29 @@ class PqcProcessor {
 
     @BuildStep
     @Record(ExecutionTime.STATIC_INIT)
-    void registerBouncyCastlePQCProvider(PqcRecorder recorder, ShutdownContextBuildItem shutdownContextBuildItem) {
-        Provider provider = new BouncyCastlePQCProvider();
-        List<String> transformations = discoverPqcAlgorithms(provider);
+    void registerBouncyCastlePQCProvider(PqcRecorder recorder, ShutdownContextBuildItem shutdownContextBuildItem,
+            CombinedIndexBuildItem combinedIndex) {
+        IndexView index = combinedIndex.getIndex();
+
+        List<String> algorithms = index.getKnownClasses().stream()
+                .filter(ci -> ci.name().toString().startsWith("org.bouncycastle.pqc.jcajce.provider.") &&
+                        ci.name().toString().contains("$Mappings"))
+                .map(ci -> ci.enclosingClass().toString()
+                        .substring(ci.enclosingClass().toString().lastIndexOf('.') + 1))
+                .toList();
+
+        List<String> keyPairGenerators = index
+                .getAllKnownImplementations(AsymmetricCipherKeyPairGenerator.class.getName()).stream()
+                .filter(ci -> ci.name().toString().contains(".pqc."))
+                .map(ClassInfo::simpleName)
+                .toList();
+
+        List<String> transformations = Stream.concat(algorithms.stream(), keyPairGenerators.stream())
+                .toList();
 
         LOG.infof("Discovered %d PQC algorithms from BouncyCastlePQCProvider", transformations.size());
 
         recorder.registerBouncyCastlePQCProvider(transformations, shutdownContextBuildItem);
     }
 
-    /**
-     * Discovers PQC algorithms from the given provider, filtering out parameter spec variants
-     * and normalizing names to match the original hardcoded list format.
-     * This method is package-private to allow testing.
-     */
-    static List<String> discoverPqcAlgorithms(Provider provider) {
-        return provider.getServices().stream()
-                .filter(s -> Arrays.asList("Signature", "KeyPairGenerator", "Cipher", "KeyFactory")
-                        .contains(s.getType()))
-                .map(Provider.Service::getAlgorithm)
-                .distinct()
-                // Filter out parameter spec variants (e.g., DILITHIUM2, ML-KEM-512, Falcon-512)
-                // These are handled via ParameterSpec at runtime, not as separate base algorithms
-                .filter(alg -> !alg.matches(".*[-]?\\d+.*")) // Exclude names with digits
-                .filter(alg -> !alg.contains("WITH")) // Exclude composite signature schemes like SHA3-512WITHSPHINCS256
-                .map(PqcProcessor::normalizeAlgorithmName) // Normalize to match original hardcoded list case
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Normalizes algorithm names to match the case format from the original hardcoded list.
-     * This ensures backwards compatibility with existing integration tests.
-     */
-    private static String normalizeAlgorithmName(String algorithm) {
-        // Map common PQC algorithm names to their canonical case format
-        switch (algorithm.toUpperCase()) {
-        case "DILITHIUM":
-            return "Dilithium";
-        case "FALCON":
-            return "Falcon";
-        case "SPHINCSPLUS":
-            return "SPHINCSPlus";
-        case "KYBER":
-            return "Kyber";
-        case "SPHINCS+":
-            return "SPHINCS+";
-        case "NTRU":
-            return "NTRU";
-        case "SABER":
-            return "SABER";
-        case "FRODO":
-            return "FrodoKEM";
-        case "ML-KEM":
-            return "ML-KEM";
-        default:
-            // For unknown algorithms, return as-is (future-proofing)
-            return algorithm;
-        }
-    }
 }
