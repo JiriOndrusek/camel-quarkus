@@ -1,0 +1,576 @@
+# Peer Code Review: integration-tests/pqc Test Coverage
+
+**Branch:** test/coverage-integration-tests_pqc
+**Module:** integration-tests/pqc
+**Reviewer:** Claude Sonnet 4.5 (Peer Review)
+**Date:** 2026-03-25
+
+---
+
+## Independent Assessment
+
+### Coverage Analysis
+
+The test expansion adds **50 test methods** across **8 test classes** (with corresponding native IT classes), significantly expanding from the original 6 tests. The implementation demonstrates strong structural organization and comprehensive algorithm coverage.
+
+#### Algorithm Coverage Verification
+
+**Signature Algorithms:**
+- ✅ **Dilithium:** dilithium2, dilithium3, dilithium5 (3/3 specs tested)
+- ✅ **Falcon:** falcon_512, falcon_1024 (2/2 specs tested)
+- ⚠️ **SPHINCS+:** 6 variants tested (sha2_128f, sha2_128s, sha2_192f, sha2_256f, shake_128f, shake_256s)
+  - Note: Documentation mentions 12+ variants; 6 tested is solid coverage for integration tests
+
+**KEM Algorithms:**
+- ✅ **Kyber:** kyber512, kyber768, kyber1024 (3/3 specs tested)
+
+**Symmetric Algorithms:**
+- ✅ **AES:** 128-bit, 256-bit (both tested)
+- ✅ **CHACHA7539:** 256-bit (correctly tested; CHACHA7539 only supports 256-bit)
+
+#### Documentation Section Coverage
+
+| Section | Coverage Status | Tests |
+|---------|----------------|-------|
+| 1. URI Format and Syntax | ⚠️ **PARTIAL** | Basic patterns tested; invalid parameter tests are placeholders |
+| 2. Operations (sign/verify/KEM) | ✅ **COMPLETE** | All 3 operations tested with multiple variations |
+| 3. Configuration Options | ✅ **GOOD** | 13+ parameter specs tested across all algorithms |
+| 4. Message Headers | ✅ **COMPLETE** | All 3 headers tested (CamelPQCSignature, CamelPQCVerification, CamelPQCSecretKey) |
+| 5. Message Body Behavior | ⚠️ **PARTIAL** | Empty, large (1MB/10MB/100MB), binary tested; large body verification incomplete |
+| 6. Key Pair Generation | ✅ **COMPLETE** | 13 KeyPairs generated; concurrent access tested |
+| 7. BouncyCastle Provider | ✅ **COMPLETE** | Provider registration and algorithm availability verified |
+| 8. Error Handling | ❌ **WEAK** | Tests exist but assertions are insufficient |
+| 9. Native Compilation | ✅ **COMPLETE** | All tests have native counterparts (PqcIT classes) |
+| 10. Performance | ✅ **GOOD** | Concurrency (10 threads) and large bodies tested |
+
+### Critical Issues Found
+
+#### 1. Placeholder Tests in PqcTest.java
+
+**PqcTest.java:163-180** - `testInvalidOperationParameter()` and `testMissingOperationParameter()`
+```java
+// Test with invalid operation parameter
+// This would require a dedicated endpoint or different test approach
+// For now, we verify normal operations work correctly as a baseline
+RestAssured.post("/pqc/sign/dilithium")
+        .then()
+        .statusCode(200);
+```
+**Issue:** Tests are named to validate invalid/missing parameters but actually just verify normal operations work. This is misleading.
+
+**Impact:** These tests don't provide the promised coverage and could mask future regression bugs.
+
+#### 2. Incomplete Negative Test Assertions
+
+**PqcNegativeTest.java** - Multiple tests lack proper validation:
+
+- **Line 72** (`testVerifyWithAlgorithmMismatch`): Only checks `assertNotNull(result)` but doesn't verify the mismatch is detected
+- **Line 118** (`testKemExtractWithWrongKey`): Only checks `assertNotNull(result)` without verifying extraction failed or produced different key
+- **Line 135** (`testKemExtractWithCorruptedEncapsulation`): Only checks `assertNotNull(result)` without validating graceful error handling
+- **Line 148** (`testSignWithNullBody`): Only checks `assertNotNull(result)` without verifying expected null handling behavior
+- **Line 161** (`testVerifyWithMissingSignatureHeader`): Only checks `assertNotNull(result)` without verifying error message or behavior
+
+**Example - testVerifyWithAlgorithmMismatch:**
+```java
+// Should either be "false" or an error
+assertNotNull(result);  // TOO WEAK - doesn't validate mismatch detection
+```
+
+**Expected:**
+```java
+assertTrue(result.equals("false") || result.startsWith("error:"),
+    "Algorithm mismatch should produce false or error, got: " + result);
+```
+
+#### 3. Large Body Verification Gap
+
+**PqcBodyTest.java:51-96** - Tests for 1MB/10MB/100MB bodies:
+```java
+// Note: Verification with large bodies requires the same random data
+// which is not reproducible, so we just verify signing works
+```
+
+**Issue:** Only tests signing succeeds, doesn't verify signature correctness. Uses `new SecureRandom()` without fixed seed, making data non-reproducible.
+
+**Impact:** Cannot verify that signatures over large bodies are actually valid.
+
+**Solution:** Use deterministic random data generation:
+```java
+SecureRandom random = new SecureRandom(new byte[]{0,1,2,3}); // Fixed seed
+byte[] largeData = new byte[size];
+random.nextBytes(largeData);
+```
+
+#### 4. Symmetric Algorithm Mismatch Test Doesn't Validate
+
+**PqcSymmetricTest.java:47-68** - `testSymmetricAlgorithmMismatch()`:
+```java
+// The result should be "false" or produce a different key
+// In real-world scenarios, using the wrong algorithm would fail
+```
+
+**Issue:** Comment acknowledges expected behavior but test doesn't assert it. Test extracts result and passes regardless of whether mismatch is detected.
+
+#### 5. Incomplete Test in PqcTest.java
+
+**PqcTest.java:194-217** - `testKeyPairAlgorithmMismatch()`:
+```java
+assertNotNull(result);
+// Should produce error or false verification
+```
+
+**Issue:** Signs with Dilithium, attempts verify with Falcon, but only checks result is not null. Doesn't verify that mismatch is detected.
+
+#### 6. PqcNegativeTest.java:165-180 - Misnamed Test
+
+**`testSignWithMissingKeyPair()`:**
+```java
+// This test would require configuring endpoint without keyPair parameter
+// Since we're testing via REST endpoints that already have keyPairs configured,
+// we verify the provider is available which is a prerequisite
+String result = RestAssured.post("/pqc/provider/check")...
+```
+
+**Issue:** Test name claims to test missing keypair but actually tests provider availability. Completely different concern.
+
+### Positive Findings
+
+#### Excellent Structure
+- ✅ **Well-organized test classes** by concern (Negative, ParameterSpec, Symmetric, Header, Body, Concurrency, NativeMode)
+- ✅ **Comprehensive endpoint coverage** in PqcResource.java (50+ endpoints)
+- ✅ **Proper CDI integration** with @Produces and @Named annotations for KeyPairs
+- ✅ **Correct Quarkus test patterns** (@QuarkusTest, @QuarkusIntegrationTest)
+
+#### Strong Coverage Areas
+- ✅ **Parameter spec tests** (PqcParameterSpecTest.java) - all properly validate sign→verify cycles
+- ✅ **Concurrency tests** (PqcConcurrencyTest.java) - proper multi-threaded execution with 10 threads
+- ✅ **Header behavior tests** (PqcHeaderTest.java) - comprehensive header validation
+- ✅ **Native mode tests** - all test classes have IT counterparts
+- ✅ **Binary data handling** - properly encodes/decodes for verification
+
+#### Resource Implementation Quality
+- ✅ **Efficient KeyPair generation** - generated once in @PostConstruct, not per-test
+- ✅ **Proper error handling patterns** - try/catch blocks return error codes
+- ✅ **Good separation of concerns** - negative test endpoints use different keypairs or corrupt data
+
+### Minor Issues
+
+7. **PqcSymmetricTest.java:38** - `testKemWithChacha256()` only tests encapsulation, doesn't verify extraction works (asymmetric with testKemWithAes256)
+
+8. **PqcSymmetricTest.java:71-81** - `testSymmetricKeyLengthMismatch()` is incomplete:
+```java
+// The encapsulation is for AES-128, but we can only verify it works
+// with the correct parameters in the existing tests
+```
+Comment acknowledges test doesn't do what it should.
+
+9. **PqcTest.java:183-191** - `testInvalidAlgorithmName()` doesn't actually test invalid algorithm names, just verifies valid ones work.
+
+10. **PqcResource.java:374** - `extractKyberAes()` method signature accepts `String encapsulationBase64` parameter but ignores it, always using stored `kyberAesEncapsulation` field. Creates confusion about what's being tested.
+
+---
+
+## Agreement with Self-Review
+
+The self-review identified the same critical issues I found. I **agree** with:
+
+### ✅ Agreed Critical Issues (P0)
+
+1. **Placeholder tests in PqcTest.java** (lines 163-191) - Self-review correctly identifies these as not testing what they claim
+2. **Weak negative test assertions** - Self-review correctly calls out insufficient validation in PqcNegativeTest.java
+3. **Large body verification incomplete** - Self-review correctly identifies the reproducibility issue
+4. **Symmetric algorithm mismatch not validated** - Self-review correctly notes test doesn't assert expected behavior
+5. **KeyPair algorithm mismatch assertion missing** - Self-review correctly identifies line 215 only checks not-null
+
+### ✅ Agreed Code Quality Observations
+
+- **Strengths:** Test structure, organization, Quarkus patterns, CDI integration, parameter spec coverage
+- **Weaknesses:** Overuse of `assertNotNull()`, placeholder comments, misleading test names
+
+### ✅ Agreed Coverage Assessment
+
+Self-review's documentation section coverage table aligns with my analysis:
+- Sections 2, 4, 6, 7, 9: Complete ✅
+- Sections 1, 3, 5, 10: Partial ⚠️
+- Section 8 (Error Handling): Weak ❌
+
+---
+
+## Additional Issues Not in Self-Review
+
+While the self-review is thorough, I found these additional concerns:
+
+### 11. Test Data Consistency Issue
+
+**PqcBodyTest.java** and **PqcResource.java:952-984** - Large body tests use `new SecureRandom()` **twice**:
+- Line 953 in signWithLargeBody(): `new SecureRandom().nextBytes(largeData)`
+- Line 970 in verifyWithLargeBody(): `new SecureRandom().nextBytes(largeData)` (different instance)
+
+**Issue:** Even if test were to call verify endpoint, the random data would be different each time. Self-review mentions non-reproducibility but doesn't emphasize this is a **guaranteed failure** for verification.
+
+### 12. Missing Test Method Count Validation
+
+The coverage plan specifies **41+ test methods** as the target. The implementation provides **50 test methods**, which exceeds the target. However:
+
+**PqcTest.java** contributes 10 tests, but 4 are placeholders (40% placeholder rate in that class). The **net useful test count** is actually **46 tests** (50 - 4 placeholders).
+
+### 13. CHACHA-128 Documentation Discrepancy
+
+**Coverage plan** mentions testing CHACHA-128, but:
+- CHACHA7539 algorithm **only supports 256-bit keys** (architectural limitation)
+- Tests correctly only test CHACHA-256
+- Coverage plan has a **documentation error** suggesting CHACHA-128 should be tested
+
+**Recommendation:** This is not a test failure but indicates the coverage plan itself had an error. Tests are correct.
+
+### 14. Resource Method Parameter Not Used
+
+**PqcResource.java:374** - `extractKyberAes(String encapsulationBase64)`:
+```java
+public boolean extractKyberAes(String encapsulationBase64) {
+    // Use the stored encapsulation object
+    if (kyberAesEncapsulation == null) {
+        return false;
+    }
+    // Parameter encapsulationBase64 is NEVER used
+    SecretKeyWithEncapsulation result = producerTemplate.requestBody(..., kyberAesEncapsulation, ...);
+```
+
+**Issue:** Method signature misleads readers about what data is being extracted. Parameter should be removed or actually used.
+
+**Same issue** in:
+- Line 393: `extractKyberAesToHeader(String encapsulationBase64)`
+- Line 423: `extractKyberChacha(String encapsulationBase64)`
+- Line 551: `extractWithWrongKey(String encapsulationBase64)`
+
+### 15. Binary Data Test Has Potential Race Condition
+
+**PqcResource.java:1000** - `signWithBinaryData()`:
+```java
+// Store binary data for verification
+exchange.getIn().setHeader("CamelTestBinaryData", binaryData);
+return signature != null ? Base64.getEncoder().encodeToString(signature) + ":" +
+        Base64.getEncoder().encodeToString(binaryData) : "null";
+```
+
+**Issue:** Header is set but never read (dead code). Test correctly passes binary data in response body, so header is unnecessary and confusing.
+
+### 16. No Validation of BouncyCastle PQC Provider Name
+
+**PqcResource.java:83** and **line 1113**:
+- Hardcoded provider name `"BCPQC"` in multiple places
+- If BouncyCastle changes provider name in future version, tests would fail silently
+
+**Recommendation:** Define constant:
+```java
+private static final String BC_PQC_PROVIDER = "BCPQC";
+```
+
+---
+
+## Final Recommendation
+
+**REQUEST CHANGES** ⚠️
+
+### Overall Assessment
+
+The test coverage work demonstrates **strong structural quality** and **excellent breadth of coverage** (50 tests, 13 KeyPairs, 8 test classes). However, **assertion quality is insufficient** for production-grade code, with approximately **20% of tests** having weak or placeholder implementations.
+
+**Quantitative Breakdown:**
+- Total tests: 50
+- High-quality tests: 40 (80%)
+- Weak/placeholder tests: 10 (20%)
+  - PqcTest.java: 4 placeholder tests
+  - PqcNegativeTest.java: 5 weak assertion tests
+  - PqcSymmetricTest.java: 1 incomplete test
+
+**Coverage Achievement:**
+- ✅ Meets quantitative goal (50 > 41 planned tests)
+- ✅ Excellent algorithm parameter spec coverage
+- ✅ Proper native mode support
+- ❌ Does **not** meet qualitative goal of validating error conditions
+
+---
+
+## Required Changes Before Merge
+
+### 1. Fix or Remove Placeholder Tests (HIGH PRIORITY)
+
+**PqcTest.java:163-191** - Three tests that don't test what they claim:
+
+**Option A (Recommended):** Remove placeholder tests entirely
+```java
+// Remove:
+// - testInvalidOperationParameter()
+// - testMissingOperationParameter()
+// - testInvalidAlgorithmName()
+```
+
+**Option B:** Implement actual validation or mark as @Disabled with TODO comment:
+```java
+@Disabled("Requires endpoint refactoring to test invalid operation parameter")
+@Test
+public void testInvalidOperationParameter() { ... }
+```
+
+### 2. Strengthen Negative Test Assertions (HIGH PRIORITY)
+
+**PqcNegativeTest.java** - Fix 5 tests with weak assertions:
+
+**testVerifyWithAlgorithmMismatch (line 51):**
+```java
+// Replace:
+assertNotNull(result);
+
+// With:
+assertTrue(result.equals("false") || result.startsWith("error:"),
+    "Algorithm mismatch should fail verification, got: " + result);
+```
+
+**testKemExtractWithWrongKey (line 97):**
+```java
+// Replace:
+assertNotNull(result);
+
+// With:
+assertTrue(result.equals("different") || result.startsWith("error:"),
+    "Extracting with wrong key should produce different key or error, got: " + result);
+```
+
+**testKemExtractWithCorruptedEncapsulation (line 122):**
+```java
+// Replace:
+assertNotNull(result);
+
+// With:
+assertTrue(result.equals("different") || result.startsWith("error:") || result.equals("no-encapsulation"),
+    "Corrupted encapsulation should be handled gracefully, got: " + result);
+```
+
+**testSignWithNullBody (line 138):**
+```java
+// Replace:
+assertNotNull(result);
+
+// With:
+assertTrue(result.equals("success") || result.equals("null") || result.startsWith("error:"),
+    "Null body should be handled without crash, got: " + result);
+```
+
+**testVerifyWithMissingSignatureHeader (line 151):**
+```java
+// Replace:
+assertNotNull(result);
+
+// With:
+assertTrue(result.equals("null") || result.equals("false") || result.startsWith("error:"),
+    "Missing signature header should produce null/false or error, got: " + result);
+```
+
+### 3. Complete Large Body Verification (MEDIUM PRIORITY)
+
+**PqcBodyTest.java:51-96** - Fix three large body tests:
+
+```java
+@Test
+public void testSignVerifyWithLargeBody1MB() {
+    int size = 1024 * 1024; // 1MB
+
+    // Use fixed seed for reproducible data
+    SecureRandom random = new SecureRandom(new byte[]{0, 1, 2, 3, 4, 5, 6, 7});
+    byte[] largeData = new byte[size];
+    random.nextBytes(largeData);
+
+    // Sign and encode both signature and data
+    String result = RestAssured.given()
+            .contentType("application/octet-stream")
+            .body(largeData)
+            .post("/pqc/sign/largebody/reproducible")
+            .then()
+            .statusCode(200)
+            .extract()
+            .asString();
+
+    // Verify signature with same data
+    RestAssured.given()
+            .contentType("text/plain")
+            .body(result)
+            .post("/pqc/verify/largebody/reproducible")
+            .then()
+            .statusCode(200)
+            .body(equalTo("true"));
+}
+```
+
+**Alternative:** If full verification is too resource-intensive for 100MB test, document this explicitly:
+```java
+@Test
+public void testSignVerifyWithLargeBody100MB() {
+    // Sign with 100MB body
+    int size = 100 * 1024 * 1024;
+    String signature = RestAssured.post("/pqc/sign/largebody/" + size)
+            .then()
+            .statusCode(200)
+            .extract()
+            .asString();
+
+    assertNotNull(signature);
+    // Note: Full verification of 100MB bodies would require significant memory
+    // and time. This test validates that signing large bodies doesn't crash
+    // or produce errors. Smaller body tests (1MB, 10MB) validate correctness.
+}
+```
+
+### 4. Fix Symmetric Algorithm Mismatch Tests (MEDIUM PRIORITY)
+
+**PqcSymmetricTest.java:47-68** - `testSymmetricAlgorithmMismatch()`:
+```java
+// Replace weak assertion:
+String result = RestAssured.given()...extract().asString();
+
+// With proper validation:
+String result = RestAssured.given()
+        .contentType("text/plain")
+        .body(encapsulation)
+        .post("/pqc/kem/extract/kyber-chacha")
+        .then()
+        .statusCode(200)
+        .extract()
+        .asString();
+
+// Verify mismatch produces different result or error
+assertTrue(result.equals("different") || result.equals("false") || result.startsWith("error:"),
+    "Mismatched symmetric algorithms should produce different key or error, got: " + result);
+```
+
+**PqcSymmetricTest.java:71-81** - Either implement `testSymmetricKeyLengthMismatch()` or remove it:
+```java
+@Disabled("Cannot test key length mismatch without corrupting encapsulation data")
+@Test
+public void testSymmetricKeyLengthMismatch() {
+    // Encapsulation contains embedded key length metadata
+    // Mismatch would require low-level binary manipulation
+}
+```
+
+---
+
+## Optional Improvements (Not Blockers)
+
+### 5. Remove Unused Method Parameters
+
+**PqcResource.java** - Lines 374, 393, 423, 551:
+```java
+// Remove unused parameter or actually use it
+public boolean extractKyberAes() {  // Remove String encapsulationBase64
+    if (kyberAesEncapsulation == null) {
+        return false;
+    }
+    // ... rest of method
+}
+```
+
+### 6. Add Constant for Provider Name
+
+**PqcResource.java:83**:
+```java
+private static final String BC_PQC_PROVIDER = "BCPQC";
+
+@PostConstruct
+public void init() throws Exception {
+    Security.addProvider(new BouncyCastlePQCProvider());
+    // Later: use BC_PQC_PROVIDER instead of "BCPQC" string literals
+}
+```
+
+### 7. Clean Up Dead Code
+
+**PqcResource.java:1000** - Remove unused header:
+```java
+// Remove this line (header is never read):
+exchange.getIn().setHeader("CamelTestBinaryData", binaryData);
+```
+
+### 8. Improve Test Method Naming
+
+**PqcTest.java:194** - Rename to match actual behavior:
+```java
+// Current: testKeyPairAlgorithmMismatch
+// Better: testCrossAlgorithmVerificationAttempt
+// Or remove if fixing to properly validate mismatch detection
+```
+
+### 9. Add Javadoc to Complex Test Classes
+
+**PqcConcurrencyTest.java** - Add class-level documentation:
+```java
+/**
+ * Concurrency tests for PQC operations.
+ * Validates thread safety of sign/verify and KEM operations
+ * using shared KeyPair instances across multiple threads.
+ */
+@QuarkusTest
+class PqcConcurrencyTest {
+```
+
+### 10. Consider Test Execution Time
+
+**PqcBodyTest.java** - 100MB test may slow CI:
+```java
+@Test
+@Timeout(value = 5, unit = TimeUnit.MINUTES)  // Add explicit timeout
+public void testSignVerifyWithLargeBody100MB() {
+```
+
+---
+
+## Summary
+
+### Strengths (What Works Well)
+- ✅ **Excellent test organization** - 8 focused test classes by concern
+- ✅ **Comprehensive algorithm coverage** - 13 KeyPairs, 10+ parameter specs
+- ✅ **Proper Quarkus integration** - Correct use of @QuarkusTest, CDI, native tests
+- ✅ **Good concurrency testing** - 10 threads, mixed operations
+- ✅ **Strong header/body tests** - Comprehensive validation in dedicated classes
+- ✅ **Efficient resource management** - KeyPairs generated once in @PostConstruct
+
+### Weaknesses (Needs Improvement)
+- ❌ **Weak negative test assertions** - 5 tests only check non-null
+- ❌ **Placeholder tests** - 4 tests don't test what they claim (40% of PqcTest.java)
+- ❌ **Incomplete large body verification** - Can't verify signature correctness
+- ❌ **Symmetric mismatch not validated** - Test exists but doesn't assert expected behavior
+- ⚠️ **Unused method parameters** - Creates API confusion
+
+### Impact of Issues
+- **Test count:** 50 tests created, but **effective coverage** is ~46 tests (4 placeholders)
+- **Error coverage:** Error handling tests exist but don't validate errors occur
+- **Risk:** Could miss regression bugs if error handling breaks
+- **Maintainability:** Misleading test names and placeholder comments reduce code quality
+
+### Recommendation Rationale
+
+While the test suite has **strong breadth** (50 tests > 41 planned), it has **weak depth** in critical areas. Approximately 20% of tests have insufficient assertions. For production code in a security-critical area (post-quantum cryptography), **assertion quality is paramount**.
+
+The **required changes are straightforward**:
+1. Remove or disable 4 placeholder tests (10 minutes)
+2. Add proper assertions to 5 negative tests (20 minutes)
+3. Fix 3 large body tests with deterministic data (30 minutes)
+4. Fix 2 symmetric algorithm tests (15 minutes)
+
+**Total estimated fix time: ~75 minutes**
+
+Once these changes are addressed, this will provide **excellent production-grade coverage** for the PQC extension.
+
+---
+
+## Conclusion
+
+**The test coverage expansion is architecturally sound with excellent breadth, but needs stronger assertions before merge.**
+
+The work demonstrates strong understanding of:
+- ✅ Quarkus testing patterns
+- ✅ PQC component functionality
+- ✅ Test organization and structure
+- ✅ Native mode requirements
+
+With the 4 required fixes applied, this will be **high-quality test coverage** worthy of the Apache Camel Quarkus project.

@@ -1,0 +1,70 @@
+You are a senior engineering manager.
+You have been given a GitHub issue. Write a concise research brief for a researcher agent.
+
+Starting instructions:
+Some part of the work is already done in the latest commint in the lical active branch, Consider it wgeb orchestrating the issue.
+
+The `extensions-jvm/pcq` module is already moved into `extensions/pcq` )the sa,e goes for the tests. And the PcqProcessor already contains some change for the native support of pcq extension.
+
+
+The brief must contain:
+- Plain-English summary of the issue (2-3 sentences)
+- Type of problem (bug / feature / docs / performance / etc.)
+- Which parts of the codebase the researcher should focus on
+- Specific questions the researcher needs to answer to understand the fix
+
+Issue:
+{
+  "number": 8407,
+  "title": "Provide native support for camel-pqc (Post-Quantique Crypto) component",
+  "state": "open",
+  "body": "### Describe the feature here\n\ncurrently only with JVM support",
+  "labels": [
+    "enhancement",
+    "native",
+    "area/native",
+    "area/pqc"
+  ],
+  "author": "apupier",
+  "created": "2026-03-10T13:41:48Z",
+  "url": "https://github.com/apache/camel-quarkus/issues/8407"
+}
+
+Repository root:
+[file] .asf.yaml
+[file] .gitattributes
+[dir]  .github
+[file] .gitignore
+[file] .gitleaks.toml
+[dir]  .mvn
+[file] .sdkmanrc
+[file] AGENTS.md
+[file] CHANGELOG.md
+[file] CLAUDE.md
+[file] Jenkinsfile
+[file] Jenkinsfile.sonarcloud
+[file] KEYS
+[file] LICENSE.txt
+[file] NOTICE.txt
+[file] README.adoc
+[dir]  camel-quarkus-sbom
+[dir]  catalog
+[dir]  docs
+[dir]  examples
+[dir]  extensions-core
+[dir]  extensions-jvm
+[dir]  extensions-support
+[dir]  extensions
+[dir]  integration-test-groups
+[dir]  integration-tests-jvm
+[dir]  integration-tests-support
+[dir]  integration-tests
+[file] mvnw
+[file] mvnw.cmd
+[file] pom.xml
+[dir]  poms
+[dir]  release-utils
+[dir]  test-framework
+[dir]  tooling
+
+Write the research brief now. Be concise.

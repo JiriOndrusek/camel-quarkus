@@ -1,0 +1,216 @@
+## Component summary
+
+The PQC component provides post-quantum cryptographic capabilities for Apache Camel, supporting signature operations (sign/verify) with ML-DSA (Dilithium), Falcon, and SPHINCS+, and KEM operations (encapsulation/extraction) with Kyber. It integrates BouncyCastle's PQC provider for quantum-resistant cryptography.
+
+## Existing test files
+
+- `integration-tests/pqc/src/test/java/org/apache/camel/quarkus/component/pqc/it/PqcTest.java` - JVM mode tests (6 test methods)
+- `integration-tests/pqc/src/test/java/org/apache/camel/quarkus/component/pqc/it/PqcIT.java` - Native mode tests (extends PqcTest)
+
+## Coverage analysis
+
+### 1. URI Format and Syntax
+- **Tested:** Basic URI patterns with operation and algorithm parameters (`pqc:sign?operation=sign&signatureAlgorithm=DILITHIUM&keyPair=#dilithiumKeyPair`)
+- **Missing:** Invalid URI formats, missing required parameters, malformed parameter values
+
+### 2. Operations (Sign, Verify, KEM)
+- **Tested:** 
+  - Sign operation with DILITHIUM, FALCON, SPHINCSPLUS
+  - Verify operation with DILITHIUM, FALCON, SPHINCSPLUS
+  - generateSecretKeyEncapsulation with KYBER
+  - extractSecretKeyEncapsulation with KYBER
+  - extractSecretKeyFromEncapsulation with KYBER (storeExtractedSecretKeyAsHeader=true)
+- **Missing:** 
+  - Invalid operation values
+  - Operation/algorithm mismatches
+  - Missing operation parameter
+
+### 3. Configuration Options (Component & Endpoint)
+- **Tested:**
+  - signatureAlgorithm: DILITHIUM, FALCON, SPHINCSPLUS
+  - keyEncapsulationAlgorithm: KYBER
+  - symmetricKeyAlgorithm: AES, CHACHA7539
+  - symmetricKeyLength: 128, 256
+  - storeExtractedSecretKeyAsHeader: true
+  - keyPair: via registry reference (#dilithiumKeyPair, etc.)
+- **Missing:**
+  - Algorithm parameter specs (dilithium3, dilithium5, falcon_1024, kyber768, kyber1024, SPHINCS+ variants)
+  - storeExtractedSecretKeyAsHeader: false (default behavior)
+  - Invalid configuration values
+  - Missing keyPair parameter
+  - KeyPair with wrong algorithm type
+  - Symmetric key algorithm/length mismatches
+
+### 4. Message Headers
+- **Tested:**
+  - CamelPQCSignature (sign output, verify input)
+  - CamelPQCVerification (verify output)
+  - CamelPQCSecretKey (extract to header output)
+- **Missing:**
+  - Missing CamelPQCSignature header on verify operation
+  - Malformed/corrupted signature header
+  - Invalid header data types
+  - Header preservation across operations
+
+### 5. Message Body Behavior
+- **Tested:** Single message body "Hello Camel Quarkus PQC" (23 bytes)
+- **Missing:**
+  - Empty message body
+  - Null message body
+  - Large message bodies (1MB, 10MB, 100MB)
+  - Different encodings (UTF-16, binary data)
+  - Body preservation through sign operation
+  - Different body types
+
+### 6. Key Pair Generation and Management
+- **Tested:**
+  - KeyPair generation for Dilithium (dilithium2), Falcon (falcon_512), SPHINCSPlus (sha2_128f), Kyber (kyber512)
+  - Registry-based KeyPair injection
+- **Missing:**
+  - Other parameter specs (dilithium3, dilithium5, falcon_1024, kyber768, kyber1024, other SPHINCS+ variants)
+  - KeyPair reuse across operations
+  - Concurrent access to same KeyPair
+  - Invalid KeyPair types
+
+### 7. BouncyCastle Provider Integration
+- **Tested:** BouncyCastlePQCProvider registration via Security.addProvider()
+- **Missing:**
+  - Provider availability validation
+  - Algorithm not found scenarios
+  - Provider initialization in native mode
+
+### 8. Error Handling
+- **Tested:** None
+- **Missing:**
+  - Invalid signature verification (corrupted signature)
+  - Algorithm mismatch (sign with Dilithium, verify with Falcon)
+  - Wrong private key for KEM extraction
+  - Corrupted encapsulation data
+  - NoSuchAlgorithmException scenarios
+  - InvalidKeyException scenarios
+  - SignatureException scenarios
+  - Missing required parameters
+  - Null parameter handling
+
+### 9. Native Compilation Support
+- **Tested:** PqcIT extends PqcTest to run all tests in native mode
+- **Missing:**
+  - Reflection configuration validation
+  - Resource registration validation
+  - Security provider registration in native mode
+  - No missing resource warnings validation
+
+### 10. Performance Considerations
+- **Tested:** None
+- **Missing:**
+  - Signature generation/verification performance
+  - KEM encapsulation/extraction performance
+  - KeyPair generation time
+  - Memory consumption
+  - Concurrent operation throughput
+
+## Gaps in test coverage
+
+### Critical Security Gaps (P0)
+1. **Invalid signature verification** - No test verifies that corrupted signatures fail verification
+2. **Algorithm mismatch detection** - No test ensures cross-algorithm operations fail properly (e.g., sign with Dilithium, verify with Falcon)
+3. **Wrong key detection** - No test verifies KEM extraction fails with wrong private key
+4. **Corrupted data handling** - No tests for corrupted encapsulation data or signatures
+5. **Null/missing parameter validation** - No tests for missing keyPair, operation, or algorithm parameters
+
+### Functionality Gaps (P1)
+6. **Algorithm parameter spec variations** - Only tests 4 of 16+ available parameter specs
+7. **Symmetric algorithm combinations** - Missing AES-256, CHACHA7539-128, and mismatch scenarios
+8. **Header behavior** - Missing tests for header preservation, missing header errors, malformed headers
+9. **Message body variations** - No tests for empty, null, large, or non-UTF-8 bodies
+10. **Default configuration** - storeExtractedSecretKeyAsHeader=false not tested
+
+### Quality Gaps (P2)
+11. **Concurrency** - No tests for concurrent operations or thread safety
+12. **Error messages** - No validation of exception types or error messages
+13. **Native mode specifics** - No validation of reflection/resource configuration
+14. **Performance baselines** - No performance benchmarks or regression tests
+
+### Specific Missing Test Scenarios
+
+**Signature Operations:**
+- Verify with corrupted signature bytes
+- Verify with signature from different algorithm
+- Verify with signature from different key pair
+- Sign/verify with empty body
+- Sign/verify with null body
+- Sign/verify with large bodies (>1MB)
+- Missing CamelPQCSignature header on verify
+
+**KEM Operations:**
+- Extract with wrong private key
+- Extract with corrupted encapsulation
+- Mismatched symmetric algorithms between encapsulate/extract
+- Mismatched symmetric key lengths
+- storeExtractedSecretKeyAsHeader=false behavior
+- Extract without prior encapsulation
+
+**Configuration:**
+- Missing operation parameter
+- Invalid operation value
+- Missing keyPair parameter
+- Invalid algorithm names
+- Invalid symmetric key lengths
+
+## Recommendations
+
+### Immediate Priority (Security-Critical)
+
+1. **Create negative test class `PqcNegativeTest.java`** with:
+   - `testVerifyWithInvalidSignature()` - Corrupt signature bytes before verify
+   - `testVerifyWithAlgorithmMismatch()` - Sign with Dilithium, verify with Falcon
+   - `testKemExtractWithWrongKey()` - Generate different KeyPair for extraction
+   - `testKemExtractWithCorruptedEncapsulation()` - Corrupt encapsulation bytes
+   - `testSignWithNullBody()` - Verify exception handling
+   - `testVerifyWithMissingSignatureHeader()` - Verify proper error when header missing
+   - `testSignWithMissingKeyPair()` - Verify exception on missing keyPair parameter
+
+2. **Create parameter spec test class `PqcParameterSpecTest.java`** with:
+   - `testDilithium3AndDilithium5()` - Test additional Dilithium variants
+   - `testFalcon1024()` - Test Falcon-1024 parameter spec
+   - `testKyber768AndKyber1024()` - Test additional Kyber variants
+   - `testSphincsVariants()` - Test sha2/shake variants at different security levels
+
+### High Priority (Comprehensive Coverage)
+
+3. **Expand `PqcTest.java`** with:
+   - `testSymmetricAlgorithmCombinations()` - Test AES-256, CHACHA7539-128
+   - `testSymmetricAlgorithmMismatch()` - Encapsulate with AES, extract with CHACHA
+   - `testExtractWithoutStoreToHeader()` - Test default storeExtractedSecretKeyAsHeader=false
+   - `testSignVerifyWithLargeBody()` - Test with 1MB, 10MB message bodies
+   - `testSignVerifyWithEmptyBody()` - Test with empty byte array
+
+4. **Create `PqcHeaderTest.java`** for header-specific tests:
+   - `testHeaderPreservation()` - Verify custom headers preserved through operations
+   - `testMalformedSignatureHeader()` - Test with invalid Base64 in signature header
+   - `testSecretKeyHeaderFormat()` - Validate CamelPQCSecretKey header structure
+
+### Medium Priority (Quality & Robustness)
+
+5. **Create `PqcConcurrencyTest.java`**:
+   - `testConcurrentSignOperations()` - Multiple threads signing with same KeyPair
+   - `testConcurrentKemOperations()` - Parallel KEM encapsulation/extraction
+
+6. **Create `PqcNativeModeTest.java`** (JVM-mode checks only, inherited by IT):
+   - `testBouncyCastleProviderAvailable()` - Verify provider registration
+   - `testAllAlgorithmsAvailable()` - Verify all algorithms accessible in native mode
+
+### Test Structure Recommendation
+
+```
+integration-tests/pqc/src/test/java/.../it/
+├── PqcTest.java (existing, expand to ~12 tests)
+├── PqcNegativeTest.java (new, ~8 tests)
+├── PqcParameterSpecTest.java (new, ~10 tests)
+├── PqcHeaderTest.java (new, ~5 tests)
+├── PqcConcurrencyTest.java (new, ~3 tests)
+├── PqcNativeModeTest.java (new, ~3 tests)
+└── PqcIT.java (existing, no changes - extends all above in native mode)
+```
+
+**Target:** 41+ test methods across 7 test classes, achieving ~95% coverage of documented functionality with emphasis on security-critical negative cases.
