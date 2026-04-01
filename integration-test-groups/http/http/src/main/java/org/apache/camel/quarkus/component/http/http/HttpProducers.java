@@ -16,7 +16,18 @@
  */
 package org.apache.camel.quarkus.component.http.http;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+
+import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import org.apache.hc.client5.http.auth.AuthScope;
 import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
 import org.apache.hc.client5.http.impl.auth.BasicAuthCache;
@@ -50,5 +61,22 @@ public class HttpProducers {
         context.setAttribute(HttpClientContext.CREDS_PROVIDER, provider);
 
         return context;
+    }
+
+    @Produces
+    @Singleton
+    @Named("dilithiumKeyPair")
+    public KeyPair dilithiumKeyPair() throws Exception {
+        KeyFactory kf = KeyFactory.getInstance("Dilithium2", "BCPQC");
+
+        byte[] publicKeyBytes = Files.readAllBytes(
+                Paths.get("target/certs/dilithium-public.key"));
+        PublicKey publicKey = kf.generatePublic(new X509EncodedKeySpec(publicKeyBytes));
+
+        byte[] privateKeyBytes = Files.readAllBytes(
+                Paths.get("target/certs/dilithium-private.key"));
+        PrivateKey privateKey = kf.generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));
+
+        return new KeyPair(publicKey, privateKey);
     }
 }
