@@ -43,11 +43,6 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.apache.camel.quarkus</groupId>
-            <artifactId>camel-quarkus-pqc</artifactId>
-            <scope>compile</scope>
-        </dependency>
     </dependencies>
 
     <build>
