@@ -34,6 +34,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -136,6 +137,17 @@ public class HttpTest extends AbstractHttpTest {
                 arguments("repo.maven.apache.org", actualPort, host, 200, expectedGroupId, false),
                 arguments("*.apache.org", fakePort, host, 200, expectedGroupId, false),
                 arguments("*localhost*", actualPort, host, 200, expectedGroupId, true));
+    }
+
+    @Test
+    public void testPqcSign() {
+        RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .body("test message for PQC signing")
+                .post("/test/client/http/pqc/sign")
+                .then()
+                .statusCode(200)
+                .body(not(emptyString()));
     }
 
 }
