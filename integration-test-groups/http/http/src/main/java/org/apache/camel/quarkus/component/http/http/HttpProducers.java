@@ -16,14 +16,7 @@
  */
 package org.apache.camel.quarkus.component.http.http;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.SecureRandom;
-import java.security.Security;
-
-import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Named;
-import jakarta.inject.Singleton;
 import org.apache.hc.client5.http.auth.AuthScope;
 import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
 import org.apache.hc.client5.http.impl.auth.BasicAuthCache;
@@ -32,15 +25,12 @@ import org.apache.hc.client5.http.impl.auth.BasicScheme;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.http.protocol.HttpContext;
-import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
-import org.bouncycastle.pqc.jcajce.spec.DilithiumParameterSpec;
 import org.eclipse.microprofile.config.ConfigProvider;
 
 import static org.apache.camel.quarkus.component.http.common.AbstractHttpResource.USER_ADMIN;
 import static org.apache.camel.quarkus.component.http.common.AbstractHttpResource.USER_ADMIN_PASSWORD;
 
 public class HttpProducers {
-    private final SecureRandom secureRandom = new SecureRandom();
 
     @Named
     HttpContext basicAuthContext() {
@@ -60,15 +50,5 @@ public class HttpProducers {
         context.setAttribute(HttpClientContext.CREDS_PROVIDER, provider);
 
         return context;
-    }
-
-    @Produces
-    @Singleton
-    @Named("dilithiumKeyPair")
-    public KeyPair dilithiumKeyPair() throws Exception {
-        Security.addProvider(new BouncyCastlePQCProvider());
-        KeyPairGenerator kpg = KeyPairGenerator.getInstance("Dilithium", "BCPQC");
-        kpg.initialize(DilithiumParameterSpec.dilithium2, secureRandom);
-        return kpg.generateKeyPair();
     }
 }

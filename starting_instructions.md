@@ -1,7 +1,20 @@
-Use following slig for the cac he name `pqc-http-test`
+Analyse for me, how to move the code 
+''
+    @Produces
+    @Singleton
+    @Named("dilithiumKeyPair")
+    public KeyPair dilithiumKeyPair() throws Exception {
+        KeyFactory kf = KeyFactory.getInstance("Dilithium2", "BCPQC");
 
-you can change only the code in `integration-test-groups/http/http/`
+        byte[] publicKeyBytes = Files.readAllBytes(
+                Paths.get("target/certs/dilithium-public.key"));
+        PublicKey publicKey = kf.generatePublic(new X509EncodedKeySpec(publicKeyBytes));
 
-Add a new test (1 test) which would cover running http component with PQC confiuration.
-For the PQC configuration, see https://camel.apache.org/components/4.18.x/pqc-component.html
-Select any commo algorith to be used. You can inspire in integration-tests/pqc/src/test/java/org/apache/camel/quarkus/component/pqc/it/PqcTest.java
+        byte[] privateKeyBytes = Files.readAllBytes(
+                Paths.get("target/certs/dilithium-private.key"));
+        PrivateKey privateKey = kf.generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));
+
+        return new KeyPair(publicKey, privateKey);
+    }
+'''
+from integration-test-groups/http/http/... HttpProducers to be generic and part of the https://github.com/smallrye/smallrye-certificate-generator/tree/main

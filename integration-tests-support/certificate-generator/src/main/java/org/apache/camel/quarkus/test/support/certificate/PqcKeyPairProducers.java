@@ -14,28 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.pqc.it;
+package org.apache.camel.quarkus.test.support.certificate;
 
-import java.security.*;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import org.bouncycastle.pqc.crypto.lms.LMOtsParameters;
 import org.bouncycastle.pqc.crypto.lms.LMSigParameters;
-import org.bouncycastle.pqc.jcajce.spec.*;
+import org.bouncycastle.pqc.jcajce.spec.DilithiumParameterSpec;
+import org.bouncycastle.pqc.jcajce.spec.FalconParameterSpec;
+import org.bouncycastle.pqc.jcajce.spec.KyberParameterSpec;
+import org.bouncycastle.pqc.jcajce.spec.LMSParameterSpec;
+import org.bouncycastle.pqc.jcajce.spec.SPHINCSPlusParameterSpec;
+import org.bouncycastle.pqc.jcajce.spec.XMSSParameterSpec;
 
-@Singleton
-public class PqcProducers {
+/**
+ * Shared CDI producer for Post-Quantum Cryptography (PQC) key pairs used in integration tests.
+ * This class centralizes PQC test infrastructure and eliminates code duplication across test modules.
+ */
+@ApplicationScoped
+public class PqcKeyPairProducers {
 
-    //not-static to avoid buildtime initialization
+    // Not static to avoid build-time initialization
     private final SecureRandom secureRandom = new SecureRandom();
 
     @Produces
     @Singleton
     @Named("dilithiumKeyPair")
-    KeyPair dilithiumKeyPair() throws Exception {
+    public KeyPair dilithiumKeyPair() throws Exception {
         return generateKeyPair("Dilithium", DilithiumParameterSpec.dilithium2);
     }
 
@@ -57,7 +69,8 @@ public class PqcProducers {
     @Singleton
     @Named("lmsKeyPair")
     public KeyPair lmsKeyPair() throws Exception {
-        return generateKeyPair("LMS", new LMSParameterSpec(LMSigParameters.lms_sha256_n32_h5, LMOtsParameters.sha256_n32_w4));
+        return generateKeyPair("LMS",
+                new LMSParameterSpec(LMSigParameters.lms_sha256_n32_h5, LMOtsParameters.sha256_n32_w4));
     }
 
     @Produces
@@ -76,7 +89,7 @@ public class PqcProducers {
 
     @Produces
     @Singleton
-    @Named("kyberWrongKeyPair") //second keypair for negative scenario
+    @Named("kyberWrongKeyPair") // second keypair for negative scenario
     public KeyPair kyberWrongKeyPair() throws Exception {
         return generateKeyPair("Kyber", KyberParameterSpec.kyber512);
     }
