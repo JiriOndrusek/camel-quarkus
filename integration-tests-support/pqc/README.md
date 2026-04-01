@@ -55,20 +55,19 @@ That's it! No manual producer methods, no file generation required.
 ## How It Works
 
 1. **Build Time**: The `PQCKeyPairBuildStep` scans for `@PQCKeyPairs` annotations
-2. **Key Generation**: Generates keypairs directly using BouncyCastle PQC provider (~100ms total)
-3. **Bean Registration**: Creates `SyntheticBeanBuildItem` for each keypair with `@Singleton @Named` scope
-4. **Runtime**: Keypairs are reconstructed from encoded bytes and injected as CDI beans
+2. **Bean Registration**: Creates `SyntheticBeanBuildItem` for each keypair with `@Singleton @Named` scope
+3. **STATIC_INIT**: Keypairs are generated at application startup via `PQCKeyPairRecorder`
+4. **Runtime**: Keypairs are available as CDI beans for injection
 
 ## Architecture
 
 ```
 integration-tests-support/pqc/
 ├── runtime/                        # Runtime module
-│   ├── PQCAlgorithm.java          # Enum of supported algorithms
+│   ├── PQCAlgorithm.java          # Enum of 11 supported algorithms
 │   ├── PQCKeyPair.java            # Single keypair annotation
 │   ├── PQCKeyPairs.java           # Container annotation
-│   ├── PQCKeyPairRecorder.java    # Quarkus recorder for runtime reconstruction
-│   └── PQCKeyPairGenerationExtension.java  # JUnit extension (for tests needing files)
+│   └── PQCKeyPairRecorder.java    # Quarkus recorder for STATIC_INIT generation
 └── deployment/                     # Deployment module
     └── PQCKeyPairBuildStep.java   # Build step for bean registration
 ```
@@ -81,9 +80,10 @@ integration-tests-support/pqc/
 
 ## Performance
 
-- **Key generation**: ~5-30ms per keypair
+- **Key generation**: ~5-30ms per keypair at STATIC_INIT
 - **Total overhead**: ~100ms for typical test suite (5-7 keypairs)
-- **No disk I/O**: All generation happens in-memory at build time
+- **Zero disk I/O**: All generation happens in-memory
+- **Zero setup**: No two-phase workflow required
 
 ## Comparison with Manual Approach
 
@@ -107,16 +107,6 @@ public class PqcKeyPairProducers {
 ```
 
 No manual producer class needed! ✨
-
-## JUnit Extension (Optional)
-
-The `@PQCKeyPairs` annotation also triggers a JUnit extension that can generate keypair files to disk. This is useful if tests need actual key files for file-based operations.
-
-**Parameters** (JUnit extension only):
-- `baseDir`: Directory for generated files (default: `target/certs`)
-- `replaceIfExists`: Overwrite existing files (default: `false`)
-
-**Note**: CDI bean registration ignores these parameters and generates keys in-memory.
 
 ## Migration from Certificate-Generator
 

@@ -36,8 +36,8 @@ public class PQCKeyPairRecorder {
     /**
      * Generates a PQC keypair at STATIC_INIT time and wraps it in a RuntimeValue.
      *
-     * @param algorithmName PQC algorithm name (e.g., "Dilithium2")
-     * @return RuntimeValue containing the generated KeyPair
+     * @param  algorithmName PQC algorithm name (e.g., "Dilithium2")
+     * @return               RuntimeValue containing the generated KeyPair
      */
     public RuntimeValue<KeyPair> generateKeyPair(String algorithmName) {
         try {

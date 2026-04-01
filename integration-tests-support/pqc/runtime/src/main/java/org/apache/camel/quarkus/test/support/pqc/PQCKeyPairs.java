@@ -21,27 +21,33 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.junit.jupiter.api.extension.ExtendWith;
-
+/**
+ * Declares PQC keypairs that should be automatically generated and registered as CDI beans.
+ * Each keypair is generated at STATIC_INIT time and made available for injection via {@code @Inject @Named}.
+ *
+ * <p>
+ * Example usage:
+ *
+ * <pre>
+ * &#64;QuarkusTest
+ * &#64;PQCKeyPairs(keyPairs = {
+ *         &#64;PQCKeyPair(name = "dilithiumKeyPair", algorithm = DILITHIUM2),
+ *         &#64;PQCKeyPair(name = "kyberKeyPair", algorithm = KYBER512)
+ * })
+ * class MyTest {
+ *     &#64;Inject
+ *     &#64;Named("dilithiumKeyPair")
+ *     KeyPair keyPair;
+ * }
+ * </pre>
+ */
 @Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
-@ExtendWith(PQCKeyPairGenerationExtension.class)
 public @interface PQCKeyPairs {
     /**
      * Array of PQC keypair configurations.
-     * Each keypair will be automatically registered as a CDI bean with the specified name,
+     * Each keypair will be automatically registered as a {@code @Singleton} CDI bean with the specified name,
      * making it injectable via {@code @Inject @Named("keyPairName")}.
      */
     PQCKeyPair[] keyPairs();
-
-    /**
-     * Base directory for generated keypair files (only used by JUnit extension if tests need files on disk).
-     * The CDI bean registration generates keypairs directly at build time without disk I/O.
-     */
-    String baseDir() default "target/certs";
-
-    /**
-     * Whether to overwrite existing keypair files (only used by JUnit extension if tests need files on disk).
-     */
-    boolean replaceIfExists() default false;
 }

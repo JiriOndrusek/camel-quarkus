@@ -27,6 +27,9 @@ import io.smallrye.certs.junit5.Certificate;
 import org.apache.camel.quarkus.component.http.common.AbstractHttpTest;
 import org.apache.camel.quarkus.component.http.common.HttpTestResource;
 import org.apache.camel.quarkus.test.support.certificate.TestCertificates;
+import org.apache.camel.quarkus.test.support.pqc.PQCAlgorithm;
+import org.apache.camel.quarkus.test.support.pqc.PQCKeyPair;
+import org.apache.camel.quarkus.test.support.pqc.PQCKeyPairs;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -44,6 +47,9 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 @TestCertificates(certificates = {
         @Certificate(name = HttpTestResource.KEYSTORE_NAME, formats = {
                 Format.PKCS12 }, password = HttpTestResource.KEYSTORE_PASSWORD) })
+@PQCKeyPairs(keyPairs = {
+        @PQCKeyPair(name = "dilithiumKeyPair", algorithm = PQCAlgorithm.DILITHIUM2),
+})
 @QuarkusTest
 @QuarkusTestResource(HttpTestResource.class)
 public class HttpTest extends AbstractHttpTest {
