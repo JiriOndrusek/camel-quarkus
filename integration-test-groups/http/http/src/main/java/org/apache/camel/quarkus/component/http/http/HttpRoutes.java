@@ -16,8 +16,6 @@
  */
 package org.apache.camel.quarkus.component.http.http;
 
-import java.util.Base64;
-
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.http.base.HttpOperationFailedException;
 
@@ -34,18 +32,6 @@ public class HttpRoutes extends RouteBuilder {
                 .to("seda:dlq")
                 .end()
                 .to("http://localhost:{{quarkus.http.test-port}}/service/common/error");
-
-        from("direct:pqc-sign")
-                .to("pqc:sign?operation=sign&signatureAlgorithm=DILITHIUM&keyPair=#dilithiumKeyPair")
-                .process(exchange -> {
-                    byte[] signature = exchange.getIn().getHeader("CamelPQCSignature", byte[].class);
-                    String encodedSignature = Base64.getEncoder().encodeToString(signature);
-                    exchange.getMessage().setBody(encodedSignature);
-                });
-
-        from("direct:pqc-tls")
-                .to("https://localhost:{{quarkus.http.test-ssl-port}}/service/common/pqc-tls"
-                        + "?sslContextParameters=#pqcSslContextParameters");
 
         from("direct:pqc-nginx-tls")
                 .toF("https://{{pqc.nginx.host}}:{{pqc.nginx.port}}/test?httpClientConfigurer=#pqcNginxHttpClientConfigurer");
