@@ -89,10 +89,10 @@ public class HttpProducers {
     @Named
     public HttpClientConfigurer pqcNginxHttpClientConfigurer() {
         try {
-            // Create SSLContext using BouncyCastle JSSE provider with trust-all manager
-            // This enables better PQC support compared to standard Java JSSE
-            // Note: openquantumsafe/nginx uses OQS-OpenSSL with PQC algorithms
-            SSLContext sslContext = BctlsSSLContextFactory.createTrustAllSSLContext();
+            // Create SSLContext using BouncyCastle JSSE provider with hybrid certificate validator
+            // This enables validation of RSA+PQC composite certificates following BC Almanac recommendations
+            HybridCertificateTrustManager trustManager = new HybridCertificateTrustManager();
+            SSLContext sslContext = BctlsSSLContextFactory.createSSLContext(trustManager);
             return new PqcHttpClientConfigurer(sslContext);
         } catch (Exception e) {
             throw new RuntimeException("Failed to create PQC HttpClient configurer", e);

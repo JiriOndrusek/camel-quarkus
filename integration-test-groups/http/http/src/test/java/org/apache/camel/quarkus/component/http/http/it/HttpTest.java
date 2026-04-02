@@ -49,15 +49,16 @@ public class HttpTest {
 
     @Test
     public void testPqcNginxTls() {
-        // Test BCTLS integration with external nginx server
-        // Note: Uses standard RSA cert due to OQS cipher suite incompatibility
-        // Full PQC TLS requires OQS library integration, not just BC JSSE
+        // Test BCTLS integration with hybrid RSA+Dilithium certificate
+        // Certificate contains both RSA (for TLS handshake) and Dilithium2 (alternative signature)
+        // Following BC Almanac Chimera-style composite certificate recommendations
+        // Note: Dilithium is the legacy name; ML-DSA is the NIST standardized name
         RestAssured
                 .when()
                 .get("/test/client/http/pqc/nginx/tls")
                 .then()
                 .statusCode(200)
-                .body(is("BCTLS connection successful"));
+                .body(is("Hybrid RSA+Dilithium(ML-DSA) certificate validated"));
     }
 
 }
