@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.http.http;
+package org.apache.camel.quarkus.test.support.pqc.certificate.client;
 
 import javax.net.ssl.SSLContext;
 
@@ -27,11 +27,11 @@ import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 /**
  * HttpClient configurer that uses BouncyCastle TLS (BCTLS) for PQC support.
  */
-public class PqcHttpClientConfigurer implements HttpClientConfigurer {
+public class PqcSslClientConfigurer implements HttpClientConfigurer {
 
     private final SSLContext sslContext;
 
-    public PqcHttpClientConfigurer(SSLContext sslContext) {
+    public PqcSslClientConfigurer(SSLContext sslContext) {
         this.sslContext = sslContext;
     }
 

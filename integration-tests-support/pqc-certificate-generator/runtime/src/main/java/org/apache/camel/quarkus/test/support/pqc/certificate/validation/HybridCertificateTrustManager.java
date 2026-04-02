@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.http.http;
+package org.apache.camel.quarkus.test.support.pqc.certificate.validation;
 
 import java.security.PublicKey;
 import java.security.Security;
@@ -31,8 +31,7 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jboss.logging.Logger;
 
 /**
  * TrustManager that validates hybrid RSA+PQC certificates following BC Almanac recommendations.
@@ -47,7 +46,7 @@ import org.slf4j.LoggerFactory;
  */
 public class HybridCertificateTrustManager implements X509TrustManager {
 
-    private static final Logger LOG = LoggerFactory.getLogger(HybridCertificateTrustManager.class);
+    private static final Logger LOG = Logger.getLogger(HybridCertificateTrustManager.class);
     private static final String BCPQC_PROVIDER = "BCPQC";
     private static final String BC_PROVIDER = "BC";
 

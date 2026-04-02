@@ -20,6 +20,9 @@ import javax.net.ssl.SSLContext;
 
 import jakarta.inject.Named;
 import org.apache.camel.component.http.HttpClientConfigurer;
+import org.apache.camel.quarkus.test.support.pqc.certificate.client.PqcSslClientConfigurer;
+import org.apache.camel.quarkus.test.support.pqc.certificate.validation.BctlsSSLContextFactory;
+import org.apache.camel.quarkus.test.support.pqc.certificate.validation.HybridCertificateTrustManager;
 import org.apache.camel.support.jsse.KeyManagersParameters;
 import org.apache.camel.support.jsse.KeyStoreParameters;
 import org.apache.camel.support.jsse.SSLContextParameters;
@@ -93,7 +96,7 @@ public class HttpProducers {
             // This enables validation of RSA+PQC composite certificates following BC Almanac recommendations
             HybridCertificateTrustManager trustManager = new HybridCertificateTrustManager();
             SSLContext sslContext = BctlsSSLContextFactory.createSSLContext(trustManager);
-            return new PqcHttpClientConfigurer(sslContext);
+            return new PqcSslClientConfigurer(sslContext);
         } catch (Exception e) {
             throw new RuntimeException("Failed to create PQC HttpClient configurer", e);
         }

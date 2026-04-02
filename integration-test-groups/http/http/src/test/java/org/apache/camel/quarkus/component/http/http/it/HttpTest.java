@@ -29,6 +29,11 @@ import org.apache.camel.quarkus.test.support.certificate.TestCertificates;
 import org.apache.camel.quarkus.test.support.pqc.PQCAlgorithm;
 import org.apache.camel.quarkus.test.support.pqc.PQCKeyPair;
 import org.apache.camel.quarkus.test.support.pqc.PQCKeyPairs;
+import org.apache.camel.quarkus.test.support.pqc.certificate.CertificateFormat;
+import org.apache.camel.quarkus.test.support.pqc.certificate.HybridMode;
+import org.apache.camel.quarkus.test.support.pqc.certificate.PQCCertificate;
+import org.apache.camel.quarkus.test.support.pqc.certificate.PQCCertificates;
+import org.apache.camel.quarkus.test.support.pqc.certificate.PrimaryAlgorithm;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.is;
@@ -36,6 +41,10 @@ import static org.hamcrest.Matchers.is;
 @TestCertificates(certificates = {
         @Certificate(name = HttpTestResource.KEYSTORE_NAME, formats = {
                 Format.PKCS12 }, password = HttpTestResource.KEYSTORE_PASSWORD) })
+@PQCCertificates(baseDir = "target/certs/bctls-nginx", certificates = {
+        @PQCCertificate(name = "nginx-hybrid-pqc", hybridMode = HybridMode.CHIMERA, primaryAlgorithm = PrimaryAlgorithm.RSA_2048, pqcAlgorithm = PQCAlgorithm.DILITHIUM2, cn = "nginx-hybrid-pqc", validity = 30, formats = {
+                CertificateFormat.PEM, CertificateFormat.PKCS12 }, password = "changeit")
+})
 @PQCKeyPairs(keyPairs = {
         @PQCKeyPair(name = "dilithiumKeyPair", algorithm = PQCAlgorithm.DILITHIUM2),
 })
