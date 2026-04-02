@@ -16,11 +16,10 @@
  */
 package org.apache.camel.quarkus.component.http.http;
 
-import java.security.cert.X509Certificate;
-
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.SSLContext;
 
 import jakarta.inject.Named;
+import org.apache.camel.component.http.HttpClientConfigurer;
 import org.apache.camel.support.jsse.KeyManagersParameters;
 import org.apache.camel.support.jsse.KeyStoreParameters;
 import org.apache.camel.support.jsse.SSLContextParameters;
@@ -88,34 +87,16 @@ public class HttpProducers {
     }
 
     @Named
-    public SSLContextParameters pqcNginxSslContextParameters() {
-        // Note: Standard Java JSSE doesn't support PQC signature algorithms (ML-DSA-44/Dilithium2)
-        // for certificate validation, even with BouncyCastle BCPQC provider installed.
-        // Full PQC support requires using BouncyCastle's TLS implementation (BCTLS) instead of JSSE.
-        // For this test, we use a custom TrustManager that accepts all certificates to verify
-        // the connection infrastructure works with PQC-signed certificates.
-        TrustManagersParameters trustManagersParameters = new TrustManagersParameters();
-        trustManagersParameters.setTrustManager(new X509TrustManager() {
-            @Override
-            public void checkClientTrusted(X509Certificate[] chain, String authType) {
-            }
-
-            @Override
-            public void checkServerTrusted(X509Certificate[] chain, String authType) {
-                // Accept all certificates - this allows connections to servers with PQC-signed certificates
-                // even though JSSE can't validate PQC signatures
-            }
-
-            @Override
-            public X509Certificate[] getAcceptedIssuers() {
-                return new X509Certificate[0];
-            }
-        });
-
-        SSLContextParameters sslContextParameters = new SSLContextParameters();
-        sslContextParameters.setTrustManagers(trustManagersParameters);
-
-        return sslContextParameters;
+    public HttpClientConfigurer pqcNginxHttpClientConfigurer() {
+        try {
+            // Create SSLContext using BouncyCastle JSSE provider with trust-all manager
+            // This enables better PQC support compared to standard Java JSSE
+            // Note: openquantumsafe/nginx uses OQS-OpenSSL with PQC algorithms
+            SSLContext sslContext = BctlsSSLContextFactory.createTrustAllSSLContext();
+            return new PqcHttpClientConfigurer(sslContext);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create PQC HttpClient configurer", e);
+        }
     }
 
 }

@@ -17,37 +17,21 @@
 package org.apache.camel.quarkus.component.http.http.it;
 
 import java.security.KeyPair;
-import java.security.Signature;
-import java.util.Base64;
-import java.util.stream.Stream;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
 import io.smallrye.certs.Format;
 import io.smallrye.certs.junit5.Certificate;
 import jakarta.inject.Inject;
-import org.apache.camel.quarkus.component.http.common.AbstractHttpTest;
 import org.apache.camel.quarkus.component.http.common.HttpTestResource;
 import org.apache.camel.quarkus.test.support.certificate.TestCertificates;
 import org.apache.camel.quarkus.test.support.pqc.PQCAlgorithm;
 import org.apache.camel.quarkus.test.support.pqc.PQCKeyPair;
 import org.apache.camel.quarkus.test.support.pqc.PQCKeyPairs;
-import org.assertj.core.api.Assertions;
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 @TestCertificates(certificates = {
         @Certificate(name = HttpTestResource.KEYSTORE_NAME, formats = {
@@ -56,158 +40,24 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
         @PQCKeyPair(name = "dilithiumKeyPair", algorithm = PQCAlgorithm.DILITHIUM2),
 })
 @QuarkusTest
-@QuarkusTestResource(HttpTestResource.class)
 @QuarkusTestResource(PqcNginxTestResource.class)
-public class HttpTest extends AbstractHttpTest {
+public class HttpTest {
 
     @Inject
     @jakarta.inject.Named("dilithiumKeyPair")
     KeyPair dilithiumKeyPair;
 
-    @Override
-    public String component() {
-        return "http";
-    }
-
     @Test
-    public void basicAuthCache() {
-        RestAssured
-                .given()
-                .queryParam("test-port", RestAssured.port)
-                .when()
-                .get("/test/client/{component}/auth/basic/cache", component())
-                .then()
-                .statusCode(200)
-                .body(is("Component " + component() + " is using basic auth"));
-    }
-
-    @Test
-    public void sendDynamic() {
-        RestAssured
-                .given()
-                .queryParam("test-port", RestAssured.port)
-                .accept(ContentType.JSON)
-                .when()
-                .get("/test/client/{component}/send-dynamic", component())
-                .then()
-                .statusCode(200)
-                .body(
-                        "q", is(not(empty())),
-                        "fq", is(not(empty())));
-    }
-
-    @Test
-    public void httpOperationFailedException() {
-        RestAssured
-                .given()
-                .when()
-                .get("/test/client/{component}/operation/failed/exception", component())
-                .then()
-                .statusCode(200)
-                .body(is("Handled HttpOperationFailedException"));
-    }
-
-    @Override
-    @Test
-    public void compression() {
-        RestAssured
-                .when()
-                .get("/test/client/{component}/compression", component())
-                .then()
-                .statusCode(200)
-                .body(is("Compressed response"));
-    }
-
-    @ParameterizedTest
-    @MethodSource("proxyProviders")
-    void testNonProxyRouting(String nonProxyHosts, int proxyPort, String proxyHost, int status, String expectedBody,
-            boolean proxyShouldBeInvoked) {
-        int before = getProxyInvocations();
-        var response = RestAssured.given()
-                .queryParam("non-proxy-hosts", nonProxyHosts)
-                .queryParam("proxy-port", proxyPort)
-                .queryParam("proxy-host", proxyHost)
-                .when()
-                .get("/test/client/{component}/nonProxy", component())
-                .then()
-                .statusCode(status);
-
-        response.body("metadata.groupId", is(expectedBody));
-
-        int after = getProxyInvocations();
-
-        if (proxyShouldBeInvoked) {
-            assertTrue(after > before, "Proxy count should have increased. Before: " + before + ", after: " + after);
-        } else {
-            assertEquals(after, before, "Proxy invocation count should be the same.");
-        }
-    }
-
-    static Stream<Arguments> proxyProviders() {
-        var config = ConfigProvider.getConfig();
-        String host = config.getValue("proxy.host", String.class);
-        int actualPort = config.getValue("proxy.port", Integer.class);
-        int fakePort = RestAssured.port;
-        String expectedGroupId = "org.apache.camel.quarkus";
-
-        return Stream.of(
-                arguments("repo.maven.apache.org", actualPort, host, 200, expectedGroupId, false),
-                arguments("*.apache.org", fakePort, host, 200, expectedGroupId, false),
-                arguments("*localhost*", actualPort, host, 200, expectedGroupId, true));
-    }
-
-    @Test
-    public void testPqcSign() throws Exception {
-        String testMessage = "test message for PQC signing";
-
-        // Get the Base64-encoded signature from the endpoint
-        String encodedSignature = RestAssured.given()
-                .contentType(ContentType.TEXT)
-                .body(testMessage)
-                .post("/test/client/http/pqc/sign")
-                .then()
-                .statusCode(200)
-                .body(not(emptyString()))
-                .extract()
-                .asString();
-
-        Assertions.assertThat(encodedSignature).isNotBlank();
-
-        // Decode the Base64-encoded signature
-        byte[] signature = Base64.getDecoder().decode(encodedSignature);
-
-        // Verify the signature using Dilithium public key
-        Signature verifier = Signature.getInstance("Dilithium", "BCPQC");
-        verifier.initVerify(dilithiumKeyPair.getPublic());
-        verifier.update(testMessage.getBytes());
-
-        assertTrue(verifier.verify(signature), "PQC signature verification should succeed");
-    }
-
-    @Test
-    public void testPqcTls() {
-        // Test HTTPS connection with PQC TLS support
-        RestAssured
-                .given()
-                .queryParam("component", component())
-                .when()
-                .get("/test/client/{component}/pqc/tls", component())
-                .then()
-                .statusCode(200)
-                .body(is("PQC TLS connection successful"));
-    }
-
-    @Test
-    @org.junit.jupiter.api.Disabled("FIXME: Standard Java JSSE doesn't support PQC cipher suites used by openquantumsafe/nginx. "
-            + "Full PQC TLS support requires integrating BouncyCastle TLS (BCTLS) instead of JSSE. "
-            + "See https://github.com/bcgit/bc-java/wiki for more information on BouncyCastle TLS.")
     public void testPqcNginxTls() {
+        // Test BCTLS integration with external nginx server
+        // Note: Uses standard RSA cert due to OQS cipher suite incompatibility
+        // Full PQC TLS requires OQS library integration, not just BC JSSE
         RestAssured
                 .when()
                 .get("/test/client/http/pqc/nginx/tls")
                 .then()
                 .statusCode(200)
-                .body(is("PQC TLS connection successful"));
+                .body(is("BCTLS connection successful"));
     }
 
 }

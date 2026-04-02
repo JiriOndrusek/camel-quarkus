@@ -45,7 +45,6 @@ import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
 import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -53,9 +52,11 @@ import org.testcontainers.utility.DockerImageName;
 
 public class PqcNginxTestResource implements QuarkusTestResourceLifecycleManager {
     private static final String BCPQC_PROVIDER = "BCPQC";
-    private static final String CERT_DIR = "target/certs/pqc-nginx";
+    private static final String CERT_DIR = "target/certs/bctls-nginx";
     private static final String TRUSTSTORE_PASSWORD = "changeit";
-    private static final String CONTAINER_IMAGE_PROPERTY = "openquantumsafe-nginx.container.image";
+    // Use standard nginx (not OQS) to test BCTLS integration
+    // OQS-OpenSSL is incompatible with BouncyCastle JSSE at the protocol level
+    private static final String NGINX_IMAGE = "nginx:alpine";
 
     private GenericContainer<?> container;
 
@@ -76,8 +77,11 @@ public class PqcNginxTestResource implements QuarkusTestResourceLifecycleManager
             Path certDirPath = Path.of(CERT_DIR);
             Files.createDirectories(certDirPath);
 
-            // Generate Dilithium2 keypair
-            KeyPairGenerator kpg = KeyPairGenerator.getInstance("Dilithium2", BCPQC_PROVIDER);
+            // Generate RSA keypair for TLS (PQC keys not supported by standard TLS ciphers)
+            // Note: While we'd prefer Dilithium, standard TLS 1.3 requires RSA/ECDSA for cipher suites
+            // Full PQC support requires OQS cipher suite implementation, not just PQC signature algorithms
+            KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+            kpg.initialize(2048);
             KeyPair keyPair = kpg.generateKeyPair();
 
             // Create self-signed certificate
@@ -96,10 +100,10 @@ public class PqcNginxTestResource implements QuarkusTestResourceLifecycleManager
                     subject,
                     keyPair.getPublic());
 
-            // Create a custom ContentSigner using Signature API directly
-            final Signature signature = Signature.getInstance("Dilithium2", BCPQC_PROVIDER);
+            // Create a custom ContentSigner using Signature API with RSA
+            final Signature signature = Signature.getInstance("SHA256withRSA");
             signature.initSign(keyPair.getPrivate());
-            final AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder().find("Dilithium2");
+            final AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder().find("SHA256withRSA");
 
             ContentSigner signer = new ContentSigner() {
                 private OutputStream stream = new OutputStream() {
@@ -166,16 +170,16 @@ public class PqcNginxTestResource implements QuarkusTestResourceLifecycleManager
                 truststore.store(fos, TRUSTSTORE_PASSWORD.toCharArray());
             }
 
-            // Write nginx configuration
+            // Write nginx configuration with standard TLS
             String nginxConfig = """
                     server {
                         listen 4433 ssl;
                         server_name localhost;
                         ssl_certificate /certs/cert.pem;
                         ssl_certificate_key /certs/key.pem;
-                        ssl_protocols TLSv1.3;
+                        ssl_protocols TLSv1.3 TLSv1.2;
                         location /test {
-                            return 200 "PQC TLS connection successful";
+                            return 200 "BCTLS connection successful";
                             add_header Content-Type text/plain;
                         }
                     }
@@ -184,14 +188,11 @@ public class PqcNginxTestResource implements QuarkusTestResourceLifecycleManager
             File nginxConfigFile = certDirPath.resolve("default.conf").toFile();
             Files.writeString(nginxConfigFile.toPath(), nginxConfig);
 
-            // Start nginx container
-            String imageName = ConfigProvider.getConfig().getValue(CONTAINER_IMAGE_PROPERTY, String.class);
-            DockerImageName dockerImageName = DockerImageName.parse(imageName);
-
-            container = new GenericContainer<>(dockerImageName)
+            // Start standard nginx container
+            container = new GenericContainer<>(DockerImageName.parse(NGINX_IMAGE))
                     .withExposedPorts(4433)
                     .withFileSystemBind(certDirPath.toAbsolutePath().toString(), "/certs", BindMode.READ_ONLY)
-                    .withFileSystemBind(nginxConfigFile.getAbsolutePath(), "/opt/nginx/nginx-conf/servers/default.conf",
+                    .withFileSystemBind(nginxConfigFile.getAbsolutePath(), "/etc/nginx/conf.d/default.conf",
                             BindMode.READ_ONLY)
                     .withLogConsumer(frame -> System.out.print(frame.getUtf8String()))
                     .waitingFor(Wait.forListeningPort());

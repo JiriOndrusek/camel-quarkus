@@ -48,6 +48,6 @@ public class HttpRoutes extends RouteBuilder {
                         + "?sslContextParameters=#pqcSslContextParameters");
 
         from("direct:pqc-nginx-tls")
-                .toF("https://{{pqc.nginx.host}}:{{pqc.nginx.port}}/test?sslContextParameters=#pqcNginxSslContextParameters");
+                .toF("https://{{pqc.nginx.host}}:{{pqc.nginx.port}}/test?httpClientConfigurer=#pqcNginxHttpClientConfigurer");
     }
 }
