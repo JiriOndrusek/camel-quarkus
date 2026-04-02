@@ -183,4 +183,17 @@ public class HttpTest extends AbstractHttpTest {
         assertTrue(verifier.verify(signature), "PQC signature verification should succeed");
     }
 
+    @Test
+    public void testPqcTls() {
+        // Test HTTPS connection with PQC TLS support
+        RestAssured
+                .given()
+                .queryParam("component", component())
+                .when()
+                .get("/test/client/{component}/pqc/tls", component())
+                .then()
+                .statusCode(200)
+                .body(is("PQC TLS connection successful"));
+    }
+
 }

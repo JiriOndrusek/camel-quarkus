@@ -17,6 +17,10 @@
 package org.apache.camel.quarkus.component.http.http;
 
 import jakarta.inject.Named;
+import org.apache.camel.support.jsse.KeyManagersParameters;
+import org.apache.camel.support.jsse.KeyStoreParameters;
+import org.apache.camel.support.jsse.SSLContextParameters;
+import org.apache.camel.support.jsse.TrustManagersParameters;
 import org.apache.hc.client5.http.auth.AuthScope;
 import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
 import org.apache.hc.client5.http.impl.auth.BasicAuthCache;
@@ -50,6 +54,33 @@ public class HttpProducers {
         context.setAttribute(HttpClientContext.CREDS_PROVIDER, provider);
 
         return context;
+    }
+
+    @Named
+    public SSLContextParameters pqcSslContextParameters() {
+        KeyStoreParameters keystoreParameters = new KeyStoreParameters();
+        keystoreParameters.setResource("file://target/certs/localhost-keystore.p12");
+        keystoreParameters.setPassword("localhost-keystore-password");
+
+        KeyStoreParameters truststoreParameters = new KeyStoreParameters();
+        truststoreParameters.setResource("file://target/certs/localhost-truststore.p12");
+        truststoreParameters.setPassword("localhost-keystore-password");
+
+        TrustManagersParameters trustManagersParameters = new TrustManagersParameters();
+        trustManagersParameters.setKeyStore(truststoreParameters);
+
+        SSLContextParameters sslContextParameters = new SSLContextParameters();
+        sslContextParameters.setTrustManagers(trustManagersParameters);
+
+        KeyManagersParameters keyManagersParameters = new KeyManagersParameters();
+        keyManagersParameters.setKeyPassword("localhost-keystore-password");
+        keyManagersParameters.setKeyStore(keystoreParameters);
+        sslContextParameters.setKeyManagers(keyManagersParameters);
+
+        // Enable PQC cipher suites if available
+        sslContextParameters.setSecureSocketProtocol("TLS");
+
+        return sslContextParameters;
     }
 
 }

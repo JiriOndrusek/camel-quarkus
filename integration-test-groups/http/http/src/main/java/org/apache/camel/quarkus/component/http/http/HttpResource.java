@@ -208,4 +208,14 @@ public class HttpResource extends AbstractHttpResource {
                 .withBody(message)
                 .request(String.class);
     }
+
+    @Path("/pqc/tls")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String pqcTls() {
+        return producerTemplate
+                .to("direct:pqc-tls")
+                .withHeader(Exchange.HTTP_METHOD, "GET")
+                .request(String.class);
+    }
 }

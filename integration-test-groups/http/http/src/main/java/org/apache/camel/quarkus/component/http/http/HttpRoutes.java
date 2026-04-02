@@ -42,5 +42,9 @@ public class HttpRoutes extends RouteBuilder {
                     String encodedSignature = Base64.getEncoder().encodeToString(signature);
                     exchange.getMessage().setBody(encodedSignature);
                 });
+
+        from("direct:pqc-tls")
+                .to("https://localhost:{{quarkus.http.test-ssl-port}}/service/common/pqc-tls"
+                        + "?sslContextParameters=#pqcSslContextParameters");
     }
 }
