@@ -46,5 +46,8 @@ public class HttpRoutes extends RouteBuilder {
         from("direct:pqc-tls")
                 .to("https://localhost:{{quarkus.http.test-ssl-port}}/service/common/pqc-tls"
                         + "?sslContextParameters=#pqcSslContextParameters");
+
+        from("direct:pqc-nginx-tls")
+                .toF("https://{{pqc.nginx.host}}:{{pqc.nginx.port}}/test?sslContextParameters=#pqcNginxSslContextParameters");
     }
 }

@@ -16,6 +16,10 @@
  */
 package org.apache.camel.quarkus.component.http.http;
 
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.X509TrustManager;
+
 import jakarta.inject.Named;
 import org.apache.camel.support.jsse.KeyManagersParameters;
 import org.apache.camel.support.jsse.KeyStoreParameters;
@@ -79,6 +83,37 @@ public class HttpProducers {
 
         // Enable PQC cipher suites if available
         sslContextParameters.setSecureSocketProtocol("TLS");
+
+        return sslContextParameters;
+    }
+
+    @Named
+    public SSLContextParameters pqcNginxSslContextParameters() {
+        // Note: Standard Java JSSE doesn't support PQC signature algorithms (ML-DSA-44/Dilithium2)
+        // for certificate validation, even with BouncyCastle BCPQC provider installed.
+        // Full PQC support requires using BouncyCastle's TLS implementation (BCTLS) instead of JSSE.
+        // For this test, we use a custom TrustManager that accepts all certificates to verify
+        // the connection infrastructure works with PQC-signed certificates.
+        TrustManagersParameters trustManagersParameters = new TrustManagersParameters();
+        trustManagersParameters.setTrustManager(new X509TrustManager() {
+            @Override
+            public void checkClientTrusted(X509Certificate[] chain, String authType) {
+            }
+
+            @Override
+            public void checkServerTrusted(X509Certificate[] chain, String authType) {
+                // Accept all certificates - this allows connections to servers with PQC-signed certificates
+                // even though JSSE can't validate PQC signatures
+            }
+
+            @Override
+            public X509Certificate[] getAcceptedIssuers() {
+                return new X509Certificate[0];
+            }
+        });
+
+        SSLContextParameters sslContextParameters = new SSLContextParameters();
+        sslContextParameters.setTrustManagers(trustManagersParameters);
 
         return sslContextParameters;
     }

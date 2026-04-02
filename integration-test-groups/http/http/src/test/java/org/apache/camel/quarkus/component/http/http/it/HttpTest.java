@@ -57,6 +57,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 })
 @QuarkusTest
 @QuarkusTestResource(HttpTestResource.class)
+@QuarkusTestResource(PqcNginxTestResource.class)
 public class HttpTest extends AbstractHttpTest {
 
     @Inject
@@ -191,6 +192,19 @@ public class HttpTest extends AbstractHttpTest {
                 .queryParam("component", component())
                 .when()
                 .get("/test/client/{component}/pqc/tls", component())
+                .then()
+                .statusCode(200)
+                .body(is("PQC TLS connection successful"));
+    }
+
+    @Test
+    @org.junit.jupiter.api.Disabled("FIXME: Standard Java JSSE doesn't support PQC cipher suites used by openquantumsafe/nginx. "
+            + "Full PQC TLS support requires integrating BouncyCastle TLS (BCTLS) instead of JSSE. "
+            + "See https://github.com/bcgit/bc-java/wiki for more information on BouncyCastle TLS.")
+    public void testPqcNginxTls() {
+        RestAssured
+                .when()
+                .get("/test/client/http/pqc/nginx/tls")
                 .then()
                 .statusCode(200)
                 .body(is("PQC TLS connection successful"));
