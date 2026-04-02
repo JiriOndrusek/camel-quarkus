@@ -197,4 +197,25 @@ public class HttpResource extends AbstractHttpResource {
                 .withHeader("Accept-Encoding", "gzip, deflate")
                 .request(String.class);
     }
+
+    @Path("/pqc/sign")
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.TEXT_PLAIN)
+    public String pqcSign(String message) {
+        return producerTemplate
+                .to("direct:pqc-sign")
+                .withBody(message)
+                .request(String.class);
+    }
+
+    @Path("/pqc/tls")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String pqcTls() {
+        return producerTemplate
+                .to("direct:pqc-tls")
+                .withHeader(Exchange.HTTP_METHOD, "GET")
+                .request(String.class);
+    }
 }

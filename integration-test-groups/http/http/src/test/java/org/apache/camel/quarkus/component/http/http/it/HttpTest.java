@@ -16,6 +16,9 @@
  */
 package org.apache.camel.quarkus.component.http.http.it;
 
+import java.security.KeyPair;
+import java.security.Signature;
+import java.util.Base64;
 import java.util.stream.Stream;
 
 import io.quarkus.test.common.QuarkusTestResource;
@@ -24,9 +27,14 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.smallrye.certs.Format;
 import io.smallrye.certs.junit5.Certificate;
+import jakarta.inject.Inject;
 import org.apache.camel.quarkus.component.http.common.AbstractHttpTest;
 import org.apache.camel.quarkus.component.http.common.HttpTestResource;
 import org.apache.camel.quarkus.test.support.certificate.TestCertificates;
+import org.apache.camel.quarkus.test.support.pqc.PQCAlgorithm;
+import org.apache.camel.quarkus.test.support.pqc.PQCKeyPair;
+import org.apache.camel.quarkus.test.support.pqc.PQCKeyPairs;
+import org.assertj.core.api.Assertions;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -34,6 +42,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,9 +52,17 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 @TestCertificates(certificates = {
         @Certificate(name = HttpTestResource.KEYSTORE_NAME, formats = {
                 Format.PKCS12 }, password = HttpTestResource.KEYSTORE_PASSWORD) })
+@PQCKeyPairs(keyPairs = {
+        @PQCKeyPair(name = "dilithiumKeyPair", algorithm = PQCAlgorithm.DILITHIUM2),
+})
 @QuarkusTest
 @QuarkusTestResource(HttpTestResource.class)
 public class HttpTest extends AbstractHttpTest {
+
+    @Inject
+    @jakarta.inject.Named("dilithiumKeyPair")
+    KeyPair dilithiumKeyPair;
+
     @Override
     public String component() {
         return "http";
@@ -136,6 +153,47 @@ public class HttpTest extends AbstractHttpTest {
                 arguments("repo.maven.apache.org", actualPort, host, 200, expectedGroupId, false),
                 arguments("*.apache.org", fakePort, host, 200, expectedGroupId, false),
                 arguments("*localhost*", actualPort, host, 200, expectedGroupId, true));
+    }
+
+    @Test
+    public void testPqcSign() throws Exception {
+        String testMessage = "test message for PQC signing";
+
+        // Get the Base64-encoded signature from the endpoint
+        String encodedSignature = RestAssured.given()
+                .contentType(ContentType.TEXT)
+                .body(testMessage)
+                .post("/test/client/http/pqc/sign")
+                .then()
+                .statusCode(200)
+                .body(not(emptyString()))
+                .extract()
+                .asString();
+
+        Assertions.assertThat(encodedSignature).isNotBlank();
+
+        // Decode the Base64-encoded signature
+        byte[] signature = Base64.getDecoder().decode(encodedSignature);
+
+        // Verify the signature using Dilithium public key
+        Signature verifier = Signature.getInstance("Dilithium", "BCPQC");
+        verifier.initVerify(dilithiumKeyPair.getPublic());
+        verifier.update(testMessage.getBytes());
+
+        assertTrue(verifier.verify(signature), "PQC signature verification should succeed");
+    }
+
+    @Test
+    public void testPqcTls() {
+        // Test HTTPS connection with PQC TLS support
+        RestAssured
+                .given()
+                .queryParam("component", component())
+                .when()
+                .get("/test/client/{component}/pqc/tls", component())
+                .then()
+                .statusCode(200)
+                .body(is("PQC TLS connection successful"));
     }
 
 }
