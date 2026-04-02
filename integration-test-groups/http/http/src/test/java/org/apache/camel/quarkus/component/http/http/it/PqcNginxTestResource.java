@@ -72,7 +72,7 @@ public class PqcNginxTestResource implements QuarkusTestResourceLifecycleManager
                         server_name localhost;
                         ssl_certificate /certs/nginx-hybrid-pqc-cert.pem;
                         ssl_certificate_key /certs/nginx-hybrid-pqc-key.pem;
-                        ssl_protocols TLSv1.3 TLSv1.2;
+                        ssl_protocols TLSv1.3;
                         location /test {
                             return 200 "Hybrid RSA+Dilithium(ML-DSA) certificate validated";
                             add_header Content-Type text/plain;
