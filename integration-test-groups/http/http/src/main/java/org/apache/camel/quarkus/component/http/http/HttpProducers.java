@@ -16,7 +16,17 @@
  */
 package org.apache.camel.quarkus.component.http.http;
 
+import javax.net.ssl.SSLContext;
+
 import jakarta.inject.Named;
+import org.apache.camel.component.http.HttpClientConfigurer;
+import org.apache.camel.quarkus.test.support.pqc.certificate.client.PqcSslClientConfigurer;
+import org.apache.camel.quarkus.test.support.pqc.certificate.validation.BctlsSSLContextFactory;
+import org.apache.camel.quarkus.test.support.pqc.certificate.validation.HybridCertificateTrustManager;
+import org.apache.camel.support.jsse.KeyManagersParameters;
+import org.apache.camel.support.jsse.KeyStoreParameters;
+import org.apache.camel.support.jsse.SSLContextParameters;
+import org.apache.camel.support.jsse.TrustManagersParameters;
 import org.apache.hc.client5.http.auth.AuthScope;
 import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
 import org.apache.hc.client5.http.impl.auth.BasicAuthCache;
@@ -31,6 +41,7 @@ import static org.apache.camel.quarkus.component.http.common.AbstractHttpResourc
 import static org.apache.camel.quarkus.component.http.common.AbstractHttpResource.USER_ADMIN_PASSWORD;
 
 public class HttpProducers {
+
     @Named
     HttpContext basicAuthContext() {
         Integer port = ConfigProvider.getConfig().getValue("quarkus.http.test-ssl-port", Integer.class);
@@ -50,4 +61,45 @@ public class HttpProducers {
 
         return context;
     }
+
+    @Named
+    public SSLContextParameters pqcSslContextParameters() {
+        KeyStoreParameters keystoreParameters = new KeyStoreParameters();
+        keystoreParameters.setResource("file://target/certs/localhost-keystore.p12");
+        keystoreParameters.setPassword("localhost-keystore-password");
+
+        KeyStoreParameters truststoreParameters = new KeyStoreParameters();
+        truststoreParameters.setResource("file://target/certs/localhost-truststore.p12");
+        truststoreParameters.setPassword("localhost-keystore-password");
+
+        TrustManagersParameters trustManagersParameters = new TrustManagersParameters();
+        trustManagersParameters.setKeyStore(truststoreParameters);
+
+        SSLContextParameters sslContextParameters = new SSLContextParameters();
+        sslContextParameters.setTrustManagers(trustManagersParameters);
+
+        KeyManagersParameters keyManagersParameters = new KeyManagersParameters();
+        keyManagersParameters.setKeyPassword("localhost-keystore-password");
+        keyManagersParameters.setKeyStore(keystoreParameters);
+        sslContextParameters.setKeyManagers(keyManagersParameters);
+
+        // Enable PQC cipher suites if available
+        sslContextParameters.setSecureSocketProtocol("TLS");
+
+        return sslContextParameters;
+    }
+
+    @Named
+    public HttpClientConfigurer pqcNginxHttpClientConfigurer() {
+        try {
+            // Create SSLContext using BouncyCastle JSSE provider with hybrid certificate validator
+            // This enables validation of RSA+PQC composite certificates following BC Almanac recommendations
+            HybridCertificateTrustManager trustManager = new HybridCertificateTrustManager();
+            SSLContext sslContext = BctlsSSLContextFactory.createSSLContext(trustManager);
+            return new PqcSslClientConfigurer(sslContext);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create PQC HttpClient configurer", e);
+        }
+    }
+
 }

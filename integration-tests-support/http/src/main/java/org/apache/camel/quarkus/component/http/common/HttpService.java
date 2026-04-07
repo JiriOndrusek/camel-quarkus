@@ -57,4 +57,11 @@ public class HttpService {
     public String compress() {
         return "Compressed response";
     }
+
+    @Path("/pqc-tls")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String pqcTls() {
+        return "PQC TLS connection successful";
+    }
 }
