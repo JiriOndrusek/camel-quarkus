@@ -295,7 +295,6 @@ public class HybridCertificateGenerator {
         try (PemWriter pemWriter = new PemWriter(new OutputStreamWriter(new FileOutputStream(certPem.toFile())))) {
             pemWriter.writeObject(new PemObject("CERTIFICATE", certificate.getEncoded()));
         }
-        LOG.debugf("Exported certificate to: %s", certPem);
 
         // Export primary key to PEM (if exists)
         Path primaryKeyPem = null;
@@ -305,7 +304,6 @@ public class HybridCertificateGenerator {
                     new OutputStreamWriter(new FileOutputStream(primaryKeyPem.toFile())))) {
                 pemWriter.writeObject(new PemObject("PRIVATE KEY", primaryKeyPair.getPrivate().getEncoded()));
             }
-            LOG.debugf("Exported primary key to: %s", primaryKeyPem);
         }
 
         // Export PQC key to PEM
@@ -313,7 +311,6 @@ public class HybridCertificateGenerator {
         try (PemWriter pemWriter = new PemWriter(new OutputStreamWriter(new FileOutputStream(pqcKeyPem.toFile())))) {
             pemWriter.writeObject(new PemObject("PRIVATE KEY", pqcKeyPair.getPrivate().getEncoded()));
         }
-        LOG.debugf("Exported PQC key to: %s", pqcKeyPem);
 
         // Create PKCS12 truststore
         Path truststore = outputDir.resolve(name + "-truststore.p12");
@@ -323,7 +320,6 @@ public class HybridCertificateGenerator {
         try (FileOutputStream fos = new FileOutputStream(truststore.toFile())) {
             ts.store(fos, password.toCharArray());
         }
-        LOG.debugf("Exported truststore to: %s", truststore);
 
         // Create PKCS12 keystore (if primary key exists)
         Path keystore = null;
@@ -336,8 +332,19 @@ public class HybridCertificateGenerator {
             try (FileOutputStream fos = new FileOutputStream(keystore.toFile())) {
                 ks.store(fos, password.toCharArray());
             }
-            LOG.debugf("Exported keystore to: %s", keystore);
         }
+
+        // Log success with icons
+        LOG.infof("⭐  PQC certificate and keys generated successfully!");
+        LOG.infof("📜  Certificate: %s", certPem);
+        if (primaryKeyPem != null) {
+            LOG.infof("🔑  Primary Key: %s", primaryKeyPem);
+        }
+        LOG.infof("🔐  PQC Key: %s", pqcKeyPem);
+        if (keystore != null) {
+            LOG.infof("🔐  Key Store File: %s", keystore);
+        }
+        LOG.infof("🔓  Trust Store File: %s", truststore);
 
         return new HybridCertificateFiles(certPem, primaryKeyPem, pqcKeyPem, truststore, keystore);
     }

@@ -43,6 +43,11 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-resteasy-jackson</artifactId>
         </dependency>
+        <!-- dependency has to be present as not test scope, so the PqcResource has access to keyPairs -->
+        <dependency>
+            <groupId>org.apache.camel.quarkus</groupId>
+            <artifactId>camel-quarkus-integration-tests-support-pqc</artifactId>
+        </dependency>
 
         <!-- test dependencies -->
         <dependency>

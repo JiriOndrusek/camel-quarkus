@@ -49,9 +49,9 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 @TestCertificates(certificates = {
         @Certificate(name = HttpTestResource.KEYSTORE_NAME, formats = {
                 Format.PKCS12 }, password = HttpTestResource.KEYSTORE_PASSWORD) })
-@PQCCertificates(baseDir = "target/certs/bctls-nginx", certificates = {
-        @PQCCertificate(name = "nginx-hybrid-pqc", hybridMode = HybridMode.CHIMERA, primaryAlgorithm = PrimaryAlgorithm.RSA_2048, pqcAlgorithm = PQCAlgorithm.DILITHIUM2, cn = "nginx-hybrid-pqc", validity = 30, formats = {
-                CertificateFormat.PEM, CertificateFormat.PKCS12 }, password = "changeit")
+@PQCCertificates(certificates = {
+        @PQCCertificate(name = PqcNginxTestResource.CERT_NAME, hybridMode = HybridMode.CHIMERA, primaryAlgorithm = PrimaryAlgorithm.RSA_2048, pqcAlgorithm = PQCAlgorithm.DILITHIUM2, formats = {
+                CertificateFormat.PEM, CertificateFormat.PKCS12 }, password = PqcNginxTestResource.TRUSTSTORE_PASSWORD)
 })
 @QuarkusTest
 @QuarkusTestResource(PqcNginxTestResource.class)

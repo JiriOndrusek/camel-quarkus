@@ -23,7 +23,9 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -58,6 +60,13 @@ public class PQCCertificateGenerationExtension implements BeforeAllCallback {
     private static final Logger LOG = Logger.getLogger(PQCCertificateGenerationExtension.class);
 
     /**
+     * Static registry of extension instances by test class name.
+     * Allows access to certificate files from QuarkusTestResourceLifecycleManager implementations
+     * that don't have access to ExtensionContext.
+     */
+    private static final Map<String, PQCCertificateGenerationExtension> REGISTRY = new ConcurrentHashMap<>();
+
+    /**
      * Retrieves the extension instance from the extension context.
      *
      * @param  extensionContext JUnit5 extension context
@@ -66,6 +75,17 @@ public class PQCCertificateGenerationExtension implements BeforeAllCallback {
     public static PQCCertificateGenerationExtension getInstance(ExtensionContext extensionContext) {
         return extensionContext.getStore(ExtensionContext.Namespace.GLOBAL)
                 .get(PQCCertificateGenerationExtension.class, PQCCertificateGenerationExtension.class);
+    }
+
+    /**
+     * Retrieves the extension instance for a specific test class.
+     * Useful for accessing certificate files from test resources that don't have ExtensionContext.
+     *
+     * @param  testClass The test class
+     * @return           The extension instance, or null if not found
+     */
+    public static PQCCertificateGenerationExtension getInstance(Class<?> testClass) {
+        return REGISTRY.get(testClass.getName());
     }
 
     /**
@@ -81,6 +101,10 @@ public class PQCCertificateGenerationExtension implements BeforeAllCallback {
         }
         var annotation = maybe.get();
 
+        // Register this instance for lookup by test class
+        Class<?> testClass = extensionContext.getRequiredTestClass();
+        REGISTRY.put(testClass.getName(), this);
+
         // Resolve Docker host if needed (for external Docker hosts like Docker Desktop on Mac/Windows)
         Optional<String> dockerHost = Optional.empty();
         if (annotation.docker()) {
@@ -92,7 +116,7 @@ public class PQCCertificateGenerationExtension implements BeforeAllCallback {
         baseDir.mkdirs();
         Path basePath = baseDir.toPath();
 
-        LOG.infof("Generating PQC certificates in: %s", basePath.toAbsolutePath());
+        LOG.infof("🔧  Generating PQC certificates in: %s", basePath.toAbsolutePath());
 
         // Generate each certificate
         HybridCertificateGenerator generator = new HybridCertificateGenerator();
@@ -108,7 +132,7 @@ public class PQCCertificateGenerationExtension implements BeforeAllCallback {
             // Check if certificate already exists (skip if not replaceIfExists)
             Path certPath = basePath.resolve(certificate.name() + "-cert.pem");
             if (Files.exists(certPath) && !annotation.replaceIfExists()) {
-                LOG.infof("Certificate already exists, skipping generation: %s", certPath);
+                LOG.infof("⏩  Certificate already exists, skipping: %s", certPath);
                 continue;
             }
 
@@ -117,10 +141,10 @@ public class PQCCertificateGenerationExtension implements BeforeAllCallback {
             Duration validity = Duration.ofDays(certificate.validity());
 
             if (certificate.hybridMode() == HybridMode.CHIMERA) {
-                LOG.infof("Generating Chimera certificate: name=%s, primary=%s, pqc=%s, cn=%s",
+                LOG.infof("🔨  Generating Chimera certificate '%s': %s + %s (CN=%s)",
                         certificate.name(),
                         certificate.primaryAlgorithm(),
-                        certificate.pqcAlgorithm(),
+                        certificate.pqcAlgorithm().getAlgorithmName(),
                         cn);
 
                 files = generator.generateChimeraCertificate(
@@ -134,9 +158,9 @@ public class PQCCertificateGenerationExtension implements BeforeAllCallback {
                         certificate.password());
 
             } else if (certificate.hybridMode() == HybridMode.PQC_ONLY) {
-                LOG.infof("Generating pure PQC certificate: name=%s, pqc=%s, cn=%s",
+                LOG.infof("🔨  Generating pure PQC certificate '%s': %s (CN=%s)",
                         certificate.name(),
-                        certificate.pqcAlgorithm(),
+                        certificate.pqcAlgorithm().getAlgorithmName(),
                         cn);
 
                 files = generator.generatePurePQCCertificate(
@@ -153,10 +177,11 @@ public class PQCCertificateGenerationExtension implements BeforeAllCallback {
             }
 
             certificateFiles.add(files);
-            LOG.infof("Certificate generated successfully: %s", files.getCertificatePem());
         }
 
-        LOG.infof("PQC certificate generation complete. Generated %d certificate(s).", certificateFiles.size());
+        if (certificateFiles.size() > 0) {
+            LOG.infof("✅  PQC certificate generation complete. Generated %d certificate(s).", certificateFiles.size());
+        }
     }
 
     /**

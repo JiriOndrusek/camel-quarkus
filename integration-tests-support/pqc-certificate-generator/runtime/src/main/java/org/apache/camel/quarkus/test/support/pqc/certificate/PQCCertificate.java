@@ -93,17 +93,17 @@ public @interface PQCCertificate {
      * Certificate validity period in days.
      * Default: 30 days.
      */
-    int validity() default 30;
+    int validity() default 2;
 
     /**
      * Output formats to generate.
      * Default: PEM and PKCS12.
      */
-    CertificateFormat[] formats() default { CertificateFormat.PEM, CertificateFormat.PKCS12 };
+    CertificateFormat[] formats();
 
     /**
      * Password for PKCS12 keystore/truststore.
      * Default: "changeit".
      */
-    String password() default "changeit";
+    String password() default "";
 }

@@ -35,11 +35,28 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.MediaType;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.quarkus.test.support.pqc.PQCKeyPair;
+import org.apache.camel.quarkus.test.support.pqc.PQCKeyPairs;
 import org.bouncycastle.jcajce.SecretKeyWithEncapsulation;
 import org.jboss.logging.Logger;
 
+import static org.apache.camel.quarkus.test.support.pqc.PQCAlgorithm.DILITHIUM2;
+import static org.apache.camel.quarkus.test.support.pqc.PQCAlgorithm.FALCON512;
+import static org.apache.camel.quarkus.test.support.pqc.PQCAlgorithm.KYBER512;
+import static org.apache.camel.quarkus.test.support.pqc.PQCAlgorithm.LMS;
+import static org.apache.camel.quarkus.test.support.pqc.PQCAlgorithm.SPHINCSPLUS;
+import static org.apache.camel.quarkus.test.support.pqc.PQCAlgorithm.XMSS;
+
 @Path("/pqc")
 @ApplicationScoped
+@PQCKeyPairs(keyPairs = {
+        @PQCKeyPair(name = "dilithiumKeyPair", algorithm = DILITHIUM2),
+        @PQCKeyPair(name = "falconKeyPair", algorithm = FALCON512),
+        @PQCKeyPair(name = "sphincsKeyPair", algorithm = SPHINCSPLUS),
+        @PQCKeyPair(name = "xmssKeyPair", algorithm = XMSS),
+        @PQCKeyPair(name = "lmsKeyPair", algorithm = LMS),
+        @PQCKeyPair(name = "kyberKeyPair", algorithm = KYBER512)
+})
 public class PqcResource {
 
     private static final Logger LOG = Logger.getLogger(PqcResource.class);;
