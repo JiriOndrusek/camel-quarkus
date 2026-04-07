@@ -173,7 +173,8 @@ public class HybridCertificateGenerator {
     }
 
     /**
-     * based on example `Ex. 8: ECDSA ML-DSA X.509 Dual Key Certificate Generation` from https://downloads.bouncycastle.org/java/docs/PQC-Almanac.pdf
+     * based on example `Ex. 8: ECDSA ML-DSA X.509 Dual Key Certificate Generation` from
+     * https://downloads.bouncycastle.org/java/docs/PQC-Almanac.pdf
      */
     private X509Certificate buildChimeraCertificate(
             KeyPair primaryKeyPair,

@@ -29,7 +29,6 @@ import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import jakarta.inject.Singleton;
 import org.apache.camel.quarkus.test.support.pqc.PQCAlgorithm;
-import org.apache.camel.quarkus.test.support.pqc.PQCKeyPair;
 import org.apache.camel.quarkus.test.support.pqc.PQCKeyPairRecorder;
 import org.apache.camel.quarkus.test.support.pqc.PQCKeyPairs;
 import org.jboss.jandex.AnnotationInstance;
@@ -89,7 +88,8 @@ public class PQCKeyPairBuildStep {
                 KeyPairConfig existing = uniqueKeyPairs.get(name);
                 if (existing != null) {
                     if (!existing.algorithmName.equals(algorithmName)) {
-                        LOGGER.warnf("Duplicate keypair name '%s' with different algorithms: %s vs %s. Using first declaration.",
+                        LOGGER.warnf(
+                                "Duplicate keypair name '%s' with different algorithms: %s vs %s. Using first declaration.",
                                 name, existing.algorithmName, algorithmName);
                     }
                     continue; // Skip duplicate
