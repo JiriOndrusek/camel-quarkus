@@ -87,6 +87,19 @@
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-integration-tests-support-http</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.camel.quarkus</groupId>
+            <artifactId>camel-quarkus-integration-tests-support-pqc-certificate-generator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel.quarkus</groupId>
+            <artifactId>camel-quarkus-pqc</artifactId>
+        </dependency>
+        <!-- can not be test scope only because some helper classes are used in for app prodcers -->
+        <dependency>
+            <groupId>org.apache.camel.quarkus</groupId>
+            <artifactId>camel-quarkus-integration-tests-support-pqc-certificate-generator</artifactId>
+        </dependency>
 
         <!-- test dependencies -->
         <dependency>
@@ -112,9 +125,9 @@
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-integration-tests-support-certificate-generator</artifactId>
-            <scope>test</scope>
+             <scope>test</scope>
         </dependency>
-        <dependency>
+         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-integration-tests-support-http</artifactId>
             <scope>test</scope>
