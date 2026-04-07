@@ -32,5 +32,8 @@ public class HttpRoutes extends RouteBuilder {
                 .to("seda:dlq")
                 .end()
                 .to("http://localhost:{{quarkus.http.test-port}}/service/common/error");
+
+        from("direct:pqc-nginx-tls")
+                .toF("https://{{pqc.nginx.host}}:{{pqc.nginx.port}}/test?httpClientConfigurer=#pqcNginxHttpClientConfigurer");
     }
 }

@@ -24,12 +24,20 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.camel.component.pqc.PQCKeyEncapsulationAlgorithms;
 import org.apache.camel.component.pqc.PQCSignatureAlgorithms;
+import org.apache.camel.quarkus.test.support.pqc.PQCKeyPair;
+import org.apache.camel.quarkus.test.support.pqc.PQCKeyPairs;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import static org.apache.camel.quarkus.test.support.pqc.PQCAlgorithm.DILITHIUM2;
+import static org.apache.camel.quarkus.test.support.pqc.PQCAlgorithm.FALCON512;
+import static org.apache.camel.quarkus.test.support.pqc.PQCAlgorithm.KYBER512;
+import static org.apache.camel.quarkus.test.support.pqc.PQCAlgorithm.LMS;
+import static org.apache.camel.quarkus.test.support.pqc.PQCAlgorithm.SPHINCSPLUS;
+import static org.apache.camel.quarkus.test.support.pqc.PQCAlgorithm.XMSS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
@@ -37,6 +45,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @QuarkusTest
+@PQCKeyPairs(keyPairs = {
+        @PQCKeyPair(name = "dilithiumKeyPair", algorithm = DILITHIUM2),
+        @PQCKeyPair(name = "falconKeyPair", algorithm = FALCON512),
+        @PQCKeyPair(name = "sphincsKeyPair", algorithm = SPHINCSPLUS),
+        @PQCKeyPair(name = "xmssKeyPair", algorithm = XMSS),
+        @PQCKeyPair(name = "lmsKeyPair", algorithm = LMS),
+        @PQCKeyPair(name = "kyberKeyPair", algorithm = KYBER512)
+})
 class PqcTest {
 
     @ParameterizedTest
