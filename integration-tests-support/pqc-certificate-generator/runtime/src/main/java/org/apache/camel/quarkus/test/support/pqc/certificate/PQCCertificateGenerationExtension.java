@@ -29,7 +29,6 @@ import org.jboss.logging.Logger;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.platform.commons.util.AnnotationUtils;
-import org.testcontainers.DockerClientFactory;
 
 /**
  * JUnit5 extension that generates PQC certificates before tests run.
@@ -158,15 +157,28 @@ public class PQCCertificateGenerationExtension implements BeforeAllCallback {
     /**
      * Resolves the Docker host IP address for external Docker hosts.
      * Used when docker=true to override CN and SANs with the actual Docker host.
+     * Uses reflection to avoid hard dependency on Testcontainers (optional dependency).
      *
      * @param  extensionContext JUnit5 extension context
-     * @return                  Optional Docker host IP (empty if localhost/127.0.0.1)
+     * @return                  Optional Docker host IP (empty if localhost/127.0.0.1 or if Testcontainers not available)
      */
     private Optional<String> resolveDockerHost(ExtensionContext extensionContext) {
-        String dockerHost = DockerClientFactory.instance().dockerHostIpAddress();
-        if (!dockerHost.equals("localhost") && !dockerHost.equals("127.0.0.1")) {
-            LOG.infof("Detected external Docker host: %s", dockerHost);
-            return Optional.of(dockerHost);
+        try {
+            // Use reflection to avoid hard dependency on Testcontainers
+            Class<?> dockerClientFactoryClass = Class.forName("org.testcontainers.DockerClientFactory");
+            Object dockerClientFactory = dockerClientFactoryClass.getMethod("instance").invoke(null);
+            String dockerHost = (String) dockerClientFactoryClass.getMethod("dockerHostIpAddress")
+                    .invoke(dockerClientFactory);
+
+            if (!dockerHost.equals("localhost") && !dockerHost.equals("127.0.0.1")) {
+                LOG.infof("Detected external Docker host: %s", dockerHost);
+                return Optional.of(dockerHost);
+            }
+        } catch (ClassNotFoundException e) {
+            LOG.warn("Testcontainers not available on classpath, cannot resolve Docker host. "
+                    + "Add org.testcontainers:testcontainers dependency to use docker=true");
+        } catch (Exception e) {
+            LOG.warnf(e, "Failed to resolve Docker host IP address: %s", e.getMessage());
         }
         return Optional.empty();
     }
