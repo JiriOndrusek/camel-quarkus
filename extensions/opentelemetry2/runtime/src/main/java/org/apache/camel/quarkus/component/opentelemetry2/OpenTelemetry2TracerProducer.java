@@ -38,7 +38,7 @@ public class OpenTelemetry2TracerProducer {
     @DefaultBean
     public OpenTelemetryTracer getOpenTelemetry(CamelContext camelContext) {
         if (!oTelRuntimeConfig.sdkDisabled()) {
-            OpenTelemetryTracer openTelemetryTracer = new OpenTelemetryTracer();
+            OpenTelemetryTracer openTelemetryTracer = new org.apache.camel.opentelemetry2.CamelQuarkusOpenTelemetry2Tracer();
             config.excludePatterns().ifPresent(openTelemetryTracer::setExcludePatterns);
             openTelemetryTracer.setTraceProcessors(config.traceProcessors());
             openTelemetryTracer.setTraceHeadersInclusion(config.traceHeadersInclusion());

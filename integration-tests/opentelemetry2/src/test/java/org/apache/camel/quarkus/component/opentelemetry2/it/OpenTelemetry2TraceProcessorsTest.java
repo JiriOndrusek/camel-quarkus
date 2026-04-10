@@ -60,9 +60,9 @@ class OpenTelemetry2TraceProcessorsTest {
         assertEquals(SpanKind.INTERNAL.name(), spans.get(0).get("kind"));
         assertEquals("setBody3-setBody", spans.get(0).get("component"));
         assertEquals(spans.get(1).get("spanId"), spans.get(0).get("parentId"));
-        assertEquals(SpanKind.INTERNAL.name(), spans.get(1).get("kind"));
+        assertEquals(SpanKind.SERVER.name(), spans.get(1).get("kind"));
         assertEquals(spans.get(2).get("spanId"), spans.get(1).get("parentId"));
-        assertEquals(SpanKind.INTERNAL.name(), spans.get(2).get("kind"));
+        assertEquals(SpanKind.CLIENT.name(), spans.get(2).get("kind"));
         assertEquals(spans.get(2).get("parentId"), spans.get(3).get("spanId"));
         assertEquals(spans.get(3).get("parentId"), "0000000000000000");
         assertEquals(SpanKind.SERVER.name(), spans.get(3).get("kind"));
