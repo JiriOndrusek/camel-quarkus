@@ -31,6 +31,9 @@ import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.SystemPropertyBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.NativeImageProxyDefinitionBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import io.quarkus.deployment.pkg.builditem.NativeOrNativeSourcesBuild;
 import jakarta.inject.Singleton;
 import org.apache.camel.quarkus.component.support.langchain4j.QuarkusLangchain4jRecorder;
 import org.jboss.jandex.AnnotationInstance;
@@ -55,6 +58,7 @@ class SupportQuarkusLangchain4jProcessor {
 
     @BuildStep
     SystemPropertyBuildItem enforceJaxRsHttpClient() {
+        LOG.infof("Quarkus LangChain4j detected - enforcing JAX-RS HTTP client factory");
         return new SystemPropertyBuildItem("langchain4j.http.clientBuilderFactory",
                 "io.quarkiverse.langchain4j.jaxrsclient.JaxRsHttpClientBuilderFactory");
     }
@@ -112,5 +116,37 @@ class SupportQuarkusLangchain4jProcessor {
                 unremovableBeans.produce(beanClassNames(declarativeAiServiceClassName + "$$QuarkusImpl"));
             }
         }
+    }
+
+    @BuildStep(onlyIf = NativeOrNativeSourcesBuild.class)
+    void registerQuarkusLangchain4jNativeSupport(
+            CombinedIndexBuildItem combinedIndex,
+            BuildProducer<ReflectiveClassBuildItem> reflectiveClasses,
+            BuildProducer<NativeImageProxyDefinitionBuildItem> proxyDefinitions) {
+
+        IndexView index = combinedIndex.getIndex();
+
+        // Register QL4J's @RegisterAiService implementations for reflection
+        for (AnnotationInstance instance : index.getAnnotations(REGISTER_AI_SERVICES_DOTNAME)) {
+            if (instance.target().kind() == AnnotationTarget.Kind.CLASS) {
+                String serviceName = instance.target().asClass().name().toString();
+                LOG.debugf("Registering QL4J AI service %s for native reflection", serviceName);
+
+                // QL4J generates implementation classes with $$QuarkusImpl suffix
+                reflectiveClasses.produce(ReflectiveClassBuildItem.builder(serviceName + "$$QuarkusImpl")
+                        .methods()
+                        .fields()
+                        .build());
+
+                // Register the interface as proxy
+                proxyDefinitions.produce(new NativeImageProxyDefinitionBuildItem(serviceName));
+            }
+        }
+
+        // Register JAX-RS HTTP client classes for reflection
+        reflectiveClasses.produce(ReflectiveClassBuildItem.builder(
+                "io.quarkiverse.langchain4j.jaxrsclient.JaxRsHttpClientBuilderFactory")
+                .methods()
+                .build());
     }
 }

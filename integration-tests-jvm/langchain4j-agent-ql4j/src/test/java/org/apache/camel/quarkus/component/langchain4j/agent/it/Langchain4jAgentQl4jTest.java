@@ -18,9 +18,7 @@ package org.apache.camel.quarkus.component.langchain4j.agent.it;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -28,9 +26,7 @@ import static org.hamcrest.Matchers.*;
 
 @ExtendWith(Langchain4jTestWatcher.class)
 @QuarkusTestResource(Langchain4jAgentTestResource.class)
-@TestProfile(Langchain4jAgentQl4jProfile.class)
 @QuarkusTest
-@Disabled("https://github.com/apache/camel-quarkus/issues/8412")
 class Langchain4jAgentQl4jTest {
     @Test
     void simpleUserMessage() {

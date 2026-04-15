@@ -16,14 +16,8 @@
  */
 package org.apache.camel.quarkus.component.langchain4j.agent.it;
 
-import java.util.Collections;
-import java.util.Map;
+import io.quarkus.test.junit.QuarkusIntegrationTest;
 
-import io.quarkus.test.junit.QuarkusTestProfile;
-
-public class Langchain4jAgentQl4jProfile implements QuarkusTestProfile {
-    public Map<String, String> getConfigOverrides() {
-        // Covers failure with RetrievalAugmentor with scope <default>, see README.adoc
-        return Collections.singletonMap("cq-test.retrieval.augmentor.disabled", "false");
-    }
+@QuarkusIntegrationTest
+class Langchain4jAgentQl4jIT extends Langchain4jAgentQl4jTest {
 }
