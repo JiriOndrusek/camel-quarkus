@@ -162,6 +162,9 @@
                     <name>native</name>
                 </property>
             </activation>
+            <properties>
+                <quarkus.native.enabled>true</quarkus.native.enabled>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
