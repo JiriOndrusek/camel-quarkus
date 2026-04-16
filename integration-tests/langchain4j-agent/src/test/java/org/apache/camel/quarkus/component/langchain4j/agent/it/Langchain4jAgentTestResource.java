@@ -46,7 +46,43 @@ public class Langchain4jAgentTestResource extends WireMockTestResourceLifecycleM
         String url = wiremockUrl != null ? wiremockUrl : getRecordTargetBaseUrl();
         properties.put("langchain4j.ollama.base-url", url);
         properties.put("nodejs.installed", isNodeJSInstallationExists().toString());
+
+        // Add programmatic stub for guardrail retry request that has formatting differences between JVM and native
+        if (server != null) {
+            addGuardrailRetryStub();
+        }
+
         return properties;
+    }
+
+    private void addGuardrailRetryStub() {
+        String retryRequest = """
+                {
+                  "model" : "orca-mini",
+                  "messages" : [ {
+                    "role" : "user",
+                    "content" : "Make sure you return a valid JSON object following the specified format"
+                  } ],
+                  "options" : {
+                    "temperature" : 0.3,
+                    "stop" : [ ]
+                  },
+                  "stream" : false,
+                  "tools" : [ ]
+                }""";
+
+        String retryResponse = """
+                {"model":"orca-mini","created_at":"2026-03-12T08:54:32.615262279Z","message":{"role":"assistant","content":" Sure, I'd be happy to help! Can you please provide me with the specific format you want the JSON object to follow?"},"done":true,"done_reason":"stop","total_duration":1554193662,"load_duration":17846961,"prompt_eval_count":52,"prompt_eval_duration":235272960,"eval_count":28,"eval_duration":1295301623}""";
+
+        server.stubFor(com.github.tomakehurst.wiremock.client.WireMock.post(
+                com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo("/api/chat"))
+                .withRequestBody(com.github.tomakehurst.wiremock.client.WireMock.equalToJson(retryRequest, true, false))
+                .atPriority(1)
+                .willReturn(com.github.tomakehurst.wiremock.client.WireMock.aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json; charset=utf-8")
+                        .withHeader("Date", "Thu, 12 Mar 2026 08:54:32 GMT")
+                        .withBody(retryResponse)));
     }
 
     @Override
