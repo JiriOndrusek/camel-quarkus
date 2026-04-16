@@ -1,6 +1,7 @@
 {
   "id" : "d44e4f60-fcba-4b6a-b468-110c5ef3968f",
   "name" : "api_chat",
+  "priority" : 2,
   "request" : {
     "url" : "/api/chat",
     "method" : "POST",

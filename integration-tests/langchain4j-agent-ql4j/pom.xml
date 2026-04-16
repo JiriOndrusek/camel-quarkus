@@ -30,6 +30,12 @@
     <name>Camel Quarkus :: Integration Tests :: LangChain4j Agent QL4J</name>
     <description>Integration tests for Camel Quarkus LangChain4j Agent extension with Quarkus LangChain4j</description>
 
+    <properties>
+        <!-- Skip sanity checks because quarkus-langchain4j-ollama requires explicit version -->
+        <!-- as it's not in Camel Quarkus BOMs -->
+        <sanity-checks.skip>true</sanity-checks.skip>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -70,9 +76,11 @@
         </dependency>
 
         <!-- Quarkus-langchain4j dependencies-->
+        <!-- Note: Version managed directly since not in standard Camel Quarkus BOMs -->
         <dependency>
             <groupId>io.quarkiverse.langchain4j</groupId>
             <artifactId>quarkus-langchain4j-ollama</artifactId>
+            <version>${quarkiverse-langchain4j.version}</version>
         </dependency>
         <dependency>
             <groupId>dev.langchain4j</groupId>

@@ -1,5 +1,5 @@
 {
-  "id" : "3397f049-5f70-40ca-ab2f-8169b147fef4",
+  "id" : "a1b2c3d4-e5f6-47a8-b9c0-d1e2f3a4b5c6",
   "name" : "api_chat",
   "priority" : 1,
   "request" : {
@@ -19,7 +19,7 @@
       "Content-Type" : "application/json; charset=utf-8"
     }
   },
-  "uuid" : "3397f049-5f70-40ca-ab2f-8169b147fef4",
+  "uuid" : "a1b2c3d4-e5f6-47a8-b9c0-d1e2f3a4b5c6",
   "persistent" : true,
   "insertionIndex" : 6
 }
