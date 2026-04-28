@@ -48,6 +48,17 @@
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-milvus</artifactId>
         </dependency>
+        <!-- Required by milvus-sdk-java 2.6.18 after grpc shading -->
+        <dependency>
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling</artifactId>
+        </dependency>
+        <!-- GraalVM SDK for substitutions -->
+        <dependency>
+            <groupId>org.graalvm.sdk</groupId>
+            <artifactId>nativeimage</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>

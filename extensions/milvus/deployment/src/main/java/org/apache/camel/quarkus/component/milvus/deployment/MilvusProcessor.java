@@ -16,11 +16,14 @@
  */
 package org.apache.camel.quarkus.component.milvus.deployment;
 
+import java.util.stream.Stream;
+
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.BytecodeTransformerBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.ClassRemapper;
@@ -81,6 +84,66 @@ class MilvusProcessor {
                 }
             });
         }
+    }
+
+    @BuildStep
+    void configureRuntimeInitialization(BuildProducer<RuntimeInitializedClassBuildItem> runtimeInitialized) {
+        Stream.of(
+                // Milvus client that uses shaded grpc
+                "io.milvus.client.MilvusServiceClient",
+
+                // Shaded netty tcnative - ALL classes require native libraries (tcnative-boringssl-static)
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.AsyncSSLPrivateKeyMethod",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.AsyncSSLPrivateKeyMethodAdapter",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.AsyncTask",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.Buffer",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.CertificateCallback",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.CertificateCallbackTask",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.CertificateCompressionAlgo",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.CertificateRequestedCallback",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.CertificateVerifier",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.CertificateVerifierTask",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.Library",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.NativeStaticallyReferencedJniMethods",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.ResultCallback",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.SessionTicketKey",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.SniHostNameMatcher",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.SSL",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.SSLContext",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.SSLPrivateKeyMethod",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.SSLPrivateKeyMethodDecryptTask",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.SSLPrivateKeyMethodSignTask",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.SSLPrivateKeyMethodTask",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.SSLSession",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.SSLSessionCache",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.internal.tcnative.SSLTask",
+
+                // OpenSSL classes that load native libraries
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.handler.ssl.OpenSsl",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.handler.ssl.ReferenceCountedOpenSslEngine",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.handler.ssl.ReferenceCountedOpenSslContext",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.handler.ssl.ReferenceCountedOpenSslClientContext",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.handler.ssl.ReferenceCountedOpenSslServerContext",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.handler.ssl.OpenSslContext",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.handler.ssl.OpenSslClientContext",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.handler.ssl.OpenSslServerContext",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.handler.ssl.OpenSslEngine",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.handler.ssl.OpenSslSessionContext",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.handler.ssl.OpenSslServerSessionContext",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.handler.ssl.OpenSslAsyncPrivateKeyMethod",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.handler.ssl.OpenSslPrivateKeyMethod",
+
+                // Conscrypt - optional SSL provider
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.handler.ssl.ConscryptAlpnSslEngine",
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.handler.ssl.Conscrypt",
+
+                // JDK NPN negotiator - deferred to runtime because its static initializer calls
+                // JettyNpnSslEngine.isAvailable() which we delete via @Delete substitution
+                "io.milvus.shaded.io.grpc.netty.shaded.io.netty.handler.ssl.JdkNpnApplicationProtocolNegotiator")
+                // NOTE: Jetty and BouncyCastle SSL provider classes are deleted via GraalVM substitutions
+                // in MilvusSubstitutions.java
+                .map(RuntimeInitializedClassBuildItem::new)
+                .forEach(runtimeInitialized::produce);
     }
 
 }
