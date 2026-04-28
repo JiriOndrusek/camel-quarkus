@@ -34,10 +34,7 @@
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-core-deployment</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-grpc-common-deployment</artifactId>
-        </dependency>
+        <!-- quarkus-grpc-common-deployment removed - conflicts with shaded grpc in milvus-sdk-java 2.6.18+ -->
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-milvus</artifactId>

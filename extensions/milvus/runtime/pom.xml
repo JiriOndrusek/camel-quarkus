@@ -40,13 +40,21 @@
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-core</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-grpc-common</artifactId>
-        </dependency>
+        <!-- quarkus-grpc-common removed - conflicts with shaded grpc in milvus-sdk-java 2.6.18+ -->
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-milvus</artifactId>
+        </dependency>
+        <!-- Required by milvus-sdk-java 2.6.18 after grpc shading -->
+        <dependency>
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling</artifactId>
+        </dependency>
+        <!-- GraalVM SDK for substitutions -->
+        <dependency>
+            <groupId>org.graalvm.sdk</groupId>
+            <artifactId>nativeimage</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
