@@ -1,0 +1,57 @@
+== Quarkus LangChain4j Integration Test
+
+This module tests the integration between Camel Quarkus LangChain4j extensions and Quarkus LangChain4j in both JVM and native modes.
+
+=== What This Tests
+
+- Camel Agent API works correctly when QL4J is on the classpath
+- HTTP client is properly configured (JAX-RS)
+- Bean scoping prevents auto-discovery conflicts
+- Both JVM and native modes work correctly
+
+=== Key Integration Points
+
+**HTTP Client:**
+QL4J requires the JAX-RS HTTP client. The support module automatically enforces this via system property when QL4J is detected.
+
+**Bean Scoping:**
+All beans use `@Identifier` qualifiers to prevent QL4J's automatic bean discovery from interfering with explicit Camel Agent configuration.
+
+**ChatMemoryProvider:**
+A default `ChatMemoryProvider` is registered as a synthetic bean to work around NoopChatMemory issues in native mode (quarkiverse/quarkus-langchain4j#2344).
+
+**Reflection Registration:**
+`QuarkusJsonCodecFactory` classes are registered for reflection to support JSON serialization in native mode.
+
+=== Running Tests
+
+**JVM Mode:**
+[source,shell]
+----
+./mvnw clean verify -pl integration-tests/langchain4j-agent-ql4j
+----
+
+**Native Mode:**
+[source,shell]
+----
+./mvnw clean verify -pl integration-tests/langchain4j-agent-ql4j -Dnative
+----
+
+**With Real Ollama API:**
+[source,shell]
+----
+export LANGCHAIN4J_OLLAMA_BASE_URL=http://localhost:11434
+./mvnw clean verify -pl integration-tests/langchain4j-agent-ql4j
+----
+
+By default, tests use WireMock to stub Ollama API interactions.
+
+To run against the real API, you need an Ollama instance with `orca-mini` & `granite4:3b` models.
+
+If the WireMock stub recordings need updating:
+
+[source,shell]
+----
+rm src/test/resources/mappings/*.json
+./mvnw clean verify -pl integration-tests/langchain4j-agent-ql4j -Dwiremock.record=true
+----

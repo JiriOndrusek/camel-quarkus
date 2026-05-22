@@ -31,6 +31,7 @@ import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.SystemPropertyBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import jakarta.inject.Singleton;
 import org.apache.camel.quarkus.component.support.langchain4j.QuarkusLangchain4jRecorder;
 import org.jboss.jandex.AnnotationInstance;
@@ -113,4 +114,26 @@ class SupportQuarkusLangchain4jProcessor {
             }
         }
     }
+
+    @BuildStep
+    void registerQuarkusLangchain4jNativeSupport(BuildProducer<ReflectiveClassBuildItem> reflectiveClasses) {
+        reflectiveClasses.produce(ReflectiveClassBuildItem.builder(
+                "io.quarkiverse.langchain4j.QuarkusJsonCodecFactory",
+                "io.quarkiverse.langchain4j.QuarkusJsonCodecFactory$SnakeCaseObjectMapperHolder",
+                "io.quarkiverse.langchain4j.QuarkusJsonCodecFactory$CustomMessageMixin",
+                "io.quarkiverse.langchain4j.QuarkusJsonCodecFactory$SnakeCaseObjectMapperHolder$QuarkusLangChain4jModule",
+                "io.quarkiverse.langchain4j.QuarkusJsonCodecFactory$AiMessageMixin",
+                "io.quarkiverse.langchain4j.QuarkusJsonCodecFactory$ChatMessageMixin",
+                "io.quarkiverse.langchain4j.QuarkusJsonCodecFactory$ToolExecutionResultMessageMixin",
+                "io.quarkiverse.langchain4j.QuarkusJsonCodecFactory$ObjectMapperHolder$1",
+                "io.quarkiverse.langchain4j.QuarkusJsonCodecFactory$ObjectMapperHolder",
+                "io.quarkiverse.langchain4j.QuarkusJsonCodecFactory$SystemMessageMixin",
+                "io.quarkiverse.langchain4j.QuarkusJsonCodecFactory$UserMessageMixin",
+                "io.quarkiverse.langchain4j.QuarkusJsonCodecFactory$Codec",
+                "io.quarkiverse.langchain4j.QuarkusJsonCodecFactory$ToolExecutionRequestMixin")
+                .methods()
+                .fields()
+                .build());
+    }
+
 }
