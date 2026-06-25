@@ -16,6 +16,7 @@
  */
 package org.apache.camel.quarkus.core.tls;
 
+import java.util.List;
 import java.util.Optional;
 
 import io.quarkus.runtime.RuntimeValue;
@@ -79,18 +80,20 @@ public class TlsRegistryRecorder {
         }
 
         // Process default TLS configuration
+        TlsConfig tlsConfig = tlsConfigRuntimeValue.getValue();
         Optional<TlsConfiguration> defaultTls = tlsRegistry.getDefault();
         if (defaultTls.isPresent()) {
-            TlsRegistryHelper.registerBean(camelContext, config, "default", defaultTls.get());
+            List<String> defaultPqc = TlsRegistryHelper.getKeyExchangeProtocols(tlsConfig, "default");
+            TlsRegistryHelper.registerBean(camelContext, config, "default", defaultTls.get(), defaultPqc);
         }
 
         // Process all named TLS configurations
-        TlsConfig tlsConfig = tlsConfigRuntimeValue.getValue();
         for (String name : tlsConfig.namedCertificateConfig().keySet()) {
             Optional<TlsConfiguration> namedTls = tlsRegistry.get(name);
             if (namedTls.isPresent()) {
                 LOG.debug("Processing named TLS configuration '{}'", name);
-                TlsRegistryHelper.registerBean(camelContext, config, name, namedTls.get());
+                List<String> namedPqc = TlsRegistryHelper.getKeyExchangeProtocols(tlsConfig, name);
+                TlsRegistryHelper.registerBean(camelContext, config, name, namedTls.get(), namedPqc);
             }
         }
     }

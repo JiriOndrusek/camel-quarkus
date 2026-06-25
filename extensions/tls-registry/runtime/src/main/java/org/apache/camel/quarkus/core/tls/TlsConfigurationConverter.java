@@ -19,6 +19,7 @@ package org.apache.camel.quarkus.core.tls;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.util.List;
 
 import javax.net.ssl.SSLContext;
 
@@ -26,6 +27,7 @@ import io.quarkus.tls.TlsConfiguration;
 import org.apache.camel.CamelContext;
 import org.apache.camel.support.jsse.KeyManagersParameters;
 import org.apache.camel.support.jsse.KeyStoreParameters;
+import org.apache.camel.support.jsse.NamedGroupsParameters;
 import org.apache.camel.support.jsse.SSLContextParameters;
 import org.apache.camel.support.jsse.TrustManagersParameters;
 
@@ -51,20 +53,40 @@ final class TlsConfigurationConverter {
      * - Setting cipher suites and protocols
      * - Handling certificate reloading
      *
-     * @param  tlsConfig the Quarkus TLS configuration
-     * @param  name      the configuration name (for logging)
-     * @return           SSLContextParameters that delegates to Quarkus's TLS configuration
+     * When PQC key exchange protocols are configured in Quarkus, the returned SSLContext
+     * is wrapped with Camel's SSLContextDecorator to apply namedGroups to every SSLEngine
+     * and SSLSocket created from it.
+     *
+     * @param  tlsConfig            the Quarkus TLS configuration
+     * @param  name                 the configuration name (for logging)
+     * @param  keyExchangeProtocols PQC key exchange protocols from Quarkus config, or null
+     * @return                      SSLContextParameters that delegates to Quarkus's TLS configuration
      */
-    static SSLContextParameters convert(TlsConfiguration tlsConfig, String name) {
-        return new SSLContextParameters() {
+    static SSLContextParameters convert(TlsConfiguration tlsConfig, String name, List<String> keyExchangeProtocols) {
+        SSLContextParameters params = new SSLContextParameters() {
             @Override
             public SSLContext createSSLContext(CamelContext camelContext) throws GeneralSecurityException, IOException {
+                setCamelContext(camelContext);
+
+                SSLContext ctx;
                 try {
-                    return tlsConfig.createSSLContext();
+                    ctx = tlsConfig.createSSLContext();
                 } catch (Exception e) {
                     throw new GeneralSecurityException(
                             "Failed to create SSLContext from Quarkus TLS configuration '" + name + "'", e);
                 }
+
+                if (getNamedGroups() != null) {
+                    configureSSLContext(ctx);
+                    ctx = new SSLContextDecorator(
+                            new SSLContextSpiDecorator(
+                                    ctx,
+                                    getSSLEngineConfigurers(ctx),
+                                    getSSLSocketFactoryConfigurers(ctx),
+                                    getSSLServerSocketFactoryConfigurers(ctx)));
+                }
+
+                return ctx;
             }
 
             @Override
@@ -122,5 +144,13 @@ final class TlsConfigurationConverter {
                 return tmp;
             }
         };
+
+        if (keyExchangeProtocols != null && !keyExchangeProtocols.isEmpty()) {
+            NamedGroupsParameters ngp = new NamedGroupsParameters();
+            ngp.setNamedGroup(keyExchangeProtocols);
+            params.setNamedGroups(ngp);
+        }
+
+        return params;
     }
 }

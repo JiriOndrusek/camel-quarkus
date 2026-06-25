@@ -16,6 +16,7 @@
  */
 package org.apache.camel.quarkus.core.tls;
 
+import java.util.List;
 import java.util.Optional;
 
 import io.quarkus.arc.Arc;
@@ -59,6 +60,26 @@ final class TlsRegistryHelper {
     }
 
     /**
+     * Extract PQC key exchange protocols from the Quarkus TLS bucket configuration.
+     *
+     * @param  tlsConfig the Quarkus TLS config
+     * @param  name      the TLS configuration name
+     * @return           list of key exchange protocols, or null if not configured
+     */
+    static List<String> getKeyExchangeProtocols(TlsConfig tlsConfig, String name) {
+        io.quarkus.tls.runtime.config.TlsBucketConfig bucket;
+        if (isDefaultConfig(name)) {
+            bucket = tlsConfig.defaultCertificateConfig().orElse(null);
+        } else {
+            bucket = tlsConfig.namedCertificateConfig().get(name);
+        }
+        if (bucket == null) {
+            return null;
+        }
+        return bucket.keyExchangeProtocols().orElse(null);
+    }
+
+    /**
      * Get a TLS configuration by name.
      *
      * @param  registry the TLS registry
@@ -76,18 +97,20 @@ final class TlsRegistryHelper {
     /**
      * Register or update a TLS configuration as a Camel SSLContextParameters bean.
      *
-     * @param camelContext the Camel context
-     * @param config       the TLS registry configuration
-     * @param name         the TLS configuration name
-     * @param tlsConfig    the TLS configuration
+     * @param camelContext         the Camel context
+     * @param config               the TLS registry configuration
+     * @param name                 the TLS configuration name
+     * @param tlsConfig            the TLS configuration
+     * @param keyExchangeProtocols PQC key exchange protocols, or null
      */
     static void registerOrUpdateBean(
             CamelContext camelContext,
             TlsRegistryConfig config,
             String name,
-            TlsConfiguration tlsConfig) {
+            TlsConfiguration tlsConfig,
+            List<String> keyExchangeProtocols) {
 
-        SSLContextParameters sslParams = TlsConfigurationConverter.convert(tlsConfig, name);
+        SSLContextParameters sslParams = TlsConfigurationConverter.convert(tlsConfig, name, keyExchangeProtocols);
         boolean isDefault = isDefaultConfig(name);
 
         if (isDefault && config.quarkusDefaultAsGlobal()) {
@@ -107,15 +130,17 @@ final class TlsRegistryHelper {
      * @param  config                the TLS registry configuration
      * @param  name                  the TLS configuration name
      * @param  tlsConfig             the TLS configuration
+     * @param  keyExchangeProtocols  PQC key exchange protocols, or null
      * @throws IllegalStateException if a bean with the same name already exists
      */
     static void registerBean(
             CamelContext camelContext,
             TlsRegistryConfig config,
             String name,
-            TlsConfiguration tlsConfig) {
+            TlsConfiguration tlsConfig,
+            List<String> keyExchangeProtocols) {
 
-        SSLContextParameters sslParams = TlsConfigurationConverter.convert(tlsConfig, name);
+        SSLContextParameters sslParams = TlsConfigurationConverter.convert(tlsConfig, name, keyExchangeProtocols);
         boolean isDefault = isDefaultConfig(name);
 
         if (isDefault && config.quarkusDefaultAsGlobal()) {

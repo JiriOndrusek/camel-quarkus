@@ -18,11 +18,13 @@ package org.apache.camel.quarkus.core.tls.deployment;
 
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.SyntheticBeansRuntimeInitBuildItem;
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.Consume;
 import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveMethodBuildItem;
 import org.apache.camel.quarkus.core.deployment.spi.CamelContextBuildItem;
 import org.apache.camel.quarkus.core.deployment.spi.CamelRuntimeTaskBuildItem;
 import org.apache.camel.quarkus.core.tls.TlsCertificateReloadObserver;
@@ -39,6 +41,16 @@ public class TlsRegistryProcessor {
     @BuildStep
     AdditionalBeanBuildItem registerReloadObserver() {
         return AdditionalBeanBuildItem.unremovableOf(TlsCertificateReloadObserver.class);
+    }
+
+    @BuildStep
+    void registerPqcReflection(BuildProducer<ReflectiveMethodBuildItem> reflectiveMethods) {
+        // Camel's BaseSSLContextParameters uses reflection to call setNamedGroups/getNamedGroups
+        // (JDK 20+ methods) for PQC key exchange group configuration
+        reflectiveMethods.produce(new ReflectiveMethodBuildItem(
+                "javax.net.ssl.SSLParameters", "setNamedGroups", new String[] { "java.lang.String[]" }));
+        reflectiveMethods.produce(new ReflectiveMethodBuildItem(
+                "javax.net.ssl.SSLParameters", "getNamedGroups", new String[0]));
     }
 
     @BuildStep
