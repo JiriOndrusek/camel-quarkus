@@ -16,6 +16,9 @@
  */
 package org.apache.camel.quarkus.component.shiro;
 
+import java.util.function.BooleanSupplier;
+
+import com.oracle.svm.core.annotate.Delete;
 import com.oracle.svm.core.annotate.Substitute;
 import com.oracle.svm.core.annotate.TargetClass;
 import org.apache.shiro.config.ogdl.DefaultInterpolator;
@@ -23,10 +26,33 @@ import org.apache.shiro.config.ogdl.Interpolator;
 import org.apache.shiro.config.ogdl.ReflectionBuilder;
 
 @TargetClass(value = ReflectionBuilder.class)
-final class ReflectionBuilderSubstitute {
+final class ReflectionBuilderSubstitution {
 
     @Substitute
     private Interpolator createInterpolator() {
         return new DefaultInterpolator();
+    }
+}
+
+@TargetClass(className = "org.apache.shiro.ee.cdi.ShiroScopeContext", onlyWith = JakartaFacesAbsent.class)
+@Delete
+final class DeleteShiroScopeContext {
+}
+
+@TargetClass(className = "org.apache.shiro.ee.cdi.ShiroSessionScopeExtension", onlyWith = JakartaFacesAbsent.class)
+@Delete
+final class DeleteShiroSessionScopeExtension {
+}
+
+final class JakartaFacesAbsent implements BooleanSupplier {
+
+    @Override
+    public boolean getAsBoolean() {
+        try {
+            Class.forName("jakarta.faces.view.ViewScoped");
+            return false;
+        } catch (ClassNotFoundException e) {
+            return true;
+        }
     }
 }
