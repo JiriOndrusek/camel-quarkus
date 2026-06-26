@@ -26,6 +26,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import io.quarkus.arc.deployment.ExcludedTypeBuildItem;
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
@@ -101,4 +103,10 @@ class ShiroProcessor {
         return new IndexDependencyBuildItem("org.apache.shiro", "shiro-core");
     }
 
+    @BuildStep
+    void excludeShiroEeTypes(BuildProducer<ExcludedTypeBuildItem> excludedTypes) {
+        excludedTypes.produce(new ExcludedTypeBuildItem("org.omnifaces.cdi.cookie.RequestCookieProducer"));
+        excludedTypes.produce(new ExcludedTypeBuildItem("org.omnifaces.cdi.contextparam.ContextParamProducer"));
+        excludedTypes.produce(new ExcludedTypeBuildItem("org.apache.shiro.ee.cdi.ShiroSessionScopeExtension"));
+    }
 }
