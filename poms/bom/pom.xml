@@ -2859,6 +2859,17 @@
                 <groupId>org.apache.camel</groupId>
                 <artifactId>camel-shiro</artifactId>
                 <version>${camel.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.shiro</groupId>
+                        <artifactId>shiro-jakarta-ee</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.shiro</groupId>
+                <artifactId>shiro-core</artifactId>
+                <version>${shiro-version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.camel</groupId>
