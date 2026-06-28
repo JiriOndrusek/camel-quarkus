@@ -12,17 +12,17 @@
           <author>OWASP Foundation</author>
           <group>org.cyclonedx</group>
           <name>cyclonedx-maven-plugin</name>
-          <version>2.9.1</version>
+          <version>2.9.2</version>
           <description>CycloneDX Maven plugin</description>
           <hashes>
-            <hash alg="MD5">9c7a565cf28cce58557d0c621c5ea4b1</hash>
-            <hash alg="SHA-1">be882d5a22050bfa9d19090b1420c188617d0e1c</hash>
-            <hash alg="SHA-256">698e0f37184a5b28c245c4065fd036dfce253b52f82fbb7113d81d36326cc249</hash>
-            <hash alg="SHA-512">c0f0b11026858166f872a2eb54719492e5cecaa0bc9cd6b30b3ecb4a174eed220f4a1b5829d18d6734128e778d3cb3db7ffed177c92866133129cb29081814a0</hash>
-            <hash alg="SHA-384">d80964707dfe5caca8c70521d5066f57589304c0a657e6fbc7c0614ea0fc7b3b3dbe7778361eee0f54ba111e9cb0ffcb</hash>
-            <hash alg="SHA3-384">80bc3a275d9514bc457461ff52a72add8c7ecbbc01d8912efce57139016c544ee776981851be0a58fa977ab4221f703f</hash>
-            <hash alg="SHA3-256">142317d6f245390f4fd2d0c100b16281b8dfc5c0c2cff86943bdcc97039cb699</hash>
-            <hash alg="SHA3-512">af0fb9137c90b65d1a07f72e4d51ae509956cdb8800f35c961b037cdda1fe4a14ce3b496cef71ba85f1621affcfe29cd42704ae4191ff0b090a9602087c8997b</hash>
+            <hash alg="MD5">843a7130400f75d33f563dc7e9f52dea</hash>
+            <hash alg="SHA-1">2cac5a176b9f48801dfc4910d4f6a34bfbb13445</hash>
+            <hash alg="SHA-256">d9e5a12bac3c1a91d85f3a1ad84307099f457ff24aa65b438ba7de9ca784a54e</hash>
+            <hash alg="SHA-512">636f788518752c5a23d14bad41d68b0d549e4b3a3d720d66f2f6e2b8b956207942ee12abba968a1e9aac6cf1d78d9e738a4a75eeb8bc6fca2377030fbb482407</hash>
+            <hash alg="SHA-384">72aad41633b92fadd4dbd1c6f5c1b956836b22d3b96afbdd7ca8b8eb0456eec00c2ed658e3c2d4e93d95048bcc23dac8</hash>
+            <hash alg="SHA3-384">9837cee0f9b7d575f8d88df3ad6f58a075032ad2635e0987abbc102240327f1cec87dc062b3034009f028ab5baf988f9</hash>
+            <hash alg="SHA3-256">4c654267cde6eb6d295dbc06b33e33528412bee57549dae89c85b8df8202dbcb</hash>
+            <hash alg="SHA3-512">f7da73632ef2fd1c2d85f0cf5eebc2b6a3ff1ae2ed0945442e679da71490562a2ff6b67422dbd5285f4042eda6637e6f3544f62825a625b38efacfdebc8df137</hash>
           </hashes>
         </component>
       </components>
@@ -28415,6 +28415,210 @@ working with JSON-P (JSON Processing) node types (new Jakarta flavor) via data-b
         </reference>
       </externalReferences>
     </component>
+    <component type="library" bom-ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-cloudtrail-parent@3.37.0-SNAPSHOT?type=pom">
+      <publisher>The Apache Software Foundation</publisher>
+      <group>org.apache.camel.quarkus</group>
+      <name>camel-quarkus-aws-cloudtrail-parent</name>
+      <version>3.37.0-SNAPSHOT</version>
+      <description>Maven plugins configuration</description>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+          <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-cloudtrail-parent@3.37.0-SNAPSHOT?type=pom</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>http://camel.apache.org/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-aws-cloudtrail-parent</url>
+        </reference>
+        <reference type="distribution-intake">
+          <url>https://repository.apache.org/service/local/staging/deploy/maven2</url>
+        </reference>
+        <reference type="issue-tracker">
+          <url>https://github.com/apache/camel-quarkus/issues</url>
+        </reference>
+        <reference type="mailing-list">
+          <url>dev-subscribe@camel.apache.org</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/apache/camel-quarkus/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-aws-cloudtrail-parent</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-cloudtrail@3.37.0-SNAPSHOT?type=jar">
+      <publisher>The Apache Software Foundation</publisher>
+      <group>org.apache.camel.quarkus</group>
+      <name>camel-quarkus-aws-cloudtrail</name>
+      <version>3.37.0-SNAPSHOT</version>
+      <description>Consume events from Amazon Cloudtrail using AWS SDK version 2.x.</description>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+          <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-cloudtrail@3.37.0-SNAPSHOT?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>http://camel.apache.org/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-aws-cloudtrail-parent/camel-quarkus-aws-cloudtrail</url>
+        </reference>
+        <reference type="distribution-intake">
+          <url>https://repository.apache.org/service/local/staging/deploy/maven2</url>
+        </reference>
+        <reference type="issue-tracker">
+          <url>https://github.com/apache/camel-quarkus/issues</url>
+        </reference>
+        <reference type="mailing-list">
+          <url>dev-subscribe@camel.apache.org</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/apache/camel-quarkus/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-aws-cloudtrail-parent/camel-quarkus-aws-cloudtrail</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.apache.camel/camel-aws-cloudtrail@4.20.0?type=jar">
+      <publisher>The Apache Software Foundation</publisher>
+      <group>org.apache.camel</group>
+      <name>camel-aws-cloudtrail</name>
+      <version>4.20.0</version>
+      <description>Consume Events coming from AWS Cloudtrail Service</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">dfd1aa690df16ef074d2f206d4f7e70d</hash>
+        <hash alg="SHA-1">5d8ef9c00077cc5b29ec703f1cdcba93ec570ad9</hash>
+        <hash alg="SHA-256">e2297224f5da3290d2c101f40730ee59ecdb6829a1df179242963db6a7ac1d9b</hash>
+        <hash alg="SHA-512">0ae03022205e182c6dff5fee619059593deaf0f97bd49fd27db68c687702b7bd14720359e1c33cf6120ad2ad8bf7ac58eb3fb38fc5ead1d38a6d8e0cb59323b5</hash>
+        <hash alg="SHA-384">9760c577c7e09d75ea9123a2eafe3dd9396670cd7296ce4db63b8ca9eb84b20680d39c75967428cc12a3e31b6bbde7e8</hash>
+        <hash alg="SHA3-384">348202dd4ccb4295a1d24159af86f57e64ebb3263cf92544758845877563172be9fbb6c7f40fb6ffb7e68ac571fa77ec</hash>
+        <hash alg="SHA3-256">899580d23c0b60d084a8b1386b8845048722352b0e15d3fee50c0df14d6933ee</hash>
+        <hash alg="SHA3-512">9e87e363fec31cf38d56ee641ad6c8a5787417705014fa99f50c980ade29cec10c111287d5c4fe7b490e88876e902d743ff701506d99f4acb54ee98eb58af35b</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+          <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.apache.camel/camel-aws-cloudtrail@4.20.0?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://www.apache.org/camel/camel-parent/components/camel-aws-parent/camel-aws-cloudtrail/</url>
+        </reference>
+        <reference type="distribution-intake">
+          <url>https://repository.apache.org/service/local/staging/deploy/maven2</url>
+        </reference>
+        <reference type="mailing-list">
+          <url>https://mail-archives.apache.org/mod_mbox/www-announce/</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/apache/maven-apache-parent/tree/apache-37/camel/camel-parent/components/camel-aws-parent/camel-aws-cloudtrail</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/software.amazon.awssdk/cloudtrail@2.44.6?type=jar">
+      <group>software.amazon.awssdk</group>
+      <name>cloudtrail</name>
+      <version>2.44.6</version>
+      <description>The AWS Java SDK for AWS CloudTrail module holds the client classes that are used for communicating
+        with AWS CloudTrail
+        Service</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">3e290b99996be75f2b86724dbd01995b</hash>
+        <hash alg="SHA-1">26ce6537cf0fb95ae7c38db4cff78165885721a6</hash>
+        <hash alg="SHA-256">ab146b25f8c4a0b999d0789e5a8e94c2e7de89a0a5ca5951957c936dd1fff12c</hash>
+        <hash alg="SHA-512">2fcb4aa60a40aaf54682bc871707d0ef36b3be63241b73c550e80f44242a8e1e638c1e48702791714f4089b5f5d3f20f3eb065b0d508a2d2a9d48d49817ff95f</hash>
+        <hash alg="SHA-384">d3d8fcd776e16a0e436f75e1decca5d874a3a28329b28fcbda1dcbc6e8227c3fc0cda679b179190888ced084dd64943b</hash>
+        <hash alg="SHA3-384">d4971ecf5410f2d68278e6831ca631b3c6aa48d4d5cf56f337ceeb64670a02ec9b2cc54e97ca36c6917c024c5ccce76d</hash>
+        <hash alg="SHA3-256">c6c5b5bf164280d89ccc4d9d61bd5231de0140a5f37b0f017d85cb5408101bd3</hash>
+        <hash alg="SHA3-512">db556d562a359f542857992c9936acb7744f6fd0905fd0e054a973b266ad6cf57c882986fbec05af778feb9057457b695b41b8b1ec02d9b316eae52113ad2bd1</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+        </license>
+      </licenses>
+      <purl>pkg:maven/software.amazon.awssdk/cloudtrail@2.44.6?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://aws.amazon.com/sdkforjava</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/aws/aws-sdk-java-v2/services/cloudtrail</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.apache.camel/camel-health@4.20.0?type=jar">
+      <publisher>The Apache Software Foundation</publisher>
+      <group>org.apache.camel</group>
+      <name>camel-health</name>
+      <version>4.20.0</version>
+      <description>Camel Health Support</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">248ff1b637aa0ca0469de6e696e6e970</hash>
+        <hash alg="SHA-1">ee81434b2418bf9906da99c7b3f1c948a6c75ec8</hash>
+        <hash alg="SHA-256">ad69818f404185923fbd8fd71708d4fe08c628d959aad49b9c87098e5cf50ceb</hash>
+        <hash alg="SHA-512">d6303f8ad3a0d840dcbf55409f9b09317d5e86e06197bf3ac4bfaead0e9d2f019303c0c595bf94e226dd5721dff0698e9ea31c85916a713dcfae1fbff2f87f24</hash>
+        <hash alg="SHA-384">7f9a6dfd5ee6e2c56977c13698639b0e24921e7b9e3265704e189833f4fcf7f39bec5176b6d1ba0633b29431c59afe21</hash>
+        <hash alg="SHA3-384">0734f7b5bddcc19342e1598d5066d18afcc7bc3a8277fb22ba3115dc125f864f492541b0e29a60d4a1c5d87f521ce80d</hash>
+        <hash alg="SHA3-256">ecf7c071c226bc902d410548092c503754259cb4640c0e2f1fa895ca1fe7fd1b</hash>
+        <hash alg="SHA3-512">61075ba4e96a9da42faf18671200e4b0ccc8135d5ebc6591034195a6c42377f845b76cf1aa309bc9feca1aa47ded4e073f02fcbc3577585be4934e0cfe8e46e1</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+          <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.apache.camel/camel-health@4.20.0?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://www.apache.org/camel/camel-parent/core/camel-health/</url>
+        </reference>
+        <reference type="distribution-intake">
+          <url>https://repository.apache.org/service/local/staging/deploy/maven2</url>
+        </reference>
+        <reference type="mailing-list">
+          <url>https://mail-archives.apache.org/mod_mbox/www-announce/</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/apache/maven-apache-parent/tree/apache-37/camel/camel-parent/core/camel-health</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-cloudtrail-deployment@3.37.0-SNAPSHOT?type=jar">
+      <publisher>The Apache Software Foundation</publisher>
+      <group>org.apache.camel.quarkus</group>
+      <name>camel-quarkus-aws-cloudtrail-deployment</name>
+      <version>3.37.0-SNAPSHOT</version>
+      <description>Maven plugins configuration</description>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+          <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-cloudtrail-deployment@3.37.0-SNAPSHOT?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>http://camel.apache.org/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-aws-cloudtrail-parent/camel-quarkus-aws-cloudtrail-deployment</url>
+        </reference>
+        <reference type="distribution-intake">
+          <url>https://repository.apache.org/service/local/staging/deploy/maven2</url>
+        </reference>
+        <reference type="issue-tracker">
+          <url>https://github.com/apache/camel-quarkus/issues</url>
+        </reference>
+        <reference type="mailing-list">
+          <url>dev-subscribe@camel.apache.org</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/apache/camel-quarkus/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-extensions/camel-quarkus-aws-cloudtrail-parent/camel-quarkus-aws-cloudtrail-deployment</url>
+        </reference>
+      </externalReferences>
+    </component>
     <component type="library" bom-ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-secrets-manager-parent@3.37.0-SNAPSHOT?type=pom">
       <publisher>The Apache Software Foundation</publisher>
       <group>org.apache.camel.quarkus</group>
@@ -28548,39 +28752,6 @@ working with JSON-P (JSON Processing) node types (new Jakarta flavor) via data-b
         </reference>
       </externalReferences>
     </component>
-    <component type="library" bom-ref="pkg:maven/software.amazon.awssdk/cloudtrail@2.44.6?type=jar">
-      <group>software.amazon.awssdk</group>
-      <name>cloudtrail</name>
-      <version>2.44.6</version>
-      <description>The AWS Java SDK for AWS CloudTrail module holds the client classes that are used for communicating
-        with AWS CloudTrail
-        Service</description>
-      <scope>required</scope>
-      <hashes>
-        <hash alg="MD5">3e290b99996be75f2b86724dbd01995b</hash>
-        <hash alg="SHA-1">26ce6537cf0fb95ae7c38db4cff78165885721a6</hash>
-        <hash alg="SHA-256">ab146b25f8c4a0b999d0789e5a8e94c2e7de89a0a5ca5951957c936dd1fff12c</hash>
-        <hash alg="SHA-512">2fcb4aa60a40aaf54682bc871707d0ef36b3be63241b73c550e80f44242a8e1e638c1e48702791714f4089b5f5d3f20f3eb065b0d508a2d2a9d48d49817ff95f</hash>
-        <hash alg="SHA-384">d3d8fcd776e16a0e436f75e1decca5d874a3a28329b28fcbda1dcbc6e8227c3fc0cda679b179190888ced084dd64943b</hash>
-        <hash alg="SHA3-384">d4971ecf5410f2d68278e6831ca631b3c6aa48d4d5cf56f337ceeb64670a02ec9b2cc54e97ca36c6917c024c5ccce76d</hash>
-        <hash alg="SHA3-256">c6c5b5bf164280d89ccc4d9d61bd5231de0140a5f37b0f017d85cb5408101bd3</hash>
-        <hash alg="SHA3-512">db556d562a359f542857992c9936acb7744f6fd0905fd0e054a973b266ad6cf57c882986fbec05af778feb9057457b695b41b8b1ec02d9b316eae52113ad2bd1</hash>
-      </hashes>
-      <licenses>
-        <license>
-          <id>Apache-2.0</id>
-        </license>
-      </licenses>
-      <purl>pkg:maven/software.amazon.awssdk/cloudtrail@2.44.6?type=jar</purl>
-      <externalReferences>
-        <reference type="website">
-          <url>https://aws.amazon.com/sdkforjava</url>
-        </reference>
-        <reference type="vcs">
-          <url>https://github.com/aws/aws-sdk-java-v2/services/cloudtrail</url>
-        </reference>
-      </externalReferences>
-    </component>
     <component type="library" bom-ref="pkg:maven/software.amazon.awssdk/sqs@2.44.6?type=jar">
       <group>software.amazon.awssdk</group>
       <name>sqs</name>
@@ -28611,45 +28782,6 @@ working with JSON-P (JSON Processing) node types (new Jakarta flavor) via data-b
         </reference>
         <reference type="vcs">
           <url>https://github.com/aws/aws-sdk-java-v2/services/sqs</url>
-        </reference>
-      </externalReferences>
-    </component>
-    <component type="library" bom-ref="pkg:maven/org.apache.camel/camel-health@4.20.0?type=jar">
-      <publisher>The Apache Software Foundation</publisher>
-      <group>org.apache.camel</group>
-      <name>camel-health</name>
-      <version>4.20.0</version>
-      <description>Camel Health Support</description>
-      <scope>required</scope>
-      <hashes>
-        <hash alg="MD5">248ff1b637aa0ca0469de6e696e6e970</hash>
-        <hash alg="SHA-1">ee81434b2418bf9906da99c7b3f1c948a6c75ec8</hash>
-        <hash alg="SHA-256">ad69818f404185923fbd8fd71708d4fe08c628d959aad49b9c87098e5cf50ceb</hash>
-        <hash alg="SHA-512">d6303f8ad3a0d840dcbf55409f9b09317d5e86e06197bf3ac4bfaead0e9d2f019303c0c595bf94e226dd5721dff0698e9ea31c85916a713dcfae1fbff2f87f24</hash>
-        <hash alg="SHA-384">7f9a6dfd5ee6e2c56977c13698639b0e24921e7b9e3265704e189833f4fcf7f39bec5176b6d1ba0633b29431c59afe21</hash>
-        <hash alg="SHA3-384">0734f7b5bddcc19342e1598d5066d18afcc7bc3a8277fb22ba3115dc125f864f492541b0e29a60d4a1c5d87f521ce80d</hash>
-        <hash alg="SHA3-256">ecf7c071c226bc902d410548092c503754259cb4640c0e2f1fa895ca1fe7fd1b</hash>
-        <hash alg="SHA3-512">61075ba4e96a9da42faf18671200e4b0ccc8135d5ebc6591034195a6c42377f845b76cf1aa309bc9feca1aa47ded4e073f02fcbc3577585be4934e0cfe8e46e1</hash>
-      </hashes>
-      <licenses>
-        <license>
-          <id>Apache-2.0</id>
-          <url>https://www.apache.org/licenses/LICENSE-2.0</url>
-        </license>
-      </licenses>
-      <purl>pkg:maven/org.apache.camel/camel-health@4.20.0?type=jar</purl>
-      <externalReferences>
-        <reference type="website">
-          <url>https://www.apache.org/camel/camel-parent/core/camel-health/</url>
-        </reference>
-        <reference type="distribution-intake">
-          <url>https://repository.apache.org/service/local/staging/deploy/maven2</url>
-        </reference>
-        <reference type="mailing-list">
-          <url>https://mail-archives.apache.org/mod_mbox/www-announce/</url>
-        </reference>
-        <reference type="vcs">
-          <url>https://github.com/apache/maven-apache-parent/tree/apache-37/camel/camel-parent/core/camel-health</url>
         </reference>
       </externalReferences>
     </component>
@@ -118585,41 +118717,6 @@ Roster, Chat and other functionality.</description>
         </reference>
       </externalReferences>
     </component>
-    <component type="library" bom-ref="pkg:maven/org.testcontainers/testcontainers-localstack@2.0.5?type=jar">
-      <group>org.testcontainers</group>
-      <name>testcontainers-localstack</name>
-      <version>2.0.5</version>
-      <description>Isolated container management for Java code testing</description>
-      <scope>required</scope>
-      <hashes>
-        <hash alg="MD5">3bda6f07267b33006edbaade63890757</hash>
-        <hash alg="SHA-1">cc49bac10c7e1cc24f09d7d891a4b315438a3423</hash>
-        <hash alg="SHA-256">2fa0f4271a69112ece3841bb26b251962280e39f2e6b2daa7a4aa9128a54485d</hash>
-        <hash alg="SHA-512">6fbb2b5ab42e26e3b02c1136387d81c3db3c039b12985f613c4a3670a3fe0b8f2089a1e12dc3fd9da531c4b72ef999688e5b13e49a632811dee5af7260b9d36d</hash>
-        <hash alg="SHA-384">de5fd5eb9e4d877a253f159f26c78e27a889231ebca7094f306e8ad04549ffd287951c6ceba194f948393bc09acab858</hash>
-        <hash alg="SHA3-384">be7560d887c5c3d3ecd380a8f2e74b63fe3702f1907841324cf827aecc2e12a653048eea4f40cffab308b884c1c5e2be</hash>
-        <hash alg="SHA3-256">a4882850ac2895fd2566d408c88f29622c814c03ecfc6b98fd082b31f8d24567</hash>
-        <hash alg="SHA3-512">62d6febd58d9063dc1aeab06002f0c777f7e48cc37b4bf4aa697e089fa6fd69a5f637095e9027c517b08ef192c02ab4c35f7e401acf3d078a40958c87b34dc21</hash>
-      </hashes>
-      <licenses>
-        <license>
-          <id>MIT</id>
-          <url>https://opensource.org/license/mit/</url>
-        </license>
-      </licenses>
-      <purl>pkg:maven/org.testcontainers/testcontainers-localstack@2.0.5?type=jar</purl>
-      <externalReferences>
-        <reference type="website">
-          <url>https://java.testcontainers.org</url>
-        </reference>
-        <reference type="issue-tracker">
-          <url>https://github.com/testcontainers/testcontainers-java/issues</url>
-        </reference>
-        <reference type="vcs">
-          <url>https://github.com/testcontainers/testcontainers-java/</url>
-        </reference>
-      </externalReferences>
-    </component>
     <component type="library" bom-ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-tests-support-azure@3.37.0-SNAPSHOT?type=jar">
       <publisher>The Apache Software Foundation</publisher>
       <group>org.apache.camel.quarkus</group>
@@ -121166,6 +121263,43 @@ Roster, Chat and other functionality.</description>
         </reference>
         <reference type="vcs">
           <url>https://github.com/messaginghub/pooled-jms.git/pooled-jms</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/io.quarkus/quarkus-smallrye-openapi@3.37.0?type=jar">
+      <group>io.quarkus</group>
+      <name>quarkus-smallrye-openapi</name>
+      <version>3.37.0</version>
+      <description>Document your REST APIs with OpenAPI - comes with Swagger UI</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">fed9821ddae99634fb9d0b8735126567</hash>
+        <hash alg="SHA-1">7bbe3548ca272b52bc21dbec94d23eab0927f848</hash>
+        <hash alg="SHA-256">4e9e220f1e01431bf6f00d8c7e755fdccdab823eec30ce338cd0b5c4538616ab</hash>
+        <hash alg="SHA-512">9ed93390afa4c479f19d4a2b269d7b5137b72ba4885b8820e62796c4bd2619c4c8e1489de8dfd4bb7139354492dc7817082bfa7d1c47c6fbc3f3757b9df1252f</hash>
+        <hash alg="SHA-384">f4447dfa59c356610a0a51b03846f053e5c5bfeca36444172d7902d89c3188fdf4157bbb0309e67a3b10c9401ece7b8e</hash>
+        <hash alg="SHA3-384">792fa5a8b1675854c150191863e5fbb3c911abf3a8d3f61cf13e80bd5d6ba9f51fb7233e8f4aa4f4f5ea36c2828c602f</hash>
+        <hash alg="SHA3-256">ada6154fed7d84e5ed6fe107d603cc35a231cf22a58001f7504e1b0f3b9066c8</hash>
+        <hash alg="SHA3-512">42a9c434ae07f5b611c20a49938fd7c1f144c588ad7d021e4c13567bfa3bf07944a247d42b6b8611e9a43f650ce8c1e6b4949904df277a8a258e16d29030a54e</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+        </license>
+      </licenses>
+      <purl>pkg:maven/io.quarkus/quarkus-smallrye-openapi@3.37.0?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://github.com/quarkusio/quarkus</url>
+        </reference>
+        <reference type="distribution-intake">
+          <url>https://repo.maven.apache.org/maven2</url>
+        </reference>
+        <reference type="issue-tracker">
+          <url>https://github.com/quarkusio/quarkus/issues/</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/quarkusio/quarkus</url>
         </reference>
       </externalReferences>
     </component>
@@ -128977,43 +129111,6 @@ Roster, Chat and other functionality.</description>
         </reference>
       </externalReferences>
     </component>
-    <component type="library" bom-ref="pkg:maven/io.quarkus/quarkus-smallrye-openapi@3.37.0?type=jar">
-      <group>io.quarkus</group>
-      <name>quarkus-smallrye-openapi</name>
-      <version>3.37.0</version>
-      <description>Document your REST APIs with OpenAPI - comes with Swagger UI</description>
-      <scope>required</scope>
-      <hashes>
-        <hash alg="MD5">fed9821ddae99634fb9d0b8735126567</hash>
-        <hash alg="SHA-1">7bbe3548ca272b52bc21dbec94d23eab0927f848</hash>
-        <hash alg="SHA-256">4e9e220f1e01431bf6f00d8c7e755fdccdab823eec30ce338cd0b5c4538616ab</hash>
-        <hash alg="SHA-512">9ed93390afa4c479f19d4a2b269d7b5137b72ba4885b8820e62796c4bd2619c4c8e1489de8dfd4bb7139354492dc7817082bfa7d1c47c6fbc3f3757b9df1252f</hash>
-        <hash alg="SHA-384">f4447dfa59c356610a0a51b03846f053e5c5bfeca36444172d7902d89c3188fdf4157bbb0309e67a3b10c9401ece7b8e</hash>
-        <hash alg="SHA3-384">792fa5a8b1675854c150191863e5fbb3c911abf3a8d3f61cf13e80bd5d6ba9f51fb7233e8f4aa4f4f5ea36c2828c602f</hash>
-        <hash alg="SHA3-256">ada6154fed7d84e5ed6fe107d603cc35a231cf22a58001f7504e1b0f3b9066c8</hash>
-        <hash alg="SHA3-512">42a9c434ae07f5b611c20a49938fd7c1f144c588ad7d021e4c13567bfa3bf07944a247d42b6b8611e9a43f650ce8c1e6b4949904df277a8a258e16d29030a54e</hash>
-      </hashes>
-      <licenses>
-        <license>
-          <id>Apache-2.0</id>
-        </license>
-      </licenses>
-      <purl>pkg:maven/io.quarkus/quarkus-smallrye-openapi@3.37.0?type=jar</purl>
-      <externalReferences>
-        <reference type="website">
-          <url>https://github.com/quarkusio/quarkus</url>
-        </reference>
-        <reference type="distribution-intake">
-          <url>https://repo.maven.apache.org/maven2</url>
-        </reference>
-        <reference type="issue-tracker">
-          <url>https://github.com/quarkusio/quarkus/issues/</url>
-        </reference>
-        <reference type="vcs">
-          <url>https://github.com/quarkusio/quarkus</url>
-        </reference>
-      </externalReferences>
-    </component>
     <component type="library" bom-ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-rocketmq@3.37.0-SNAPSHOT?type=jar">
       <publisher>The Apache Software Foundation</publisher>
       <group>org.apache.camel.quarkus</group>
@@ -131072,6 +131169,37 @@ Roster, Chat and other functionality.</description>
         </reference>
         <reference type="vcs">
           <url>https://github.com/apache/camel-quarkus/camel-quarkus-docs</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-aws-cloudtrail@3.37.0-SNAPSHOT?type=jar">
+      <publisher>The Apache Software Foundation</publisher>
+      <group>org.apache.camel.quarkus</group>
+      <name>camel-quarkus-integration-test-aws-cloudtrail</name>
+      <version>3.37.0-SNAPSHOT</version>
+      <description>Integration tests for Camel Quarkus AWS Cloudtrail extension</description>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+          <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-aws-cloudtrail@3.37.0-SNAPSHOT?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>http://camel.apache.org/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-build-parent-it/camel-quarkus-integration-test-aws-cloudtrail</url>
+        </reference>
+        <reference type="distribution-intake">
+          <url>https://repository.apache.org/service/local/staging/deploy/maven2</url>
+        </reference>
+        <reference type="issue-tracker">
+          <url>https://github.com/apache/camel-quarkus/issues</url>
+        </reference>
+        <reference type="mailing-list">
+          <url>dev-subscribe@camel.apache.org</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/apache/camel-quarkus/camel-quarkus-poms/camel-quarkus-build-parent/camel-quarkus-build-parent-it/camel-quarkus-integration-test-aws-cloudtrail</url>
         </reference>
       </externalReferences>
     </component>
@@ -136793,6 +136921,7 @@ Roster, Chat and other functionality.</description>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-xpath@3.37.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-xslt-saxon@3.37.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-zendesk@3.37.0-SNAPSHOT?type=jar"/>
+      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-aws-cloudtrail@3.37.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-aws-secrets-manager@3.37.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-aws2-cw@3.37.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-aws2-ddb@3.37.0-SNAPSHOT?type=jar"/>
@@ -137617,6 +137746,7 @@ Roster, Chat and other functionality.</description>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-atom-parent@3.37.0-SNAPSHOT?type=pom"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-avro-parent@3.37.0-SNAPSHOT?type=pom"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-bedrock-parent@3.37.0-SNAPSHOT?type=pom"/>
+      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-cloudtrail-parent@3.37.0-SNAPSHOT?type=pom"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-secrets-manager-parent@3.37.0-SNAPSHOT?type=pom"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws2-athena-parent@3.37.0-SNAPSHOT?type=pom"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws2-cw-parent@3.37.0-SNAPSHOT?type=pom"/>
@@ -140820,6 +140950,54 @@ Roster, Chat and other functionality.</description>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-bedrock@3.37.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/io.quarkus/quarkus-netty-deployment@3.37.0?type=jar"/>
     </dependency>
+    <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-cloudtrail-parent@3.37.0-SNAPSHOT?type=pom">
+      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-cloudtrail@3.37.0-SNAPSHOT?type=jar"/>
+      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-cloudtrail-deployment@3.37.0-SNAPSHOT?type=jar"/>
+    </dependency>
+    <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-cloudtrail@3.37.0-SNAPSHOT?type=jar">
+      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-core@3.37.0-SNAPSHOT?type=jar"/>
+      <dependency ref="pkg:maven/org.apache.camel/camel-aws-cloudtrail@4.20.0?type=jar"/>
+      <dependency ref="pkg:maven/org.jboss.logging/commons-logging-jboss-logging@2.0.0.Final?type=jar"/>
+      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-support-aws2@3.37.0-SNAPSHOT?type=jar"/>
+    </dependency>
+    <dependency ref="pkg:maven/org.apache.camel/camel-aws-cloudtrail@4.20.0?type=jar">
+      <dependency ref="pkg:maven/org.apache.camel/camel-support@4.20.0?type=jar"/>
+      <dependency ref="pkg:maven/org.apache.camel/camel-aws-common@4.20.0?type=jar"/>
+      <dependency ref="pkg:maven/software.amazon.awssdk/cloudtrail@2.44.6?type=jar"/>
+      <dependency ref="pkg:maven/software.amazon.awssdk/sts@2.44.6?type=jar"/>
+      <dependency ref="pkg:maven/software.amazon.awssdk/apache-client@2.44.6?type=jar"/>
+      <dependency ref="pkg:maven/org.apache.camel/camel-health@4.20.0?type=jar"/>
+    </dependency>
+    <dependency ref="pkg:maven/software.amazon.awssdk/cloudtrail@2.44.6?type=jar">
+      <dependency ref="pkg:maven/software.amazon.awssdk/aws-json-protocol@2.44.6?type=jar"/>
+      <dependency ref="pkg:maven/software.amazon.awssdk/protocol-core@2.44.6?type=jar"/>
+      <dependency ref="pkg:maven/software.amazon.awssdk/http-auth-aws@2.44.6?type=jar"/>
+      <dependency ref="pkg:maven/software.amazon.awssdk/sdk-core@2.44.6?type=jar"/>
+      <dependency ref="pkg:maven/software.amazon.awssdk/auth@2.44.6?type=jar"/>
+      <dependency ref="pkg:maven/software.amazon.awssdk/http-auth-spi@2.44.6?type=jar"/>
+      <dependency ref="pkg:maven/software.amazon.awssdk/http-auth@2.44.6?type=jar"/>
+      <dependency ref="pkg:maven/software.amazon.awssdk/identity-spi@2.44.6?type=jar"/>
+      <dependency ref="pkg:maven/software.amazon.awssdk/http-client-spi@2.44.6?type=jar"/>
+      <dependency ref="pkg:maven/software.amazon.awssdk/regions@2.44.6?type=jar"/>
+      <dependency ref="pkg:maven/software.amazon.awssdk/annotations@2.44.6?type=jar"/>
+      <dependency ref="pkg:maven/software.amazon.awssdk/utils@2.44.6?type=jar"/>
+      <dependency ref="pkg:maven/software.amazon.awssdk/aws-core@2.44.6?type=jar"/>
+      <dependency ref="pkg:maven/software.amazon.awssdk/metrics-spi@2.44.6?type=jar"/>
+      <dependency ref="pkg:maven/software.amazon.awssdk/json-utils@2.44.6?type=jar"/>
+      <dependency ref="pkg:maven/software.amazon.awssdk/endpoints-spi@2.44.6?type=jar"/>
+      <dependency ref="pkg:maven/software.amazon.awssdk/retries-spi@2.44.6?type=jar"/>
+      <dependency ref="pkg:maven/software.amazon.awssdk/apache-client@2.44.6?type=jar"/>
+      <dependency ref="pkg:maven/software.amazon.awssdk/netty-nio-client@2.44.6?type=jar"/>
+    </dependency>
+    <dependency ref="pkg:maven/org.apache.camel/camel-health@4.20.0?type=jar">
+      <dependency ref="pkg:maven/org.apache.camel/camel-core-engine@4.20.0?type=jar"/>
+      <dependency ref="pkg:maven/org.slf4j/slf4j-api@2.0.18?type=jar"/>
+    </dependency>
+    <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-cloudtrail-deployment@3.37.0-SNAPSHOT?type=jar">
+      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-core-deployment@3.37.0-SNAPSHOT?type=jar"/>
+      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-cloudtrail@3.37.0-SNAPSHOT?type=jar"/>
+      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-support-aws2-deployment@3.37.0-SNAPSHOT?type=jar"/>
+    </dependency>
     <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-secrets-manager-parent@3.37.0-SNAPSHOT?type=pom">
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-secrets-manager@3.37.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-secrets-manager-deployment@3.37.0-SNAPSHOT?type=jar"/>
@@ -140863,27 +141041,6 @@ Roster, Chat and other functionality.</description>
       <dependency ref="pkg:maven/software.amazon.awssdk/apache-client@2.44.6?type=jar"/>
       <dependency ref="pkg:maven/software.amazon.awssdk/netty-nio-client@2.44.6?type=jar"/>
     </dependency>
-    <dependency ref="pkg:maven/software.amazon.awssdk/cloudtrail@2.44.6?type=jar">
-      <dependency ref="pkg:maven/software.amazon.awssdk/aws-json-protocol@2.44.6?type=jar"/>
-      <dependency ref="pkg:maven/software.amazon.awssdk/protocol-core@2.44.6?type=jar"/>
-      <dependency ref="pkg:maven/software.amazon.awssdk/http-auth-aws@2.44.6?type=jar"/>
-      <dependency ref="pkg:maven/software.amazon.awssdk/sdk-core@2.44.6?type=jar"/>
-      <dependency ref="pkg:maven/software.amazon.awssdk/auth@2.44.6?type=jar"/>
-      <dependency ref="pkg:maven/software.amazon.awssdk/http-auth-spi@2.44.6?type=jar"/>
-      <dependency ref="pkg:maven/software.amazon.awssdk/http-auth@2.44.6?type=jar"/>
-      <dependency ref="pkg:maven/software.amazon.awssdk/identity-spi@2.44.6?type=jar"/>
-      <dependency ref="pkg:maven/software.amazon.awssdk/http-client-spi@2.44.6?type=jar"/>
-      <dependency ref="pkg:maven/software.amazon.awssdk/regions@2.44.6?type=jar"/>
-      <dependency ref="pkg:maven/software.amazon.awssdk/annotations@2.44.6?type=jar"/>
-      <dependency ref="pkg:maven/software.amazon.awssdk/utils@2.44.6?type=jar"/>
-      <dependency ref="pkg:maven/software.amazon.awssdk/aws-core@2.44.6?type=jar"/>
-      <dependency ref="pkg:maven/software.amazon.awssdk/metrics-spi@2.44.6?type=jar"/>
-      <dependency ref="pkg:maven/software.amazon.awssdk/json-utils@2.44.6?type=jar"/>
-      <dependency ref="pkg:maven/software.amazon.awssdk/endpoints-spi@2.44.6?type=jar"/>
-      <dependency ref="pkg:maven/software.amazon.awssdk/retries-spi@2.44.6?type=jar"/>
-      <dependency ref="pkg:maven/software.amazon.awssdk/apache-client@2.44.6?type=jar"/>
-      <dependency ref="pkg:maven/software.amazon.awssdk/netty-nio-client@2.44.6?type=jar"/>
-    </dependency>
     <dependency ref="pkg:maven/software.amazon.awssdk/sqs@2.44.6?type=jar">
       <dependency ref="pkg:maven/software.amazon.awssdk/aws-json-protocol@2.44.6?type=jar"/>
       <dependency ref="pkg:maven/software.amazon.awssdk/protocol-core@2.44.6?type=jar"/>
@@ -140904,10 +141061,6 @@ Roster, Chat and other functionality.</description>
       <dependency ref="pkg:maven/software.amazon.awssdk/retries-spi@2.44.6?type=jar"/>
       <dependency ref="pkg:maven/software.amazon.awssdk/apache-client@2.44.6?type=jar"/>
       <dependency ref="pkg:maven/software.amazon.awssdk/netty-nio-client@2.44.6?type=jar"/>
-    </dependency>
-    <dependency ref="pkg:maven/org.apache.camel/camel-health@4.20.0?type=jar">
-      <dependency ref="pkg:maven/org.apache.camel/camel-core-engine@4.20.0?type=jar"/>
-      <dependency ref="pkg:maven/org.slf4j/slf4j-api@2.0.18?type=jar"/>
     </dependency>
     <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-secrets-manager-deployment@3.37.0-SNAPSHOT?type=jar">
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-core-deployment@3.37.0-SNAPSHOT?type=jar"/>
@@ -154245,12 +154398,10 @@ Roster, Chat and other functionality.</description>
       <dependency ref="pkg:maven/software.amazon.awssdk/aws-core@2.44.6?type=jar"/>
       <dependency ref="pkg:maven/software.amazon.awssdk/sdk-core@2.44.6?type=jar"/>
       <dependency ref="pkg:maven/software.amazon.awssdk/auth@2.44.6?type=jar"/>
+      <dependency ref="pkg:maven/software.amazon.awssdk/s3@2.44.6?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-support@3.37.0-SNAPSHOT?type=jar"/>
-      <dependency ref="pkg:maven/org.testcontainers/testcontainers-localstack@2.0.5?type=jar"/>
-      <dependency ref="pkg:maven/io.rest-assured/rest-assured@6.0.0?type=jar"/>
-    </dependency>
-    <dependency ref="pkg:maven/org.testcontainers/testcontainers-localstack@2.0.5?type=jar">
       <dependency ref="pkg:maven/org.testcontainers/testcontainers@2.0.5?type=jar"/>
+      <dependency ref="pkg:maven/io.rest-assured/rest-assured@6.0.0?type=jar"/>
     </dependency>
     <dependency ref="pkg:maven/io.rest-assured/rest-assured@6.0.0?type=jar">
       <dependency ref="pkg:maven/org.apache.groovy/groovy@5.0.6?type=jar"/>
@@ -154315,7 +154466,7 @@ Roster, Chat and other functionality.</description>
       <dependency ref="pkg:maven/org.apache.camel/camel-debezium-common@4.20.0?type=jar"/>
       <dependency ref="pkg:maven/at.yawk.lz4/lz4-java@1.10.1?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-support@3.37.0-SNAPSHOT?type=jar"/>
-      <dependency ref="pkg:maven/org.testcontainers/testcontainers-localstack@2.0.5?type=jar"/>
+      <dependency ref="pkg:maven/org.testcontainers/testcontainers@2.0.5?type=jar"/>
       <dependency ref="pkg:maven/io.rest-assured/rest-assured@6.0.0?type=jar"/>
       <dependency ref="pkg:maven/org.awaitility/awaitility@4.3.0?type=jar"/>
     </dependency>
@@ -154659,6 +154810,7 @@ Roster, Chat and other functionality.</description>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-amqp@3.37.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-tests-support-messaging-jms@3.37.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/io.quarkiverse.messaginghub/quarkus-pooled-jms@2.12.0?type=jar"/>
+      <dependency ref="pkg:maven/io.quarkus/quarkus-smallrye-openapi@3.37.0?type=jar"/>
     </dependency>
     <dependency ref="pkg:maven/io.quarkiverse.messaginghub/quarkus-pooled-jms@2.12.0?type=jar">
       <dependency ref="pkg:maven/io.quarkus/quarkus-arc@3.37.0?type=jar"/>
@@ -154668,6 +154820,13 @@ Roster, Chat and other functionality.</description>
       <dependency ref="pkg:maven/org.slf4j/slf4j-api@2.0.18?type=jar"/>
       <dependency ref="pkg:maven/jakarta.jms/jakarta.jms-api@3.1.0?type=jar"/>
       <dependency ref="pkg:maven/org.apache.commons/commons-pool2@2.13.1?type=jar"/>
+    </dependency>
+    <dependency ref="pkg:maven/io.quarkus/quarkus-smallrye-openapi@3.37.0?type=jar">
+      <dependency ref="pkg:maven/io.smallrye/smallrye-open-api-core@4.3.3?type=jar"/>
+      <dependency ref="pkg:maven/io.quarkus/quarkus-core@3.37.0?type=jar"/>
+      <dependency ref="pkg:maven/io.quarkus/quarkus-vertx-http@3.37.0?type=jar"/>
+      <dependency ref="pkg:maven/io.quarkus/quarkus-arc@3.37.0?type=jar"/>
+      <dependency ref="pkg:maven/io.quarkus/quarkus-swagger-ui@3.37.0?type=jar"/>
     </dependency>
     <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-arangodb@3.37.0-SNAPSHOT?type=jar">
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-arangodb@3.37.0-SNAPSHOT?type=jar"/>
@@ -154706,6 +154865,7 @@ Roster, Chat and other functionality.</description>
       <dependency ref="pkg:maven/io.quarkus/quarkus-resteasy-jackson@3.37.0?type=jar"/>
       <dependency ref="pkg:maven/io.quarkus/quarkus-resteasy-jsonb@3.37.0?type=jar"/>
       <dependency ref="pkg:maven/io.quarkus/quarkus-resteasy-multipart@3.37.0?type=jar"/>
+      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-cloudtrail@3.37.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-secrets-manager@3.37.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws2-cw@3.37.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws2-ddb@3.37.0-SNAPSHOT?type=jar"/>
@@ -154723,6 +154883,7 @@ Roster, Chat and other functionality.</description>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws2-sqs@3.37.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-direct@3.37.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-tests-support-aws2@3.37.0-SNAPSHOT?type=jar"/>
+      <dependency ref="pkg:maven/software.amazon.awssdk/cloudtrail@2.44.6?type=jar"/>
       <dependency ref="pkg:maven/software.amazon.awssdk/ec2@2.44.6?type=jar"/>
       <dependency ref="pkg:maven/software.amazon.awssdk/ecs@2.44.6?type=jar"/>
       <dependency ref="pkg:maven/software.amazon.awssdk/iam@2.44.6?type=jar"/>
@@ -156245,13 +156406,6 @@ Roster, Chat and other functionality.</description>
       <dependency ref="pkg:maven/io.quarkus/quarkus-resteasy-jsonb@3.37.0?type=jar"/>
       <dependency ref="pkg:maven/io.quarkus/quarkus-smallrye-openapi@3.37.0?type=jar"/>
     </dependency>
-    <dependency ref="pkg:maven/io.quarkus/quarkus-smallrye-openapi@3.37.0?type=jar">
-      <dependency ref="pkg:maven/io.smallrye/smallrye-open-api-core@4.3.3?type=jar"/>
-      <dependency ref="pkg:maven/io.quarkus/quarkus-core@3.37.0?type=jar"/>
-      <dependency ref="pkg:maven/io.quarkus/quarkus-vertx-http@3.37.0?type=jar"/>
-      <dependency ref="pkg:maven/io.quarkus/quarkus-arc@3.37.0?type=jar"/>
-      <dependency ref="pkg:maven/io.quarkus/quarkus-swagger-ui@3.37.0?type=jar"/>
-    </dependency>
     <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-rocketmq@3.37.0-SNAPSHOT?type=jar">
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-rocketmq@3.37.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-bean@3.37.0-SNAPSHOT?type=jar"/>
@@ -156600,6 +156754,10 @@ Roster, Chat and other functionality.</description>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-junit@3.37.0-SNAPSHOT?type=jar"/>
     </dependency>
     <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-docs@3.37.0-SNAPSHOT?type=pom"/>
+    <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-aws-cloudtrail@3.37.0-SNAPSHOT?type=jar">
+      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-cloudtrail@3.37.0-SNAPSHOT?type=jar"/>
+      <dependency ref="pkg:maven/io.quarkus/quarkus-resteasy-jackson@3.37.0?type=jar"/>
+    </dependency>
     <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-aws-secrets-manager@3.37.0-SNAPSHOT?type=jar">
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws-secrets-manager@3.37.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-aws2-sqs@3.37.0-SNAPSHOT?type=jar"/>
@@ -156807,6 +156965,7 @@ Roster, Chat and other functionality.</description>
     <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-integration-test-cxf-soap-server@3.37.0-SNAPSHOT?type=jar">
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-cxf-soap@3.37.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-bean@3.37.0-SNAPSHOT?type=jar"/>
+      <dependency ref="pkg:maven/org.apache.camel.quarkus/camel-quarkus-direct@3.37.0-SNAPSHOT?type=jar"/>
       <dependency ref="pkg:maven/io.quarkus/quarkus-resteasy@3.37.0?type=jar"/>
       <dependency ref="pkg:maven/io.quarkiverse.cxf/quarkus-cxf-xjc-plugins@3.37.0.CR1?type=jar"/>
       <dependency ref="pkg:maven/org.apache.commons/commons-lang3@3.20.0?type=jar"/>
