@@ -40,24 +40,16 @@ class WeaviateProcessor {
 
         String[] dtos = index.getKnownClasses().stream()
                 .map(ci -> ci.name().toString())
-                .filter(n -> n.startsWith("io.weaviate.client.v1.")
-                        && n.contains(".model"))
+                .filter(n -> n.startsWith("io.weaviate.client6.v1."))
                 .sorted()
                 .toArray(String[]::new);
 
         reflectiveClass.produce(ReflectiveClassBuildItem.builder(dtos).methods().fields().build());
-
-        //error handler
-        reflectiveClass.produce(
-                ReflectiveClassBuildItem
-                        .builder(new String[] { "io.weaviate.client.base.WeaviateErrorResponse",
-                                "io.weaviate.client.base.WeaviateErrorMessage", "io.weaviate.client.base.WeaviateError" })
-                        .methods().fields().build());
     }
 
     @BuildStep
     IndexDependencyBuildItem registerDependencyForIndex() {
-        return new IndexDependencyBuildItem("io.weaviate", "client");
+        return new IndexDependencyBuildItem("io.weaviate", "client6");
     }
 
     @BuildStep

@@ -31,7 +31,7 @@ public class WeaviateTestResource implements QuarkusTestResourceLifecycleManager
 
     private static final DockerImageName WEAVIATE_IMAGE = DockerImageName
             .parse(ConfigProvider.getConfig().getValue("weaviate.container.image", String.class))
-            .asCompatibleSubstituteFor("semitechnologies/weaviate");
+            .asCompatibleSubstituteFor("cr.weaviate.io/semitechnologies/weaviate");
 
     private final WeaviateContainer container = new WeaviateContainer(WEAVIATE_IMAGE)
             .withStartupTimeout(Duration.ofMinutes(3L));
@@ -53,7 +53,8 @@ public class WeaviateTestResource implements QuarkusTestResourceLifecycleManager
             container.start();
 
             return Map.of(
-                    WeaviateResource.WEAVIATE_CONTAINER_ADDRESS, container.getHttpHostAddress());
+                    WeaviateResource.WEAVIATE_CONTAINER_ADDRESS, container.getHttpHostAddress(),
+                    WeaviateResource.WEAVIATE_CONTAINER_GRPC_PORT, String.valueOf(container.getGrpcPort()));
         } else if (!startMockBackend && !realApiProvided) {
             throw new IllegalStateException(
                     "Set %s and %s env vars if you set CAMEL_QUARKUS_START_MOCK_BACKEND=false"

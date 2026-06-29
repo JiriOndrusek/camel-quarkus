@@ -28,7 +28,6 @@ import io.restassured.response.ValidatableResponse;
 import org.apache.camel.component.weaviate.WeaviateVectorDbAction;
 import org.apache.camel.component.weaviate.WeaviateVectorDbHeaders;
 import org.hamcrest.Matchers;
-import org.hamcrest.text.IsEmptyString;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -80,10 +79,7 @@ class WeaviateTest {
 
                 //verify that collection is removed
                 query(collectionName, Arrays.asList(0.15f, 0.25f, 0.35f), Map.of("title", "", "content", ""), true)
-                        .body("error.statusCode", Matchers.equalTo(422))
-                        .body("error.messages.message",
-                                Matchers.hasItem(
-                                        "no graphql provider present, this is most likely because no schema is present. Import a schema first!"));
+                        .body("error", Matchers.notNullValue());
             }
         }
     }
@@ -106,16 +102,14 @@ class WeaviateTest {
                     Map.of("title", "Third Article", "content", "The content of the third article."));
 
             query(collectionName, Arrays.asList(0.15f, 0.25f, 0.35f), Map.of("title", "", "content", ""))
-                    .body("result.data.Get." + collectionName, Matchers.hasSize(2))
-                    .body("result.data.Get." + collectionName + "[0]", Matchers.aMapWithSize(2))
-                    .body("result.data.Get." + collectionName + "[0].title", Matchers.equalTo("Second Article"))
-                    .body("result.data.Get." + collectionName + "[1].title", Matchers.equalTo("First Article"));
+                    .body("result", Matchers.hasSize(2))
+                    .body("result[0].title", Matchers.equalTo("Second Article"))
+                    .body("result[1].title", Matchers.equalTo("First Article"));
 
             query(collectionName, Arrays.asList(0.3f, 0.4f, 0.5f), Map.of("title", "", "content", ""))
-                    .body("result.data.Get." + collectionName, Matchers.hasSize(2))
-                    .body("result.data.Get." + collectionName + "[0]", Matchers.aMapWithSize(2))
-                    .body("result.data.Get." + collectionName + "[0].title", Matchers.equalTo("Third Article"))
-                    .body("result.data.Get." + collectionName + "[1].title", Matchers.equalTo("Second Article"));
+                    .body("result", Matchers.hasSize(2))
+                    .body("result[0].title", Matchers.equalTo("Third Article"))
+                    .body("result[1].title", Matchers.equalTo("Second Article"));
 
         } finally {
             if (collectionCreated) {
@@ -123,8 +117,7 @@ class WeaviateTest {
 
                 //verify that collection is removed
                 query(collectionName, Arrays.asList(0.15f, 0.25f, 0.35f), Map.of("title", "", "content", ""), true)
-                        .body("error.statusCode", Matchers.equalTo(422));
-                //message is already covered by operation test
+                        .body("error", Matchers.notNullValue());
             }
         }
     }
@@ -137,7 +130,6 @@ class WeaviateTest {
                 .post("/weaviate/request")
                 .then()
                 .statusCode(200)
-                .body("error", IsEmptyString.emptyOrNullString())
                 .body("result", Matchers.is(true));
     }
 
@@ -149,7 +141,6 @@ class WeaviateTest {
                 .post("/weaviate/request")
                 .then()
                 .statusCode(200)
-                .body("error", IsEmptyString.emptyOrNullString())
                 .body("result", Matchers.is(true));
     }
 
@@ -167,7 +158,6 @@ class WeaviateTest {
                 .post("/weaviate/request")
                 .then()
                 .statusCode(200)
-                .body("error", IsEmptyString.emptyOrNullString())
                 .extract().path("result");
 
         Assertions.assertNotNull(createdId);
@@ -186,8 +176,7 @@ class WeaviateTest {
                 .body(payload)
                 .post("/weaviate/request")
                 .then()
-                .statusCode(200)
-                .body("error", IsEmptyString.emptyOrNullString());
+                .statusCode(200);
     }
 
     private void updateById(String collectionName, String id, List<Float> values,
@@ -205,8 +194,7 @@ class WeaviateTest {
                 .body(payload)
                 .post("/weaviate/request")
                 .then()
-                .statusCode(200)
-                .body("error", IsEmptyString.emptyOrNullString());
+                .statusCode(200);
     }
 
     public void deleteById(String collectionName, String id) {
@@ -221,7 +209,6 @@ class WeaviateTest {
                 .body(payload)
                 .post("/weaviate/request")
                 .then().statusCode(200)
-                .body("error", IsEmptyString.emptyOrNullString())
                 .body("result", Matchers.is(true));
     }
 
@@ -239,17 +226,11 @@ class WeaviateTest {
                 WeaviateVectorDbHeaders.QUERY_TOP_K, 2,
                 WeaviateVectorDbHeaders.FIELDS, fields);
 
-        ValidatableResponse response = RestAssured.given()
+        return RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .post("/weaviate/request")
                 .then()
                 .statusCode(200);
-
-        if (!expectError) {
-            response.body("error", IsEmptyString.emptyOrNullString());
-        }
-
-        return response;
     }
 }

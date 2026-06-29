@@ -28,6 +28,9 @@ public class WeaviateRoutes extends RouteBuilder {
     @ConfigProperty(name = WeaviateResource.WEAVIATE_CONTAINER_ADDRESS)
     Optional<String> weaviateContainerAddress;
 
+    @ConfigProperty(name = WeaviateResource.WEAVIATE_CONTAINER_GRPC_PORT)
+    Optional<String> grpcPort;
+
     @ConfigProperty(name = WeaviateResource.WEAVIATE_HOST_ENV)
     Optional<String> host;
 
@@ -42,7 +45,11 @@ public class WeaviateRoutes extends RouteBuilder {
 
     private String getUrl() {
         if (weaviateContainerAddress.isPresent()) {
-            return "weaviate:test-collection?scheme=http&host=" + weaviateContainerAddress.get();
+            String url = "weaviate:test-collection?scheme=http&host=" + weaviateContainerAddress.get();
+            if (grpcPort.isPresent()) {
+                url += "&grpcPort=" + grpcPort.get();
+            }
+            return url;
         }
 
         if (host.isPresent() && apiKey.isPresent()) {
