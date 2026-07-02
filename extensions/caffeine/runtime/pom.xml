@@ -28,7 +28,7 @@
 
     <artifactId>camel-quarkus-caffeine</artifactId>
     <name>Camel Quarkus :: Caffeine Cache :: Runtime</name>
-    <description>Perform caching operations using Caffeine Cache.</description>
+    <description>Perform caching operations using Caffeine Cache. Perform caching operations using Caffeine Cache with an attached CacheLoader.</description>
 
     <properties>
         <camel.quarkus.jvmSince>1.1.0</camel.quarkus.jvmSince>

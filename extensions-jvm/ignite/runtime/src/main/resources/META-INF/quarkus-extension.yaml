@@ -22,7 +22,7 @@
 #
 ---
 name: "Camel Ignite Cache"
-description: "Perform cache operations on an Ignite cache or consume changes from a continuous query"
+description: "Perform cache operations on an Ignite cache or consume changes from a continuous query. Run compute operations on an Ignite cluster. Receive events from an Ignite cluster by creating a local event listener. Interact with Ignite Atomic Sequences and ID Generators . Send and receive messages from an Ignite topic. Interact with Ignite Queue data structures. Interact with Ignite Set data structures"
 metadata:
   icon-url: "https://raw.githubusercontent.com/apache/camel-website/main/antora-ui-camel/src/img/logo-d.svg"
   sponsor: "Apache Software Foundation"

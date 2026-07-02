@@ -22,7 +22,7 @@
 #
 ---
 name: "Camel Core"
-description: "Camel core functionality and basic Camel languages: Constant, ExchangeProperty, Header, Ref, Simple and Tokenize"
+description: "A fixed value set only once during the route startup Evaluate a compiled simple expression Gets a property from the Exchange File related capabilities for the Simple language Gets a header from the Exchange Uses an existing expression from the registry Evaluates a Camel simple expression Tokenize text payloads using delimiter patterns Gets a variable"
 metadata:
   icon-url: "https://raw.githubusercontent.com/apache/camel-website/main/antora-ui-camel/src/img/logo-d.svg"
   sponsor: "Apache Software Foundation"
@@ -33,7 +33,7 @@ metadata:
   - "camel.dataformat"
   - "quarkus.camel"
   - "quarkus.camel.main"
-  status: "deprecated"
+  status: "stable"
   integrates:
     - name: "Camel"
       artifact: "org.apache.camel:camel-base"

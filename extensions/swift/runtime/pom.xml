@@ -28,7 +28,7 @@
 
     <artifactId>camel-quarkus-swift</artifactId>
     <name>Camel Quarkus :: SWIFT :: Runtime</name>
-    <description>Encode and decode SWIFT messages.</description>
+    <description>Encode and decode SWIFT MT messages Encode and decode SWIFT MX messages</description>
 
     <properties>
         <camel.quarkus.jvmSince>3.2.0</camel.quarkus.jvmSince>

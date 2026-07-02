@@ -22,7 +22,7 @@
 #
 ---
 name: "Camel AWS Bedrock"
-description: "Invoke Model of AWS Bedrock service"
+description: "Invoke Model of AWS Bedrock service. Operate on AWS Bedrock through its Agent. Invoke Model of AWS Bedrock Agent Runtime service"
 metadata:
   icon-url: "https://raw.githubusercontent.com/apache/camel-website/main/antora-ui-camel/src/img/logo-d.svg"
   sponsor: "Apache Software Foundation"

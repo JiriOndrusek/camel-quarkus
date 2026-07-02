@@ -28,7 +28,7 @@
 
     <artifactId>camel-quarkus-mybatis</artifactId>
     <name>Camel Quarkus :: MyBatis :: Runtime</name>
-    <description>Performs a query, poll, insert, update or delete in a relational database using MyBatis.</description>
+    <description>Performs a query, poll, insert, update or delete in a relational database using MyBatis. Perform queries, inserts, updates or deletes in a relational database using MyBatis.</description>
 
     <properties>
         <camel.quarkus.jvmSince>1.1.0</camel.quarkus.jvmSince>

@@ -22,7 +22,7 @@
 #
 ---
 name: "Camel OPC UA Browser"
-description: "Connect to OPC UA servers using the binary protocol for browsing the node tree"
+description: "Connect to OPC UA servers using the binary protocol for browsing the node tree. Connect to OPC UA servers using the binary protocol for acquiring telemetry data. Make telemetry data available as an OPC UA server"
 metadata:
   icon-url: "https://raw.githubusercontent.com/apache/camel-website/main/antora-ui-camel/src/img/logo-d.svg"
   sponsor: "Apache Software Foundation"

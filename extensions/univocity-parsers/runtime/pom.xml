@@ -28,7 +28,7 @@
 
     <artifactId>camel-quarkus-univocity-parsers</artifactId>
     <name>Camel Quarkus :: uniVocity CSV :: Runtime</name>
-    <description>Marshal and unmarshal Java objects from and to CSV (Comma Separated Values) using UniVocity Parsers.</description>
+    <description>Marshal and unmarshal Java objects from and to CSV (Comma Separated Values) using UniVocity Parsers Marshal and unmarshal Java objects from and to fixed length records using UniVocity Parsers Marshal and unmarshal Java objects from and to TSV (Tab-Separated Values) records using UniVocity Parsers</description>
 
     <properties>
         <camel.quarkus.jvmSince>1.1.0</camel.quarkus.jvmSince>

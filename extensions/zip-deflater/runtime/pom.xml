@@ -28,7 +28,7 @@
 
     <artifactId>camel-quarkus-zip-deflater</artifactId>
     <name>Camel Quarkus :: Zip Deflate Compression :: Runtime</name>
-    <description>Compress and decompress streams using java.util.zip.Deflater, java.util.zip.Inflater or java.util.zip.GZIPStream.</description>
+    <description>Compress and decompress messages using java.util.zip.GZIP*Stream Compress and decompress streams using java.util.zip.Deflater and java.util.zip.Inflater</description>
 
     <properties>
         <camel.quarkus.jvmSince>1.0.0</camel.quarkus.jvmSince>

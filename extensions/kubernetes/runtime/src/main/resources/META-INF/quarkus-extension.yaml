@@ -22,7 +22,7 @@
 #
 ---
 name: "Camel Kubernetes"
-description: "Perform operations against Kubernetes API"
+description: "Perform operations on Kubernetes ConfigMaps and get notified on ConfigMaps changes. Perform operations on Kubernetes CronJob. Perform operations on Kubernetes Custom Resources and get notified on Deployment changes. Perform operations on Kubernetes Deployments and get notified on Deployment changes. Perform operations on Kubernetes Events and get notified on Events changes. Perform operations on Kubernetes Horizontal Pod Autoscalers (HPA) and get notified on HPA changes. Perform operations on Kubernetes Jobs. Perform operations on Kubernetes Namespaces and get notified on Namespace changes. Perform operations on Kubernetes Nodes and get notified on Node changes. Perform operations on Kubernetes Persistent Volumes and get notified on Persistent Volume changes. Perform operations on Kubernetes Persistent Volumes Claims and get notified on Persistent Volumes Claim changes. Perform operations on Kubernetes Pods and get notified on Pod changes. Perform operations on Kubernetes Replication Controllers and get notified on Replication Controllers changes. Perform operations on Kubernetes Resources Quotas. Perform operations on Kubernetes Secrets. Perform operations on Kubernetes Service Accounts. Perform operations on Kubernetes Services and get notified on Service changes. Perform operations on OpenShift Build Configs. Perform operations on OpenShift Builds. Perform operations on OpenShift Deployment Configs and get notified on Deployment Config changes"
 metadata:
   icon-url: "https://raw.githubusercontent.com/apache/camel-website/main/antora-ui-camel/src/img/logo-d.svg"
   sponsor: "Apache Software Foundation"
