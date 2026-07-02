@@ -28,7 +28,7 @@
 
     <artifactId>camel-quarkus-dataset</artifactId>
     <name>Camel Quarkus :: Dataset :: Runtime</name>
-    <description>Provide data for load and soak testing of your Camel application.</description>
+    <description>Provide data for load and soak testing of your Camel application. Extends the mock component by pulling messages from another endpoint on startup to set the expected message bodies.</description>
 
     <properties>
         <camel.quarkus.jvmSince>2.11.0</camel.quarkus.jvmSince>

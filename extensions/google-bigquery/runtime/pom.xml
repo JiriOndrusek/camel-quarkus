@@ -28,7 +28,7 @@
 
     <artifactId>camel-quarkus-google-bigquery</artifactId>
     <name>Camel Quarkus :: Google BigQuery :: Runtime</name>
-    <description>Access Google Cloud BigQuery service using SQL queries or Google Client Services API</description>
+    <description>Google BigQuery data warehouse for analytics. Access Google Cloud BigQuery service using SQL queries.</description>
 
     <properties>
         <camel.quarkus.jvmSince>1.0.0</camel.quarkus.jvmSince>

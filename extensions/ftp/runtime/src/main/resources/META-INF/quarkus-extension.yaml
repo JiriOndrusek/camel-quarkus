@@ -22,7 +22,7 @@
 #
 ---
 name: "Camel FTP"
-description: "Upload and download files to/from SFTP, FTP or SFTP servers"
+description: "Upload and download files to/from FTP servers. Upload and download files to/from FTP servers supporting the FTPS protocol. Upload and download files to/from SFTP servers"
 metadata:
   icon-url: "https://raw.githubusercontent.com/apache/camel-website/main/antora-ui-camel/src/img/logo-d.svg"
   sponsor: "Apache Software Foundation"

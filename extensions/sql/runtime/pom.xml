@@ -28,7 +28,7 @@
 
     <artifactId>camel-quarkus-sql</artifactId>
     <name>Camel Quarkus :: SQL :: Runtime</name>
-    <description>Perform SQL queries.</description>
+    <description>Perform SQL queries using Spring JDBC. Perform SQL queries as a JDBC Stored Procedures using Spring JDBC.</description>
 
     <properties>
         <camel.quarkus.jvmSince>1.0.0</camel.quarkus.jvmSince>

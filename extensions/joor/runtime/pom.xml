@@ -28,7 +28,7 @@
 
     <artifactId>camel-quarkus-joor</artifactId>
     <name>Camel Quarkus :: jOOR :: Runtime</name>
-    <description>Evaluate a jOOR (Java compiled once at runtime) expression language.</description>
+    <description>Evaluates a Java (Java compiled once at runtime) expression Evaluates a jOOR (Java compiled once at runtime) expression</description>
 
     <properties>
         <camel.quarkus.jvmSince>2.0.0</camel.quarkus.jvmSince>

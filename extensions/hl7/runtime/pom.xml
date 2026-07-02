@@ -28,7 +28,7 @@
 
     <artifactId>camel-quarkus-hl7</artifactId>
     <name>Camel Quarkus :: HL7 :: Runtime</name>
-    <description>Marshal and unmarshal HL7 (Health Care) model objects using the HL7 MLLP codec.</description>
+    <description>Marshal and unmarshal HL7 (Health Care) model objects using the HL7 MLLP codec Get the value of a HL7 message field specified by terse location specification syntax</description>
 
     <properties>
         <camel.quarkus.jvmSince>1.1.0</camel.quarkus.jvmSince>
