@@ -7524,6 +7524,11 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>com.google.re2j</groupId>
+                <artifactId>re2j</artifactId>
+                <version>${re2j.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.ibm.cloud</groupId>
                 <artifactId>sdk-core</artifactId>
                 <version>${ibm.java-sdk-core.version}</version>
@@ -7693,6 +7698,11 @@
                 <groupId>io.dropwizard.metrics</groupId>
                 <artifactId>metrics-jmx</artifactId>
                 <version>${dropwizard-metrics.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.classgraph</groupId>
+                <artifactId>classgraph</artifactId>
+                <version>${classgraph.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.minio</groupId>
@@ -7992,6 +8002,11 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-collections4</artifactId>
                 <version>${commons-collections4.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-csv</artifactId>
+                <version>${commons-csv.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
