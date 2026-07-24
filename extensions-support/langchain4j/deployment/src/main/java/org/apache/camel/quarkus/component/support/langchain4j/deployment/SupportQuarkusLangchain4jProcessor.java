@@ -55,6 +55,8 @@ class SupportQuarkusLangchain4jProcessor {
 
     public static final DotName REGISTER_AI_SERVICES_DOTNAME = DotName
             .createSimple("io.quarkiverse.langchain4j.RegisterAiService");
+    private static final DotName CAMEL_TOOLS_DOTNAME = DotName
+            .createSimple("org.apache.camel.quarkus.component.support.langchain4j.CamelTools");
 
     private static final Logger LOG = Logger.getLogger(SupportQuarkusLangchain4jProcessor.class);
 
@@ -133,6 +135,32 @@ class SupportQuarkusLangchain4jProcessor {
     AdditionalBeanBuildItem registerCamelToolProvider() {
         LOG.info("Camel AI Tool detected - registering CamelToolProvider as CDI bean for ToolProvider auto-discovery");
         return AdditionalBeanBuildItem.unremovableOf(CamelToolProvider.class);
+    }
+
+    @BuildStep(onlyIf = AiToolPresent.class)
+    @Record(ExecutionTime.STATIC_INIT)
+    void configureCamelToolTag(
+            CombinedIndexBuildItem combinedIndex,
+            QuarkusLangchain4jRecorder recorder) {
+
+        IndexView index = combinedIndex.getIndex();
+        Set<String> tags = index.getAnnotations(CAMEL_TOOLS_DOTNAME).stream()
+                .filter(a -> a.target().kind() == AnnotationTarget.Kind.CLASS)
+                .map(a -> a.value().asString())
+                .collect(Collectors.toSet());
+
+        if (tags.size() > 1) {
+            throw new RuntimeException(
+                    "Multiple @CamelTools annotations with different tag values found: " + tags
+                            + ". Only one tag per application is supported. "
+                            + "For multi-tag support, use custom Supplier<ToolProvider> implementations.");
+        }
+
+        if (tags.size() == 1) {
+            String tag = tags.iterator().next();
+            LOG.infof("Configuring CamelToolProvider with tag filter: %s", tag);
+            recorder.setCamelToolTag(tag);
+        }
     }
 
     @BuildStep

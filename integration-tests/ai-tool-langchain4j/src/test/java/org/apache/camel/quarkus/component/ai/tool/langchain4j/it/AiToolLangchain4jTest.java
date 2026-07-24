@@ -21,6 +21,7 @@ import io.restassured.RestAssured;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 
 @QuarkusTest
 class AiToolLangchain4jTest {
@@ -35,5 +36,15 @@ class AiToolLangchain4jTest {
                 .statusCode(200)
                 .body(containsString("Prague"))
                 .body(containsString("Sunny"));
+    }
+
+    @Test
+    void tagFilteringShouldExposeOnlyMatchingTools() {
+        RestAssured.given()
+                .get("/ai-tool-langchain4j/tools")
+                .then()
+                .statusCode(200)
+                .body(containsString("getWeather"))
+                .body(not(containsString("getNews")));
     }
 }

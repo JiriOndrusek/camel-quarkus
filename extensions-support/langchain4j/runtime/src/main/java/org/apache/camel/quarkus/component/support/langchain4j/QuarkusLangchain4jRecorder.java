@@ -26,6 +26,10 @@ import org.jboss.logging.Logger;
 @Recorder
 public class QuarkusLangchain4jRecorder {
 
+    public void setCamelToolTag(String tag) {
+        CamelToolProvider.setTag(tag);
+    }
+
     public RuntimeValue<Guardrail<?, ?>> instantiateGuardrails(Class<Guardrail<?, ?>> guardrailClass) {
         try {
             return new RuntimeValue<>(guardrailClass.getConstructor().newInstance());
