@@ -48,8 +48,7 @@ class AiToolLangchain4jOllamaTest {
         @Override
         public Map<String, String> getConfigOverrides() {
             return Map.of(
-                    "quarkus.devservices.enabled", "true",
-                    "quarkus.langchain4j.ollama.chat-model.model-id", "qwen3:1.7b");
+                    "quarkus.devservices.enabled", "true");
         }
     }
 }
