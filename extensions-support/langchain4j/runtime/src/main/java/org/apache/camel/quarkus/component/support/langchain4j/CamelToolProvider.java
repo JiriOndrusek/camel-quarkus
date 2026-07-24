@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -56,6 +57,8 @@ import org.apache.camel.support.DefaultExchange;
 public class CamelToolProvider implements ToolProvider {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    static final Map<String, String> TAG_MAP = new ConcurrentHashMap<>();
+    private static final ThreadLocal<String> CURRENT_TAG = new ThreadLocal<>();
 
     private static volatile String tag;
 
@@ -66,10 +69,22 @@ public class CamelToolProvider implements ToolProvider {
         CamelToolProvider.tag = tag;
     }
 
+    static void setCurrentTag(String tag) {
+        CURRENT_TAG.set(tag);
+    }
+
+    static void clearCurrentTag() {
+        CURRENT_TAG.remove();
+    }
+
     @Override
     public ToolProviderResult provideTools(ToolProviderRequest request) {
         AiToolRegistry registry = AiToolRegistry.getOrCreate(camelContext);
-        Set<AiToolSpec> tools = tag != null ? registry.getToolsByTag(tag) : registry.getAllTools();
+        String effectiveTag = CURRENT_TAG.get();
+        if (effectiveTag == null) {
+            effectiveTag = tag;
+        }
+        Set<AiToolSpec> tools = effectiveTag != null ? registry.getToolsByTag(effectiveTag) : registry.getAllTools();
 
         ToolProviderResult.Builder resultBuilder = ToolProviderResult.builder();
         for (AiToolSpec spec : tools) {

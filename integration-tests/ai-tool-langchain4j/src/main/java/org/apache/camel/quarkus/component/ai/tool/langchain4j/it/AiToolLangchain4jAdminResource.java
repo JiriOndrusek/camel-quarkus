@@ -16,36 +16,26 @@
  */
 package org.apache.camel.quarkus.component.ai.tool.langchain4j.it;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
-import org.apache.camel.CamelContext;
-import org.apache.camel.component.ai.tool.AiToolRegistry;
-import org.apache.camel.component.ai.tool.AiToolSpec;
 
-@Path("/ai-tool-langchain4j")
+@Path("/ai-tool-langchain4j-admin")
 @ApplicationScoped
-public class AiToolLangchain4jToolListResource {
+public class AiToolLangchain4jAdminResource {
 
     @Inject
-    CamelContext camelContext;
+    AdminAiService adminAiService;
 
-    @Path("/tools/{tag}")
-    @GET
+    @Path("/chat")
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
-    public String listToolsByTag(@PathParam("tag") String tag) {
-        AiToolRegistry registry = AiToolRegistry.getOrCreate(camelContext);
-        Set<AiToolSpec> tools = registry.getToolsByTag(tag);
-        return tools.stream()
-                .map(AiToolSpec::getName)
-                .sorted()
-                .collect(Collectors.joining(","));
+    public String chat(String message) {
+        return adminAiService.chat(message);
     }
 }

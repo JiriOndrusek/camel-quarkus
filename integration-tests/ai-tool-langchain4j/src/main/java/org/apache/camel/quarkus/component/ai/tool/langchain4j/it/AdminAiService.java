@@ -16,36 +16,15 @@
  */
 package org.apache.camel.quarkus.component.ai.tool.langchain4j.it;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import dev.langchain4j.service.UserMessage;
+import io.quarkiverse.langchain4j.RegisterAiService;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import org.apache.camel.CamelContext;
-import org.apache.camel.component.ai.tool.AiToolRegistry;
-import org.apache.camel.component.ai.tool.AiToolSpec;
+import org.apache.camel.quarkus.component.support.langchain4j.CamelTools;
 
-@Path("/ai-tool-langchain4j")
 @ApplicationScoped
-public class AiToolLangchain4jToolListResource {
+@RegisterAiService(chatLanguageModelSupplier = AdminToolCallingChatModel.class)
+@CamelTools("admin")
+public interface AdminAiService {
 
-    @Inject
-    CamelContext camelContext;
-
-    @Path("/tools/{tag}")
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public String listToolsByTag(@PathParam("tag") String tag) {
-        AiToolRegistry registry = AiToolRegistry.getOrCreate(camelContext);
-        Set<AiToolSpec> tools = registry.getToolsByTag(tag);
-        return tools.stream()
-                .map(AiToolSpec::getName)
-                .sorted()
-                .collect(Collectors.joining(","));
-    }
+    String chat(@UserMessage String message);
 }
