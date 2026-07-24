@@ -57,13 +57,19 @@ public class CamelToolProvider implements ToolProvider {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
+    private static volatile String tag;
+
     @Inject
     CamelContext camelContext;
+
+    static void setTag(String tag) {
+        CamelToolProvider.tag = tag;
+    }
 
     @Override
     public ToolProviderResult provideTools(ToolProviderRequest request) {
         AiToolRegistry registry = AiToolRegistry.getOrCreate(camelContext);
-        Set<AiToolSpec> tools = registry.getAllTools();
+        Set<AiToolSpec> tools = tag != null ? registry.getToolsByTag(tag) : registry.getAllTools();
 
         ToolProviderResult.Builder resultBuilder = ToolProviderResult.builder();
         for (AiToolSpec spec : tools) {
