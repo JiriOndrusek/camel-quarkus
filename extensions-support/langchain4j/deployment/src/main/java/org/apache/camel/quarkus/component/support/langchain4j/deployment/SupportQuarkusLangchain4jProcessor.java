@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import dev.langchain4j.guardrail.Guardrail;
 import dev.langchain4j.guardrail.InputGuardrail;
 import dev.langchain4j.guardrail.OutputGuardrail;
+import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
 import io.quarkus.arc.deployment.UnremovableBeanBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
@@ -35,6 +36,7 @@ import io.quarkus.deployment.builditem.SystemPropertyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.pkg.steps.NativeOrNativeSourcesBuild;
 import jakarta.inject.Singleton;
+import org.apache.camel.quarkus.component.support.langchain4j.CamelToolProvider;
 import org.apache.camel.quarkus.component.support.langchain4j.QuarkusLangchain4jRecorder;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
@@ -125,6 +127,12 @@ class SupportQuarkusLangchain4jProcessor {
                 .fields()
                 .constructors()
                 .build());
+    }
+
+    @BuildStep(onlyIf = AiToolPresent.class)
+    AdditionalBeanBuildItem registerCamelToolProvider() {
+        LOG.info("Camel AI Tool detected - registering CamelToolProvider as CDI bean for ToolProvider auto-discovery");
+        return AdditionalBeanBuildItem.unremovableOf(CamelToolProvider.class);
     }
 
     @BuildStep
