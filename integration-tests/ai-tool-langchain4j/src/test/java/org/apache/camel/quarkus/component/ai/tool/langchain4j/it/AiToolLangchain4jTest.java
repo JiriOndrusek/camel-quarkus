@@ -21,6 +21,7 @@ import io.restassured.RestAssured;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 
 @QuarkusTest
 class AiToolLangchain4jTest {
@@ -35,5 +36,37 @@ class AiToolLangchain4jTest {
                 .statusCode(200)
                 .body(containsString("Prague"))
                 .body(containsString("Sunny"));
+    }
+
+    @Test
+    void weatherTagShouldExposeOnlyWeatherTools() {
+        RestAssured.given()
+                .get("/ai-tool-langchain4j/tools/weather")
+                .then()
+                .statusCode(200)
+                .body(containsString("getWeather"))
+                .body(not(containsString("getNews")));
+    }
+
+    @Test
+    void adminTagShouldExposeOnlyAdminTools() {
+        RestAssured.given()
+                .get("/ai-tool-langchain4j/tools/admin")
+                .then()
+                .statusCode(200)
+                .body(containsString("getNews"))
+                .body(not(containsString("getWeather")));
+    }
+
+    @Test
+    void adminServiceShouldInvokeAdminToolAndReturnResult() {
+        RestAssured.given()
+                .contentType("text/plain")
+                .body("What are the latest news about camel?")
+                .post("/ai-tool-langchain4j-admin/chat")
+                .then()
+                .statusCode(200)
+                .body(containsString("camel"))
+                .body(containsString("news"));
     }
 }

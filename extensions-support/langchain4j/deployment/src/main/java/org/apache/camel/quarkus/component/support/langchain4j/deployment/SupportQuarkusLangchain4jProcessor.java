@@ -16,7 +16,9 @@
  */
 package org.apache.camel.quarkus.component.support.langchain4j.deployment;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -24,6 +26,7 @@ import dev.langchain4j.guardrail.Guardrail;
 import dev.langchain4j.guardrail.InputGuardrail;
 import dev.langchain4j.guardrail.OutputGuardrail;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
+import io.quarkus.arc.deployment.AnnotationsTransformerBuildItem;
 import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
 import io.quarkus.arc.deployment.UnremovableBeanBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
@@ -37,9 +40,12 @@ import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.pkg.steps.NativeOrNativeSourcesBuild;
 import jakarta.inject.Singleton;
 import org.apache.camel.quarkus.component.support.langchain4j.CamelToolProvider;
+import org.apache.camel.quarkus.component.support.langchain4j.CamelToolsBinding;
+import org.apache.camel.quarkus.component.support.langchain4j.CamelToolsInterceptor;
 import org.apache.camel.quarkus.component.support.langchain4j.QuarkusLangchain4jRecorder;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.AnnotationTransformation;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
@@ -55,6 +61,8 @@ class SupportQuarkusLangchain4jProcessor {
 
     public static final DotName REGISTER_AI_SERVICES_DOTNAME = DotName
             .createSimple("io.quarkiverse.langchain4j.RegisterAiService");
+    private static final DotName CAMEL_TOOLS_DOTNAME = DotName
+            .createSimple("org.apache.camel.quarkus.component.support.langchain4j.CamelTools");
 
     private static final Logger LOG = Logger.getLogger(SupportQuarkusLangchain4jProcessor.class);
 
@@ -133,6 +141,51 @@ class SupportQuarkusLangchain4jProcessor {
     AdditionalBeanBuildItem registerCamelToolProvider() {
         LOG.info("Camel AI Tool detected - registering CamelToolProvider as CDI bean for ToolProvider auto-discovery");
         return AdditionalBeanBuildItem.unremovableOf(CamelToolProvider.class);
+    }
+
+    @BuildStep(onlyIf = AiToolPresent.class)
+    @Record(ExecutionTime.STATIC_INIT)
+    void configureCamelToolTags(
+            CombinedIndexBuildItem combinedIndex,
+            BuildProducer<AdditionalBeanBuildItem> additionalBeans,
+            BuildProducer<AnnotationsTransformerBuildItem> annotationsTransformers,
+            QuarkusLangchain4jRecorder recorder) {
+
+        IndexView index = combinedIndex.getIndex();
+        Map<String, String> tagMap = new HashMap<>();
+        for (AnnotationInstance annotation : index.getAnnotations(CAMEL_TOOLS_DOTNAME)) {
+            if (annotation.target().kind() == AnnotationTarget.Kind.CLASS) {
+                String className = annotation.target().asClass().name().toString();
+                String tagValue = annotation.value().asString();
+                tagMap.put(className, tagValue);
+                LOG.infof("Discovered @CamelTools(\"%s\") on %s", tagValue, className);
+            }
+        }
+
+        if (tagMap.isEmpty()) {
+            return;
+        }
+
+        recorder.setCamelToolTagMap(tagMap);
+
+        additionalBeans.produce(AdditionalBeanBuildItem.builder()
+                .addBeanClasses(CamelToolsInterceptor.class)
+                .setUnremovable()
+                .build());
+
+        annotationsTransformers.produce(new AnnotationsTransformerBuildItem(new AnnotationTransformation() {
+            @Override
+            public boolean supports(AnnotationTarget.Kind kind) {
+                return kind == AnnotationTarget.Kind.CLASS;
+            }
+
+            @Override
+            public void apply(TransformationContext ctx) {
+                if (ctx.hasAnnotation(CAMEL_TOOLS_DOTNAME)) {
+                    ctx.add(CamelToolsBinding.class);
+                }
+            }
+        }));
     }
 
     @BuildStep

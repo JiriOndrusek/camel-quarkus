@@ -22,9 +22,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.camel.quarkus.component.support.langchain4j.CamelTools;
 
 @ApplicationScoped
-@RegisterAiService
-@CamelTools("weather")
-public interface WeatherAiServiceOllama {
+@RegisterAiService(chatLanguageModelSupplier = AdminToolCallingChatModel.class)
+@CamelTools("admin")
+public interface AdminAiService {
 
     String chat(@UserMessage String message);
 }

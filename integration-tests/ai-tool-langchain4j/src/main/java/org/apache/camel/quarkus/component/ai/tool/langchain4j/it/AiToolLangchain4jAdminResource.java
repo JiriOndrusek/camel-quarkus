@@ -16,15 +16,26 @@
  */
 package org.apache.camel.quarkus.component.ai.tool.langchain4j.it;
 
-import dev.langchain4j.service.UserMessage;
-import io.quarkiverse.langchain4j.RegisterAiService;
 import jakarta.enterprise.context.ApplicationScoped;
-import org.apache.camel.quarkus.component.support.langchain4j.CamelTools;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 
+@Path("/ai-tool-langchain4j-admin")
 @ApplicationScoped
-@RegisterAiService
-@CamelTools("weather")
-public interface WeatherAiServiceOllama {
+public class AiToolLangchain4jAdminResource {
 
-    String chat(@UserMessage String message);
+    @Inject
+    AdminAiService adminAiService;
+
+    @Path("/chat")
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.TEXT_PLAIN)
+    public String chat(String message) {
+        return adminAiService.chat(message);
+    }
 }

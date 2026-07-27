@@ -22,10 +22,19 @@ public class AiToolLangchain4jRoutes extends RouteBuilder {
     @Override
     public void configure() {
         from("ai-tool:getWeather?"
-                + "description=Get the current weather for a city"
+                + "tags=weather"
+                + "&description=Get the current weather for a city"
                 + "&parameter.city=string"
                 + "&parameter.city.required=true"
                 + "&parameter.city.description=The city name")
                 .setBody(simple("Sunny in ${header.city}, 25 celsius"));
+
+        from("ai-tool:getNews?"
+                + "tags=admin"
+                + "&description=Get the latest news about a topic"
+                + "&parameter.topic=string"
+                + "&parameter.topic.required=true"
+                + "&parameter.topic.description=The news topic")
+                .setBody(simple("Latest news about ${header.topic}"));
     }
 }

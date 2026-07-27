@@ -16,15 +16,36 @@
  */
 package org.apache.camel.quarkus.component.ai.tool.langchain4j.it;
 
-import dev.langchain4j.service.UserMessage;
-import io.quarkiverse.langchain4j.RegisterAiService;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import jakarta.enterprise.context.ApplicationScoped;
-import org.apache.camel.quarkus.component.support.langchain4j.CamelTools;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import org.apache.camel.CamelContext;
+import org.apache.camel.component.ai.tool.AiToolRegistry;
+import org.apache.camel.component.ai.tool.AiToolSpec;
 
+@Path("/ai-tool-langchain4j")
 @ApplicationScoped
-@RegisterAiService
-@CamelTools("weather")
-public interface WeatherAiServiceOllama {
+public class AiToolLangchain4jToolListResource {
 
-    String chat(@UserMessage String message);
+    @Inject
+    CamelContext camelContext;
+
+    @Path("/tools/{tag}")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String listToolsByTag(@PathParam("tag") String tag) {
+        AiToolRegistry registry = AiToolRegistry.getOrCreate(camelContext);
+        Set<AiToolSpec> tools = registry.getToolsByTag(tag);
+        return tools.stream()
+                .map(AiToolSpec::getName)
+                .sorted()
+                .collect(Collectors.joining(","));
+    }
 }
