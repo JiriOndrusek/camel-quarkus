@@ -47,6 +47,7 @@ import org.apache.camel.component.ai.tool.AiToolRegistry;
 import org.apache.camel.component.ai.tool.AiToolResult;
 import org.apache.camel.component.ai.tool.AiToolSpec;
 import org.apache.camel.support.DefaultExchange;
+import org.jboss.logging.Logger;
 
 /**
  * Bridges Camel's {@link AiToolRegistry} to langchain4j's {@link ToolProvider} SPI. When registered as a CDI bean (done
@@ -56,6 +57,7 @@ import org.apache.camel.support.DefaultExchange;
  */
 public class CamelToolProvider implements ToolProvider {
 
+    private static final Logger LOG = Logger.getLogger(CamelToolProvider.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     static final Map<String, String> TAG_MAP = new ConcurrentHashMap<>();
     private static final ThreadLocal<String> CURRENT_TAG = new ThreadLocal<>();
@@ -91,7 +93,7 @@ public class CamelToolProvider implements ToolProvider {
         return (ToolExecutionRequest request, Object memoryId) -> {
             Map<String, Object> arguments = parseArguments(request);
             if (arguments == null) {
-                return "Invalid arguments: could not parse the provided JSON arguments";
+                return "Invalid arguments: could not parse the provided JSON arguments: " + request.arguments();
             }
             Exchange exchange = new DefaultExchange(camelContext);
             AiToolResult result = AiToolExecutor.execute(spec, arguments, exchange);
@@ -108,6 +110,7 @@ public class CamelToolProvider implements ToolProvider {
             return OBJECT_MAPPER.readValue(jsonArguments, new TypeReference<>() {
             });
         } catch (Exception e) {
+            LOG.debugf(e, "Failed to parse tool arguments: %s", jsonArguments);
             return null;
         }
     }
@@ -118,7 +121,8 @@ public class CamelToolProvider implements ToolProvider {
         } else if (result instanceof AiToolResult.ArgumentError error) {
             return "Invalid arguments: " + error.message();
         } else if (result instanceof AiToolResult.ExecutionError error) {
-            return "Tool execution failed: " + error.message();
+            LOG.warnf("Tool '%s' execution failed: %s", toolName, error.message());
+            return "Tool execution failed";
         }
         return "Tool execution failed";
     }

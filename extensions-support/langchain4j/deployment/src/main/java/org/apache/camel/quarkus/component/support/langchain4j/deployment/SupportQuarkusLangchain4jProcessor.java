@@ -156,6 +156,10 @@ class SupportQuarkusLangchain4jProcessor {
         for (AnnotationInstance annotation : index.getAnnotations(CAMEL_TOOLS_DOTNAME)) {
             if (annotation.target().kind() == AnnotationTarget.Kind.CLASS) {
                 String className = annotation.target().asClass().name().toString();
+                if (annotation.value() == null) {
+                    LOG.warnf("@CamelTools on %s has no value — skipping", className);
+                    continue;
+                }
                 String tagValue = annotation.value().asString();
                 tagMap.put(className, tagValue);
                 LOG.infof("Discovered @CamelTools(\"%s\") on %s", tagValue, className);
