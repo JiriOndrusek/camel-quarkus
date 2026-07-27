@@ -14,17 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.ai.tool.langchain4j.it;
+package org.apache.camel.quarkus.component.support.langchain4j;
 
-import dev.langchain4j.service.UserMessage;
-import io.quarkiverse.langchain4j.RegisterAiService;
-import jakarta.enterprise.context.ApplicationScoped;
-import org.apache.camel.quarkus.component.support.langchain4j.CamelTools;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-@ApplicationScoped
-@RegisterAiService
-@CamelTools("weather")
-public interface WeatherAiServiceOllama {
+import jakarta.interceptor.InterceptorBinding;
 
-    String chat(@UserMessage String message);
+@InterceptorBinding
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+public @interface CamelToolsBinding {
 }
