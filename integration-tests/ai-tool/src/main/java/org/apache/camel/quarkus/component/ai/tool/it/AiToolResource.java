@@ -107,9 +107,9 @@ public class AiToolResource {
         Map<String, Object> arguments = new HashMap<>();
         if (params != null) {
             for (String param : params) {
-                int eq = param.indexOf('=');
-                if (eq > 0) {
-                    arguments.put(param.substring(0, eq), param.substring(eq + 1));
+                String[] parts = param.split("=", 2);
+                if (parts.length == 2) {
+                    arguments.put(parts[0], parts[1]);
                 }
             }
         }
