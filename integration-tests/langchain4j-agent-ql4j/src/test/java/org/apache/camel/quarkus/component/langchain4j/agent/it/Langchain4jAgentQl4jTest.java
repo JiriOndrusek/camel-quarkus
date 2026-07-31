@@ -39,4 +39,22 @@ class Langchain4jAgentQl4jTest {
                         not(Langchain4jAgentTest.TEST_USER_MESSAGE_SIMPLE),
                         containsString("Apache Camel"));
     }
+
+    /**
+     * Verifies that AgentWithoutMemory is truly stateless when Quarkus LangChain4j is on the classpath
+     * and a default model is configured. Calls the agent twice within a single HTTP request; if QL4J's
+     * ChatMemoryProvider leaks in, the second call's LLM request will include the first call's history,
+     * causing WireMock to fail matching (the request body will differ from the expected single-message payload).
+     *
+     * @see <a href="https://github.com/apache/camel-quarkus/issues/8836">#8836</a>
+     */
+    @Test
+    void agentWithoutMemoryIsStateless() {
+        RestAssured.given()
+                .body(Langchain4jAgentTest.TEST_USER_MESSAGE_SIMPLE)
+                .post("/langchain4j-agent-ql4j/stateless-check")
+                .then()
+                .statusCode(200)
+                .body("stateless", is(true));
+    }
 }
