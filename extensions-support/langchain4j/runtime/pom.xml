@@ -51,6 +51,12 @@
             <artifactId>langchain4j-embeddings</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.quarkiverse.langchain4j</groupId>
+            <artifactId>quarkus-langchain4j-core</artifactId>
+            <version>${quarkiverse-langchain4j.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-ai-tool</artifactId>
             <optional>true</optional>
