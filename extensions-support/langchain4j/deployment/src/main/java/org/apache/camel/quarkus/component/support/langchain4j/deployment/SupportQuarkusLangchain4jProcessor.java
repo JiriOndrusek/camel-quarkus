@@ -58,6 +58,9 @@ import org.apache.camel.quarkus.component.support.langchain4j.CamelAiToolsInterc
 import org.apache.camel.quarkus.component.support.langchain4j.QuarkusLangchain4jRecorder;
 import org.apache.camel.quarkus.component.support.langchain4j.RagBridgeConfig;
 import org.apache.camel.quarkus.component.support.langchain4j.RagBridgeConfig.AugmentorConfig;
+import org.apache.camel.quarkus.core.deployment.spi.CamelContextBuildItem;
+import org.apache.camel.quarkus.core.deployment.spi.CamelRegistryBuildItem;
+import org.apache.camel.quarkus.core.deployment.spi.CamelRuntimeTaskBuildItem;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -78,6 +81,8 @@ class SupportQuarkusLangchain4jProcessor {
             .createSimple("io.quarkiverse.langchain4j.RegisterAiService");
     private static final DotName CAMEL_AI_TOOLS_DOTNAME = DotName
             .createSimple("org.apache.camel.quarkus.component.support.langchain4j.CamelAiTools");
+    private static final DotName EMBEDDING_STORE_NAME_DOTNAME = DotName
+            .createSimple("io.quarkiverse.langchain4j.EmbeddingStoreName");
 
     private static final Logger LOG = Logger.getLogger(SupportQuarkusLangchain4jProcessor.class);
 
@@ -234,6 +239,27 @@ class SupportQuarkusLangchain4jProcessor {
                 .addBeanClasses(CamelAiToolsInterceptor.class)
                 .setUnremovable()
                 .build());
+    }
+
+    // A store declared only for use from a Camel route is never injected anywhere in Java,
+    // so ArC would remove it as unused and registerNamedEmbeddingStores would find nothing.
+    @BuildStep
+    UnremovableBeanBuildItem retainNamedEmbeddingStores() {
+        return new UnremovableBeanBuildItem(bean -> bean.getQualifiers()
+                .stream()
+                .anyMatch(qualifier -> qualifier.name().equals(EMBEDDING_STORE_NAME_DOTNAME)));
+    }
+
+    // Bridges @EmbeddingStoreName-qualified CDI beans into the Camel registry so routes
+    // can reference them by name (e.g. embeddingStore=#products) without manual binding.
+    @BuildStep
+    @Record(ExecutionTime.RUNTIME_INIT)
+    CamelRuntimeTaskBuildItem registerNamedEmbeddingStores(
+            QuarkusLangchain4jRecorder recorder,
+            CamelRegistryBuildItem registry,
+            CamelContextBuildItem context) {
+        recorder.registerNamedEmbeddingStores(registry.getRegistry());
+        return new CamelRuntimeTaskBuildItem("named-embedding-stores");
     }
 
     @BuildStep
