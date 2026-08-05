@@ -62,6 +62,24 @@ class RagBridgeTest {
     }
 
     @Test
+    void namedEmbeddingStoreIsInCamelRegistry() {
+        RestAssured.given()
+                .get("/rag-bridge/registry/embedding-store/products")
+                .then()
+                .statusCode(200)
+                .body(is("true"));
+    }
+
+    @Test
+    void unknownEmbeddingStoreIsNotInCamelRegistry() {
+        RestAssured.given()
+                .get("/rag-bridge/registry/embedding-store/nonexistent")
+                .then()
+                .statusCode(200)
+                .body(is("false"));
+    }
+
+    @Test
     void namedAugmentorDoesNotSeeDataInOtherStore() {
         RestAssured.given()
                 .body("Quarkus is a supersonic subatomic Java framework")

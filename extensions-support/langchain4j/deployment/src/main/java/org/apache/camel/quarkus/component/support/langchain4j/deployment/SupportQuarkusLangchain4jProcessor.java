@@ -58,6 +58,9 @@ import org.apache.camel.quarkus.component.support.langchain4j.CamelAiToolsInterc
 import org.apache.camel.quarkus.component.support.langchain4j.QuarkusLangchain4jRecorder;
 import org.apache.camel.quarkus.component.support.langchain4j.RagBridgeConfig;
 import org.apache.camel.quarkus.component.support.langchain4j.RagBridgeConfig.AugmentorConfig;
+import org.apache.camel.quarkus.core.deployment.spi.CamelContextBuildItem;
+import org.apache.camel.quarkus.core.deployment.spi.CamelRegistryBuildItem;
+import org.apache.camel.quarkus.core.deployment.spi.CamelRuntimeTaskBuildItem;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -228,6 +231,18 @@ class SupportQuarkusLangchain4jProcessor {
                 .addBeanClasses(CamelAiToolsInterceptor.class)
                 .setUnremovable()
                 .build());
+    }
+
+    // Bridges @EmbeddingStoreName-qualified CDI beans into the Camel registry so routes
+    // can reference them by name (e.g. embeddingStore=#products) without manual binding.
+    @BuildStep
+    @Record(ExecutionTime.RUNTIME_INIT)
+    CamelRuntimeTaskBuildItem registerNamedEmbeddingStores(
+            QuarkusLangchain4jRecorder recorder,
+            CamelRegistryBuildItem registry,
+            CamelContextBuildItem context) {
+        recorder.registerNamedEmbeddingStores(registry.getRegistry());
+        return new CamelRuntimeTaskBuildItem("named-embedding-stores");
     }
 
     @BuildStep
