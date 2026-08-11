@@ -310,6 +310,14 @@ a| [[quarkus-camel-ai-ingest-pipeline-name-reconcile-allow-bulk-delete]]`link:#q
 Explicit consent to bulk deletion (for intended corpus restructurings).
 | `boolean`
 | `false`
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-readiness-enabled]]`link:#quarkus-camel-ai-ingest-pipeline-name-readiness-enabled[quarkus.camel.ai.ingest."pipeline-name".readiness.enabled]`
+
+Whether this pipeline gates application readiness until its first successful
+synchronisation pass ({@code sync} mode). Disable for side-feature knowledge
+bases that must not take the whole application out of rotation.
+| `boolean`
+| `true`
 |===
 
 [.configuration-legend]

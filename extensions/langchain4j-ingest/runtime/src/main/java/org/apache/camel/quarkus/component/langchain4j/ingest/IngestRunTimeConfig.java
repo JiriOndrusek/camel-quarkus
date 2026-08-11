@@ -65,6 +65,22 @@ public interface IngestRunTimeConfig {
          */
         ReconcileRunTimeConfig reconcile();
 
+        /**
+         * Readiness gating.
+         */
+        ReadinessRunTimeConfig readiness();
+
+        interface ReadinessRunTimeConfig {
+
+            /**
+             * Whether this pipeline gates application readiness until its first successful
+             * synchronisation pass ({@code sync} mode). Disable for side-feature knowledge
+             * bases that must not take the whole application out of rotation.
+             */
+            @WithDefault("true")
+            boolean enabled();
+        }
+
         interface LedgerRunTimeConfig {
 
             /**

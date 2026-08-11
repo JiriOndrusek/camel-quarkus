@@ -31,9 +31,32 @@ import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestService;
 public class IngestPipelineRegistry {
 
     private final ConcurrentMap<String, IngestService> pipelines = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Boolean> ready = new ConcurrentHashMap<>();
 
-    void register(String name, IngestService service) {
+    /**
+     * @param gatesReadiness sync pipelines gate readiness until their first succeeded pass
+     *                       (unless opted out); append pipelines are ready from the start
+     */
+    void register(String name, IngestService service, boolean gatesReadiness) {
         pipelines.put(name, service);
+        ready.put(name, !gatesReadiness);
+    }
+
+    void markReady(String name) {
+        ready.put(name, true);
+    }
+
+    /**
+     * Readiness is advisory (it gates load-balanced traffic, and a half-populated knowledge base
+     * answers worse rather than failing) and fails closed: a pipeline whose first pass has not
+     * succeeded reports not-ready until one does.
+     */
+    public Map<String, Boolean> readiness() {
+        return Map.copyOf(ready);
+    }
+
+    public boolean allReady() {
+        return ready.values().stream().allMatch(Boolean::booleanValue);
     }
 
     public IngestService require(String name) {

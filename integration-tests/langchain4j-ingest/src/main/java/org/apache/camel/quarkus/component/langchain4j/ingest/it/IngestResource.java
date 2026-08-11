@@ -169,6 +169,8 @@ public class IngestResource {
                 "failures", metrics.failures(),
                 "replaced", metrics.replaced(),
                 "skippedUnchanged", metrics.skippedUnchanged(),
-                "deleted", metrics.deleted());
+                "deleted", metrics.deleted(),
+                "deadLettered", metrics.deadLettered(),
+                "staleRetained", metrics.staleRetained());
     }
 }

@@ -54,7 +54,8 @@ public class SyncPassRunner {
     }
 
     public record PassOutcome(int processed, int failed, int ingested, int replaced, int skippedUnchanged,
-            int suppressed, int segmentsWritten, int deleted, int deletionRefused, String status) {
+            int suppressed, int deadLettered, int staleRetained, int segmentsWritten, int deleted,
+            int deletionRefused, String status) {
         public boolean succeeded() {
             return "succeeded".equals(status);
         }
@@ -86,6 +87,8 @@ public class SyncPassRunner {
         int replaced = 0;
         int skippedUnchanged = 0;
         int suppressed = 0;
+        int deadLettered = 0;
+        int staleRetained = 0;
         int segmentsWritten = 0;
 
         for (Map.Entry<String, SourceDocument> entry : listing.entrySet()) {
@@ -100,20 +103,31 @@ public class SyncPassRunner {
                 case IngestResult.OUTCOME_SKIPPED_UNCHANGED -> skippedUnchanged++;
                 case IngestResult.OUTCOME_SUPPRESSED_TOMBSTONE, IngestResult.OUTCOME_SUPPRESSED_PINNED ->
                     suppressed++;
+                case IngestResult.OUTCOME_DEAD_LETTERED -> deadLettered++;
                 default -> {
                     // empty: nothing to count
                 }
                 }
             } catch (Exception e) {
                 failed++;
-                LOG.errorf(e, "Pipeline '%s': failed to process '%s' — document skipped, deletion disabled "
-                        + "for this pass", pipeline, entry.getKey());
+                // a stale version correctly keeps serving — but that must be visible, or the
+                // corpus goes stale behind a green pass
+                boolean hadCommittedVersion = ledger.read(pipeline, entry.getKey())
+                        .map(row -> row.done() && row.segmentCount() > 0)
+                        .orElse(false);
+                if (hadCommittedVersion) {
+                    staleRetained++;
+                }
+                ledger.markFailed(pipeline, entry.getKey(), entry.getValue().fingerprint());
+                LOG.errorf(e, "Pipeline '%s': failed to process '%s' — dead-lettered (retried when its "
+                        + "content changes)%s; deletion disabled for this pass", pipeline, entry.getKey(),
+                        hadCommittedVersion ? "; the STALE previous version keeps serving" : "");
             }
         }
 
         if (failed > 0) {
             return new PassOutcome(processed, failed, ingested, replaced, skippedUnchanged, suppressed,
-                    segmentsWritten, 0, 0, "partially-failed");
+                    deadLettered, staleRetained, segmentsWritten, 0, 0, "partially-failed");
         }
 
         // reconcile: ledger-versus-source
@@ -125,7 +139,7 @@ public class SyncPassRunner {
                 continue;
             }
             sourceOwned++;
-            if (row.done() && !listing.containsKey(row.documentId())) {
+            if ((row.done() || row.failed()) && !listing.containsKey(row.documentId())) {
                 candidates.add(row);
             }
         }
@@ -137,7 +151,7 @@ public class SyncPassRunner {
                     + "quarkus.camel.ai.ingest.%s.reconcile.allow-bulk-delete=true for one pass.",
                     pipeline, candidates.size(), sourceOwned, bulkDeleteThreshold * 100, pipeline);
             return new PassOutcome(processed, 0, ingested, replaced, skippedUnchanged, suppressed,
-                    segmentsWritten, 0, candidates.size(), "succeeded");
+                    deadLettered, staleRetained, segmentsWritten, 0, candidates.size(), "succeeded");
         }
 
         int deleted = 0;
@@ -154,6 +168,6 @@ public class SyncPassRunner {
         }
 
         return new PassOutcome(processed, 0, ingested, replaced, skippedUnchanged, suppressed,
-                segmentsWritten, deleted, 0, "succeeded");
+                deadLettered, staleRetained, segmentsWritten, deleted, 0, "succeeded");
     }
 }

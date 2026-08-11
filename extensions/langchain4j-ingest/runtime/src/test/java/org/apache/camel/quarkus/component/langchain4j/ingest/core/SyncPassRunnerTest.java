@@ -153,6 +153,52 @@ class SyncPassRunnerTest {
     }
 
     @Test
+    void poisonDocumentIsDeadLetteredUntilItsContentChanges() {
+        // first pass: the document fails to read
+        Map<String, SyncPassRunner.SourceDocument> failing = new LinkedHashMap<>();
+        failing.put("poison.txt", new SyncPassRunner.SourceDocument("fp-1", () -> {
+            throw new IllegalStateException("boom");
+        }));
+        SyncPassRunner.PassOutcome first = runner(0.9, false).run(failing);
+        assertEquals("partially-failed", first.status());
+        assertEquals(1, first.failed());
+        assertTrue(ledger.read("p", "poison.txt").orElseThrow().failed());
+
+        // second pass, same fingerprint: dead-lettered, NOT retried — and the pass can succeed
+        Map<String, SyncPassRunner.SourceDocument> same = new LinkedHashMap<>();
+        same.put("poison.txt", new SyncPassRunner.SourceDocument("fp-1", () -> {
+            throw new IllegalStateException("must not be read");
+        }));
+        SyncPassRunner.PassOutcome sameFp = runner(0.9, false).run(same);
+        assertEquals("succeeded", sameFp.status());
+        assertEquals(1, sameFp.deadLettered());
+
+        // changed fingerprint: retried, and this time it works
+        Map<String, SyncPassRunner.SourceDocument> fixed = new LinkedHashMap<>();
+        fixed.put("poison.txt", new SyncPassRunner.SourceDocument("fp-2", () -> "now readable"));
+        SyncPassRunner.PassOutcome retried = runner(0.9, false).run(fixed);
+        assertEquals("succeeded", retried.status());
+        assertEquals(1, retried.ingested() + retried.replaced());
+        assertTrue(ledger.read("p", "poison.txt").orElseThrow().done());
+    }
+
+    @Test
+    void changedDocumentThatFailsRetainsStaleVersionVisibly() {
+        runner(0.9, false).run(listing("doc.txt", "good version"));
+
+        Map<String, SyncPassRunner.SourceDocument> failingUpdate = new LinkedHashMap<>();
+        failingUpdate.put("doc.txt", new SyncPassRunner.SourceDocument("fp-new", () -> {
+            throw new IllegalStateException("unparseable update");
+        }));
+        SyncPassRunner.PassOutcome outcome = runner(0.9, false).run(failingUpdate);
+
+        assertEquals(1, outcome.staleRetained(),
+                "a changed document that fails must be visible — the corpus is going stale");
+        assertEquals(1, store.entries.size(), "the stale-but-good version must keep serving");
+        assertEquals("good version", store.entries.values().iterator().next().text());
+    }
+
+    @Test
     void pinnedDocumentIsNotDeletedWhenItsSourceFileDisappears() {
         runner(0.9, false).run(listing("a.txt", "source version"));
         service.ingest("a.txt", null, "corrected version", IngestService.Origin.API);

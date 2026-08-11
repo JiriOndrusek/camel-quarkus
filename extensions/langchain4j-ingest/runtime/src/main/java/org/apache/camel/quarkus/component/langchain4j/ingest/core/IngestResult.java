@@ -36,4 +36,6 @@ public record IngestResult(String pipeline, String documentId, int segmentsWritt
     public static final String OUTCOME_DELETED = "deleted";
     public static final String OUTCOME_SUPPRESSED_TOMBSTONE = "suppressed-tombstone";
     public static final String OUTCOME_SUPPRESSED_PINNED = "suppressed-pinned";
+    /** A poison document skipped because a previous attempt failed and its content is unchanged. */
+    public static final String OUTCOME_DEAD_LETTERED = "dead-lettered";
 }

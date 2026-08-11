@@ -73,7 +73,15 @@ public interface SyncLedger {
     void deleteRow(String pipeline, String documentId);
 
     /**
-     * @param status {@code done} or {@code in_progress}
+     * Dead-letters a document after a processing failure: records the fingerprint of the failed
+     * attempt so subsequent passes skip the poison document until its content changes, instead
+     * of failing identically forever at cost. Previous committed segments (a stale version that
+     * correctly keeps serving) stay untouched.
+     */
+    void markFailed(String pipeline, String documentId, String fingerprint);
+
+    /**
+     * @param status {@code done}, {@code in_progress} or {@code failed}
      * @param origin {@link #ORIGIN_SOURCE} or {@link #ORIGIN_API}
      */
     record LedgerRow(String pipeline, String documentId, String fingerprint, String contentHash,
@@ -82,6 +90,10 @@ public interface SyncLedger {
 
         public boolean done() {
             return "done".equals(status);
+        }
+
+        public boolean failed() {
+            return "failed".equals(status);
         }
 
         /** The shrink bound: the largest segment index that may exist in the store, ever intended. */

@@ -42,6 +42,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class Langchain4jIngestSyncTest {
 
     @Test
+    @Order(0)
+    void readinessGatesOnFirstSuccessfulPass() {
+        // the sync pipeline gates readiness; its first pass (1s interval) flips it UP
+        Awaitility.await().atMost(30, TimeUnit.SECONDS).pollInterval(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> RestAssured.get("/q/health/ready")
+                        .then()
+                        .statusCode(200)
+                        .body("status", org.hamcrest.Matchers.is("UP"))
+                        .body("checks.find { it.name == 'camel-langchain4j-ingest' }.data.manuals",
+                                org.hamcrest.Matchers.is("ready")));
+    }
+
+    @Test
     @Order(1)
     void editedFileReplacesItsPreviousVectors() {
         writeManual("guide.txt",

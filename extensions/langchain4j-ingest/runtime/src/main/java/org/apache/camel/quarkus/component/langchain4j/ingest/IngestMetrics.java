@@ -38,6 +38,8 @@ public class IngestMetrics {
     private final ConcurrentMap<String, LongAdder> replaced = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, LongAdder> skippedUnchanged = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, LongAdder> deleted = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, LongAdder> deadLettered = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, LongAdder> staleRetained = new ConcurrentHashMap<>();
 
     public void documentIngested(String pipeline, int segmentsWritten) {
         documents.computeIfAbsent(pipeline, k -> new LongAdder()).increment();
@@ -62,26 +64,21 @@ public class IngestMetrics {
     }
 
     /** Aggregate application of one sync pass. */
-    public void applyPass(String pipeline, int ingested, int replacedCount, int skipped, int deletedCount,
-            int segmentsWritten, int failureCount) {
-        if (ingested > 0) {
-            documents.computeIfAbsent(pipeline, k -> new LongAdder()).add(ingested);
-        }
-        if (replacedCount > 0) {
-            documents.computeIfAbsent(pipeline, k -> new LongAdder()).add(replacedCount);
-            replaced.computeIfAbsent(pipeline, k -> new LongAdder()).add(replacedCount);
-        }
-        if (skipped > 0) {
-            skippedUnchanged.computeIfAbsent(pipeline, k -> new LongAdder()).add(skipped);
-        }
-        if (deletedCount > 0) {
-            deleted.computeIfAbsent(pipeline, k -> new LongAdder()).add(deletedCount);
-        }
-        if (segmentsWritten > 0) {
-            segments.computeIfAbsent(pipeline, k -> new LongAdder()).add(segmentsWritten);
-        }
-        if (failureCount > 0) {
-            failures.computeIfAbsent(pipeline, k -> new LongAdder()).add(failureCount);
+    public void applyPass(String pipeline,
+            org.apache.camel.quarkus.component.langchain4j.ingest.core.SyncPassRunner.PassOutcome outcome) {
+        add(documents, pipeline, outcome.ingested() + outcome.replaced());
+        add(replaced, pipeline, outcome.replaced());
+        add(skippedUnchanged, pipeline, outcome.skippedUnchanged());
+        add(deleted, pipeline, outcome.deleted());
+        add(segments, pipeline, outcome.segmentsWritten());
+        add(failures, pipeline, outcome.failed());
+        add(deadLettered, pipeline, outcome.deadLettered());
+        add(staleRetained, pipeline, outcome.staleRetained());
+    }
+
+    private static void add(ConcurrentMap<String, LongAdder> counters, String pipeline, int amount) {
+        if (amount > 0) {
+            counters.computeIfAbsent(pipeline, k -> new LongAdder()).add(amount);
         }
     }
 
@@ -107,6 +104,14 @@ public class IngestMetrics {
 
     public Map<String, Long> deleted() {
         return snapshot(deleted);
+    }
+
+    public Map<String, Long> deadLettered() {
+        return snapshot(deadLettered);
+    }
+
+    public Map<String, Long> staleRetained() {
+        return snapshot(staleRetained);
     }
 
     private static Map<String, Long> snapshot(Map<String, LongAdder> counters) {

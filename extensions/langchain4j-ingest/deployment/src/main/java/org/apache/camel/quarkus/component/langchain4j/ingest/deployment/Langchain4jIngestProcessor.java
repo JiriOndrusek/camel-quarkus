@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.Set;
 
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
+import io.quarkus.deployment.Capabilities;
+import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.Produce;
@@ -73,6 +75,14 @@ class Langchain4jIngestProcessor {
                         IngestOperations.class)
                 .setUnremovable()
                 .build();
+    }
+
+    @BuildStep
+    void readinessCheck(Capabilities capabilities, BuildProducer<AdditionalBeanBuildItem> beans) {
+        if (capabilities.isPresent(Capability.SMALLRYE_HEALTH)) {
+            beans.produce(AdditionalBeanBuildItem.unremovableOf(
+                    "org.apache.camel.quarkus.component.langchain4j.ingest.IngestReadinessCheck"));
+        }
     }
 
     /**

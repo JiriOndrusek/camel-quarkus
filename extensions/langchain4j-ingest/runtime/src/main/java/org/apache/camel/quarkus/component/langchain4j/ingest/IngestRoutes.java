@@ -97,7 +97,8 @@ public class IngestRoutes extends RouteBuilder {
                     IngestService.WriteStrategy.of(pipeline.writeStrategy()),
                     pipeline.embeddingModelId().orElse(""));
 
-            registry.register(name, service);
+            boolean gatesReadiness = sync && (runtime == null || runtime.readiness().enabled());
+            registry.register(name, service, gatesReadiness);
             configureSourceRoute(name, runtime, service, sync);
             configureIngressRoute(name, service);
 
@@ -170,8 +171,10 @@ public class IngestRoutes extends RouteBuilder {
                         return;
                     }
                     SyncPassRunner.PassOutcome outcome = passRunner.run(listing);
-                    metrics.applyPass(name, outcome.ingested(), outcome.replaced(), outcome.skippedUnchanged(),
-                            outcome.deleted(), outcome.segmentsWritten(), outcome.failed());
+                    metrics.applyPass(name, outcome);
+                    if (outcome.succeeded()) {
+                        registry.markReady(name);
+                    }
                     if (outcome.ingested() + outcome.replaced() + outcome.deleted() + outcome.failed() > 0
                             || outcome.deletionRefused() > 0) {
                         LOG.infof("Pipeline '%s' pass %s: %d ingested, %d replaced, %d unchanged, %d deleted"

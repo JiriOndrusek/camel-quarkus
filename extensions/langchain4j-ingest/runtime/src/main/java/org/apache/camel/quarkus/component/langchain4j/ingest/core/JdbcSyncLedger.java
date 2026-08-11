@@ -204,6 +204,36 @@ public class JdbcSyncLedger implements SyncLedger {
     }
 
     @Override
+    public void markFailed(String pipeline, String documentId, String fingerprint) {
+        try (Connection connection = dataSource.getConnection()) {
+            String update = "UPDATE " + TABLE + " SET fingerprint = ?, status = 'failed', updated_at = ? "
+                    + "WHERE pipeline = ? AND doc_id = ?";
+            int updated;
+            try (PreparedStatement statement = connection.prepareStatement(update)) {
+                statement.setString(1, fingerprint);
+                statement.setTimestamp(2, Timestamp.from(Instant.now()));
+                statement.setString(3, pipeline);
+                statement.setString(4, documentId);
+                updated = statement.executeUpdate();
+            }
+            if (updated == 0) {
+                String insert = "INSERT INTO " + TABLE
+                        + " (pipeline, doc_id, fingerprint, status, origin, updated_at) "
+                        + "VALUES (?, ?, ?, 'failed', 'source', ?)";
+                try (PreparedStatement statement = connection.prepareStatement(insert)) {
+                    statement.setString(1, pipeline);
+                    statement.setString(2, documentId);
+                    statement.setString(3, fingerprint);
+                    statement.setTimestamp(4, Timestamp.from(Instant.now()));
+                    statement.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Ledger dead-letter update failed for '" + documentId + "'", e);
+        }
+    }
+
+    @Override
     public void deleteRow(String pipeline, String documentId) {
         String sql = "DELETE FROM " + TABLE + " WHERE pipeline = ? AND doc_id = ?";
         try (Connection connection = dataSource.getConnection();
