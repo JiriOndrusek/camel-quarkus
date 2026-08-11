@@ -22,10 +22,17 @@ package org.apache.camel.quarkus.component.langchain4j.ingest;
 public final class IngestHeaders {
 
     /**
-     * Required: the stable document id. Later releases build update and delete semantics on it,
-     * so a generated fallback would silently break replacement — an absent id is an error.
+     * Required: the stable document id. Update and delete semantics are built on it, so a
+     * generated fallback would silently break replacement — an absent id is an error.
      */
     public static final String DOCUMENT_ID = "CamelAiIngestDocumentId";
+
+    /**
+     * Optional: a cheap change fingerprint (size+mtime, an ETag, an offset). When present and
+     * unchanged, a {@code sync} pipeline skips the document without splitting or embedding.
+     * Absent means "always run change detection on content".
+     */
+    public static final String FINGERPRINT = "CamelAiIngestFingerprint";
 
     private IngestHeaders() {
     }

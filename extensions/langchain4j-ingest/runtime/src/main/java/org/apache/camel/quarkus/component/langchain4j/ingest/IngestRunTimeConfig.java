@@ -54,6 +54,21 @@ public interface IngestRunTimeConfig {
          */
         SourceRunTimeConfig source();
 
+        /**
+         * The sync ledger ({@code sync} mode).
+         */
+        LedgerRunTimeConfig ledger();
+
+        interface LedgerRunTimeConfig {
+
+            /**
+             * Name of the datasource backing the sync ledger. When not set, the application's
+             * default datasource is used. Dev Services provides one automatically in dev and
+             * test mode when a JDBC driver is present and no datasource is configured.
+             */
+            Optional<String> datasource();
+        }
+
         interface SourceRunTimeConfig {
 
             /**

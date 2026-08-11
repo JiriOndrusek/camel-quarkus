@@ -24,6 +24,7 @@ import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
 import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithDefault;
+import io.smallrye.config.WithName;
 import io.smallrye.config.WithParentName;
 
 /**
@@ -50,12 +51,32 @@ public interface IngestBuildTimeConfig {
         SourceBuildTimeConfig source();
 
         /**
-         * Ingestion mode. Only {@code append} is supported in this release: documents are only
-         * ever added; a restart re-ingests the corpus. {@code sync} (update, replace,
-         * restart-safety) arrives in a later release.
+         * Ingestion mode. {@code sync}: the knowledge base mirrors the source — an edited
+         * document replaces its previous vectors, an unchanged corpus costs nothing on restart.
+         * Requires a datasource for the sync ledger. {@code append}: documents are only ever
+         * added; a restart re-ingests the corpus; no ledger needed.
          */
         @WithDefault("append")
         String mode();
+
+        /**
+         * How the store behaves when the same segment ids are written again ({@code sync} mode):
+         * {@code upsert} for stores whose write overwrites (pgvector, qdrant, elasticsearch),
+         * {@code remove-then-add} for stores that keep or mix old content on same-id writes
+         * (chroma, milvus, in-memory).
+         */
+        @WithName("write-strategy")
+        @WithDefault("upsert")
+        String writeStrategy();
+
+        /**
+         * User-declared identity of the embedding model, for example
+         * {@code openai/text-embedding-3-small@2024-01}. Folded into change detection: bump it
+         * when the provider changes the model behind an unchanged name, so the corpus re-embeds
+         * instead of silently mixing two embedding spaces.
+         */
+        @WithName("embedding-model-id")
+        Optional<String> embeddingModelId();
 
         /**
          * How documents are split into segments before embedding: {@code recursive} or

@@ -14,20 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.langchain4j.ingest.core;
+package org.apache.camel.quarkus.component.langchain4j.ingest.it;
 
-/**
- * Outcome of ingesting one document.
- *
- * <p>
- * Outcomes: {@code ingested} (new document written), {@code replaced} (previous vectors
- * overwritten/removed), {@code skipped-unchanged} (change detection short-circuited — no fetch
- * of embeddings, no store write), {@code empty} (blank document, nothing written).
- */
-public record IngestResult(String pipeline, String documentId, int segmentsWritten, String outcome) {
+import io.quarkus.test.junit.QuarkusIntegrationTest;
 
-    public static final String OUTCOME_INGESTED = "ingested";
-    public static final String OUTCOME_REPLACED = "replaced";
-    public static final String OUTCOME_SKIPPED_UNCHANGED = "skipped-unchanged";
-    public static final String OUTCOME_EMPTY = "empty";
+@QuarkusIntegrationTest
+class Langchain4jIngestSyncIT extends Langchain4jIngestSyncTest {
 }

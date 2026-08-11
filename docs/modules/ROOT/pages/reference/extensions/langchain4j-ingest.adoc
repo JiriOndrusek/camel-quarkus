@@ -46,6 +46,7 @@ pipeline_) and point it at a folder:
 ----
 quarkus.camel.ai.ingest.products.source.type=file
 quarkus.camel.ai.ingest.products.source.directory=/data/docs
+quarkus.camel.ai.ingest.products.mode=sync
 ----
 
 Every file found is parsed, split into segments, embedded with the application's `EmbeddingModel`
@@ -58,9 +59,52 @@ quarkus.camel.ai.ingest.products.embedding-store=products
 quarkus.camel.ai.ingest.products.embedding-model=my-model
 ----
 
-Documents can also be pushed from a Camel route or from code through the
-`direct:ingest-<pipeline>` endpoint. The `CamelAiIngestDocumentId` header is required — a stable
-document id is what later releases build update and delete semantics on:
+[id="extensions-langchain4j-ingest-usage-staying-correct-mode-sync"]
+=== Staying correct: `mode=sync`
+
+With `mode=sync` the knowledge base *mirrors* its source: an edited document replaces its
+previous vectors instead of joining them, a document that shrank loses its stale segments, and an
+unchanged corpus costs nothing on restart — change detection uses a cheap fingerprint first
+(file size + modification time) and a content hash second, so unchanged documents are skipped
+without splitting or embedding.
+
+Sync mode records what was ingested in a small ledger table (`cq_ingest_ledger`) in the
+application's datasource. In dev and test mode, Dev Services provides the database
+automatically; in production configure `quarkus.datasource.*` as usual, or point the ledger at a
+named datasource:
+
+[source,properties]
+----
+quarkus.camel.ai.ingest.products.ledger.datasource=my-datasource
+----
+
+Segment identifiers are deterministic, so on stores whose write overwrites by id (pgvector,
+qdrant, elasticsearch) replacement is a plain upsert. Stores that keep or mix old content on
+same-id writes (chroma, milvus, the in-memory store) need:
+
+[source,properties]
+----
+quarkus.camel.ai.ingest.products.write-strategy=remove-then-add
+----
+
+Declare the embedding model's identity so a provider-side model change can be detected — bump it
+to force re-embedding:
+
+[source,properties]
+----
+quarkus.camel.ai.ingest.products.embedding-model-id=openai/text-embedding-3-small@2024-01
+----
+
+`mode=append` remains available for disposable stores and demos: documents are only ever added,
+a restart re-ingests the corpus, and no datasource is needed.
+
+[id="extensions-langchain4j-ingest-usage-pushing-documents-from-code-or-routes"]
+=== Pushing documents from code or routes
+
+Documents can be pushed through the `direct:ingest-<pipeline>` endpoint. The
+`CamelAiIngestDocumentId` header is required — replacement and (future) deletion are built on
+stable document ids; the optional `CamelAiIngestFingerprint` header enables cheap change
+detection for pushed documents:
 
 [source,java]
 ----
@@ -70,10 +114,9 @@ producerTemplate.requestBodyAndHeader("direct:ingest-products", text,
 
 [IMPORTANT]
 ====
-This extension is a *preview* and currently supports `mode=append` only: documents are only ever
-added. A restart re-ingests the corpus, an edited document does not replace its previous version
-and there is no deletion. It is intended for development and for in-memory or disposable stores.
-Synchronisation (`mode=sync` — update, replace, restart-safety) arrives in a later release.
+This extension is a *preview*. Deletion (a document removed from the source disappearing from
+the knowledge base, and an explicit delete/pin API) arrives in a later release, together with
+its safety interlocks.
 ====
 
 
@@ -124,11 +167,30 @@ Source type. Only {@code file} is supported in this release; more source types
 
 a|icon:lock[title=Fixed at build time] [[quarkus-camel-ai-ingest-pipeline-name-mode]]`link:#quarkus-camel-ai-ingest-pipeline-name-mode[quarkus.camel.ai.ingest."pipeline-name".mode]`
 
-Ingestion mode. Only {@code append} is supported in this release: documents are only
-ever added; a restart re-ingests the corpus. {@code sync} (update, replace,
-restart-safety) arrives in a later release.
+Ingestion mode. {@code sync}: the knowledge base mirrors the source — an edited
+document replaces its previous vectors, an unchanged corpus costs nothing on restart.
+Requires a datasource for the sync ledger. {@code append}: documents are only ever
+added; a restart re-ingests the corpus; no ledger needed.
 | `string`
 | `append`
+
+a|icon:lock[title=Fixed at build time] [[quarkus-camel-ai-ingest-pipeline-name-write-strategy]]`link:#quarkus-camel-ai-ingest-pipeline-name-write-strategy[quarkus.camel.ai.ingest."pipeline-name".write-strategy]`
+
+How the store behaves when the same segment ids are written again ({@code sync} mode):
+{@code upsert} for stores whose write overwrites (pgvector, qdrant, elasticsearch),
+{@code remove-then-add} for stores that keep or mix old content on same-id writes
+(chroma, milvus, in-memory).
+| `string`
+| `upsert`
+
+a|icon:lock[title=Fixed at build time] [[quarkus-camel-ai-ingest-pipeline-name-embedding-model-id]]`link:#quarkus-camel-ai-ingest-pipeline-name-embedding-model-id[quarkus.camel.ai.ingest."pipeline-name".embedding-model-id]`
+
+User-declared identity of the embedding model, for example
+{@code openai/text-embedding-3-small@2024-01}. Folded into change detection: bump it
+when the provider changes the model behind an unchanged name, so the corpus re-embeds
+instead of silently mixing two embedding spaces.
+| `string`
+| 
 
 a|icon:lock[title=Fixed at build time] [[quarkus-camel-ai-ingest-pipeline-name-splitter]]`link:#quarkus-camel-ai-ingest-pipeline-name-splitter[quarkus.camel.ai.ingest."pipeline-name".splitter]`
 
@@ -184,6 +246,14 @@ Whether subdirectories are ingested too ({@code file} source).
 a| [[quarkus-camel-ai-ingest-pipeline-name-source-include]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-include[quarkus.camel.ai.ingest."pipeline-name".source.include]`
 
 Ant-style include pattern, for example {@code **&#47;*.txt} ({@code file} source).
+| `string`
+| 
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-ledger-datasource]]`link:#quarkus-camel-ai-ingest-pipeline-name-ledger-datasource[quarkus.camel.ai.ingest."pipeline-name".ledger.datasource]`
+
+Name of the datasource backing the sync ledger. When not set, the application's
+default datasource is used. Dev Services provides one automatically in dev and
+test mode when a JDBC driver is present and no datasource is configured.
 | `string`
 | 
 |===

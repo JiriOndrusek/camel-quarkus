@@ -35,10 +35,21 @@ public class IngestMetrics {
     private final ConcurrentMap<String, LongAdder> documents = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, LongAdder> segments = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, LongAdder> failures = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, LongAdder> replaced = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, LongAdder> skippedUnchanged = new ConcurrentHashMap<>();
 
     public void documentIngested(String pipeline, int segmentsWritten) {
         documents.computeIfAbsent(pipeline, k -> new LongAdder()).increment();
         segments.computeIfAbsent(pipeline, k -> new LongAdder()).add(segmentsWritten);
+    }
+
+    public void documentReplaced(String pipeline, int segmentsWritten) {
+        documentIngested(pipeline, segmentsWritten);
+        replaced.computeIfAbsent(pipeline, k -> new LongAdder()).increment();
+    }
+
+    public void documentSkippedUnchanged(String pipeline) {
+        skippedUnchanged.computeIfAbsent(pipeline, k -> new LongAdder()).increment();
     }
 
     public void failure(String pipeline) {
@@ -55,6 +66,14 @@ public class IngestMetrics {
 
     public Map<String, Long> failures() {
         return snapshot(failures);
+    }
+
+    public Map<String, Long> replaced() {
+        return snapshot(replaced);
+    }
+
+    public Map<String, Long> skippedUnchanged() {
+        return snapshot(skippedUnchanged);
     }
 
     private static Map<String, Long> snapshot(Map<String, LongAdder> counters) {

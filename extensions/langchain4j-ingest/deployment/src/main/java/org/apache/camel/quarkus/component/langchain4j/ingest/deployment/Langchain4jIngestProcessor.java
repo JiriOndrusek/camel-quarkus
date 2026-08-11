@@ -36,8 +36,9 @@ class Langchain4jIngestProcessor {
     private static final String FEATURE = "camel-langchain4j-ingest";
 
     private static final Set<String> SUPPORTED_SOURCE_TYPES = Set.of("file");
-    private static final Set<String> SUPPORTED_MODES = Set.of("append");
+    private static final Set<String> SUPPORTED_MODES = Set.of("append", "sync");
     private static final Set<String> SUPPORTED_SPLITTERS = Set.of("recursive", "none");
+    private static final Set<String> SUPPORTED_WRITE_STRATEGIES = Set.of("upsert", "remove-then-add");
 
     @BuildStep
     FeatureBuildItem feature() {
@@ -84,15 +85,15 @@ class Langchain4jIngestProcessor {
 
             String mode = pipeline.mode();
             if (!SUPPORTED_MODES.contains(mode)) {
-                if ("sync".equals(mode)) {
-                    throw new ConfigurationException(
-                            "Ingestion pipeline '" + name + "' requests mode=sync, which arrives in a later "
-                                    + "release. This preview supports mode=append only: documents are only ever "
-                                    + "added and a restart re-ingests the corpus.");
-                }
                 throw new ConfigurationException(
                         "Ingestion pipeline '" + name + "' has unknown mode '" + mode + "'. Supported: "
                                 + SUPPORTED_MODES);
+            }
+
+            if (!SUPPORTED_WRITE_STRATEGIES.contains(pipeline.writeStrategy())) {
+                throw new ConfigurationException(
+                        "Ingestion pipeline '" + name + "' has unknown write-strategy '" + pipeline.writeStrategy()
+                                + "'. Supported: " + SUPPORTED_WRITE_STRATEGIES);
             }
 
             String sourceType = pipeline.source().type();

@@ -47,7 +47,11 @@ public class IngestResource {
 
     @Inject
     @Named("products-store")
-    EmbeddingStore<TextSegment> store;
+    EmbeddingStore<TextSegment> productsStore;
+
+    @Inject
+    @Named("manuals-store")
+    EmbeddingStore<TextSegment> manualsStore;
 
     @Inject
     @Named("test-model")
@@ -62,12 +66,16 @@ public class IngestResource {
     @ConfigProperty(name = "ingest.test.directory")
     String directory;
 
-    /** Writes a document into the watched directory — app-side, so native mode shares the path. */
+    @ConfigProperty(name = "ingest.test.sync-directory")
+    String syncDirectory;
+
+    /** Writes a document into a watched directory — app-side, so native mode shares the path. */
     @POST
     @Path("/file/{name}")
     @Consumes(MediaType.TEXT_PLAIN)
-    public void writeFile(@PathParam("name") String name, String content) throws Exception {
-        java.nio.file.Path dir = java.nio.file.Path.of(directory);
+    public void writeFile(@PathParam("name") String name, @QueryParam("pipeline") String pipeline, String content)
+            throws Exception {
+        java.nio.file.Path dir = java.nio.file.Path.of("manuals".equals(pipeline) ? syncDirectory : directory);
         Files.createDirectories(dir);
         Files.writeString(dir.resolve(name), content);
     }
@@ -75,7 +83,9 @@ public class IngestResource {
     @GET
     @Path("/search")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<String> search(@QueryParam("q") String query, @QueryParam("max") Integer max) {
+    public List<String> search(@QueryParam("q") String query, @QueryParam("max") Integer max,
+            @QueryParam("store") String storeName) {
+        EmbeddingStore<TextSegment> store = "manuals".equals(storeName) ? manualsStore : productsStore;
         var result = store.search(EmbeddingSearchRequest.builder()
                 .queryEmbedding(model.embed(query).content())
                 .maxResults(max == null ? 5 : max)
@@ -94,7 +104,8 @@ public class IngestResource {
         return Response.ok(Map.of(
                 "pipeline", result.pipeline(),
                 "documentId", result.documentId(),
-                "segmentsWritten", result.segmentsWritten())).build();
+                "segmentsWritten", result.segmentsWritten(),
+                "outcome", result.outcome())).build();
     }
 
     /** Ingress call without the required document id header — must fail with a clear error. */
@@ -120,6 +131,8 @@ public class IngestResource {
         return Map.of(
                 "documents", metrics.documentsIngested(),
                 "segments", metrics.segmentsWritten(),
-                "failures", metrics.failures());
+                "failures", metrics.failures(),
+                "replaced", metrics.replaced(),
+                "skippedUnchanged", metrics.skippedUnchanged());
     }
 }
