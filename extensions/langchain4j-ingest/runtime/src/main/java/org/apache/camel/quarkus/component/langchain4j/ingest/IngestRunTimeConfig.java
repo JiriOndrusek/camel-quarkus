@@ -71,6 +71,23 @@ public interface IngestRunTimeConfig {
         ReadinessRunTimeConfig readiness();
 
         /**
+         * What happens when a pushed document fails to process ({@code kafka} and
+         * {@code endpoint} sources, where a document is a Camel exchange): {@code skip} (log,
+         * count, continue), {@code fail} (propagate to the consumer's error handling), or
+         * {@code dead-letter} (route the failed exchange to {@code dead-letter-uri} via Camel's
+         * Dead Letter Channel). Scan sources dead-letter through the ledger instead — a
+         * document there is not an exchange.
+         */
+        @WithDefault("skip")
+        String onFailure();
+
+        /**
+         * The Camel endpoint receiving failed exchanges when {@code on-failure=dead-letter},
+         * for example a DLQ topic.
+         */
+        Optional<String> deadLetterUri();
+
+        /**
          * Whether synchronisation passes run on the cluster leader only — a cost optimisation:
          * concurrent passes on multiple replicas converge (deterministic segment ids) but embed
          * the same documents repeatedly. Default: enabled automatically when a

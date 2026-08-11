@@ -204,11 +204,12 @@ class Langchain4jIngestProcessor {
                 .done());
     }
 
+    /** Micrometer exposition of the ingestion counters, active only when Micrometer is present. */
     @BuildStep
-    void readinessCheck(Capabilities capabilities, BuildProducer<AdditionalBeanBuildItem> beans) {
-        if (capabilities.isPresent(Capability.SMALLRYE_HEALTH)) {
+    void micrometerMetrics(Capabilities capabilities, BuildProducer<AdditionalBeanBuildItem> beans) {
+        if (capabilities.isPresent(Capability.METRICS)) {
             beans.produce(AdditionalBeanBuildItem.unremovableOf(
-                    "org.apache.camel.quarkus.component.langchain4j.ingest.IngestReadinessCheck"));
+                    "org.apache.camel.quarkus.component.langchain4j.ingest.IngestMicrometerListener"));
         }
     }
 

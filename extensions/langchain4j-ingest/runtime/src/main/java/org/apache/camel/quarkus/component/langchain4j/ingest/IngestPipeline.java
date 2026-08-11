@@ -41,6 +41,8 @@ public final class IngestPipeline {
     private int embeddingBatchSize = 32;
     private Integer embeddingRequestsPerMinute;
     private String adopt = "assume-empty";
+    private String onFailure = "skip";
+    private String deadLetterUri;
 
     private IngestPipeline(Source source) {
         this.source = source;
@@ -129,6 +131,18 @@ public final class IngestPipeline {
         return this;
     }
 
+    /** {@code skip}, {@code fail} or {@code dead-letter} — for exchange-per-document sources. */
+    public IngestPipeline onFailure(String onFailure) {
+        this.onFailure = onFailure;
+        return this;
+    }
+
+    /** The endpoint receiving failed exchanges when {@code onFailure("dead-letter")}. */
+    public IngestPipeline deadLetterUri(String uri) {
+        this.deadLetterUri = uri;
+        return this;
+    }
+
     String sourceUri() {
         return source.uri();
     }
@@ -187,6 +201,16 @@ public final class IngestPipeline {
             @Override
             public Optional<Boolean> leaderOnly() {
                 return Optional.ofNullable(leaderOnly);
+            }
+
+            @Override
+            public String onFailure() {
+                return onFailure;
+            }
+
+            @Override
+            public Optional<String> deadLetterUri() {
+                return Optional.ofNullable(deadLetterUri);
             }
 
             @Override

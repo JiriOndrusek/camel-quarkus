@@ -22,12 +22,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.LongAdder;
 
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import org.apache.camel.quarkus.component.langchain4j.ingest.core.SyncPassRunner;
 
 /**
- * The three core ingestion counters, per pipeline: documents ingested, segments written,
- * failures. "It fails loudly" is a first-release promise, so these exist from the start;
- * exposition through Micrometer follows in a later release.
+ * The per-pipeline ingestion counters. "It fails loudly" is a first-release promise, so these
+ * exist unconditionally; every increment is also forwarded to any {@link IngestMetricsListener}
+ * beans — with Micrometer present, the counters appear as {@code cq.ingest.*} meters.
  */
 @Singleton
 public class IngestMetrics {
@@ -41,44 +45,51 @@ public class IngestMetrics {
     private final ConcurrentMap<String, LongAdder> deadLettered = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, LongAdder> staleRetained = new ConcurrentHashMap<>();
 
+    @Inject
+    @Any
+    Instance<IngestMetricsListener> listeners;
+
     public void documentIngested(String pipeline, int segmentsWritten) {
-        documents.computeIfAbsent(pipeline, k -> new LongAdder()).increment();
-        segments.computeIfAbsent(pipeline, k -> new LongAdder()).add(segmentsWritten);
+        record(documents, "documents", pipeline, 1);
+        record(segments, "segments", pipeline, segmentsWritten);
     }
 
     public void documentReplaced(String pipeline, int segmentsWritten) {
         documentIngested(pipeline, segmentsWritten);
-        replaced.computeIfAbsent(pipeline, k -> new LongAdder()).increment();
+        record(replaced, "replaced", pipeline, 1);
     }
 
     public void documentSkippedUnchanged(String pipeline) {
-        skippedUnchanged.computeIfAbsent(pipeline, k -> new LongAdder()).increment();
+        record(skippedUnchanged, "skipped-unchanged", pipeline, 1);
     }
 
     public void failure(String pipeline) {
-        failures.computeIfAbsent(pipeline, k -> new LongAdder()).increment();
+        record(failures, "failures", pipeline, 1);
     }
 
     public void documentDeleted(String pipeline) {
-        deleted.computeIfAbsent(pipeline, k -> new LongAdder()).increment();
+        record(deleted, "deleted", pipeline, 1);
     }
 
     /** Aggregate application of one sync pass. */
-    public void applyPass(String pipeline,
-            org.apache.camel.quarkus.component.langchain4j.ingest.core.SyncPassRunner.PassOutcome outcome) {
-        add(documents, pipeline, outcome.ingested() + outcome.replaced());
-        add(replaced, pipeline, outcome.replaced());
-        add(skippedUnchanged, pipeline, outcome.skippedUnchanged());
-        add(deleted, pipeline, outcome.deleted());
-        add(segments, pipeline, outcome.segmentsWritten());
-        add(failures, pipeline, outcome.failed());
-        add(deadLettered, pipeline, outcome.deadLettered());
-        add(staleRetained, pipeline, outcome.staleRetained());
+    public void applyPass(String pipeline, SyncPassRunner.PassOutcome outcome) {
+        record(documents, "documents", pipeline, outcome.ingested() + outcome.replaced());
+        record(replaced, "replaced", pipeline, outcome.replaced());
+        record(skippedUnchanged, "skipped-unchanged", pipeline, outcome.skippedUnchanged());
+        record(deleted, "deleted", pipeline, outcome.deleted());
+        record(segments, "segments", pipeline, outcome.segmentsWritten());
+        record(failures, "failures", pipeline, outcome.failed());
+        record(deadLettered, "dead-lettered", pipeline, outcome.deadLettered());
+        record(staleRetained, "stale-retained", pipeline, outcome.staleRetained());
     }
 
-    private static void add(ConcurrentMap<String, LongAdder> counters, String pipeline, int amount) {
-        if (amount > 0) {
-            counters.computeIfAbsent(pipeline, k -> new LongAdder()).add(amount);
+    private void record(ConcurrentMap<String, LongAdder> counters, String counter, String pipeline, long amount) {
+        if (amount <= 0) {
+            return;
+        }
+        counters.computeIfAbsent(pipeline, k -> new LongAdder()).add(amount);
+        for (IngestMetricsListener listener : listeners) {
+            listener.increment(pipeline, counter, amount);
         }
     }
 

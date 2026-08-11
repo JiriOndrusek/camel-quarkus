@@ -62,11 +62,6 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-agroal</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-smallrye-health</artifactId>
-            <optional>true</optional>
-        </dependency>
         <!-- curated source connectors: present only when the user adds them; the build fails
              with an add-extension hint when a pipeline needs one that is absent -->
         <dependency>
@@ -79,9 +74,21 @@
             <artifactId>camel-quarkus-kafka</artifactId>
             <optional>true</optional>
         </dependency>
+        <!-- only leader-only passes touch it, and any CamelClusterService implementation
+             brings it transitively; LeaderOnlySupport isolates the class references -->
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-cluster</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-health</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-micrometer</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>dev.langchain4j</groupId>

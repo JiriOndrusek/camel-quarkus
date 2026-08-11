@@ -98,12 +98,11 @@ public class SyncPassRunner {
                 processed++;
                 segmentsWritten += result.segmentsWritten();
                 switch (result.outcome()) {
-                case IngestResult.OUTCOME_INGESTED -> ingested++;
-                case IngestResult.OUTCOME_REPLACED -> replaced++;
-                case IngestResult.OUTCOME_SKIPPED_UNCHANGED -> skippedUnchanged++;
-                case IngestResult.OUTCOME_SUPPRESSED_TOMBSTONE, IngestResult.OUTCOME_SUPPRESSED_PINNED ->
-                    suppressed++;
-                case IngestResult.OUTCOME_DEAD_LETTERED -> deadLettered++;
+                case INGESTED -> ingested++;
+                case REPLACED -> replaced++;
+                case SKIPPED_UNCHANGED -> skippedUnchanged++;
+                case SUPPRESSED_TOMBSTONE, SUPPRESSED_PINNED -> suppressed++;
+                case DEAD_LETTERED -> deadLettered++;
                 default -> {
                     // empty: nothing to count
                 }

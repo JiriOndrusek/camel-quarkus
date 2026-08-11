@@ -18,34 +18,45 @@ package org.apache.camel.quarkus.component.langchain4j.ingest;
 
 import java.util.Map;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import org.eclipse.microprofile.health.HealthCheck;
-import org.eclipse.microprofile.health.HealthCheckResponse;
-import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
-import org.eclipse.microprofile.health.Readiness;
+import org.apache.camel.health.HealthCheckResultBuilder;
+import org.apache.camel.impl.health.AbstractHealthCheck;
 
 /**
- * Reports not-ready until every gating sync pipeline completed its first successful pass —
- * a pod serving RAG answers from a half-populated knowledge base answers <em>worse</em>, not
- * failing, so readiness is the only signal there is. The initial pass never blocks boot (a
- * crash-looping startup probe would be worse); readiness gates load-balanced traffic only.
- * Registered only when SmallRye Health is present; per-pipeline opt-out via
- * {@code quarkus.camel.ai.ingest.<name>.readiness.enabled=false}.
+ * A Camel readiness check: not ready until every gating sync pipeline completed its first
+ * successful pass — a pod serving RAG answers from a half-populated knowledge base answers
+ * <em>worse</em>, not failing, so readiness is the only signal there is. The initial pass never
+ * blocks boot; readiness gates load-balanced traffic only.
+ *
+ * <p>
+ * Being a Camel health check, it is exposed through whatever the application already uses —
+ * with {@code camel-quarkus-microprofile-health} it appears under {@code /q/health/ready}.
+ * Per-pipeline opt-out via {@code quarkus.camel.ai.ingest.<name>.readiness.enabled=false}.
  */
-@Readiness
-@ApplicationScoped
-public class IngestReadinessCheck implements HealthCheck {
+public class IngestReadinessCheck extends AbstractHealthCheck {
 
-    @Inject
-    IngestPipelineRegistry registry;
+    private final IngestPipelineRegistry registry;
+
+    public IngestReadinessCheck(IngestPipelineRegistry registry) {
+        super("camel-langchain4j-ingest");
+        this.registry = registry;
+    }
 
     @Override
-    public HealthCheckResponse call() {
-        HealthCheckResponseBuilder builder = HealthCheckResponse.named("camel-langchain4j-ingest");
+    public boolean isLiveness() {
+        return false;
+    }
+
+    @Override
+    protected void doCall(HealthCheckResultBuilder builder, Map<String, Object> options) {
+        boolean allReady = true;
         for (Map.Entry<String, Boolean> entry : registry.readiness().entrySet()) {
-            builder.withData(entry.getKey(), entry.getValue() ? "ready" : "awaiting first successful pass");
+            builder.detail(entry.getKey(), entry.getValue() ? "ready" : "awaiting first successful pass");
+            allReady &= entry.getValue();
         }
-        return builder.status(registry.allReady()).build();
+        if (allReady) {
+            builder.up();
+        } else {
+            builder.down();
+        }
     }
 }
