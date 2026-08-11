@@ -33,6 +33,14 @@ public final class IngestPipeline {
     private String splitter = "recursive";
     private int maxSegmentSize = 500;
     private int maxOverlapSize = 50;
+    private String ledgerDatasource;
+    private double bulkDeleteThreshold = 0.1;
+    private boolean allowBulkDelete;
+    private boolean readinessEnabled = true;
+    private Boolean leaderOnly;
+    private int embeddingBatchSize = 32;
+    private Integer embeddingRequestsPerMinute;
+    private String adopt = "assume-empty";
 
     private IngestPipeline(Source source) {
         this.source = source;
@@ -79,8 +87,123 @@ public final class IngestPipeline {
         return this;
     }
 
+    /** Name of the datasource backing the sync ledger; the default datasource when unset. */
+    public IngestPipeline ledgerDatasource(String datasourceName) {
+        this.ledgerDatasource = datasourceName;
+        return this;
+    }
+
+    public IngestPipeline bulkDeleteThreshold(double threshold) {
+        this.bulkDeleteThreshold = threshold;
+        return this;
+    }
+
+    public IngestPipeline allowBulkDelete(boolean allow) {
+        this.allowBulkDelete = allow;
+        return this;
+    }
+
+    public IngestPipeline readinessEnabled(boolean enabled) {
+        this.readinessEnabled = enabled;
+        return this;
+    }
+
+    public IngestPipeline leaderOnly(boolean leaderOnly) {
+        this.leaderOnly = leaderOnly;
+        return this;
+    }
+
+    public IngestPipeline embeddingBatchSize(int batchSize) {
+        this.embeddingBatchSize = batchSize;
+        return this;
+    }
+
+    public IngestPipeline embeddingRequestsPerMinute(int requestsPerMinute) {
+        this.embeddingRequestsPerMinute = requestsPerMinute;
+        return this;
+    }
+
+    /** {@code assume-empty}, {@code wipe} or {@code coexist} — see the configuration docs. */
+    public IngestPipeline adopt(String adoptMode) {
+        this.adopt = adoptMode;
+        return this;
+    }
+
     String sourceUri() {
         return source.uri();
+    }
+
+    String sourceType() {
+        return source.type();
+    }
+
+    boolean readinessEnabledValue() {
+        return readinessEnabled;
+    }
+
+    String adoptValue() {
+        return adopt;
+    }
+
+    /** The runtime-config view, so builder pipelines reuse every existing route configurator. */
+    IngestRunTimeConfig.PipelineRunTimeConfig asRunTimeConfig() {
+        IngestRunTimeConfig.PipelineRunTimeConfig.SourceRunTimeConfig sourceConfig = source.asRunTimeConfig();
+        return new IngestRunTimeConfig.PipelineRunTimeConfig() {
+            @Override
+            public boolean enabled() {
+                return true;
+            }
+
+            @Override
+            public SourceRunTimeConfig source() {
+                return sourceConfig;
+            }
+
+            @Override
+            public LedgerRunTimeConfig ledger() {
+                return () -> Optional.ofNullable(ledgerDatasource);
+            }
+
+            @Override
+            public ReconcileRunTimeConfig reconcile() {
+                return new ReconcileRunTimeConfig() {
+                    @Override
+                    public double bulkDeleteThreshold() {
+                        return bulkDeleteThreshold;
+                    }
+
+                    @Override
+                    public boolean allowBulkDelete() {
+                        return allowBulkDelete;
+                    }
+                };
+            }
+
+            @Override
+            public ReadinessRunTimeConfig readiness() {
+                return () -> readinessEnabled;
+            }
+
+            @Override
+            public Optional<Boolean> leaderOnly() {
+                return Optional.ofNullable(leaderOnly);
+            }
+
+            @Override
+            public EmbeddingRunTimeConfig embedding() {
+                return new EmbeddingRunTimeConfig() {
+                    @Override
+                    public int batchSize() {
+                        return embeddingBatchSize;
+                    }
+
+                    @Override
+                    public Optional<Integer> requestsPerMinute() {
+                        return Optional.ofNullable(embeddingRequestsPerMinute);
+                    }
+                };
+            }
+        };
     }
 
     Optional<String> embeddingStoreName() {

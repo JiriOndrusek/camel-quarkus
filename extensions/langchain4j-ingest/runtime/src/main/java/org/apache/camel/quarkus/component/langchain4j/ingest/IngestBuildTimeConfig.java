@@ -79,6 +79,18 @@ public interface IngestBuildTimeConfig {
         Optional<String> embeddingModelId();
 
         /**
+         * What to assume about pre-existing store content. {@code assume-empty} (default): the
+         * user asserts the store holds nothing foreign — the assertion is logged loudly.
+         * {@code wipe}: {@code removeAll()} at startup, then full ingest — the only mode that
+         * can guarantee its postcondition, refused when several pipelines share the store.
+         * {@code coexist}: foreign vectors are never replaced or removed (read-only legacy
+         * corpora). The store cannot be enumerated, so adoption is a declaration, not a
+         * detection.
+         */
+        @WithDefault("assume-empty")
+        String adopt();
+
+        /**
          * How documents are split into segments before embedding: {@code recursive} or
          * {@code none}.
          */

@@ -71,6 +71,7 @@ class Langchain4jIngestProcessor {
     private static final Set<String> SUPPORTED_MODES = Set.of("append", "sync");
     private static final Set<String> SUPPORTED_SPLITTERS = Set.of("recursive", "none");
     private static final Set<String> SUPPORTED_WRITE_STRATEGIES = Set.of("upsert", "remove-then-add");
+    private static final Set<String> SUPPORTED_ADOPT_MODES = Set.of("assume-empty", "wipe", "coexist");
 
     @BuildStep
     FeatureBuildItem feature() {
@@ -270,6 +271,30 @@ class Langchain4jIngestProcessor {
                         "Ingestion pipeline '" + name + "': max-segment-size must be positive and "
                                 + "max-overlap-size must be smaller than max-segment-size (got "
                                 + pipeline.maxSegmentSize() + " / " + pipeline.maxOverlapSize() + ")");
+            }
+
+            if (!SUPPORTED_ADOPT_MODES.contains(pipeline.adopt())) {
+                throw new ConfigurationException(
+                        "Ingestion pipeline '" + name + "' has unknown adopt mode '" + pipeline.adopt()
+                                + "'. Supported: " + SUPPORTED_ADOPT_MODES);
+            }
+        }
+
+        // wipe is store-wide (removeAll()), so it must not fire on a store other pipelines share
+        Map<String, List<String>> pipelinesByStore = new java.util.HashMap<>();
+        for (Map.Entry<String, IngestBuildTimeConfig.PipelineBuildTimeConfig> entry : config.pipelines().entrySet()) {
+            pipelinesByStore
+                    .computeIfAbsent(entry.getValue().embeddingStore().orElse("<default>"), k -> new ArrayList<>())
+                    .add(entry.getKey());
+        }
+        for (Map.Entry<String, IngestBuildTimeConfig.PipelineBuildTimeConfig> entry : config.pipelines().entrySet()) {
+            List<String> sharing = pipelinesByStore.get(entry.getValue().embeddingStore().orElse("<default>"));
+            if ("wipe".equals(entry.getValue().adopt()) && sharing.size() > 1) {
+                throw new ConfigurationException(
+                        "Ingestion pipeline '" + entry.getKey() + "' has adopt=wipe, but " + sharing.size()
+                                + " pipelines share its embedding store (" + String.join(", ", sharing)
+                                + ") and removeAll() is store-wide — one pipeline's fresh start must not "
+                                + "destroy its siblings' corpora. Give the wiping pipeline its own store.");
             }
         }
     }

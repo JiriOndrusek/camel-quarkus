@@ -245,6 +245,15 @@ class SupportQuarkusLangchain4jProcessor {
                 .build());
     }
 
+    // The retrieval filter supplier is only resolved programmatically at augmentor creation
+    // time, so ArC would remove a user's implementation as unused.
+    @BuildStep
+    UnremovableBeanBuildItem retainRagRetrievalFilterSuppliers() {
+        return new UnremovableBeanBuildItem(bean -> bean.getTypes().stream()
+                .anyMatch(type -> type.name().toString()
+                        .equals("org.apache.camel.quarkus.component.support.langchain4j.RagRetrievalFilterSupplier")));
+    }
+
     // A store declared only for use from a Camel route is never injected anywhere in Java,
     // so ArC would remove it as unused and registerNamedEmbeddingStores would find nothing.
     @BuildStep
@@ -376,8 +385,8 @@ class SupportQuarkusLangchain4jProcessor {
                         .scope(ApplicationScoped.class)
                         .addQualifier().annotation(Named.class).addValue("value", name).done()
                         .setRuntimeInit()
-                        .supplier(recorder.createDefaultRetrievalAugmentorSupplier(
-                                def.embeddingStoreName, def.embeddingModelName));
+                        .supplier(recorder.createNamedRetrievalAugmentorSupplier(
+                                name, def.embeddingStoreName, def.embeddingModelName));
 
                 if (name.equals(designatedDefault)) {
                     // keeps @Named only: the implicit @Default makes it the one candidate the

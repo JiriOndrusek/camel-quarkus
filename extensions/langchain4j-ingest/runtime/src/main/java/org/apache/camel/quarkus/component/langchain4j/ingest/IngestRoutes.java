@@ -47,6 +47,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.cluster.CamelClusterService;
 import org.apache.camel.impl.cluster.ClusteredRoutePolicy;
 import org.apache.camel.model.RouteDefinition;
+import org.apache.camel.quarkus.component.langchain4j.ingest.core.AdoptPlan;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestResult;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestService;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.JdbcSyncLedger;
@@ -79,6 +80,8 @@ public class IngestRoutes extends RouteBuilder {
     @Inject
     IngestBuilderPipelines builderPipelines;
 
+    private final AdoptPlan adoptPlan = new AdoptPlan();
+
     @Override
     public void configure() {
         for (Map.Entry<String, IngestBuildTimeConfig.PipelineBuildTimeConfig> entry : buildTimeConfig.pipelines()
@@ -95,9 +98,11 @@ public class IngestRoutes extends RouteBuilder {
             boolean sync = "sync".equals(pipeline.mode());
             SyncLedger ledger = sync ? createLedger(name, runtime) : null;
 
+            EmbeddingStore<TextSegment> store = resolveStore(name, pipeline.embeddingStore().orElse(null));
+            adoptPlan.add(name, pipeline.embeddingStore().orElse("<default>"), pipeline.adopt(), store);
             IngestService service = new IngestService(
                     name,
-                    resolveStore(name, pipeline.embeddingStore().orElse(null)),
+                    store,
                     resolveModel(name, pipeline.embeddingModel().orElse(null)),
                     pipeline.splitter(),
                     pipeline.maxSegmentSize(),
@@ -139,41 +144,64 @@ public class IngestRoutes extends RouteBuilder {
         for (IngestBuilderPipelines.Entry entry : builderPipelines.entries()) {
             configureBuilderPipeline(entry);
         }
+
+        // adoption runs once, after every pipeline is declared: the shared-store wipe guard
+        // needs the complete picture, and wipes must precede the first pass
+        adoptPlan.execute();
     }
 
     /** An {@code @Ingest}-declared pipeline: the builder twin of the configuration path. */
     private void configureBuilderPipeline(IngestBuilderPipelines.Entry entry) {
         String name = entry.name();
-        IngestRunTimeConfig.PipelineRunTimeConfig runtime = runTimeConfig.pipelines().get(name);
-        if (runtime != null && !runtime.enabled()) {
+        IngestRunTimeConfig.PipelineRunTimeConfig externalRuntime = runTimeConfig.pipelines().get(name);
+        if (externalRuntime != null && !externalRuntime.enabled()) {
             LOG.infof("Ingestion pipeline '%s' (builder) is disabled", name);
             return;
         }
 
         IngestPipeline definition = invokeBuilderMethod(entry);
+        // the definition's runtime-config view lets builder pipelines reuse every config path
+        IngestRunTimeConfig.PipelineRunTimeConfig runtime = definition.asRunTimeConfig();
+        String type = definition.sourceType();
         boolean sync = "sync".equals(definition.mode());
-        SyncLedger ledger = sync ? createLedger(name, runtime) : null;
 
+        if (Set.of("http", "s3", "kafka").contains(type) && !sync) {
+            throw new IllegalStateException(
+                    "Ingestion pipeline '" + name + "' (builder) combines source type '" + type
+                            + "' with append mode. This source is built on change detection and/or the "
+                            + "deletion signal and needs .sync() (and a datasource for the ledger).");
+        }
+
+        SyncLedger ledger = sync ? createLedger(name, runtime) : null;
+        EmbeddingStore<TextSegment> store = resolveStore(name, definition.embeddingStoreName().orElse(null));
+        adoptPlan.add(name, definition.embeddingStoreName().orElse("<default>"), definition.adoptValue(), store);
         IngestService service = new IngestService(
                 name,
-                resolveStore(name, definition.embeddingStoreName().orElse(null)),
+                store,
                 resolveModel(name, definition.embeddingModelName().orElse(null)),
                 definition.splitterKind(),
                 definition.maxSegmentSize(),
                 definition.maxOverlapSize(),
                 ledger,
                 IngestService.WriteStrategy.of(definition.writeStrategyValue()),
-                definition.embeddingModelIdValue());
-        if (runtime != null) {
-            service.embeddingLimits(runtime.embedding().batchSize(),
-                    runtime.embedding().requestsPerMinute().orElse(null));
-        }
+                definition.embeddingModelIdValue())
+                .embeddingLimits(runtime.embedding().batchSize(),
+                        runtime.embedding().requestsPerMinute().orElse(null));
 
-        registry.register(name, service, false); // endpoint-fed: ready once the consumer starts
-        configureEndpointSourceRoute(name, definition.sourceUri(), service);
+        boolean scanBased = Set.of("file", "http", "s3").contains(type);
+        registry.register(name, service, sync && scanBased && definition.readinessEnabledValue());
+
+        switch (type) {
+        case "file" -> configureSourceRoute(name, runtime, service, sync);
+        case "http" -> configureHttpScanRoute(name, runtime, service);
+        case "s3" -> configureS3ScanRoute(name, runtime, service);
+        case "kafka" -> configureKafkaSourceRoute(name, runtime, service);
+        case "endpoint" -> configureEndpointSourceRoute(name, definition.sourceUri(), service);
+        default -> throw new IllegalStateException("Unknown source type " + type);
+        }
         configureIngressRoute(name, service);
 
-        LOG.infof("Ingestion pipeline '%s' (builder): source=endpoint, mode=%s", name, definition.mode());
+        LOG.infof("Ingestion pipeline '%s' (builder): source=%s, mode=%s", name, type, definition.mode());
     }
 
     private IngestPipeline invokeBuilderMethod(IngestBuilderPipelines.Entry entry) {
@@ -524,9 +552,10 @@ public class IngestRoutes extends RouteBuilder {
                                         + "of later releases build on, so it cannot be generated");
                     }
                     String fingerprint = exchange.getMessage().getHeader(IngestHeaders.FINGERPRINT, String.class);
+                    String tenant = exchange.getMessage().getHeader(IngestHeaders.TENANT, String.class);
                     String text = exchange.getMessage().getBody(String.class);
                     IngestResult result = service.ingest(documentId, fingerprint, text,
-                            IngestService.Origin.API);
+                            IngestService.Origin.API, tenant);
                     count(name, result);
                     exchange.getMessage().setBody(result);
                 });

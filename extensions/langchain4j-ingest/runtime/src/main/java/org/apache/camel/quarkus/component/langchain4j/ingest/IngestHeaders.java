@@ -34,6 +34,12 @@ public final class IngestHeaders {
      */
     public static final String FINGERPRINT = "CamelAiIngestFingerprint";
 
+    /**
+     * Optional: the tenant this document belongs to, written as segment metadata
+     * ({@code cq_tenant}) for retrieval-side isolation via {@code RagRetrievalFilterSupplier}.
+     */
+    public static final String TENANT = "CamelAiIngestTenant";
+
     private IngestHeaders() {
     }
 }

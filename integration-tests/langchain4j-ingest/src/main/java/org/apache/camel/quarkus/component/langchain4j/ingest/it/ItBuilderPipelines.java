@@ -34,4 +34,17 @@ public class ItBuilderPipelines {
                 .embeddingModel("test-model")
                 .splitter("recursive", 120, 20);
     }
+
+    /** The curated builder twin of a config-declared file sync pipeline. */
+    @Ingest("builtfs")
+    IngestPipeline builtFileSync() {
+        return IngestPipeline.from(Source.file("target/ingest-builtfs-docs").pollInterval(1000))
+                .embeddingStore("builtfs-store")
+                .embeddingModel("test-model")
+                .embeddingModelId("deterministic-test-model@1")
+                .sync()
+                .writeStrategy("remove-then-add")
+                .readinessEnabled(false)
+                .splitter("recursive", 120, 20);
+    }
 }

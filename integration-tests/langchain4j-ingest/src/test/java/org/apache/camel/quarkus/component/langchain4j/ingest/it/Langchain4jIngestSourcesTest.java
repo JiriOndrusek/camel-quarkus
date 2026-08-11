@@ -120,6 +120,48 @@ class Langchain4jIngestSourcesTest {
                 .body("", org.hamcrest.Matchers.hasItem(org.hamcrest.Matchers.containsString("SIGMA-3")));
     }
 
+    @Test
+    @Order(5)
+    void curatedBuilderFileSyncPipelineReplacesLikeItsConfigTwin() {
+        RestAssured.given().contentType(ContentType.TEXT)
+                .queryParam("pipeline", "builtfs")
+                .body("The builder-declared file pipeline tracks the DELTA-1 revision.")
+                .post("/langchain4j-ingest/file/revisions.txt")
+                .then().statusCode(204);
+
+        org.awaitility.Awaitility.await().atMost(30, java.util.concurrent.TimeUnit.SECONDS)
+                .untilAsserted(() -> org.junit.jupiter.api.Assertions.assertTrue(
+                        searchStore("builtfs", "Which revision is tracked?")
+                                .stream().anyMatch(text -> text.contains("DELTA-1"))));
+
+        RestAssured.given().contentType(ContentType.TEXT)
+                .queryParam("pipeline", "builtfs")
+                .body("The builder-declared file pipeline tracks the DELTA-2 revision.")
+                .post("/langchain4j-ingest/file/revisions.txt")
+                .then().statusCode(204);
+
+        org.awaitility.Awaitility.await().atMost(30, java.util.concurrent.TimeUnit.SECONDS)
+                .untilAsserted(() -> {
+                    List<String> hits = searchStore("builtfs", "Which revision is tracked?");
+                    org.junit.jupiter.api.Assertions.assertTrue(
+                            hits.stream().anyMatch(text -> text.contains("DELTA-2")), "got: " + hits);
+                    org.junit.jupiter.api.Assertions.assertFalse(
+                            hits.stream().anyMatch(text -> text.contains("DELTA-1")),
+                            "the builder twin must replace exactly like the config pipeline, got: " + hits);
+                });
+    }
+
+    static List<String> searchStore(String store, String query) {
+        return RestAssured.given()
+                .queryParam("q", query)
+                .queryParam("store", store)
+                .queryParam("max", 10)
+                .get("/langchain4j-ingest/search")
+                .then()
+                .statusCode(200)
+                .extract().jsonPath().getList("", String.class);
+    }
+
     static List<String> searchWebdoc(String query) {
         return RestAssured.given()
                 .queryParam("q", query)

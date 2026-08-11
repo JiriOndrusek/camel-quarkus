@@ -75,6 +75,10 @@ public class IngestResource {
     EmbeddingStore<TextSegment> builtStore;
 
     @Inject
+    @Named("builtfs-store")
+    EmbeddingStore<TextSegment> builtfsStore;
+
+    @Inject
     @Named("test-model")
     EmbeddingModel model;
 
@@ -99,9 +103,17 @@ public class IngestResource {
     @Consumes(MediaType.TEXT_PLAIN)
     public void writeFile(@PathParam("name") String name, @QueryParam("pipeline") String pipeline, String content)
             throws Exception {
-        java.nio.file.Path dir = java.nio.file.Path.of("manuals".equals(pipeline) ? syncDirectory : directory);
+        java.nio.file.Path dir = java.nio.file.Path.of(directoryOf(pipeline));
         Files.createDirectories(dir);
         Files.writeString(dir.resolve(name), content);
+    }
+
+    private String directoryOf(String pipeline) {
+        return switch (pipeline == null ? "products" : pipeline) {
+        case "manuals" -> syncDirectory;
+        case "builtfs" -> "target/ingest-builtfs-docs";
+        default -> directory;
+        };
     }
 
     @DELETE
@@ -147,6 +159,7 @@ public class IngestResource {
         case "s3" -> s3Store;
         case "events" -> eventsStore;
         case "built" -> builtStore;
+        case "builtfs" -> builtfsStore;
         default -> productsStore;
         };
         var result = store.search(EmbeddingSearchRequest.builder()
