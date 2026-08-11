@@ -234,9 +234,25 @@ class IngestSyncProtocolTest {
         }
     }
 
+    @Test
+    void embeddingBatchSizeIsRespected() {
+        FakeModel countingModel = new FakeModel();
+        IngestService service = new IngestService("p", store, countingModel, "recursive", 12, 0, ledger,
+                IngestService.WriteStrategy.UPSERT, "m1").embeddingLimits(2, null);
+
+        service.ingest("doc", "fp1", "aaaa bbbb cccc dddd eeee");
+
+        assertTrue(countingModel.batchSizes.size() > 1, "multiple batches expected");
+        assertTrue(countingModel.batchSizes.stream().allMatch(size -> size <= 2),
+                "no batch may exceed the configured size, got " + countingModel.batchSizes);
+    }
+
     static class FakeModel implements EmbeddingModel {
+        final List<Integer> batchSizes = new ArrayList<>();
+
         @Override
         public Response<List<Embedding>> embedAll(List<TextSegment> segments) {
+            batchSizes.add(segments.size());
             List<Embedding> out = new ArrayList<>(segments.size());
             for (TextSegment segment : segments) {
                 out.add(embeddingFor(segment.text()));

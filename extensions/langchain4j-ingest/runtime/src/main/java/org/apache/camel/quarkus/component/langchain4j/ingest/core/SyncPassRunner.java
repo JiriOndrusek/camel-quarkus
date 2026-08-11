@@ -144,8 +144,10 @@ public class SyncPassRunner {
             }
         }
 
+        // deleting ONE document is never "bulk" — otherwise a single-document pipeline (an http
+        // url) could never delete at all, since 1 of 1 is always over any fractional threshold
         if (!candidates.isEmpty() && !allowBulkDelete
-                && sourceOwned > 0 && candidates.size() > bulkDeleteThreshold * sourceOwned) {
+                && sourceOwned > 0 && candidates.size() > Math.max(1, bulkDeleteThreshold * sourceOwned)) {
             LOG.warnf("Pipeline '%s': refusing to delete %d of %d source documents in one pass "
                     + "(threshold %.0f%%). If this is intended (corpus restructuring), set "
                     + "quarkus.camel.ai.ingest.%s.reconcile.allow-bulk-delete=true for one pass.",

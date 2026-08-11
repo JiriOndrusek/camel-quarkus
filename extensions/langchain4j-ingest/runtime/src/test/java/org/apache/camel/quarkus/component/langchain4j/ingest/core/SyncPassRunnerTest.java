@@ -94,6 +94,16 @@ class SyncPassRunnerTest {
     }
 
     @Test
+    void deletingASingleDocumentIsNeverBulk() {
+        // a single-document pipeline (an http url) must be able to delete its one document —
+        // 1 of 1 is over any fractional threshold, so the floor treats one deletion as non-bulk
+        runner(0.1, false).run(listing("only.txt", "the only document"));
+        SyncPassRunner.PassOutcome outcome = runner(0.1, false).run(listing());
+        assertEquals(1, outcome.deleted());
+        assertEquals(0, outcome.deletionRefused());
+    }
+
+    @Test
     void bulkDeleteFloorRefusesWithoutConsentAndObeysWithIt() {
         runner(0.9, false).run(listing("a.txt", "content a", "b.txt", "content b", "c.txt", "content c"));
 

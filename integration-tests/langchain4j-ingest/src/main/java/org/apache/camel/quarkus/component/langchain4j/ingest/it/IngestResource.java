@@ -55,6 +55,14 @@ public class IngestResource {
     EmbeddingStore<TextSegment> manualsStore;
 
     @Inject
+    @Named("webdoc-store")
+    EmbeddingStore<TextSegment> webdocStore;
+
+    @Inject
+    @Named("custom-store")
+    EmbeddingStore<TextSegment> customStore;
+
+    @Inject
     @Named("test-model")
     EmbeddingModel model;
 
@@ -120,7 +128,12 @@ public class IngestResource {
     @Produces(MediaType.APPLICATION_JSON)
     public List<String> search(@QueryParam("q") String query, @QueryParam("max") Integer max,
             @QueryParam("store") String storeName) {
-        EmbeddingStore<TextSegment> store = "manuals".equals(storeName) ? manualsStore : productsStore;
+        EmbeddingStore<TextSegment> store = switch (storeName == null ? "products" : storeName) {
+        case "manuals" -> manualsStore;
+        case "webdoc" -> webdocStore;
+        case "custom" -> customStore;
+        default -> productsStore;
+        };
         var result = store.search(EmbeddingSearchRequest.builder()
                 .queryEmbedding(model.embed(query).content())
                 .maxResults(max == null ? 5 : max)
@@ -157,6 +170,49 @@ public class IngestResource {
             }
             throw e;
         }
+    }
+
+    // --- the http-source pipeline's document, served by the app itself -----------------------
+
+    static volatile String httpDocContent = "The web manual mentions the FALCON-9000 torque wrench.";
+    static volatile boolean httpDocGone = false;
+
+    @GET
+    @Path("/http-doc")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response httpDoc() {
+        if (httpDocGone) {
+            return Response.status(404).build();
+        }
+        return Response.ok(httpDocContent)
+                .header("ETag", "\"" + Integer.toHexString(httpDocContent.hashCode()) + "\"")
+                .build();
+    }
+
+    @POST
+    @Path("/http-doc")
+    @Consumes(MediaType.TEXT_PLAIN)
+    public void setHttpDoc(String content) {
+        httpDocContent = content;
+        httpDocGone = false;
+    }
+
+    @DELETE
+    @Path("/http-doc")
+    public void removeHttpDoc() {
+        httpDocGone = true;
+    }
+
+    // --- feeding the endpoint-source pipeline via its Camel URI ------------------------------
+
+    @POST
+    @Path("/custom-feed/{documentId:.+}")
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map<String, Object> customFeed(@PathParam("documentId") String documentId, String content) {
+        IngestResult result = producerTemplate.requestBodyAndHeader(
+                "direct:custom-source", content, IngestHeaders.DOCUMENT_ID, documentId, IngestResult.class);
+        return Map.of("outcome", result.outcome(), "segmentsWritten", result.segmentsWritten());
     }
 
     @GET

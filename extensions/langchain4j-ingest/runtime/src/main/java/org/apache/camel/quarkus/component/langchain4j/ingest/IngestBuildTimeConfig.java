@@ -112,10 +112,20 @@ public interface IngestBuildTimeConfig {
         interface SourceBuildTimeConfig {
 
             /**
-             * Source type. Only {@code file} is supported in this release; more source types
-             * (s3, http, kafka) arrive in later releases.
+             * Source type: {@code file}, {@code http}, or {@code endpoint} (any Camel consumer
+             * URI — the escape hatch for genuine integration problems). More curated types
+             * (s3, kafka) arrive in later releases.
              */
             String type();
+
+            /**
+             * The Camel consumer URI feeding this pipeline ({@code endpoint} source). Fixed at
+             * build time on purpose: a runtime-overridable consumer URI would be arbitrary
+             * component invocation. Each message needs the {@code CamelAiIngestDocumentId}
+             * header; {@code CamelAiIngestFingerprint} is optional. No enumeration exists, so
+             * deletion-by-disappearance does not apply to this source.
+             */
+            Optional<String> uri();
         }
     }
 }

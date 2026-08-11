@@ -194,10 +194,21 @@ Consequently, both JVM and native modes may exhibit unexpected behaviour or fail
 
 a|icon:lock[title=Fixed at build time] [[quarkus-camel-ai-ingest-pipeline-name-source-type]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-type[quarkus.camel.ai.ingest."pipeline-name".source.type]`
 
-Source type. Only {@code file} is supported in this release; more source types
-(s3, http, kafka) arrive in later releases.
+Source type: {@code file}, {@code http}, or {@code endpoint} (any Camel consumer
+URI — the escape hatch for genuine integration problems). More curated types
+(s3, kafka) arrive in later releases.
 | `string`
 | required icon:exclamation-circle[title=Configuration property is required]
+
+a|icon:lock[title=Fixed at build time] [[quarkus-camel-ai-ingest-pipeline-name-source-uri]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-uri[quarkus.camel.ai.ingest."pipeline-name".source.uri]`
+
+The Camel consumer URI feeding this pipeline ({@code endpoint} source). Fixed at
+build time on purpose: a runtime-overridable consumer URI would be arbitrary
+component invocation. Each message needs the {@code CamelAiIngestDocumentId}
+header; {@code CamelAiIngestFingerprint} is optional. No enumeration exists, so
+deletion-by-disappearance does not apply to this source.
+| `string`
+| 
 
 a|icon:lock[title=Fixed at build time] [[quarkus-camel-ai-ingest-pipeline-name-mode]]`link:#quarkus-camel-ai-ingest-pipeline-name-mode[quarkus.camel.ai.ingest."pipeline-name".mode]`
 
@@ -283,6 +294,13 @@ Ant-style include pattern, for example {@code **&#47;*.txt} ({@code file} source
 | `string`
 | 
 
+a| [[quarkus-camel-ai-ingest-pipeline-name-source-url]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-url[quarkus.camel.ai.ingest."pipeline-name".source.url]`
+
+The document URL ({@code http} source). The URL is the document id; change
+detection uses {@code ETag} / {@code Last-Modified} via a cheap HEAD request.
+| `string`
+| 
+
 a| [[quarkus-camel-ai-ingest-pipeline-name-source-poll-interval]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-poll-interval[quarkus.camel.ai.ingest."pipeline-name".source.poll-interval]`
 
 Interval between synchronisation passes in milliseconds ({@code sync} mode).
@@ -318,6 +336,18 @@ synchronisation pass ({@code sync} mode). Disable for side-feature knowledge
 bases that must not take the whole application out of rotation.
 | `boolean`
 | `true`
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-embedding-batch-size]]`link:#quarkus-camel-ai-ingest-pipeline-name-embedding-batch-size[quarkus.camel.ai.ingest."pipeline-name".embedding.batch-size]`
+
+Maximum number of segments embedded per model call.
+| `int`
+| `32`
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-embedding-requests-per-minute]]`link:#quarkus-camel-ai-ingest-pipeline-name-embedding-requests-per-minute[quarkus.camel.ai.ingest."pipeline-name".embedding.requests-per-minute]`
+
+Upper bound on embedding calls per minute. Unset means unthrottled.
+| `int`
+| 
 |===
 
 [.configuration-legend]

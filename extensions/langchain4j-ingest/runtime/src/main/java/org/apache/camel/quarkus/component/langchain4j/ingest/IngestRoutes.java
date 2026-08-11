@@ -97,9 +97,19 @@ public class IngestRoutes extends RouteBuilder {
                     IngestService.WriteStrategy.of(pipeline.writeStrategy()),
                     pipeline.embeddingModelId().orElse(""));
 
+            if (runtime != null) {
+                service.embeddingLimits(runtime.embedding().batchSize(),
+                        runtime.embedding().requestsPerMinute().orElse(null));
+            }
+
             boolean gatesReadiness = sync && (runtime == null || runtime.readiness().enabled());
             registry.register(name, service, gatesReadiness);
-            configureSourceRoute(name, runtime, service, sync);
+            switch (pipeline.source().type()) {
+            case "file" -> configureSourceRoute(name, runtime, service, sync);
+            case "http" -> configureHttpScanRoute(name, runtime, service);
+            case "endpoint" -> configureEndpointSourceRoute(name, pipeline, service);
+            default -> throw new IllegalStateException("Unknown source type " + pipeline.source().type());
+            }
             configureIngressRoute(name, service);
 
             LOG.infof("Ingestion pipeline '%s': source=%s, mode=%s%s",
@@ -184,6 +194,69 @@ public class IngestRoutes extends RouteBuilder {
                                 outcome.deletionRefused() > 0
                                         ? ", " + outcome.deletionRefused() + " deletions REFUSED (bulk floor)"
                                         : "");
+                    }
+                });
+    }
+
+    /** The {@code http} source: one URL, one document, synchronised by scan passes like a folder. */
+    private void configureHttpScanRoute(String name, IngestRunTimeConfig.PipelineRunTimeConfig runtime,
+            IngestService service) {
+        String url = runtime == null ? null : runtime.source().url().orElse(null);
+        if (url == null) {
+            throw new IllegalStateException(
+                    "Ingestion pipeline '" + name + "' has source type 'http' but no url. "
+                            + "Set quarkus.camel.ai.ingest." + name + ".source.url");
+        }
+        HttpSourceEnumerator enumerator = new HttpSourceEnumerator(url);
+        SyncPassRunner passRunner = new SyncPassRunner(service, service.ledger(), name,
+                runtime.reconcile().bulkDeleteThreshold(), runtime.reconcile().allowBulkDelete());
+
+        from("timer:ingest-" + name + "?period=" + runtime.source().pollInterval() + "&delay=0")
+                .routeId("ingest-" + name)
+                .process(exchange -> {
+                    Map<String, SyncPassRunner.SourceDocument> listing;
+                    try {
+                        listing = enumerator.enumerate();
+                    } catch (Exception e) {
+                        metrics.failure(name);
+                        LOG.errorf(e, "Pipeline '%s': http enumeration failed — pass aborted", name);
+                        return;
+                    }
+                    SyncPassRunner.PassOutcome outcome = passRunner.run(listing);
+                    metrics.applyPass(name, outcome);
+                    if (outcome.succeeded()) {
+                        registry.markReady(name);
+                    }
+                });
+    }
+
+    /**
+     * The escape hatch: any Camel consumer URI feeds the pipeline. Deliberately the only tier
+     * where Camel is visible. Messages carry the required document-id header; there is no
+     * enumeration, so deletion-by-disappearance does not apply here.
+     */
+    private void configureEndpointSourceRoute(String name, IngestBuildTimeConfig.PipelineBuildTimeConfig pipeline,
+            IngestService service) {
+        String uri = pipeline.source().uri().orElseThrow(() -> new IllegalStateException(
+                "Ingestion pipeline '" + name + "' has source type 'endpoint' but no uri. "
+                        + "Set quarkus.camel.ai.ingest." + name + ".source.uri (build-time)"));
+
+        from(uri)
+                .routeId("ingest-" + name)
+                .process(exchange -> {
+                    String documentId = exchange.getMessage().getHeader(IngestHeaders.DOCUMENT_ID, String.class);
+                    try {
+                        String fingerprint = exchange.getMessage().getHeader(IngestHeaders.FINGERPRINT,
+                                String.class);
+                        String text = exchange.getMessage().getBody(String.class);
+                        IngestResult result = service.ingest(documentId, fingerprint, text,
+                                IngestService.Origin.SOURCE);
+                        count(name, result);
+                        exchange.getMessage().setBody(result);
+                    } catch (Exception e) {
+                        metrics.failure(name);
+                        LOG.errorf(e, "Pipeline '%s': failed to ingest '%s' from endpoint source — skipped",
+                                name, documentId);
                     }
                 });
     }

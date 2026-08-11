@@ -39,7 +39,7 @@ class Langchain4jIngestProcessor {
 
     private static final String FEATURE = "camel-langchain4j-ingest";
 
-    private static final Set<String> SUPPORTED_SOURCE_TYPES = Set.of("file");
+    private static final Set<String> SUPPORTED_SOURCE_TYPES = Set.of("file", "http", "endpoint");
     private static final Set<String> SUPPORTED_MODES = Set.of("append", "sync");
     private static final Set<String> SUPPORTED_SPLITTERS = Set.of("recursive", "none");
     private static final Set<String> SUPPORTED_WRITE_STRATEGIES = Set.of("upsert", "remove-then-add");
@@ -113,8 +113,23 @@ class Langchain4jIngestProcessor {
             if (!SUPPORTED_SOURCE_TYPES.contains(sourceType)) {
                 throw new ConfigurationException(
                         "Ingestion pipeline '" + name + "' has source type '" + sourceType + "'. This preview "
-                                + "supports 'file' only; more source types (s3, http, kafka) arrive in later "
-                                + "releases.");
+                                + "supports " + SUPPORTED_SOURCE_TYPES + "; more curated types (s3, kafka) "
+                                + "arrive in later releases — meanwhile any Camel consumer works via "
+                                + "source.type=endpoint.");
+            }
+
+            if ("endpoint".equals(sourceType) && pipeline.source().uri().isEmpty()) {
+                throw new ConfigurationException(
+                        "Ingestion pipeline '" + name + "' has source type 'endpoint' but no uri. Set "
+                                + "quarkus.camel.ai.ingest." + name + ".source.uri (build-time by design: a "
+                                + "runtime-overridable consumer URI would be arbitrary component invocation).");
+            }
+
+            if ("http".equals(sourceType) && !"sync".equals(mode)) {
+                throw new ConfigurationException(
+                        "Ingestion pipeline '" + name + "' combines source type 'http' with mode=append. The "
+                                + "http source is built on change detection and needs mode=sync (and a "
+                                + "datasource for the ledger).");
             }
 
             if (!SUPPORTED_SPLITTERS.contains(pipeline.splitter())) {

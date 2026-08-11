@@ -127,10 +127,35 @@ public interface IngestRunTimeConfig {
             Optional<String> include();
 
             /**
+             * The document URL ({@code http} source). The URL is the document id; change
+             * detection uses {@code ETag} / {@code Last-Modified} via a cheap HEAD request.
+             */
+            Optional<String> url();
+
+            /**
              * Interval between synchronisation passes in milliseconds ({@code sync} mode).
              */
             @WithDefault("5000")
             long pollInterval();
+        }
+
+        /**
+         * Embedding call shaping.
+         */
+        EmbeddingRunTimeConfig embedding();
+
+        interface EmbeddingRunTimeConfig {
+
+            /**
+             * Maximum number of segments embedded per model call.
+             */
+            @WithDefault("32")
+            int batchSize();
+
+            /**
+             * Upper bound on embedding calls per minute. Unset means unthrottled.
+             */
+            Optional<Integer> requestsPerMinute();
         }
     }
 }
