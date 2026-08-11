@@ -100,4 +100,9 @@ public class QuarkusLangchain4jRecorder {
             String embeddingStoreName, String embeddingModelName) {
         return new DefaultRetrievalAugmentorSupplier(embeddingStoreName, embeddingModelName);
     }
+
+    public Supplier<RetrievalAugmentor> createNamedRetrievalAugmentorSupplier(
+            String augmentorName, String embeddingStoreName, String embeddingModelName) {
+        return new DefaultRetrievalAugmentorSupplier(augmentorName, embeddingStoreName, embeddingModelName);
+    }
 }
