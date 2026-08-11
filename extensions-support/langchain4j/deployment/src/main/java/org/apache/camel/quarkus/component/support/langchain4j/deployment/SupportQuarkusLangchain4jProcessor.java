@@ -18,6 +18,7 @@ package org.apache.camel.quarkus.component.support.langchain4j.deployment;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +34,7 @@ import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.BeanDiscoveryFinishedBuildItem;
 import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
 import io.quarkus.arc.deployment.GeneratedBeanGizmoAdaptor;
+import io.quarkus.arc.deployment.QualifierRegistrarBuildItem;
 import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
 import io.quarkus.arc.deployment.UnremovableBeanBuildItem;
 import io.quarkus.arc.processor.BeanInfo;
@@ -49,6 +51,7 @@ import io.quarkus.gizmo.ClassCreator;
 import io.quarkus.gizmo.MethodCreator;
 import io.quarkus.gizmo.MethodDescriptor;
 import io.quarkus.gizmo.ResultHandle;
+import io.quarkus.runtime.configuration.ConfigurationException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
@@ -56,6 +59,7 @@ import org.apache.camel.quarkus.component.support.langchain4j.AiToolSpecConverte
 import org.apache.camel.quarkus.component.support.langchain4j.CamelAiToolProvider;
 import org.apache.camel.quarkus.component.support.langchain4j.CamelAiToolsInterceptor;
 import org.apache.camel.quarkus.component.support.langchain4j.QuarkusLangchain4jRecorder;
+import org.apache.camel.quarkus.component.support.langchain4j.RagAugmentorName;
 import org.apache.camel.quarkus.component.support.langchain4j.RagBridgeConfig;
 import org.apache.camel.quarkus.component.support.langchain4j.RagBridgeConfig.AugmentorConfig;
 import org.apache.camel.quarkus.core.deployment.spi.CamelContextBuildItem;
@@ -308,11 +312,18 @@ class SupportQuarkusLangchain4jProcessor {
      * backed by the {@code @Default} CDI bean.</li>
      * </ul>
      */
+    @BuildStep
+    QualifierRegistrarBuildItem registerRagAugmentorNameQualifier() {
+        return new QualifierRegistrarBuildItem(
+                () -> Map.of(DotName.createSimple(RagAugmentorName.class.getName()), Set.of()));
+    }
+
     @BuildStep(onlyIfNot = EasyRagPresent.class)
     @Record(ExecutionTime.RUNTIME_INIT)
     void registerDefaultRetrievalAugmentor(
             BeanDiscoveryFinishedBuildItem beanDiscovery,
             RagBridgeConfig ragBridgeConfig,
+            List<RagAugmentorCandidateBuildItem> candidates,
             QuarkusLangchain4jRecorder recorder,
             BuildProducer<SyntheticBeanBuildItem> syntheticBeans) {
 
@@ -337,15 +348,28 @@ class SupportQuarkusLangchain4jProcessor {
             }
         }
 
-        Map<String, AugmentorConfig> augmentors = ragBridgeConfig.augmentors();
+        // Effective augmentors: explicit config entries, plus candidates contributed by other
+        // extensions (one per ingestion pipeline). Config wins on name collision.
+        Map<String, AugmentorDefinition> effective = new LinkedHashMap<>();
+        for (Map.Entry<String, AugmentorConfig> entry : ragBridgeConfig.augmentors().entrySet()) {
+            AugmentorConfig cfg = entry.getValue();
+            effective.put(entry.getKey(), new AugmentorDefinition(
+                    cfg.embeddingStoreName(), cfg.embeddingModelName().orElse(null), cfg.defaultAugmentor()));
+        }
+        for (RagAugmentorCandidateBuildItem candidate : candidates) {
+            effective.putIfAbsent(candidate.getName(), new AugmentorDefinition(
+                    candidate.getEmbeddingStoreName(), candidate.getEmbeddingModelName(), false));
+        }
 
-        if (!augmentors.isEmpty()) {
-            for (Map.Entry<String, AugmentorConfig> entry : augmentors.entrySet()) {
+        if (!effective.isEmpty()) {
+            String designatedDefault = resolveDesignatedDefault(effective, hasRetrievalAugmentor);
+
+            for (Map.Entry<String, AugmentorDefinition> entry : effective.entrySet()) {
                 String name = entry.getKey();
-                AugmentorConfig cfg = entry.getValue();
+                AugmentorDefinition def = entry.getValue();
 
-                LOG.debugf("Registering named RetrievalAugmentor '%s' backed by EmbeddingStore '%s'",
-                        name, cfg.embeddingStoreName());
+                LOG.debugf("Registering named RetrievalAugmentor '%s' backed by EmbeddingStore '%s'%s",
+                        name, def.embeddingStoreName, name.equals(designatedDefault) ? " (default)" : "");
 
                 SyntheticBeanBuildItem.ExtendedBeanConfigurator configurator = SyntheticBeanBuildItem
                         .configure(RetrievalAugmentor.class)
@@ -353,12 +377,16 @@ class SupportQuarkusLangchain4jProcessor {
                         .addQualifier().annotation(Named.class).addValue("value", name).done()
                         .setRuntimeInit()
                         .supplier(recorder.createDefaultRetrievalAugmentorSupplier(
-                                cfg.embeddingStoreName(), cfg.embeddingModelName().orElse(null)));
+                                def.embeddingStoreName, def.embeddingModelName));
 
-                // Single augmentor configured and no user/Easy-RAG augmentor present:
-                // mark as defaultBean() so @RegisterAiService discovers it without a qualifier
-                if (augmentors.size() == 1 && !hasRetrievalAugmentor) {
+                if (name.equals(designatedDefault)) {
+                    // keeps @Named only: the implicit @Default makes it the one candidate the
+                    // unqualified Instance<RetrievalAugmentor> lookup of Quarkus LangChain4j sees
                     configurator.defaultBean();
+                } else {
+                    // a real qualifier suppresses the implicit @Default (CDI rule), so this bean
+                    // stays selectable by name without making the unqualified lookup ambiguous
+                    configurator.addQualifier().annotation(RagAugmentorName.class).addValue("value", name).done();
                 }
 
                 syntheticBeans.produce(configurator.done());
@@ -380,6 +408,61 @@ class SupportQuarkusLangchain4jProcessor {
                     .setRuntimeInit()
                     .supplier(recorder.createDefaultRetrievalAugmentorSupplier(null, null))
                     .done());
+        }
+    }
+
+    /**
+     * Decides which augmentor is the unqualified default, or fails the build: silence here would
+     * mean an ambiguous CDI lookup and RAG silently switched off for every AI service.
+     */
+    static String resolveDesignatedDefault(Map<String, AugmentorDefinition> effective,
+            boolean hasRetrievalAugmentor) {
+        List<String> marked = effective.entrySet().stream()
+                .filter(e -> e.getValue().markedDefault)
+                .map(Map.Entry::getKey)
+                .toList();
+
+        if (marked.size() > 1) {
+            throw new ConfigurationException(
+                    "Multiple retrieval augmentors are marked default: " + marked + ". Mark exactly one with "
+                            + "quarkus.camel.langchain4j.rag.augmentors.<name>.default=true");
+        }
+
+        if (hasRetrievalAugmentor) {
+            // a user-provided RetrievalAugmentor bean already serves the unqualified lookup
+            if (marked.size() == 1) {
+                throw new ConfigurationException(
+                        "Retrieval augmentor '" + marked.get(0) + "' is marked default, but the application "
+                                + "already provides a RetrievalAugmentor bean. Remove the default marking — "
+                                + "produced augmentors remain selectable by name.");
+            }
+            return null;
+        }
+
+        if (marked.size() == 1) {
+            return marked.get(0);
+        }
+
+        if (effective.size() == 1) {
+            return effective.keySet().iterator().next();
+        }
+
+        throw new ConfigurationException(
+                effective.size() + " retrieval augmentors are configured (" + String.join(", ", effective.keySet())
+                        + ") but none is marked default. An unmarked ambiguity would silently disable RAG for "
+                        + "every AI service, so the build stops instead. Mark exactly one with "
+                        + "quarkus.camel.langchain4j.rag.augmentors.<name>.default=true");
+    }
+
+    static final class AugmentorDefinition {
+        final String embeddingStoreName;
+        final String embeddingModelName;
+        final boolean markedDefault;
+
+        AugmentorDefinition(String embeddingStoreName, String embeddingModelName, boolean markedDefault) {
+            this.embeddingStoreName = embeddingStoreName;
+            this.embeddingModelName = embeddingModelName;
+            this.markedDefault = markedDefault;
         }
     }
 }

@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.Produce;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
@@ -28,6 +29,7 @@ import io.quarkus.runtime.configuration.ConfigurationException;
 import org.apache.camel.quarkus.component.langchain4j.ingest.IngestBuildTimeConfig;
 import org.apache.camel.quarkus.component.langchain4j.ingest.IngestMetrics;
 import org.apache.camel.quarkus.component.langchain4j.ingest.IngestRoutes;
+import org.apache.camel.quarkus.component.support.langchain4j.deployment.RagAugmentorCandidateBuildItem;
 
 class Langchain4jIngestProcessor {
 
@@ -40,6 +42,25 @@ class Langchain4jIngestProcessor {
     @BuildStep
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
+    }
+
+    /**
+     * One augmentor candidate per pipeline: declaring an ingestion pipeline is enough for a
+     * matching {@code @Named} RetrievalAugmentor to exist when Quarkus LangChain4j is present.
+     * Explicit {@code quarkus.camel.langchain4j.rag.augmentors.<name>} config wins on collision,
+     * and the designated-default rules of the RAG bridge apply (two pipelines with no default
+     * marked fail the build instead of silently disabling RAG).
+     */
+    @BuildStep
+    void ragAugmentorCandidates(IngestBuildTimeConfig config,
+            BuildProducer<RagAugmentorCandidateBuildItem> candidates) {
+        for (Map.Entry<String, IngestBuildTimeConfig.PipelineBuildTimeConfig> entry : config.pipelines().entrySet()) {
+            IngestBuildTimeConfig.PipelineBuildTimeConfig pipeline = entry.getValue();
+            candidates.produce(new RagAugmentorCandidateBuildItem(
+                    entry.getKey(),
+                    pipeline.embeddingStore().orElse(null),
+                    pipeline.embeddingModel().orElse(null)));
+        }
     }
 
     @BuildStep
