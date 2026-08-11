@@ -1,0 +1,100 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.camel.quarkus.component.langchain4j.ingest.deployment;
+
+import java.util.Map;
+import java.util.Set;
+
+import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
+import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.annotations.Produce;
+import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.pkg.builditem.ArtifactResultBuildItem;
+import io.quarkus.runtime.configuration.ConfigurationException;
+import org.apache.camel.quarkus.component.langchain4j.ingest.IngestBuildTimeConfig;
+import org.apache.camel.quarkus.component.langchain4j.ingest.IngestMetrics;
+import org.apache.camel.quarkus.component.langchain4j.ingest.IngestRoutes;
+
+class Langchain4jIngestProcessor {
+
+    private static final String FEATURE = "camel-langchain4j-ingest";
+
+    private static final Set<String> SUPPORTED_SOURCE_TYPES = Set.of("file");
+    private static final Set<String> SUPPORTED_MODES = Set.of("append");
+    private static final Set<String> SUPPORTED_SPLITTERS = Set.of("recursive", "none");
+
+    @BuildStep
+    FeatureBuildItem feature() {
+        return new FeatureBuildItem(FEATURE);
+    }
+
+    @BuildStep
+    AdditionalBeanBuildItem beans() {
+        return AdditionalBeanBuildItem.builder()
+                .addBeanClasses(IngestMetrics.class, IngestRoutes.class)
+                .setUnremovable()
+                .build();
+    }
+
+    /**
+     * Everything that can be decided from build-time configuration fails here, at build time,
+     * with the fix in the message — never silently at runtime.
+     */
+    @BuildStep
+    @Produce(ArtifactResultBuildItem.class)
+    void validatePipelines(IngestBuildTimeConfig config) {
+        for (Map.Entry<String, IngestBuildTimeConfig.PipelineBuildTimeConfig> entry : config.pipelines().entrySet()) {
+            String name = entry.getKey();
+            IngestBuildTimeConfig.PipelineBuildTimeConfig pipeline = entry.getValue();
+
+            String mode = pipeline.mode();
+            if (!SUPPORTED_MODES.contains(mode)) {
+                if ("sync".equals(mode)) {
+                    throw new ConfigurationException(
+                            "Ingestion pipeline '" + name + "' requests mode=sync, which arrives in a later "
+                                    + "release. This preview supports mode=append only: documents are only ever "
+                                    + "added and a restart re-ingests the corpus.");
+                }
+                throw new ConfigurationException(
+                        "Ingestion pipeline '" + name + "' has unknown mode '" + mode + "'. Supported: "
+                                + SUPPORTED_MODES);
+            }
+
+            String sourceType = pipeline.source().type();
+            if (!SUPPORTED_SOURCE_TYPES.contains(sourceType)) {
+                throw new ConfigurationException(
+                        "Ingestion pipeline '" + name + "' has source type '" + sourceType + "'. This preview "
+                                + "supports 'file' only; more source types (s3, http, kafka) arrive in later "
+                                + "releases.");
+            }
+
+            if (!SUPPORTED_SPLITTERS.contains(pipeline.splitter())) {
+                throw new ConfigurationException(
+                        "Ingestion pipeline '" + name + "' has unknown splitter '" + pipeline.splitter()
+                                + "'. Supported: " + SUPPORTED_SPLITTERS);
+            }
+
+            if (pipeline.maxSegmentSize() <= 0 || pipeline.maxOverlapSize() < 0
+                    || pipeline.maxOverlapSize() >= pipeline.maxSegmentSize()) {
+                throw new ConfigurationException(
+                        "Ingestion pipeline '" + name + "': max-segment-size must be positive and "
+                                + "max-overlap-size must be smaller than max-segment-size (got "
+                                + pipeline.maxSegmentSize() + " / " + pipeline.maxOverlapSize() + ")");
+            }
+        }
+    }
+}

@@ -1,0 +1,36 @@
+The extension turns document ingestion into configuration. Declare a knowledge base (an _ingestion
+pipeline_) and point it at a folder:
+
+[source,properties]
+----
+quarkus.camel.ai.ingest.products.source.type=file
+quarkus.camel.ai.ingest.products.source.directory=/data/docs
+----
+
+Every file found is parsed, split into segments, embedded with the application's `EmbeddingModel`
+bean and written to its `EmbeddingStore` bean. When more than one store or model bean exists,
+select them explicitly per pipeline:
+
+[source,properties]
+----
+quarkus.camel.ai.ingest.products.embedding-store=products
+quarkus.camel.ai.ingest.products.embedding-model=my-model
+----
+
+Documents can also be pushed from a Camel route or from code through the
+`direct:ingest-<pipeline>` endpoint. The `CamelAiIngestDocumentId` header is required — a stable
+document id is what later releases build update and delete semantics on:
+
+[source,java]
+----
+producerTemplate.requestBodyAndHeader("direct:ingest-products", text,
+        IngestHeaders.DOCUMENT_ID, "manuals/warranty.pdf", IngestResult.class);
+----
+
+[IMPORTANT]
+====
+This extension is a *preview* and currently supports `mode=append` only: documents are only ever
+added. A restart re-ingests the corpus, an edited document does not replace its previous version
+and there is no deletion. It is intended for development and for in-memory or disposable stores.
+Synchronisation (`mode=sync` — update, replace, restart-safety) arrives in a later release.
+====
