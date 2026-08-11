@@ -89,6 +89,80 @@ class Langchain4jIngestSyncTest {
                         .body("skippedUnchanged.manuals", greaterThan(0)));
     }
 
+    @Test
+    @Order(3)
+    void deletedFileDisappearsFromTheKnowledgeBase() {
+        writeManual("obsolete.txt", "The ACME-Z9 accessory kit is compatible with all models.");
+        Awaitility.await().atMost(30, TimeUnit.SECONDS)
+                .untilAsserted(() -> assertTrue(searchManuals("Which accessory kit is compatible?")
+                        .stream().anyMatch(text -> text.contains("ACME-Z9"))));
+
+        RestAssured.given().queryParam("pipeline", "manuals")
+                .delete("/langchain4j-ingest/file/obsolete.txt")
+                .then().statusCode(204);
+
+        Awaitility.await().atMost(30, TimeUnit.SECONDS)
+                .untilAsserted(() -> {
+                    assertFalse(searchManuals("Which accessory kit is compatible?")
+                            .stream().anyMatch(text -> text.contains("ACME-Z9")),
+                            "a document deleted at the source must disappear from the knowledge base");
+                    RestAssured.get("/langchain4j-ingest/metrics").then()
+                            .body("deleted.manuals", greaterThan(0));
+                });
+    }
+
+    @Test
+    @Order(4)
+    void apiDeleteSticksWhileTheFileStillExists() {
+        writeManual("held.txt", "The LEGAL-HOLD-X7 clause applies to all contracts.");
+        Awaitility.await().atMost(30, TimeUnit.SECONDS)
+                .untilAsserted(() -> assertTrue(searchManuals("Which clause applies?")
+                        .stream().anyMatch(text -> text.contains("LEGAL-HOLD-X7"))));
+
+        RestAssured.given().contentType(ContentType.TEXT)
+                .post("/langchain4j-ingest/ops/delete/manuals/held.txt")
+                .then().statusCode(200);
+
+        // the file is STILL in the watched directory; several passes must not resurrect it
+        Awaitility.await().pollDelay(3, TimeUnit.SECONDS).atMost(30, TimeUnit.SECONDS)
+                .untilAsserted(() -> assertFalse(searchManuals("Which clause applies?")
+                        .stream().anyMatch(text -> text.contains("LEGAL-HOLD-X7")),
+                        "an explicit delete must survive source passes — a legal hold that reverts "
+                                + "is worse than none"));
+
+        RestAssured.given().contentType(ContentType.TEXT)
+                .post("/langchain4j-ingest/ops/unsuppress/manuals/held.txt")
+                .then().statusCode(200);
+        Awaitility.await().atMost(30, TimeUnit.SECONDS)
+                .untilAsserted(() -> assertTrue(searchManuals("Which clause applies?")
+                        .stream().anyMatch(text -> text.contains("LEGAL-HOLD-X7")),
+                        "unsuppress must hand the document back to the source"));
+    }
+
+    @Test
+    @Order(5)
+    void apiCorrectionPinsAgainstSourceReversion() {
+        writeManual("spec.txt", "The maximum load is TEN kilograms.");
+        Awaitility.await().atMost(30, TimeUnit.SECONDS)
+                .untilAsserted(() -> assertTrue(searchManuals("What is the maximum load?")
+                        .stream().anyMatch(text -> text.contains("TEN"))));
+
+        RestAssured.given().contentType(ContentType.TEXT)
+                .body("The maximum load is FIFTEEN kilograms.")
+                .post("/langchain4j-ingest/ops/upsert/manuals/spec.txt")
+                .then().statusCode(200);
+
+        // the outdated file is still in the directory; passes must not revert the correction
+        Awaitility.await().pollDelay(3, TimeUnit.SECONDS).atMost(30, TimeUnit.SECONDS)
+                .untilAsserted(() -> {
+                    List<String> hits = searchManuals("What is the maximum load?");
+                    assertTrue(hits.stream().anyMatch(text -> text.contains("FIFTEEN")),
+                            "the correction must be live, got: " + hits);
+                    assertFalse(hits.stream().anyMatch(text -> text.contains("TEN kilograms")),
+                            "the source version must not silently revert the correction, got: " + hits);
+                });
+    }
+
     static void writeManual(String name, String content) {
         RestAssured.given()
                 .contentType(ContentType.TEXT)

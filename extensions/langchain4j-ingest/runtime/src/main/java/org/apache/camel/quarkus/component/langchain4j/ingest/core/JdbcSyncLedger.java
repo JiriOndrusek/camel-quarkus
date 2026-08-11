@@ -22,6 +22,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import javax.sql.DataSource;
@@ -68,10 +70,12 @@ public class JdbcSyncLedger implements SyncLedger {
         }
     }
 
+    private static final String ROW_COLUMNS = "fingerprint, content_hash, segment_count, intended_count, status, "
+            + "origin, tombstone, pinned";
+
     @Override
     public Optional<LedgerRow> read(String pipeline, String documentId) {
-        String sql = "SELECT fingerprint, content_hash, segment_count, intended_count, status FROM " + TABLE
-                + " WHERE pipeline = ? AND doc_id = ?";
+        String sql = "SELECT " + ROW_COLUMNS + " FROM " + TABLE + " WHERE pipeline = ? AND doc_id = ?";
         try (Connection connection = dataSource.getConnection();
                 PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, pipeline);
@@ -80,9 +84,7 @@ public class JdbcSyncLedger implements SyncLedger {
                 if (!resultSet.next()) {
                     return Optional.empty();
                 }
-                return Optional.of(new LedgerRow(pipeline, documentId,
-                        resultSet.getString(1), resultSet.getString(2),
-                        resultSet.getInt(3), resultSet.getInt(4), resultSet.getString(5)));
+                return Optional.of(row(pipeline, documentId, resultSet));
             }
         } catch (SQLException e) {
             throw new IllegalStateException("Ledger read failed for '" + documentId + "'", e);
@@ -90,28 +92,58 @@ public class JdbcSyncLedger implements SyncLedger {
     }
 
     @Override
+    public List<LedgerRow> listDocuments(String pipeline) {
+        String sql = "SELECT doc_id, " + ROW_COLUMNS + " FROM " + TABLE + " WHERE pipeline = ?";
+        try (Connection connection = dataSource.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, pipeline);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<LedgerRow> rows = new ArrayList<>();
+                while (resultSet.next()) {
+                    String documentId = resultSet.getString(1);
+                    rows.add(new LedgerRow(pipeline, documentId,
+                            resultSet.getString(2), resultSet.getString(3),
+                            resultSet.getInt(4), resultSet.getInt(5), resultSet.getString(6),
+                            resultSet.getString(7), resultSet.getBoolean(8), resultSet.getBoolean(9)));
+                }
+                return rows;
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Ledger listing failed for pipeline '" + pipeline + "'", e);
+        }
+    }
+
+    private static LedgerRow row(String pipeline, String documentId, ResultSet resultSet) throws SQLException {
+        return new LedgerRow(pipeline, documentId,
+                resultSet.getString(1), resultSet.getString(2),
+                resultSet.getInt(3), resultSet.getInt(4), resultSet.getString(5),
+                resultSet.getString(6), resultSet.getBoolean(7), resultSet.getBoolean(8));
+    }
+
+    @Override
     public void writeIntent(String pipeline, String documentId, String fingerprint, String contentHash,
-            int committedCount, int intendedCount) {
+            int committedCount, int intendedCount, String origin) {
         try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
             try {
                 String update = "UPDATE " + TABLE + " SET fingerprint = ?, content_hash = ?, "
-                        + "intended_count = ?, status = 'in_progress', updated_at = ? "
+                        + "intended_count = ?, status = 'in_progress', origin = ?, updated_at = ? "
                         + "WHERE pipeline = ? AND doc_id = ?";
                 int updated;
                 try (PreparedStatement statement = connection.prepareStatement(update)) {
                     statement.setString(1, fingerprint);
                     statement.setString(2, contentHash);
                     statement.setInt(3, intendedCount);
-                    statement.setTimestamp(4, Timestamp.from(Instant.now()));
-                    statement.setString(5, pipeline);
-                    statement.setString(6, documentId);
+                    statement.setString(4, origin);
+                    statement.setTimestamp(5, Timestamp.from(Instant.now()));
+                    statement.setString(6, pipeline);
+                    statement.setString(7, documentId);
                     updated = statement.executeUpdate();
                 }
                 if (updated == 0) {
                     String insert = "INSERT INTO " + TABLE
                             + " (pipeline, doc_id, fingerprint, content_hash, segment_count, intended_count, "
-                            + "status, updated_at) VALUES (?, ?, ?, ?, ?, ?, 'in_progress', ?)";
+                            + "status, origin, updated_at) VALUES (?, ?, ?, ?, ?, ?, 'in_progress', ?, ?)";
                     try (PreparedStatement statement = connection.prepareStatement(insert)) {
                         statement.setString(1, pipeline);
                         statement.setString(2, documentId);
@@ -119,7 +151,8 @@ public class JdbcSyncLedger implements SyncLedger {
                         statement.setString(4, contentHash);
                         statement.setInt(5, committedCount);
                         statement.setInt(6, intendedCount);
-                        statement.setTimestamp(7, Timestamp.from(Instant.now()));
+                        statement.setString(7, origin);
+                        statement.setTimestamp(8, Timestamp.from(Instant.now()));
                         statement.executeUpdate();
                     }
                 }
@@ -132,6 +165,54 @@ public class JdbcSyncLedger implements SyncLedger {
             }
         } catch (SQLException e) {
             throw new IllegalStateException("Ledger intent write failed for '" + documentId + "'", e);
+        }
+    }
+
+    @Override
+    public void tombstone(String pipeline, String documentId) {
+        setFlag(pipeline, documentId, "tombstone", true);
+    }
+
+    @Override
+    public void unsuppress(String pipeline, String documentId) {
+        setFlag(pipeline, documentId, "tombstone", false);
+    }
+
+    @Override
+    public void pin(String pipeline, String documentId) {
+        setFlag(pipeline, documentId, "pinned", true);
+    }
+
+    @Override
+    public void unpin(String pipeline, String documentId) {
+        setFlag(pipeline, documentId, "pinned", false);
+    }
+
+    private void setFlag(String pipeline, String documentId, String column, boolean value) {
+        String sql = "UPDATE " + TABLE + " SET " + column + " = ?, updated_at = ? "
+                + "WHERE pipeline = ? AND doc_id = ?";
+        try (Connection connection = dataSource.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setBoolean(1, value);
+            statement.setTimestamp(2, Timestamp.from(Instant.now()));
+            statement.setString(3, pipeline);
+            statement.setString(4, documentId);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new IllegalStateException("Ledger " + column + " update failed for '" + documentId + "'", e);
+        }
+    }
+
+    @Override
+    public void deleteRow(String pipeline, String documentId) {
+        String sql = "DELETE FROM " + TABLE + " WHERE pipeline = ? AND doc_id = ?";
+        try (Connection connection = dataSource.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, pipeline);
+            statement.setString(2, documentId);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new IllegalStateException("Ledger row deletion failed for '" + documentId + "'", e);
         }
     }
 

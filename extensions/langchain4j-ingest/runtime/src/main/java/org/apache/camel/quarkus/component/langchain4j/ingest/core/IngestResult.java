@@ -17,12 +17,15 @@
 package org.apache.camel.quarkus.component.langchain4j.ingest.core;
 
 /**
- * Outcome of ingesting one document.
+ * Outcome of one ingestion operation.
  *
  * <p>
  * Outcomes: {@code ingested} (new document written), {@code replaced} (previous vectors
  * overwritten/removed), {@code skipped-unchanged} (change detection short-circuited — no fetch
- * of embeddings, no store write), {@code empty} (blank document, nothing written).
+ * of embeddings, no store write), {@code empty} (blank document, nothing written),
+ * {@code deleted} (vectors removed), {@code suppressed-tombstone} (document was explicitly
+ * deleted and stays deleted), {@code suppressed-pinned} (an API correction wins over the source
+ * until unpinned).
  */
 public record IngestResult(String pipeline, String documentId, int segmentsWritten, String outcome) {
 
@@ -30,4 +33,7 @@ public record IngestResult(String pipeline, String documentId, int segmentsWritt
     public static final String OUTCOME_REPLACED = "replaced";
     public static final String OUTCOME_SKIPPED_UNCHANGED = "skipped-unchanged";
     public static final String OUTCOME_EMPTY = "empty";
+    public static final String OUTCOME_DELETED = "deleted";
+    public static final String OUTCOME_SUPPRESSED_TOMBSTONE = "suppressed-tombstone";
+    public static final String OUTCOME_SUPPRESSED_PINNED = "suppressed-pinned";
 }

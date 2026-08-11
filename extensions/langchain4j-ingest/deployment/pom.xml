@@ -53,6 +53,10 @@
             <artifactId>camel-quarkus-support-langchain4j-deployment</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.apache.camel.quarkus</groupId>
+            <artifactId>camel-quarkus-timer-deployment</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-agroal-deployment</artifactId>
         </dependency>

@@ -28,6 +28,8 @@ import io.quarkus.deployment.pkg.builditem.ArtifactResultBuildItem;
 import io.quarkus.runtime.configuration.ConfigurationException;
 import org.apache.camel.quarkus.component.langchain4j.ingest.IngestBuildTimeConfig;
 import org.apache.camel.quarkus.component.langchain4j.ingest.IngestMetrics;
+import org.apache.camel.quarkus.component.langchain4j.ingest.IngestOperations;
+import org.apache.camel.quarkus.component.langchain4j.ingest.IngestPipelineRegistry;
 import org.apache.camel.quarkus.component.langchain4j.ingest.IngestRoutes;
 import org.apache.camel.quarkus.component.support.langchain4j.deployment.RagAugmentorCandidateBuildItem;
 
@@ -67,7 +69,8 @@ class Langchain4jIngestProcessor {
     @BuildStep
     AdditionalBeanBuildItem beans() {
         return AdditionalBeanBuildItem.builder()
-                .addBeanClasses(IngestMetrics.class, IngestRoutes.class)
+                .addBeanClasses(IngestMetrics.class, IngestRoutes.class, IngestPipelineRegistry.class,
+                        IngestOperations.class)
                 .setUnremovable()
                 .build();
     }

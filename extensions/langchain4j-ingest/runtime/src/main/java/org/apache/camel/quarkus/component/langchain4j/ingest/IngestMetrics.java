@@ -37,6 +37,7 @@ public class IngestMetrics {
     private final ConcurrentMap<String, LongAdder> failures = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, LongAdder> replaced = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, LongAdder> skippedUnchanged = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, LongAdder> deleted = new ConcurrentHashMap<>();
 
     public void documentIngested(String pipeline, int segmentsWritten) {
         documents.computeIfAbsent(pipeline, k -> new LongAdder()).increment();
@@ -54,6 +55,34 @@ public class IngestMetrics {
 
     public void failure(String pipeline) {
         failures.computeIfAbsent(pipeline, k -> new LongAdder()).increment();
+    }
+
+    public void documentDeleted(String pipeline) {
+        deleted.computeIfAbsent(pipeline, k -> new LongAdder()).increment();
+    }
+
+    /** Aggregate application of one sync pass. */
+    public void applyPass(String pipeline, int ingested, int replacedCount, int skipped, int deletedCount,
+            int segmentsWritten, int failureCount) {
+        if (ingested > 0) {
+            documents.computeIfAbsent(pipeline, k -> new LongAdder()).add(ingested);
+        }
+        if (replacedCount > 0) {
+            documents.computeIfAbsent(pipeline, k -> new LongAdder()).add(replacedCount);
+            replaced.computeIfAbsent(pipeline, k -> new LongAdder()).add(replacedCount);
+        }
+        if (skipped > 0) {
+            skippedUnchanged.computeIfAbsent(pipeline, k -> new LongAdder()).add(skipped);
+        }
+        if (deletedCount > 0) {
+            deleted.computeIfAbsent(pipeline, k -> new LongAdder()).add(deletedCount);
+        }
+        if (segmentsWritten > 0) {
+            segments.computeIfAbsent(pipeline, k -> new LongAdder()).add(segmentsWritten);
+        }
+        if (failureCount > 0) {
+            failures.computeIfAbsent(pipeline, k -> new LongAdder()).add(failureCount);
+        }
     }
 
     public Map<String, Long> documentsIngested() {
@@ -74,6 +103,10 @@ public class IngestMetrics {
 
     public Map<String, Long> skippedUnchanged() {
         return snapshot(skippedUnchanged);
+    }
+
+    public Map<String, Long> deleted() {
+        return snapshot(deleted);
     }
 
     private static Map<String, Long> snapshot(Map<String, LongAdder> counters) {

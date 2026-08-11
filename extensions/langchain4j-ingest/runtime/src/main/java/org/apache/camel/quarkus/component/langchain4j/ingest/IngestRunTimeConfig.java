@@ -59,6 +59,12 @@ public interface IngestRunTimeConfig {
          */
         LedgerRunTimeConfig ledger();
 
+        /**
+         * Reconciliation — deletion of documents that disappeared from the source
+         * ({@code sync} mode).
+         */
+        ReconcileRunTimeConfig reconcile();
+
         interface LedgerRunTimeConfig {
 
             /**
@@ -67,6 +73,23 @@ public interface IngestRunTimeConfig {
              * test mode when a JDBC driver is present and no datasource is configured.
              */
             Optional<String> datasource();
+        }
+
+        interface ReconcileRunTimeConfig {
+
+            /**
+             * A pass refusing to delete more than this fraction of the pipeline's source
+             * documents without {@code allow-bulk-delete=true}: a mistyped directory or a
+             * failed mount must be a refusal, not an emptied knowledge base.
+             */
+            @WithDefault("0.1")
+            double bulkDeleteThreshold();
+
+            /**
+             * Explicit consent to bulk deletion (for intended corpus restructurings).
+             */
+            @WithDefault("false")
+            boolean allowBulkDelete();
         }
 
         interface SourceRunTimeConfig {
@@ -86,6 +109,12 @@ public interface IngestRunTimeConfig {
              * Ant-style include pattern, for example {@code **&#47;*.txt} ({@code file} source).
              */
             Optional<String> include();
+
+            /**
+             * Interval between synchronisation passes in milliseconds ({@code sync} mode).
+             */
+            @WithDefault("5000")
+            long pollInterval();
         }
     }
 }

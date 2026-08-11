@@ -27,6 +27,7 @@ import dev.langchain4j.store.embedding.EmbeddingStore;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -63,6 +64,9 @@ public class IngestResource {
     @Inject
     IngestMetrics metrics;
 
+    @Inject
+    org.apache.camel.quarkus.component.langchain4j.ingest.IngestOperations operations;
+
     @ConfigProperty(name = "ingest.test.directory")
     String directory;
 
@@ -78,6 +82,37 @@ public class IngestResource {
         java.nio.file.Path dir = java.nio.file.Path.of("manuals".equals(pipeline) ? syncDirectory : directory);
         Files.createDirectories(dir);
         Files.writeString(dir.resolve(name), content);
+    }
+
+    @DELETE
+    @Path("/file/{name}")
+    public void deleteFile(@PathParam("name") String name, @QueryParam("pipeline") String pipeline)
+            throws Exception {
+        java.nio.file.Path dir = java.nio.file.Path.of("manuals".equals(pipeline) ? syncDirectory : directory);
+        Files.deleteIfExists(dir.resolve(name));
+    }
+
+    @POST
+    @Path("/ops/{operation}/{pipeline}/{documentId:.+}")
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map<String, Object> operation(@PathParam("operation") String operation,
+            @PathParam("pipeline") String pipeline, @PathParam("documentId") String documentId, String content) {
+        switch (operation) {
+        case "upsert" -> {
+            var result = operations.upsert(pipeline, documentId, content);
+            return Map.of("outcome", result.outcome(), "segmentsWritten", result.segmentsWritten());
+        }
+        case "delete" -> {
+            var result = operations.delete(pipeline, documentId);
+            return Map.of("outcome", result.outcome());
+        }
+        case "unsuppress" -> operations.unsuppress(pipeline, documentId);
+        case "pin" -> operations.pin(pipeline, documentId);
+        case "unpin" -> operations.unpin(pipeline, documentId);
+        default -> throw new IllegalArgumentException("Unknown operation " + operation);
+        }
+        return Map.of("outcome", "ok");
     }
 
     @GET
@@ -133,6 +168,7 @@ public class IngestResource {
                 "segments", metrics.segmentsWritten(),
                 "failures", metrics.failures(),
                 "replaced", metrics.replaced(),
-                "skippedUnchanged", metrics.skippedUnchanged());
+                "skippedUnchanged", metrics.skippedUnchanged(),
+                "deleted", metrics.deleted());
     }
 }

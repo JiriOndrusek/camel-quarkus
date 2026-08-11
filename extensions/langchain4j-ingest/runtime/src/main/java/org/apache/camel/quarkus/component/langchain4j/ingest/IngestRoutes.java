@@ -16,9 +16,17 @@
  */
 package org.apache.camel.quarkus.component.langchain4j.ingest;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
@@ -37,6 +45,7 @@ import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestResult;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestService;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.JdbcSyncLedger;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.SyncLedger;
+import org.apache.camel.quarkus.component.langchain4j.ingest.core.SyncPassRunner;
 import org.jboss.logging.Logger;
 
 /**
@@ -57,6 +66,9 @@ public class IngestRoutes extends RouteBuilder {
 
     @Inject
     IngestMetrics metrics;
+
+    @Inject
+    IngestPipelineRegistry registry;
 
     @Override
     public void configure() {
@@ -85,6 +97,7 @@ public class IngestRoutes extends RouteBuilder {
                     IngestService.WriteStrategy.of(pipeline.writeStrategy()),
                     pipeline.embeddingModelId().orElse(""));
 
+            registry.register(name, service);
             configureSourceRoute(name, runtime, service, sync);
             configureIngressRoute(name, service);
 
@@ -121,23 +134,100 @@ public class IngestRoutes extends RouteBuilder {
                     "Ingestion pipeline '" + name + "' has source type 'file' but no directory. "
                             + "Set quarkus.camel.ai.ingest." + name + ".source.directory");
         }
+        if (sync) {
+            configureSyncScanRoute(name, runtime, service, directory);
+        } else {
+            configureAppendConsumerRoute(name, runtime, service, directory);
+        }
+    }
+
+    /**
+     * Sync mode runs bounded passes: enumerate the whole directory, process, then reconcile —
+     * a document the ledger knows but the listing lacks has disappeared and is deleted, guarded
+     * by the pass interlock (complete enumeration, zero failures, bulk-delete floor). The Camel
+     * file consumer cannot signal "this listing was complete", which is why the pass is
+     * timer-driven.
+     */
+    private void configureSyncScanRoute(String name, IngestRunTimeConfig.PipelineRunTimeConfig runtime,
+            IngestService service, String directory) {
+        SyncPassRunner passRunner = new SyncPassRunner(service, service.ledger(), name,
+                runtime.reconcile().bulkDeleteThreshold(), runtime.reconcile().allowBulkDelete());
+        boolean recursive = runtime.source().recursive();
+        String include = runtime.source().include().orElse(null);
+
+        from("timer:ingest-" + name + "?period=" + runtime.source().pollInterval() + "&delay=0")
+                .routeId("ingest-" + name)
+                .process(exchange -> {
+                    Map<String, SyncPassRunner.SourceDocument> listing;
+                    try {
+                        listing = enumerate(Path.of(directory), recursive, include);
+                    } catch (Exception e) {
+                        // enumeration incomplete: the pass must not run — deleting on a partial
+                        // listing turns a failed mount into an emptied knowledge base
+                        metrics.failure(name);
+                        LOG.errorf(e, "Pipeline '%s': source enumeration failed — pass aborted, nothing "
+                                + "processed, nothing deleted", name);
+                        return;
+                    }
+                    SyncPassRunner.PassOutcome outcome = passRunner.run(listing);
+                    metrics.applyPass(name, outcome.ingested(), outcome.replaced(), outcome.skippedUnchanged(),
+                            outcome.deleted(), outcome.segmentsWritten(), outcome.failed());
+                    if (outcome.ingested() + outcome.replaced() + outcome.deleted() + outcome.failed() > 0
+                            || outcome.deletionRefused() > 0) {
+                        LOG.infof("Pipeline '%s' pass %s: %d ingested, %d replaced, %d unchanged, %d deleted"
+                                + "%s%s", name, outcome.status(), outcome.ingested(), outcome.replaced(),
+                                outcome.skippedUnchanged(), outcome.deleted(),
+                                outcome.failed() > 0 ? ", " + outcome.failed() + " FAILED" : "",
+                                outcome.deletionRefused() > 0
+                                        ? ", " + outcome.deletionRefused() + " deletions REFUSED (bulk floor)"
+                                        : "");
+                    }
+                });
+    }
+
+    /** The complete listing of the source directory: documentId → (fingerprint, lazy content). */
+    static Map<String, SyncPassRunner.SourceDocument> enumerate(Path root, boolean recursive, String include)
+            throws IOException {
+        Map<String, SyncPassRunner.SourceDocument> listing = new LinkedHashMap<>();
+        if (!Files.isDirectory(root)) {
+            return listing; // an absent directory is an empty source — the bulk floor guards mistakes
+        }
+        PathMatcher matcher = include == null ? null
+                : root.getFileSystem().getPathMatcher("glob:" + include);
+        try (Stream<Path> paths = Files.walk(root, recursive ? Integer.MAX_VALUE : 1)) {
+            for (Path path : paths.filter(Files::isRegularFile).toList()) {
+                Path relative = root.relativize(path);
+                if (matcher != null && !matcher.matches(relative)) {
+                    continue;
+                }
+                String documentId = relative.toString().replace(File.separatorChar, '/');
+                long size = Files.size(path);
+                long modified = Files.getLastModifiedTime(path).toMillis();
+                listing.put(documentId, new SyncPassRunner.SourceDocument(size + ":" + modified, () -> {
+                    try {
+                        return Files.readString(path);
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                }));
+            }
+        }
+        return listing;
+    }
+
+    private void configureAppendConsumerRoute(String name, IngestRunTimeConfig.PipelineRunTimeConfig runtime,
+            IngestService service, String directory) {
         StringBuilder uri = new StringBuilder("file:").append(directory)
                 .append("?noop=true&recursive=").append(runtime.source().recursive());
         runtime.source().include().ifPresent(include -> uri.append("&antInclude=").append(include));
-        if (sync) {
-            // a changed file must be REdelivered within the same runtime: keying idempotency on
-            // name+mtime makes an edit a new key, while the ledger still skips true no-changes
-            uri.append("&idempotentKey=${file:name}-${file:modified}");
-        }
 
         from(uri.toString())
                 .routeId("ingest-" + name)
                 .process(exchange -> {
                     String documentId = exchange.getMessage().getHeader(Exchange.FILE_NAME, String.class);
                     try {
-                        String fingerprint = fileFingerprint(exchange);
                         String text = exchange.getMessage().getBody(String.class);
-                        IngestResult result = service.ingest(documentId, fingerprint, text);
+                        IngestResult result = service.ingest(documentId, text);
                         count(name, result);
                         LOG.debugf("Pipeline '%s', document '%s': %s (%d segment(s))", name, documentId,
                                 result.outcome(), result.segmentsWritten());
@@ -148,13 +238,6 @@ public class IngestRoutes extends RouteBuilder {
                                 name);
                     }
                 });
-    }
-
-    /** Tier-1 fingerprint of a file: size + last-modified, available without reading content. */
-    private static String fileFingerprint(Exchange exchange) {
-        Long length = exchange.getMessage().getHeader(Exchange.FILE_LENGTH, Long.class);
-        Long modified = exchange.getMessage().getHeader(Exchange.FILE_LAST_MODIFIED, Long.class);
-        return length == null || modified == null ? null : length + ":" + modified;
     }
 
     private void count(String name, IngestResult result) {
@@ -182,7 +265,8 @@ public class IngestRoutes extends RouteBuilder {
                     }
                     String fingerprint = exchange.getMessage().getHeader(IngestHeaders.FINGERPRINT, String.class);
                     String text = exchange.getMessage().getBody(String.class);
-                    IngestResult result = service.ingest(documentId, fingerprint, text);
+                    IngestResult result = service.ingest(documentId, fingerprint, text,
+                            IngestService.Origin.API);
                     count(name, result);
                     exchange.getMessage().setBody(result);
                 });

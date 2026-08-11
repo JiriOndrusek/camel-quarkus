@@ -56,6 +56,39 @@ quarkus.camel.ai.ingest.products.embedding-model-id=openai/text-embedding-3-smal
 `mode=append` remains available for disposable stores and demos: documents are only ever added,
 a restart re-ingests the corpus, and no datasource is needed.
 
+=== Deletion, safely
+
+In sync mode a document that disappears from the source disappears from the knowledge base — on
+the next pass, and only when the pass is safe: a pass whose enumeration failed or that had any
+processing failure deletes nothing (an undelivered document is indistinguishable from a
+disappeared one), and a pass refusing to delete more than 10 % of a pipeline's documents without
+explicit consent turns a mistyped directory or a failed mount into a warning instead of an
+emptied knowledge base:
+
+[source,properties]
+----
+quarkus.camel.ai.ingest.products.reconcile.bulk-delete-threshold=0.1
+quarkus.camel.ai.ingest.products.reconcile.allow-bulk-delete=false
+----
+
+=== Correcting the knowledge base from code
+
+[source,java]
+----
+@Inject IngestOperations ingest;
+
+ingest.delete("products", "manuals/withdrawn.pdf");   // sticks: survives every future pass
+ingest.upsert("products", "manuals/spec.pdf", correctedText); // pins: the source stops updating it
+ingest.unsuppress("products", "manuals/withdrawn.pdf"); // hands it back to the source
+ingest.unpin("products", "manuals/spec.pdf");
+----
+
+`delete` records a tombstone, so the document stays deleted even while its source file still
+exists — a legal hold that reverts on the next poll would be worse than none. `upsert` over a
+source-owned document pins it for the same reason: a correction must not silently revert.
+Documents written through `IngestOperations` or the ingress are `api`-origin and are never
+deleted for not appearing in a source listing.
+
 === Pushing documents from code or routes
 
 Documents can be pushed through the `direct:ingest-<pipeline>` endpoint. The
@@ -71,7 +104,6 @@ producerTemplate.requestBodyAndHeader("direct:ingest-products", text,
 
 [IMPORTANT]
 ====
-This extension is a *preview*. Deletion (a document removed from the source disappearing from
-the knowledge base, and an explicit delete/pin API) arrives in a later release, together with
-its safety interlocks.
+This extension is a *preview*. Remaining before general availability: more source types
+(s3, http, kafka), readiness, the type-safe Java builder, and retrieval-side tenancy/citations.
 ====

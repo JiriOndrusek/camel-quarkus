@@ -139,7 +139,7 @@ class IngestSyncProtocolTest {
         service.ingest("doc", "fp1", "content v1");
 
         // simulate a crash: intent written (larger intended count), store partially written, no commit
-        ledger.writeIntent("p", "doc", "fp2", "whatever", 1, 5);
+        ledger.writeIntent("p", "doc", "fp2", "whatever", 1, 5, SyncLedger.ORIGIN_SOURCE);
 
         // same fingerprint as the crashed attempt: an in_progress row must never be skipped
         IngestResult result = service.ingest("doc", "fp2", "content v2");

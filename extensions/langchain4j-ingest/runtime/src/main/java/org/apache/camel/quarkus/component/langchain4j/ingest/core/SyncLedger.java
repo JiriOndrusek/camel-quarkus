@@ -16,19 +16,27 @@
  */
 package org.apache.camel.quarkus.component.langchain4j.ingest.core;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
  * The sync ledger: one row per document, the authority on what was ingested. The vector store is
  * a projection that is never asked questions — losing the ledger costs re-ingestion (which
- * converges thanks to deterministic segment ids), never correctness.
+ * converges thanks to deterministic segment ids), never correctness. Reconciliation is
+ * ledger-versus-source; the store is never enumerated.
  */
 public interface SyncLedger {
+
+    String ORIGIN_SOURCE = "source";
+    String ORIGIN_API = "api";
 
     /** Creates or migrates the backing schema. Called once before first use. */
     void ensureSchema();
 
     Optional<LedgerRow> read(String pipeline, String documentId);
+
+    /** All rows of a pipeline — the reconciliation input. */
+    List<LedgerRow> listDocuments(String pipeline);
 
     /**
      * Durably records the intent to (re)write a document <em>before</em> the store is touched.
@@ -36,7 +44,7 @@ public interface SyncLedger {
      * next delivery of the document converges the store.
      */
     void writeIntent(String pipeline, String documentId, String fingerprint, String contentHash,
-            int committedCount, int intendedCount);
+            int committedCount, int intendedCount, String origin);
 
     /** Marks the write complete. Only rows in {@code done} status participate in skip decisions. */
     void commit(String pipeline, String documentId, String fingerprint, String contentHash, int segmentCount);
@@ -49,10 +57,28 @@ public interface SyncLedger {
     void refreshFingerprint(String pipeline, String documentId, String fingerprint);
 
     /**
+     * Marks an explicit delete: the row survives as a suppression record, so the document stays
+     * deleted even while its source file still exists. Lifted with {@link #unsuppress}.
+     */
+    void tombstone(String pipeline, String documentId);
+
+    void unsuppress(String pipeline, String documentId);
+
+    /** Pins a document: source updates are suppressed until {@link #unpin}. */
+    void pin(String pipeline, String documentId);
+
+    void unpin(String pipeline, String documentId);
+
+    /** Removes a row entirely — used by deletion-by-disappearance, where nothing needs remembering. */
+    void deleteRow(String pipeline, String documentId);
+
+    /**
      * @param status {@code done} or {@code in_progress}
+     * @param origin {@link #ORIGIN_SOURCE} or {@link #ORIGIN_API}
      */
     record LedgerRow(String pipeline, String documentId, String fingerprint, String contentHash,
-            int segmentCount, int intendedCount, String status) {
+            int segmentCount, int intendedCount, String status, String origin, boolean tombstone,
+            boolean pinned) {
 
         public boolean done() {
             return "done".equals(status);
