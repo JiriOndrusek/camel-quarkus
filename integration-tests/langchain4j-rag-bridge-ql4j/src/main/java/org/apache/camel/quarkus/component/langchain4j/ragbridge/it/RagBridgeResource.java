@@ -96,4 +96,47 @@ public class RagBridgeResource {
     public String ask(String question) {
         return aiService.chat(question);
     }
+
+    // --- retrieval filter hook -----------------------------------------------------------
+
+    @Inject
+    @Named("defaultStore")
+    EmbeddingStore<dev.langchain4j.data.segment.TextSegment> defaultStore;
+
+    @Inject
+    dev.langchain4j.model.embedding.EmbeddingModel embeddingModel;
+
+    /** Seeds the default store with a tenant-tagged segment, like the ingest extension does. */
+    @POST
+    @Path("/seed/{tenant}")
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.TEXT_PLAIN)
+    public String seed(@jakarta.ws.rs.PathParam("tenant") String tenant, String text) {
+        dev.langchain4j.data.segment.TextSegment segment = dev.langchain4j.data.segment.TextSegment.from(text,
+                dev.langchain4j.data.document.Metadata.from(java.util.Map.of("cq_tenant", tenant)));
+        defaultStore.add(embeddingModel.embed(segment).content(), segment);
+        return "seeded";
+    }
+
+    @POST
+    @Path("/tenant-filter/{tenant}")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String setTenantFilter(@jakarta.ws.rs.PathParam("tenant") String tenant) {
+        TestTenantFilterSupplier.tenant = "none".equals(tenant) ? null : tenant;
+        return "ok";
+    }
+
+    /** Runs the produced default augmentor directly, returning the retrieved segment texts. */
+    @POST
+    @Path("/augment")
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
+    public java.util.List<String> augment(String question) {
+        dev.langchain4j.data.message.UserMessage userMessage = dev.langchain4j.data.message.UserMessage
+                .from(question);
+        dev.langchain4j.rag.AugmentationResult result = retrievalAugmentorInstance.get()
+                .augment(new dev.langchain4j.rag.AugmentationRequest(userMessage,
+                        dev.langchain4j.rag.query.Metadata.from(userMessage, null, null)));
+        return result.contents().stream().map(content -> content.textSegment().text()).toList();
+    }
 }
