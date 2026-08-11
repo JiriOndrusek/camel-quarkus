@@ -100,6 +100,26 @@ class Langchain4jIngestSourcesTest {
                 .body("", org.hamcrest.Matchers.hasItem(org.hamcrest.Matchers.containsString("OMEGA-7")));
     }
 
+    @Test
+    @Order(4)
+    void builderDeclaredPipelineWorks() {
+        RestAssured.given().contentType(ContentType.TEXT)
+                .body("The builder-declared pipeline handles the SIGMA-3 datasheet.")
+                .post("/langchain4j-ingest/built-feed/datasheets/sigma.txt")
+                .then()
+                .statusCode(200)
+                .body("outcome", equalTo("ingested"))
+                .body("segmentsWritten", greaterThan(0));
+
+        RestAssured.given()
+                .queryParam("q", "Which datasheet is handled?")
+                .queryParam("store", "built")
+                .get("/langchain4j-ingest/search")
+                .then()
+                .statusCode(200)
+                .body("", org.hamcrest.Matchers.hasItem(org.hamcrest.Matchers.containsString("SIGMA-3")));
+    }
+
     static List<String> searchWebdoc(String query) {
         return RestAssured.given()
                 .queryParam("q", query)

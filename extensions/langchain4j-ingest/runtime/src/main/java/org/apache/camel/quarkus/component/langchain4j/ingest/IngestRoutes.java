@@ -19,6 +19,7 @@ package org.apache.camel.quarkus.component.langchain4j.ingest;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
@@ -38,10 +39,14 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Default;
 import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.spi.CDI;
 import jakarta.enterprise.util.TypeLiteral;
 import jakarta.inject.Inject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.cluster.CamelClusterService;
+import org.apache.camel.impl.cluster.ClusteredRoutePolicy;
+import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestResult;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestService;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.JdbcSyncLedger;
@@ -71,6 +76,9 @@ public class IngestRoutes extends RouteBuilder {
     @Inject
     IngestPipelineRegistry registry;
 
+    @Inject
+    IngestBuilderPipelines builderPipelines;
+
     @Override
     public void configure() {
         for (Map.Entry<String, IngestBuildTimeConfig.PipelineBuildTimeConfig> entry : buildTimeConfig.pipelines()
@@ -89,8 +97,8 @@ public class IngestRoutes extends RouteBuilder {
 
             IngestService service = new IngestService(
                     name,
-                    resolveStore(name, pipeline),
-                    resolveModel(name, pipeline),
+                    resolveStore(name, pipeline.embeddingStore().orElse(null)),
+                    resolveModel(name, pipeline.embeddingModel().orElse(null)),
                     pipeline.splitter(),
                     pipeline.maxSegmentSize(),
                     pipeline.maxOverlapSize(),
@@ -113,7 +121,11 @@ public class IngestRoutes extends RouteBuilder {
             case "http" -> configureHttpScanRoute(name, runtime, service);
             case "s3" -> configureS3ScanRoute(name, runtime, service);
             case "kafka" -> configureKafkaSourceRoute(name, runtime, service);
-            case "endpoint" -> configureEndpointSourceRoute(name, pipeline, service);
+            case "endpoint" -> configureEndpointSourceRoute(name,
+                    pipeline.source().uri().orElseThrow(() -> new IllegalStateException(
+                            "Ingestion pipeline '" + name + "' has source type 'endpoint' but no uri. "
+                                    + "Set quarkus.camel.ai.ingest." + name + ".source.uri (build-time)")),
+                    service);
             default -> throw new IllegalStateException("Unknown source type " + pipeline.source().type());
             }
             configureIngressRoute(name, service);
@@ -122,6 +134,60 @@ public class IngestRoutes extends RouteBuilder {
                     name, pipeline.source().type(), pipeline.mode(),
                     sync ? " (write-strategy=" + pipeline.writeStrategy() + ")"
                             : " (preview: append-only, re-ingests on restart)");
+        }
+
+        for (IngestBuilderPipelines.Entry entry : builderPipelines.entries()) {
+            configureBuilderPipeline(entry);
+        }
+    }
+
+    /** An {@code @Ingest}-declared pipeline: the builder twin of the configuration path. */
+    private void configureBuilderPipeline(IngestBuilderPipelines.Entry entry) {
+        String name = entry.name();
+        IngestRunTimeConfig.PipelineRunTimeConfig runtime = runTimeConfig.pipelines().get(name);
+        if (runtime != null && !runtime.enabled()) {
+            LOG.infof("Ingestion pipeline '%s' (builder) is disabled", name);
+            return;
+        }
+
+        IngestPipeline definition = invokeBuilderMethod(entry);
+        boolean sync = "sync".equals(definition.mode());
+        SyncLedger ledger = sync ? createLedger(name, runtime) : null;
+
+        IngestService service = new IngestService(
+                name,
+                resolveStore(name, definition.embeddingStoreName().orElse(null)),
+                resolveModel(name, definition.embeddingModelName().orElse(null)),
+                definition.splitterKind(),
+                definition.maxSegmentSize(),
+                definition.maxOverlapSize(),
+                ledger,
+                IngestService.WriteStrategy.of(definition.writeStrategyValue()),
+                definition.embeddingModelIdValue());
+        if (runtime != null) {
+            service.embeddingLimits(runtime.embedding().batchSize(),
+                    runtime.embedding().requestsPerMinute().orElse(null));
+        }
+
+        registry.register(name, service, false); // endpoint-fed: ready once the consumer starts
+        configureEndpointSourceRoute(name, definition.sourceUri(), service);
+        configureIngressRoute(name, service);
+
+        LOG.infof("Ingestion pipeline '%s' (builder): source=endpoint, mode=%s", name, definition.mode());
+    }
+
+    private IngestPipeline invokeBuilderMethod(IngestBuilderPipelines.Entry entry) {
+        try {
+            Class<?> beanClass = Thread.currentThread().getContextClassLoader().loadClass(entry.className());
+            Object bean = CDI.current().select(beanClass).get();
+            Method method = beanClass.getDeclaredMethod(entry.methodName());
+            method.setAccessible(true);
+            return (IngestPipeline) method.invoke(bean);
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                    "Failed to invoke @Ingest method " + entry.className() + "#" + entry.methodName()
+                            + " for pipeline '" + entry.name() + "'",
+                    e);
         }
     }
 
@@ -172,8 +238,10 @@ public class IngestRoutes extends RouteBuilder {
         boolean recursive = runtime.source().recursive();
         String include = runtime.source().include().orElse(null);
 
-        from("timer:ingest-" + name + "?period=" + runtime.source().pollInterval() + "&delay=0")
-                .routeId("ingest-" + name)
+        RouteDefinition route = from("timer:ingest-" + name + "?period=" + runtime.source().pollInterval()
+                + "&delay=0").routeId("ingest-" + name);
+        applyLeaderOnly(route, name, runtime);
+        route
                 .process(exchange -> {
                     Map<String, SyncPassRunner.SourceDocument> listing;
                     try {
@@ -217,8 +285,10 @@ public class IngestRoutes extends RouteBuilder {
         SyncPassRunner passRunner = new SyncPassRunner(service, service.ledger(), name,
                 runtime.reconcile().bulkDeleteThreshold(), runtime.reconcile().allowBulkDelete());
 
-        from("timer:ingest-" + name + "?period=" + runtime.source().pollInterval() + "&delay=0")
-                .routeId("ingest-" + name)
+        RouteDefinition route = from("timer:ingest-" + name + "?period=" + runtime.source().pollInterval()
+                + "&delay=0").routeId("ingest-" + name);
+        applyLeaderOnly(route, name, runtime);
+        route
                 .process(exchange -> {
                     Map<String, SyncPassRunner.SourceDocument> listing;
                     try {
@@ -241,12 +311,7 @@ public class IngestRoutes extends RouteBuilder {
      * where Camel is visible. Messages carry the required document-id header; there is no
      * enumeration, so deletion-by-disappearance does not apply here.
      */
-    private void configureEndpointSourceRoute(String name, IngestBuildTimeConfig.PipelineBuildTimeConfig pipeline,
-            IngestService service) {
-        String uri = pipeline.source().uri().orElseThrow(() -> new IllegalStateException(
-                "Ingestion pipeline '" + name + "' has source type 'endpoint' but no uri. "
-                        + "Set quarkus.camel.ai.ingest." + name + ".source.uri (build-time)"));
-
+    private void configureEndpointSourceRoute(String name, String uri, IngestService service) {
         from(uri)
                 .routeId("ingest-" + name)
                 .process(exchange -> {
@@ -275,8 +340,10 @@ public class IngestRoutes extends RouteBuilder {
         SyncPassRunner passRunner = new SyncPassRunner(service, service.ledger(), name,
                 runtime.reconcile().bulkDeleteThreshold(), runtime.reconcile().allowBulkDelete());
 
-        from("timer:ingest-" + name + "?period=" + runtime.source().pollInterval() + "&delay=0")
-                .routeId("ingest-" + name)
+        RouteDefinition route = from("timer:ingest-" + name + "?period=" + runtime.source().pollInterval()
+                + "&delay=0").routeId("ingest-" + name);
+        applyLeaderOnly(route, name, runtime);
+        route
                 .process(exchange -> {
                     Map<String, SyncPassRunner.SourceDocument> listing;
                     try {
@@ -345,6 +412,37 @@ public class IngestRoutes extends RouteBuilder {
                                 documentId);
                     }
                 });
+    }
+
+    /**
+     * Leader-only scan passes — a cost optimisation, not a correctness requirement:
+     * deterministic segment ids make concurrent writers converge, they just embed the same
+     * corpus repeatedly. Applied automatically when a {@link CamelClusterService} is present;
+     * {@code leader-only=true} without one fails loudly.
+     */
+    private void applyLeaderOnly(RouteDefinition route, String name,
+            IngestRunTimeConfig.PipelineRunTimeConfig runtime) {
+        boolean clusterServicePresent = !getContext().getRegistry().findByType(CamelClusterService.class).isEmpty()
+                || getContext().hasService(CamelClusterService.class) != null;
+        boolean apply = runtime != null && runtime.leaderOnly().isPresent()
+                ? runtime.leaderOnly().get()
+                : clusterServicePresent;
+        if (!apply) {
+            return;
+        }
+        if (!clusterServicePresent) {
+            throw new IllegalStateException(
+                    "Ingestion pipeline '" + name + "' has leader-only=true but no CamelClusterService is "
+                            + "configured. Add camel-quarkus-file-cluster-service, "
+                            + "camel-quarkus-kubernetes-cluster-service or "
+                            + "camel-quarkus-infinispan-cluster-service, or remove leader-only.");
+        }
+        try {
+            route.routePolicy(ClusteredRoutePolicy.forNamespace(getContext(), "cq-ingest"));
+            LOG.infof("Ingestion pipeline '%s': scan passes run on the cluster leader only", name);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to set up leader-only passes for pipeline '" + name + "'", e);
+        }
     }
 
     /** The complete listing of the source directory: documentId → (fingerprint, lazy content). */
@@ -454,8 +552,7 @@ public class IngestRoutes extends RouteBuilder {
     Instance<DataSource> dataSources;
 
     @SuppressWarnings("unchecked")
-    private EmbeddingStore<TextSegment> resolveStore(String name, IngestBuildTimeConfig.PipelineBuildTimeConfig pipeline) {
-        String configured = pipeline.embeddingStore().orElse(null);
+    private EmbeddingStore<TextSegment> resolveStore(String name, String configured) {
         if (configured != null) {
             EmbeddingStore<TextSegment> store = getContext().getRegistry().lookupByNameAndType(configured,
                     EmbeddingStore.class);
@@ -469,8 +566,7 @@ public class IngestRoutes extends RouteBuilder {
         return single(name, storeCandidates, "embedding store", "embedding-store");
     }
 
-    private EmbeddingModel resolveModel(String name, IngestBuildTimeConfig.PipelineBuildTimeConfig pipeline) {
-        String configured = pipeline.embeddingModel().orElse(null);
+    private EmbeddingModel resolveModel(String name, String configured) {
         if (configured != null) {
             EmbeddingModel model = getContext().getRegistry().lookupByNameAndType(configured, EmbeddingModel.class);
             if (model == null) {

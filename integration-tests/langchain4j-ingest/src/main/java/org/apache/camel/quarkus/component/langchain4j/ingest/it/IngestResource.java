@@ -71,6 +71,10 @@ public class IngestResource {
     EmbeddingStore<TextSegment> eventsStore;
 
     @Inject
+    @Named("built-store")
+    EmbeddingStore<TextSegment> builtStore;
+
+    @Inject
     @Named("test-model")
     EmbeddingModel model;
 
@@ -142,6 +146,7 @@ public class IngestResource {
         case "custom" -> customStore;
         case "s3" -> s3Store;
         case "events" -> eventsStore;
+        case "built" -> builtStore;
         default -> productsStore;
         };
         var result = store.search(EmbeddingSearchRequest.builder()
@@ -222,6 +227,17 @@ public class IngestResource {
     public Map<String, Object> customFeed(@PathParam("documentId") String documentId, String content) {
         IngestResult result = producerTemplate.requestBodyAndHeader(
                 "direct:custom-source", content, IngestHeaders.DOCUMENT_ID, documentId, IngestResult.class);
+        return Map.of("outcome", result.outcome(), "segmentsWritten", result.segmentsWritten());
+    }
+
+    /** Feeds the {@code @Ingest}-builder-declared pipeline. */
+    @POST
+    @Path("/built-feed/{documentId:.+}")
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map<String, Object> builtFeed(@PathParam("documentId") String documentId, String content) {
+        IngestResult result = producerTemplate.requestBodyAndHeader(
+                "direct:built-source", content, IngestHeaders.DOCUMENT_ID, documentId, IngestResult.class);
         return Map.of("outcome", result.outcome(), "segmentsWritten", result.segmentsWritten());
     }
 

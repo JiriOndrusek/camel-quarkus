@@ -16,30 +16,46 @@
  */
 package org.apache.camel.quarkus.component.langchain4j.ingest.deployment;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
+import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
 import io.quarkus.deployment.Capabilities;
 import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Produce;
+import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.ApplicationArchivesBuildItem;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.pkg.builditem.ArtifactResultBuildItem;
 import io.quarkus.runtime.configuration.ConfigurationException;
+import jakarta.inject.Singleton;
+import org.apache.camel.quarkus.component.langchain4j.ingest.Ingest;
 import org.apache.camel.quarkus.component.langchain4j.ingest.IngestBuildTimeConfig;
+import org.apache.camel.quarkus.component.langchain4j.ingest.IngestBuilderPipelines;
 import org.apache.camel.quarkus.component.langchain4j.ingest.IngestMetrics;
 import org.apache.camel.quarkus.component.langchain4j.ingest.IngestOperations;
+import org.apache.camel.quarkus.component.langchain4j.ingest.IngestPipeline;
 import org.apache.camel.quarkus.component.langchain4j.ingest.IngestPipelineRegistry;
 import org.apache.camel.quarkus.component.langchain4j.ingest.IngestRoutes;
+import org.apache.camel.quarkus.component.langchain4j.ingest.Langchain4jIngestRecorder;
 import org.apache.camel.quarkus.component.support.langchain4j.deployment.RagAugmentorCandidateBuildItem;
 import org.apache.camel.quarkus.core.deployment.spi.CamelServiceBuildItem;
 import org.apache.camel.quarkus.core.deployment.util.CamelSupport;
 import org.apache.camel.quarkus.core.deployment.util.PathFilter;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.MethodInfo;
 
 class Langchain4jIngestProcessor {
 
@@ -115,6 +131,76 @@ class Langchain4jIngestProcessor {
                                 + "Add it:  ./mvnw quarkus:add-extension -Dextensions=" + connector[1]);
             }
         }
+    }
+
+    /**
+     * Discovers {@code @Ingest} builder methods: validated here (return type, no parameters,
+     * unique names, no collision with configuration-declared pipelines), invoked reflectively
+     * once at startup. Reflective invocation follows the {@code @Consume} pattern with its costs
+     * accepted: native reflection registration, bean lookup, run-once side-effect-free methods.
+     */
+    @BuildStep
+    @Record(ExecutionTime.STATIC_INIT)
+    void discoverBuilderPipelines(
+            CombinedIndexBuildItem combinedIndex,
+            IngestBuildTimeConfig config,
+            Langchain4jIngestRecorder recorder,
+            BuildProducer<AdditionalBeanBuildItem> beans,
+            BuildProducer<ReflectiveClassBuildItem> reflectiveClasses,
+            BuildProducer<SyntheticBeanBuildItem> syntheticBeans) {
+
+        DotName ingestAnnotation = DotName.createSimple(Ingest.class.getName());
+        DotName pipelineType = DotName.createSimple(IngestPipeline.class.getName());
+
+        List<String> flatEntries = new ArrayList<>();
+        Set<String> names = new HashSet<>();
+        Set<String> beanClasses = new HashSet<>();
+
+        for (AnnotationInstance annotation : combinedIndex.getIndex().getAnnotations(ingestAnnotation)) {
+            if (annotation.target().kind() != AnnotationTarget.Kind.METHOD) {
+                continue;
+            }
+            MethodInfo method = annotation.target().asMethod();
+            String name = annotation.value().asString();
+            String location = method.declaringClass().name() + "#" + method.name();
+
+            if (name.isBlank()) {
+                throw new ConfigurationException("@Ingest on " + location + " has a blank pipeline name");
+            }
+            if (!method.returnType().name().equals(pipelineType)) {
+                throw new ConfigurationException(
+                        "@Ingest method " + location + " must return " + IngestPipeline.class.getSimpleName());
+            }
+            if (!method.parameters().isEmpty()) {
+                throw new ConfigurationException("@Ingest method " + location + " must take no parameters");
+            }
+            if (!names.add(name) || config.pipelines().containsKey(name)) {
+                throw new ConfigurationException(
+                        "Ingestion pipeline '" + name + "' is declared more than once (builder and/or "
+                                + "configuration). Pipeline names must be unique.");
+            }
+
+            flatEntries.add(name);
+            flatEntries.add(method.declaringClass().name().toString());
+            flatEntries.add(method.name());
+            beanClasses.add(method.declaringClass().name().toString());
+        }
+
+        if (!beanClasses.isEmpty()) {
+            beans.produce(AdditionalBeanBuildItem.builder()
+                    .addBeanClasses(beanClasses.toArray(new String[0]))
+                    .setUnremovable()
+                    .build());
+            reflectiveClasses.produce(ReflectiveClassBuildItem.builder(beanClasses.toArray(new String[0]))
+                    .methods()
+                    .build());
+        }
+
+        syntheticBeans.produce(SyntheticBeanBuildItem.configure(IngestBuilderPipelines.class)
+                .scope(Singleton.class)
+                .unremovable()
+                .runtimeValue(recorder.createBuilderPipelines(flatEntries))
+                .done());
     }
 
     @BuildStep
