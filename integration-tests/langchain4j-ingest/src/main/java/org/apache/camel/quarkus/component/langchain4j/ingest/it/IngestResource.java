@@ -133,11 +133,11 @@ public class IngestResource {
         switch (operation) {
         case "upsert" -> {
             var result = operations.upsert(pipeline, documentId, content);
-            return Map.of("outcome", result.outcome(), "segmentsWritten", result.segmentsWritten());
+            return Map.of("outcome", result.outcome().label(), "segmentsWritten", result.segmentsWritten());
         }
         case "delete" -> {
             var result = operations.delete(pipeline, documentId);
-            return Map.of("outcome", result.outcome());
+            return Map.of("outcome", result.outcome().label());
         }
         case "unsuppress" -> operations.unsuppress(pipeline, documentId);
         case "pin" -> operations.pin(pipeline, documentId);
@@ -181,7 +181,7 @@ public class IngestResource {
                 "pipeline", result.pipeline(),
                 "documentId", result.documentId(),
                 "segmentsWritten", result.segmentsWritten(),
-                "outcome", result.outcome())).build();
+                "outcome", result.outcome().label())).build();
     }
 
     /** Ingress call without the required document id header — must fail with a clear error. */
@@ -240,7 +240,22 @@ public class IngestResource {
     public Map<String, Object> customFeed(@PathParam("documentId") String documentId, String content) {
         IngestResult result = producerTemplate.requestBodyAndHeader(
                 "direct:custom-source", content, IngestHeaders.DOCUMENT_ID, documentId, IngestResult.class);
-        return Map.of("outcome", result.outcome(), "segmentsWritten", result.segmentsWritten());
+        return Map.of("outcome", result.outcome().label(), "segmentsWritten", result.segmentsWritten());
+    }
+
+    /** Sends a document WITHOUT the required id header — the DLC must receive the exchange. */
+    @POST
+    @Path("/custom-feed-without-id")
+    @Consumes(MediaType.TEXT_PLAIN)
+    public void customFeedWithoutId(String content) {
+        producerTemplate.sendBody("direct:custom-source", content);
+    }
+
+    @GET
+    @Path("/custom-dlq")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<String> customDlq() {
+        return DlqRoute.DEAD_LETTERS;
     }
 
     /** Feeds the {@code @Ingest}-builder-declared pipeline. */
@@ -251,7 +266,7 @@ public class IngestResource {
     public Map<String, Object> builtFeed(@PathParam("documentId") String documentId, String content) {
         IngestResult result = producerTemplate.requestBodyAndHeader(
                 "direct:built-source", content, IngestHeaders.DOCUMENT_ID, documentId, IngestResult.class);
-        return Map.of("outcome", result.outcome(), "segmentsWritten", result.segmentsWritten());
+        return Map.of("outcome", result.outcome().label(), "segmentsWritten", result.segmentsWritten());
     }
 
     @GET

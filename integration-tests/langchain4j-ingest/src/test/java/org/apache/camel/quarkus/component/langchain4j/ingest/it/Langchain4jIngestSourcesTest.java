@@ -121,6 +121,21 @@ class Langchain4jIngestSourcesTest {
     }
 
     @Test
+    @Order(6)
+    void failedExchangeGoesToTheDeadLetterChannel() {
+        RestAssured.given().contentType(ContentType.TEXT)
+                .body("a document without an id — DLC-MARKER-77")
+                .post("/langchain4j-ingest/custom-feed-without-id")
+                .then().statusCode(204);
+
+        org.awaitility.Awaitility.await().atMost(15, java.util.concurrent.TimeUnit.SECONDS)
+                .untilAsserted(() -> RestAssured.get("/langchain4j-ingest/custom-dlq")
+                        .then().statusCode(200)
+                        .body("", org.hamcrest.Matchers.hasItem(
+                                org.hamcrest.Matchers.containsString("DLC-MARKER-77"))));
+    }
+
+    @Test
     @Order(5)
     void curatedBuilderFileSyncPipelineReplacesLikeItsConfigTwin() {
         RestAssured.given().contentType(ContentType.TEXT)

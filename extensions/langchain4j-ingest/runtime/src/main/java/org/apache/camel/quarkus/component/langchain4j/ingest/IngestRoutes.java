@@ -45,7 +45,7 @@ import jakarta.inject.Inject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.cluster.CamelClusterService;
-import org.apache.camel.impl.cluster.ClusteredRoutePolicy;
+import org.apache.camel.health.HealthCheckRegistry;
 import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.AdoptPlan;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestResult;
@@ -130,7 +130,7 @@ public class IngestRoutes extends RouteBuilder {
                     pipeline.source().uri().orElseThrow(() -> new IllegalStateException(
                             "Ingestion pipeline '" + name + "' has source type 'endpoint' but no uri. "
                                     + "Set quarkus.camel.ai.ingest." + name + ".source.uri (build-time)")),
-                    service);
+                    runtime, service);
             default -> throw new IllegalStateException("Unknown source type " + pipeline.source().type());
             }
             configureIngressRoute(name, service);
@@ -148,6 +148,13 @@ public class IngestRoutes extends RouteBuilder {
         // adoption runs once, after every pipeline is declared: the shared-store wipe guard
         // needs the complete picture, and wipes must precede the first pass
         adoptPlan.execute();
+
+        // a Camel health check: exposed wherever the app already surfaces Camel health
+        // (e.g. /q/health/ready via camel-quarkus-microprofile-health)
+        HealthCheckRegistry healthCheckRegistry = HealthCheckRegistry.get(getContext());
+        if (healthCheckRegistry != null) {
+            healthCheckRegistry.register(new IngestReadinessCheck(registry));
+        }
     }
 
     /** An {@code @Ingest}-declared pipeline: the builder twin of the configuration path. */
@@ -196,7 +203,7 @@ public class IngestRoutes extends RouteBuilder {
         case "http" -> configureHttpScanRoute(name, runtime, service);
         case "s3" -> configureS3ScanRoute(name, runtime, service);
         case "kafka" -> configureKafkaSourceRoute(name, runtime, service);
-        case "endpoint" -> configureEndpointSourceRoute(name, definition.sourceUri(), service);
+        case "endpoint" -> configureEndpointSourceRoute(name, definition.sourceUri(), runtime, service);
         default -> throw new IllegalStateException("Unknown source type " + type);
         }
         configureIngressRoute(name, service);
@@ -339,9 +346,12 @@ public class IngestRoutes extends RouteBuilder {
      * where Camel is visible. Messages carry the required document-id header; there is no
      * enumeration, so deletion-by-disappearance does not apply here.
      */
-    private void configureEndpointSourceRoute(String name, String uri, IngestService service) {
-        from(uri)
-                .routeId("ingest-" + name)
+    private void configureEndpointSourceRoute(String name, String uri,
+            IngestRunTimeConfig.PipelineRunTimeConfig runtime, IngestService service) {
+        String onFailure = onFailureOf(name, runtime);
+        RouteDefinition route = from(uri).routeId("ingest-" + name);
+        applyFailurePolicy(route, name, onFailure, runtime);
+        route
                 .process(exchange -> {
                     String documentId = exchange.getMessage().getHeader(IngestHeaders.DOCUMENT_ID, String.class);
                     try {
@@ -354,10 +364,34 @@ public class IngestRoutes extends RouteBuilder {
                         exchange.getMessage().setBody(result);
                     } catch (Exception e) {
                         metrics.failure(name);
+                        if (!"skip".equals(onFailure)) {
+                            throw e; // fail: to the consumer's error handling; dead-letter: to the DLC
+                        }
                         LOG.errorf(e, "Pipeline '%s': failed to ingest '%s' from endpoint source — skipped",
                                 name, documentId);
                     }
                 });
+    }
+
+    private static String onFailureOf(String name, IngestRunTimeConfig.PipelineRunTimeConfig runtime) {
+        String onFailure = runtime == null ? "skip" : runtime.onFailure();
+        if (!Set.of("skip", "fail", "dead-letter").contains(onFailure)) {
+            throw new IllegalStateException(
+                    "Ingestion pipeline '" + name + "' has unknown on-failure '" + onFailure
+                            + "'. Supported: skip, fail, dead-letter");
+        }
+        return onFailure;
+    }
+
+    /** {@code dead-letter} uses Camel's Dead Letter Channel: the failed exchange is routed on. */
+    private void applyFailurePolicy(RouteDefinition route, String name, String onFailure,
+            IngestRunTimeConfig.PipelineRunTimeConfig runtime) {
+        if ("dead-letter".equals(onFailure)) {
+            String deadLetterUri = runtime.deadLetterUri().orElseThrow(() -> new IllegalStateException(
+                    "Ingestion pipeline '" + name + "' has on-failure=dead-letter but no dead-letter-uri. "
+                            + "Set quarkus.camel.ai.ingest." + name + ".dead-letter-uri"));
+            route.errorHandler(deadLetterChannel(deadLetterUri));
+        }
     }
 
     /** The {@code s3} source: scan passes over the bucket listing, ETags as fingerprints. */
@@ -410,8 +444,10 @@ public class IngestRoutes extends RouteBuilder {
                 .append("&autoOffsetReset=").append(runtime.source().fromBeginning() ? "earliest" : "latest");
         runtime.source().brokers().ifPresent(brokers -> uri.append("&brokers=").append(brokers));
 
-        from(uri.toString())
-                .routeId("ingest-" + name)
+        String onFailure = onFailureOf(name, runtime);
+        RouteDefinition route = from(uri.toString()).routeId("ingest-" + name);
+        applyFailurePolicy(route, name, onFailure, runtime);
+        route
                 .process(exchange -> {
                     String documentId = exchange.getMessage().getHeader("CamelKafkaKey", String.class);
                     try {
@@ -436,6 +472,9 @@ public class IngestRoutes extends RouteBuilder {
                         count(name, result);
                     } catch (Exception e) {
                         metrics.failure(name);
+                        if (!"skip".equals(onFailure)) {
+                            throw e; // fail: to the consumer's error handling; dead-letter: to the DLC
+                        }
                         LOG.errorf(e, "Pipeline '%s': failed to ingest kafka record '%s' — skipped", name,
                                 documentId);
                     }
@@ -466,7 +505,7 @@ public class IngestRoutes extends RouteBuilder {
                             + "camel-quarkus-infinispan-cluster-service, or remove leader-only.");
         }
         try {
-            route.routePolicy(ClusteredRoutePolicy.forNamespace(getContext(), "cq-ingest"));
+            LeaderOnlySupport.apply(route, getContext());
             LOG.infof("Ingestion pipeline '%s': scan passes run on the cluster leader only", name);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to set up leader-only passes for pipeline '" + name + "'", e);
@@ -530,9 +569,9 @@ public class IngestRoutes extends RouteBuilder {
 
     private void count(String name, IngestResult result) {
         switch (result.outcome()) {
-        case IngestResult.OUTCOME_REPLACED -> metrics.documentReplaced(name, result.segmentsWritten());
-        case IngestResult.OUTCOME_SKIPPED_UNCHANGED -> metrics.documentSkippedUnchanged(name);
-        case IngestResult.OUTCOME_INGESTED -> metrics.documentIngested(name, result.segmentsWritten());
+        case REPLACED -> metrics.documentReplaced(name, result.segmentsWritten());
+        case SKIPPED_UNCHANGED -> metrics.documentSkippedUnchanged(name);
+        case INGESTED -> metrics.documentIngested(name, result.segmentsWritten());
         default -> {
             // empty: nothing written, nothing to count
         }

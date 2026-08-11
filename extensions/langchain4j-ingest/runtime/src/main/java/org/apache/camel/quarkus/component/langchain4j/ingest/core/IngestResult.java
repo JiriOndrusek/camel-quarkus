@@ -18,24 +18,30 @@ package org.apache.camel.quarkus.component.langchain4j.ingest.core;
 
 /**
  * Outcome of one ingestion operation.
- *
- * <p>
- * Outcomes: {@code ingested} (new document written), {@code replaced} (previous vectors
- * overwritten/removed), {@code skipped-unchanged} (change detection short-circuited — no fetch
- * of embeddings, no store write), {@code empty} (blank document, nothing written),
- * {@code deleted} (vectors removed), {@code suppressed-tombstone} (document was explicitly
- * deleted and stays deleted), {@code suppressed-pinned} (an API correction wins over the source
- * until unpinned).
  */
-public record IngestResult(String pipeline, String documentId, int segmentsWritten, String outcome) {
+public record IngestResult(String pipeline, String documentId, int segmentsWritten, Outcome outcome) {
 
-    public static final String OUTCOME_INGESTED = "ingested";
-    public static final String OUTCOME_REPLACED = "replaced";
-    public static final String OUTCOME_SKIPPED_UNCHANGED = "skipped-unchanged";
-    public static final String OUTCOME_EMPTY = "empty";
-    public static final String OUTCOME_DELETED = "deleted";
-    public static final String OUTCOME_SUPPRESSED_TOMBSTONE = "suppressed-tombstone";
-    public static final String OUTCOME_SUPPRESSED_PINNED = "suppressed-pinned";
-    /** A poison document skipped because a previous attempt failed and its content is unchanged. */
-    public static final String OUTCOME_DEAD_LETTERED = "dead-lettered";
+    public enum Outcome {
+        /** New document written. */
+        INGESTED,
+        /** Previous vectors overwritten/removed. */
+        REPLACED,
+        /** Change detection short-circuited — no read, no embedding, no store write. */
+        SKIPPED_UNCHANGED,
+        /** Blank document, nothing written. */
+        EMPTY,
+        /** Vectors removed. */
+        DELETED,
+        /** The document was explicitly deleted and stays deleted. */
+        SUPPRESSED_TOMBSTONE,
+        /** An API correction wins over the source until unpinned. */
+        SUPPRESSED_PINNED,
+        /** A poison document skipped because a previous attempt failed and its content is unchanged. */
+        DEAD_LETTERED;
+
+        /** The stable wire/log form, e.g. {@code skipped-unchanged}. */
+        public String label() {
+            return name().toLowerCase().replace('_', '-');
+        }
+    }
 }

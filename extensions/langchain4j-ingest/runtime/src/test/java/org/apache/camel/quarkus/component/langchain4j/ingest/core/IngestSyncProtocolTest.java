@@ -69,12 +69,12 @@ class IngestSyncProtocolTest {
         IngestService service = syncService(IngestService.WriteStrategy.UPSERT, store);
 
         IngestResult first = service.ingest("doc", "fp1", "hello world");
-        assertEquals(IngestResult.OUTCOME_INGESTED, first.outcome());
+        assertEquals(IngestResult.Outcome.INGESTED, first.outcome());
         assertEquals(1, store.entries.size());
         int writesAfterFirst = store.writeCalls;
 
         IngestResult second = service.ingest("doc", "fp1", "hello world");
-        assertEquals(IngestResult.OUTCOME_SKIPPED_UNCHANGED, second.outcome());
+        assertEquals(IngestResult.Outcome.SKIPPED_UNCHANGED, second.outcome());
         assertEquals(writesAfterFirst, store.writeCalls, "tier-1 skip must not touch the store");
     }
 
@@ -84,13 +84,13 @@ class IngestSyncProtocolTest {
         service.ingest("doc", "fp1", "hello world");
 
         IngestResult second = service.ingest("doc", "fp2", "hello world");
-        assertEquals(IngestResult.OUTCOME_SKIPPED_UNCHANGED, second.outcome());
+        assertEquals(IngestResult.Outcome.SKIPPED_UNCHANGED, second.outcome());
         assertEquals("fp2", ledger.read("p", "doc").orElseThrow().fingerprint(),
                 "tier-2 skip must refresh the fingerprint so tier-1 works next time");
 
         int writes = store.writeCalls;
         IngestResult third = service.ingest("doc", "fp2", "hello world");
-        assertEquals(IngestResult.OUTCOME_SKIPPED_UNCHANGED, third.outcome());
+        assertEquals(IngestResult.Outcome.SKIPPED_UNCHANGED, third.outcome());
         assertEquals(writes, store.writeCalls);
     }
 
@@ -100,7 +100,7 @@ class IngestSyncProtocolTest {
         service.ingest("doc", "fp1", "old content");
 
         IngestResult result = service.ingest("doc", "fp2", "new content");
-        assertEquals(IngestResult.OUTCOME_REPLACED, result.outcome());
+        assertEquals(IngestResult.Outcome.REPLACED, result.outcome());
         assertEquals(1, store.entries.size(), "same deterministic id must be overwritten, not duplicated");
         assertEquals("new content", store.entries.values().iterator().next().text());
     }
@@ -116,7 +116,7 @@ class IngestSyncProtocolTest {
         assertTrue(before > 1, "expected multiple segments, got " + before);
 
         IngestResult result = service.ingest("doc", "fp2", "tiny");
-        assertEquals(IngestResult.OUTCOME_REPLACED, result.outcome());
+        assertEquals(IngestResult.Outcome.REPLACED, result.outcome());
         assertEquals(1, store.entries.size(), "stale tail segments must be removed on shrink");
     }
 
@@ -143,7 +143,7 @@ class IngestSyncProtocolTest {
 
         // same fingerprint as the crashed attempt: an in_progress row must never be skipped
         IngestResult result = service.ingest("doc", "fp2", "content v2");
-        assertEquals(IngestResult.OUTCOME_REPLACED, result.outcome());
+        assertEquals(IngestResult.Outcome.REPLACED, result.outcome());
         assertTrue(ledger.read("p", "doc").orElseThrow().done());
         assertEquals(1, store.entries.size());
         assertEquals("content v2", store.entries.values().iterator().next().text());
