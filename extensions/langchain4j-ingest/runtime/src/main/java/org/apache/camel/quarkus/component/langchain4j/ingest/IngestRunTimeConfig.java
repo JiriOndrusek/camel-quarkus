@@ -133,6 +133,57 @@ public interface IngestRunTimeConfig {
             Optional<String> url();
 
             /**
+             * The bucket to ingest from ({@code s3} source). The object key is the document id;
+             * the ETag is the change fingerprint.
+             */
+            Optional<String> bucket();
+
+            /**
+             * AWS region ({@code s3} source).
+             */
+            Optional<String> region();
+
+            /**
+             * Only objects whose key starts with this prefix are ingested ({@code s3} source).
+             */
+            Optional<String> prefix();
+
+            /**
+             * Access key ({@code s3} source).
+             */
+            Optional<String> accessKey();
+
+            /**
+             * Secret key ({@code s3} source).
+             */
+            Optional<String> secretKey();
+
+            /**
+             * Endpoint override for S3-compatible stores such as MinIO ({@code s3} source).
+             */
+            Optional<String> endpointOverride();
+
+            /**
+             * The topic to consume ({@code kafka} source). The record key is the document id; a
+             * record with a null payload (a compacted-topic tombstone) deletes the document.
+             * Records without a key are skipped with a warning — replacement needs a stable id.
+             */
+            Optional<String> topic();
+
+            /**
+             * Broker list ({@code kafka} source). When not set, the component-level
+             * {@code camel.component.kafka.brokers} configuration applies.
+             */
+            Optional<String> brokers();
+
+            /**
+             * Whether the consumer starts from the beginning of the topic on first start
+             * ({@code kafka} source).
+             */
+            @WithDefault("true")
+            boolean fromBeginning();
+
+            /**
              * Interval between synchronisation passes in milliseconds ({@code sync} mode).
              */
             @WithDefault("5000")

@@ -25,6 +25,7 @@ import java.nio.file.PathMatcher;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -102,11 +103,16 @@ public class IngestRoutes extends RouteBuilder {
                         runtime.embedding().requestsPerMinute().orElse(null));
             }
 
-            boolean gatesReadiness = sync && (runtime == null || runtime.readiness().enabled());
+            // only bounded scan sources have a "first pass" to gate on; streams (kafka) and
+            // push sources (endpoint) are ready once their consumer starts (17-§11)
+            boolean scanBased = Set.of("file", "http", "s3").contains(pipeline.source().type());
+            boolean gatesReadiness = sync && scanBased && (runtime == null || runtime.readiness().enabled());
             registry.register(name, service, gatesReadiness);
             switch (pipeline.source().type()) {
             case "file" -> configureSourceRoute(name, runtime, service, sync);
             case "http" -> configureHttpScanRoute(name, runtime, service);
+            case "s3" -> configureS3ScanRoute(name, runtime, service);
+            case "kafka" -> configureKafkaSourceRoute(name, runtime, service);
             case "endpoint" -> configureEndpointSourceRoute(name, pipeline, service);
             default -> throw new IllegalStateException("Unknown source type " + pipeline.source().type());
             }
@@ -257,6 +263,86 @@ public class IngestRoutes extends RouteBuilder {
                         metrics.failure(name);
                         LOG.errorf(e, "Pipeline '%s': failed to ingest '%s' from endpoint source — skipped",
                                 name, documentId);
+                    }
+                });
+    }
+
+    /** The {@code s3} source: scan passes over the bucket listing, ETags as fingerprints. */
+    private void configureS3ScanRoute(String name, IngestRunTimeConfig.PipelineRunTimeConfig runtime,
+            IngestService service) {
+        S3SourceEnumerator enumerator = new S3SourceEnumerator(
+                getCamelContext().createProducerTemplate(), runtime.source(), name);
+        SyncPassRunner passRunner = new SyncPassRunner(service, service.ledger(), name,
+                runtime.reconcile().bulkDeleteThreshold(), runtime.reconcile().allowBulkDelete());
+
+        from("timer:ingest-" + name + "?period=" + runtime.source().pollInterval() + "&delay=0")
+                .routeId("ingest-" + name)
+                .process(exchange -> {
+                    Map<String, SyncPassRunner.SourceDocument> listing;
+                    try {
+                        listing = enumerator.enumerate();
+                    } catch (Exception e) {
+                        metrics.failure(name);
+                        LOG.errorf(e, "Pipeline '%s': bucket enumeration failed — pass aborted, nothing "
+                                + "processed, nothing deleted", name);
+                        return;
+                    }
+                    SyncPassRunner.PassOutcome outcome = passRunner.run(listing);
+                    metrics.applyPass(name, outcome);
+                    if (outcome.succeeded()) {
+                        registry.markReady(name);
+                    }
+                });
+    }
+
+    /**
+     * The {@code kafka} source: a stream, not a bounded pass. The record key is the document id;
+     * a null-payload record (a compacted-topic tombstone) deletes the document; a record without
+     * a key is skipped with a warning, because replacement needs a stable id. There is no
+     * enumeration, so deletion-by-disappearance does not apply — tombstone records are the
+     * deletion signal.
+     */
+    private void configureKafkaSourceRoute(String name, IngestRunTimeConfig.PipelineRunTimeConfig runtime,
+            IngestService service) {
+        String topic = runtime == null ? null : runtime.source().topic().orElse(null);
+        if (topic == null) {
+            throw new IllegalStateException(
+                    "Ingestion pipeline '" + name + "' has source type 'kafka' but no topic. "
+                            + "Set quarkus.camel.ai.ingest." + name + ".source.topic");
+        }
+        StringBuilder uri = new StringBuilder("kafka:").append(topic)
+                .append("?groupId=cq-ingest-").append(name)
+                .append("&autoOffsetReset=").append(runtime.source().fromBeginning() ? "earliest" : "latest");
+        runtime.source().brokers().ifPresent(brokers -> uri.append("&brokers=").append(brokers));
+
+        from(uri.toString())
+                .routeId("ingest-" + name)
+                .process(exchange -> {
+                    String documentId = exchange.getMessage().getHeader("CamelKafkaKey", String.class);
+                    try {
+                        if (documentId == null || documentId.isBlank()) {
+                            LOG.warnf("Pipeline '%s': kafka record without a key skipped — replacement "
+                                    + "needs a stable document id (produce with a key)", name);
+                            metrics.failure(name);
+                            return;
+                        }
+                        String text = exchange.getMessage().getBody(String.class);
+                        if (text == null || text.isBlank()) {
+                            // compacted-topic tombstone: the ecosystem's native deletion signal
+                            IngestResult result = service.delete(documentId);
+                            count(name, result);
+                            metrics.documentDeleted(name);
+                            service.unsuppress(documentId); // stream semantics: a later record may re-create
+                            LOG.debugf("Pipeline '%s': tombstone record deleted '%s'", name, documentId);
+                            return;
+                        }
+                        IngestResult result = service.ingest(documentId, null, text,
+                                IngestService.Origin.SOURCE);
+                        count(name, result);
+                    } catch (Exception e) {
+                        metrics.failure(name);
+                        LOG.errorf(e, "Pipeline '%s': failed to ingest kafka record '%s' — skipped", name,
+                                documentId);
                     }
                 });
     }

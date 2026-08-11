@@ -67,6 +67,18 @@
             <artifactId>quarkus-smallrye-health</artifactId>
             <optional>true</optional>
         </dependency>
+        <!-- curated source connectors: present only when the user adds them; the build fails
+             with an add-extension hint when a pipeline needs one that is absent -->
+        <dependency>
+            <groupId>org.apache.camel.quarkus</groupId>
+            <artifactId>camel-quarkus-aws2-s3</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel.quarkus</groupId>
+            <artifactId>camel-quarkus-kafka</artifactId>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-core</artifactId>

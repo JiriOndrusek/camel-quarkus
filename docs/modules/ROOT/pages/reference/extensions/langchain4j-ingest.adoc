@@ -301,6 +301,65 @@ detection uses {@code ETag} / {@code Last-Modified} via a cheap HEAD request.
 | `string`
 | 
 
+a| [[quarkus-camel-ai-ingest-pipeline-name-source-bucket]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-bucket[quarkus.camel.ai.ingest."pipeline-name".source.bucket]`
+
+The bucket to ingest from ({@code s3} source). The object key is the document id;
+the ETag is the change fingerprint.
+| `string`
+| 
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-source-region]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-region[quarkus.camel.ai.ingest."pipeline-name".source.region]`
+
+AWS region ({@code s3} source).
+| `string`
+| 
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-source-prefix]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-prefix[quarkus.camel.ai.ingest."pipeline-name".source.prefix]`
+
+Only objects whose key starts with this prefix are ingested ({@code s3} source).
+| `string`
+| 
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-source-access-key]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-access-key[quarkus.camel.ai.ingest."pipeline-name".source.access-key]`
+
+Access key ({@code s3} source).
+| `string`
+| 
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-source-secret-key]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-secret-key[quarkus.camel.ai.ingest."pipeline-name".source.secret-key]`
+
+Secret key ({@code s3} source).
+| `string`
+| 
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-source-endpoint-override]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-endpoint-override[quarkus.camel.ai.ingest."pipeline-name".source.endpoint-override]`
+
+Endpoint override for S3-compatible stores such as MinIO ({@code s3} source).
+| `string`
+| 
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-source-topic]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-topic[quarkus.camel.ai.ingest."pipeline-name".source.topic]`
+
+The topic to consume ({@code kafka} source). The record key is the document id; a
+record with a null payload (a compacted-topic tombstone) deletes the document.
+Records without a key are skipped with a warning — replacement needs a stable id.
+| `string`
+| 
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-source-brokers]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-brokers[quarkus.camel.ai.ingest."pipeline-name".source.brokers]`
+
+Broker list ({@code kafka} source). When not set, the component-level
+{@code camel.component.kafka.brokers} configuration applies.
+| `string`
+| 
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-source-from-beginning]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-from-beginning[quarkus.camel.ai.ingest."pipeline-name".source.from-beginning]`
+
+Whether the consumer starts from the beginning of the topic on first start
+({@code kafka} source).
+| `boolean`
+| `true`
+
 a| [[quarkus-camel-ai-ingest-pipeline-name-source-poll-interval]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-poll-interval[quarkus.camel.ai.ingest."pipeline-name".source.poll-interval]`
 
 Interval between synchronisation passes in milliseconds ({@code sync} mode).

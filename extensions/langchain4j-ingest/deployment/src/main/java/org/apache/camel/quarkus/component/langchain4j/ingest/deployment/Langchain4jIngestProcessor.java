@@ -16,8 +16,10 @@
  */
 package org.apache.camel.quarkus.component.langchain4j.ingest.deployment;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.deployment.Capabilities;
@@ -25,6 +27,7 @@ import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.Produce;
+import io.quarkus.deployment.builditem.ApplicationArchivesBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.pkg.builditem.ArtifactResultBuildItem;
 import io.quarkus.runtime.configuration.ConfigurationException;
@@ -34,12 +37,21 @@ import org.apache.camel.quarkus.component.langchain4j.ingest.IngestOperations;
 import org.apache.camel.quarkus.component.langchain4j.ingest.IngestPipelineRegistry;
 import org.apache.camel.quarkus.component.langchain4j.ingest.IngestRoutes;
 import org.apache.camel.quarkus.component.support.langchain4j.deployment.RagAugmentorCandidateBuildItem;
+import org.apache.camel.quarkus.core.deployment.spi.CamelServiceBuildItem;
+import org.apache.camel.quarkus.core.deployment.util.CamelSupport;
+import org.apache.camel.quarkus.core.deployment.util.PathFilter;
 
 class Langchain4jIngestProcessor {
 
     private static final String FEATURE = "camel-langchain4j-ingest";
 
-    private static final Set<String> SUPPORTED_SOURCE_TYPES = Set.of("file", "http", "endpoint");
+    private static final Set<String> SUPPORTED_SOURCE_TYPES = Set.of("file", "http", "s3", "kafka", "endpoint");
+    /** Source types built on change detection and/or the deletion signal — they need the ledger. */
+    private static final Set<String> SYNC_ONLY_SOURCE_TYPES = Set.of("http", "s3", "kafka");
+    /** Curated source type → (Camel component, camel-quarkus extension artifact). */
+    private static final Map<String, String[]> SOURCE_CONNECTORS = Map.of(
+            "s3", new String[] { "aws2-s3", "camel-quarkus-aws2-s3" },
+            "kafka", new String[] { "kafka", "camel-quarkus-kafka" });
     private static final Set<String> SUPPORTED_MODES = Set.of("append", "sync");
     private static final Set<String> SUPPORTED_SPLITTERS = Set.of("recursive", "none");
     private static final Set<String> SUPPORTED_WRITE_STRATEGIES = Set.of("upsert", "remove-then-add");
@@ -75,6 +87,34 @@ class Langchain4jIngestProcessor {
                         IngestOperations.class)
                 .setUnremovable()
                 .build();
+    }
+
+    /**
+     * A pipeline whose source needs a Camel connector that is not on the classpath stops the
+     * build — with the command that fixes it, not a runtime ClassNotFoundException. Component
+     * services are REGISTRY-destination, so they are looked up from the application archives
+     * directly (they never appear among the DISCOVERY {@code CamelServiceBuildItem}s).
+     */
+    @BuildStep
+    @Produce(ArtifactResultBuildItem.class)
+    void validateConnectorsPresent(IngestBuildTimeConfig config, ApplicationArchivesBuildItem applicationArchives) {
+        PathFilter pathFilter = new PathFilter.Builder()
+                .include("META-INF/services/org/apache/camel/component/*")
+                .build();
+        Set<String> components = CamelSupport.services(applicationArchives, pathFilter)
+                .map(CamelServiceBuildItem::getName)
+                .collect(Collectors.toSet());
+
+        for (Map.Entry<String, IngestBuildTimeConfig.PipelineBuildTimeConfig> entry : config.pipelines().entrySet()) {
+            String[] connector = SOURCE_CONNECTORS.get(entry.getValue().source().type());
+            if (connector != null && !components.contains(connector[0])) {
+                throw new ConfigurationException(
+                        "Ingestion pipeline '" + entry.getKey() + "' uses source type '"
+                                + entry.getValue().source().type() + "' (Camel component '" + connector[0]
+                                + "'), but that component is not on the classpath.\n"
+                                + "Add it:  ./mvnw quarkus:add-extension -Dextensions=" + connector[1]);
+            }
+        }
     }
 
     @BuildStep
@@ -125,11 +165,11 @@ class Langchain4jIngestProcessor {
                                 + "runtime-overridable consumer URI would be arbitrary component invocation).");
             }
 
-            if ("http".equals(sourceType) && !"sync".equals(mode)) {
+            if (SYNC_ONLY_SOURCE_TYPES.contains(sourceType) && !"sync".equals(mode)) {
                 throw new ConfigurationException(
-                        "Ingestion pipeline '" + name + "' combines source type 'http' with mode=append. The "
-                                + "http source is built on change detection and needs mode=sync (and a "
-                                + "datasource for the ledger).");
+                        "Ingestion pipeline '" + name + "' combines source type '" + sourceType + "' with "
+                                + "mode=append. This source is built on change detection and/or the deletion "
+                                + "signal and needs mode=sync (and a datasource for the ledger).");
             }
 
             if (!SUPPORTED_SPLITTERS.contains(pipeline.splitter())) {

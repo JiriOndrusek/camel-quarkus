@@ -63,6 +63,14 @@ public class IngestResource {
     EmbeddingStore<TextSegment> customStore;
 
     @Inject
+    @Named("s3-store")
+    EmbeddingStore<TextSegment> s3Store;
+
+    @Inject
+    @Named("events-store")
+    EmbeddingStore<TextSegment> eventsStore;
+
+    @Inject
     @Named("test-model")
     EmbeddingModel model;
 
@@ -132,6 +140,8 @@ public class IngestResource {
         case "manuals" -> manualsStore;
         case "webdoc" -> webdocStore;
         case "custom" -> customStore;
+        case "s3" -> s3Store;
+        case "events" -> eventsStore;
         default -> productsStore;
         };
         var result = store.search(EmbeddingSearchRequest.builder()
