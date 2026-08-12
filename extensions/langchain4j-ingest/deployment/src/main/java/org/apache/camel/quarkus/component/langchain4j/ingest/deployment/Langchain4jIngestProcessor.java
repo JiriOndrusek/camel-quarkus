@@ -148,7 +148,8 @@ class Langchain4jIngestProcessor {
             Langchain4jIngestRecorder recorder,
             BuildProducer<AdditionalBeanBuildItem> beans,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClasses,
-            BuildProducer<SyntheticBeanBuildItem> syntheticBeans) {
+            BuildProducer<SyntheticBeanBuildItem> syntheticBeans,
+            BuildProducer<RagAugmentorCandidateBuildItem> ragCandidates) {
 
         DotName ingestAnnotation = DotName.createSimple(Ingest.class.getName());
         DotName pipelineType = DotName.createSimple(IngestPipeline.class.getName());
@@ -185,6 +186,11 @@ class Langchain4jIngestProcessor {
             flatEntries.add(method.declaringClass().name().toString());
             flatEntries.add(method.name());
             beanClasses.add(method.declaringClass().name().toString());
+
+            // builder pipelines join the RAG bridge like config pipelines do; their store/model
+            // names are only known at runtime (the method body), so the augmentor falls back to
+            // the @Default store and model beans
+            ragCandidates.produce(new RagAugmentorCandidateBuildItem(name, null, null));
         }
 
         if (!beanClasses.isEmpty()) {
