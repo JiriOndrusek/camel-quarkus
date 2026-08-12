@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.langchain4j.ingest.core;
+package org.apache.camel.quarkus.component.langchain4j.ingest.ledger.jdbc;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Optional;
 
 import javax.sql.DataSource;
+
+import org.apache.camel.quarkus.component.langchain4j.ingest.ledger.SyncLedger;
 
 /**
  * JDBC-backed {@link SyncLedger}. Deliberately dialect-free SQL (works on PostgreSQL and H2):

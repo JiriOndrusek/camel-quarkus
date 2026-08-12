@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import org.apache.camel.quarkus.component.langchain4j.ingest.ledger.SyncLedger;
 import org.jboss.logging.Logger;
 
 /**

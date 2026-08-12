@@ -50,9 +50,9 @@ import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.AdoptPlan;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestResult;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestService;
-import org.apache.camel.quarkus.component.langchain4j.ingest.core.JdbcSyncLedger;
-import org.apache.camel.quarkus.component.langchain4j.ingest.core.SyncLedger;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.SyncPassRunner;
+import org.apache.camel.quarkus.component.langchain4j.ingest.ledger.SyncLedger;
+import org.apache.camel.quarkus.component.langchain4j.ingest.ledger.jdbc.JdbcSyncLedger;
 import org.jboss.logging.Logger;
 
 /**

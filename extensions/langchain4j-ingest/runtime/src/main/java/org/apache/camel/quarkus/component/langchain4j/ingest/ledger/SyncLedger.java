@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.quarkus.component.langchain4j.ingest.core;
+package org.apache.camel.quarkus.component.langchain4j.ingest.ledger;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +24,27 @@ import java.util.Optional;
  * a projection that is never asked questions — losing the ledger costs re-ingestion (which
  * converges thanks to deterministic segment ids), never correctness. Reconciliation is
  * ledger-versus-source; the store is never enumerated.
+ *
+ * <p>
+ * <strong>Internal SPI — not a public API.</strong> No compatibility guarantees; applications
+ * must not implement or call this interface. It exists so the implementation can be replaced
+ * wholesale: LangChain4j has no equivalent of LangChain-Python's {@code RecordManager} yet
+ * (<a href="https://github.com/langchain4j/langchain4j/issues/2931">langchain4j#2931</a>), and
+ * once one lands upstream, an adapter implementing this interface replaces the
+ * {@code ledger.jdbc} package while every consumer stays untouched. New implementations must
+ * pass the {@code SyncLedgerContract} test.
+ *
+ * <p>
+ * Two method groups, by replaceability:
+ * <ul>
+ * <li><em>Tracker subset</em> — {@link #ensureSchema}, {@link #read}, {@link #listDocuments},
+ * {@link #refreshFingerprint}, {@link #deleteRow}: mirrors what an upstream record manager
+ * provides and would delegate to it directly.</li>
+ * <li><em>Camel Quarkus extensions</em> — the two-phase {@link #writeIntent}/{@link #commit}
+ * protocol, {@link #tombstone}/{@link #unsuppress}, {@link #pin}/{@link #unpin},
+ * {@link #markFailed}: product semantics an upstream tracker will not carry; an adapter keeps
+ * these in side storage keyed the same way.</li>
+ * </ul>
  */
 public interface SyncLedger {
 

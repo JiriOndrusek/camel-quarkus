@@ -32,6 +32,8 @@ import dev.langchain4j.model.output.Response;
 import dev.langchain4j.store.embedding.EmbeddingSearchRequest;
 import dev.langchain4j.store.embedding.EmbeddingSearchResult;
 import dev.langchain4j.store.embedding.EmbeddingStore;
+import org.apache.camel.quarkus.component.langchain4j.ingest.ledger.SyncLedger;
+import org.apache.camel.quarkus.component.langchain4j.ingest.ledger.jdbc.JdbcSyncLedger;
 import org.h2.jdbcx.JdbcDataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

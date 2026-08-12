@@ -25,7 +25,7 @@ import java.util.TreeMap;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestService;
-import org.apache.camel.quarkus.component.langchain4j.ingest.core.SyncLedger;
+import org.apache.camel.quarkus.component.langchain4j.ingest.ledger.SyncLedger;
 
 /**
  * Dev UI backend: the answer to "why doesn't my assistant know about file X" without any

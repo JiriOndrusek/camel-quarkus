@@ -20,6 +20,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.camel.quarkus.component.langchain4j.ingest.ledger.SyncLedger;
+import org.apache.camel.quarkus.component.langchain4j.ingest.ledger.jdbc.JdbcSyncLedger;
 import org.h2.jdbcx.JdbcDataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
