@@ -105,3 +105,33 @@ public API — no compatibility guarantees between releases, and applications mu
 call it directly; it may change or be removed without a deprecation cycle. It exists so the
 implementation can be replaced wholesale later. It is not yet wired into a user-facing extension;
 it is consumed by the upcoming `langchain4j-ingest` extension's `sync` mode.
+
+== Sync engine
+
+Status: *Experimental* — the same caveats as the tracker above: internal, not yet consumed by any
+user-facing extension, groundwork for the upcoming `langchain4j-ingest` extension.
+
+`org.apache.camel.quarkus.component.support.langchain4j.ingest` is the engine that drives the
+document states above — deliberately free of Camel imports, so that together with the tracker it
+forms the unit that could one day be replaced by (or proposed to) an upstream LangChain4j
+record-manager mechanism:
+
+* `IngestService` — the write path for one document: tier-1 fingerprint / tier-2 content-hash
+  change detection, deterministic segment ids, the `writeIntent` → store write → shrink-remove →
+  `commit` protocol, and a per-store write strategy (`upsert` for stores whose same-id write
+  overwrites; `remove-then-add` for stores that keep or mix old content on same-id writes).
+  Embedding calls are batched and optionally rate-limited.
+* `SyncPassRunner` — one bounded synchronisation pass over a complete source listing, ending in
+  reconciliation (tracker-versus-source, the store is never enumerated) behind the safety
+  interlock: a pass with any failure deletes nothing, a bulk-delete floor refuses to remove more
+  than a configured fraction of the corpus without explicit consent, and only `origin=source`
+  rows are ever deletion candidates.
+* `IngestIds` — deterministic RFC 4122 name-based (v5) segment ids: the same
+  `(pipeline, documentId, segmentIndex)` always yields the same id, which is what turns
+  re-ingestion into overwrite instead of duplication and makes crashes converge.
+* `IngestResult` — the per-document outcome (`ingested`, `replaced`, `skipped-unchanged`,
+  `suppressed-*`, `dead-lettered`, `deleted`, `empty`).
+
+The engine's invariants are pinned by `IngestSyncProtocolTest` (skip tiers, replace without
+duplicates, shrink, both write strategies, crash convergence) and `SyncPassRunnerTest` (the
+deletion interlock, tombstone/pin behaviour over passes, dead-letter retry semantics).
