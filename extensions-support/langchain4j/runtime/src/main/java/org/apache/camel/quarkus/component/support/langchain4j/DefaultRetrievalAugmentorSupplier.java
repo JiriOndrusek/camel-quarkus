@@ -42,6 +42,7 @@ public class DefaultRetrievalAugmentorSupplier implements Supplier<RetrievalAugm
     private static final TypeLiteral<EmbeddingStore<TextSegment>> EMBEDDING_STORE_TYPE = new TypeLiteral<>() {
     };
 
+    private final String augmentorName;
     private final String embeddingStoreName;
     private final String embeddingModelName;
 
@@ -50,6 +51,12 @@ public class DefaultRetrievalAugmentorSupplier implements Supplier<RetrievalAugm
     }
 
     public DefaultRetrievalAugmentorSupplier(String embeddingStoreName, String embeddingModelName) {
+        this(null, embeddingStoreName, embeddingModelName);
+    }
+
+    public DefaultRetrievalAugmentorSupplier(String augmentorName, String embeddingStoreName,
+            String embeddingModelName) {
+        this.augmentorName = augmentorName;
         this.embeddingStoreName = embeddingStoreName;
         this.embeddingModelName = embeddingModelName;
     }
@@ -95,11 +102,22 @@ public class DefaultRetrievalAugmentorSupplier implements Supplier<RetrievalAugm
                 + " (store=%s, model=%s)", embeddingStoreName != null ? embeddingStoreName : "@Default",
                 embeddingModelName != null ? embeddingModelName : "@Default");
 
+        EmbeddingStoreContentRetriever.EmbeddingStoreContentRetrieverBuilder retriever = EmbeddingStoreContentRetriever
+                .builder()
+                .embeddingStore(store)
+                .embeddingModel(model);
+
+        // the retrieval-side isolation hook: consulted per retrieval, so tenant metadata written
+        // at ingestion time becomes an actual access control instead of reserved schema space
+        var filterSupplier = Arc.container().instance(RagRetrievalFilterSupplier.class);
+        if (filterSupplier.isAvailable()) {
+            RagRetrievalFilterSupplier supplier = filterSupplier.get();
+            retriever.dynamicFilter(query -> supplier.filter(augmentorName));
+            LOG.debugf("RagRetrievalFilterSupplier active for augmentor '%s'", augmentorName);
+        }
+
         return DefaultRetrievalAugmentor.builder()
-                .contentRetriever(EmbeddingStoreContentRetriever.builder()
-                        .embeddingStore(store)
-                        .embeddingModel(model)
-                        .build())
+                .contentRetriever(retriever.build())
                 .build();
     }
 }
