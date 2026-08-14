@@ -1,0 +1,48 @@
+= LangChain4j Support
+
+This module provides common support code shared by Camel Quarkus LangChain4j extensions.
+
+== Ingestion tracker
+
+Status: *Experimental*.
+
+`org.apache.camel.quarkus.component.support.langchain4j.tracker.IngestionTracker` is the bookkeeping
+SPI behind keeping a vector store in sync with a changing document source (files, buckets, feeds,
+...). Vector stores cannot be enumerated for "what did I already ingest", and LangChain4j has no
+equivalent of LangChain-Python's `RecordManager`
+(https://github.com/langchain4j/langchain4j/issues/2931[langchain4j#2931]), so without external
+bookkeeping any ingestion pipeline is either append-only (restarts re-embed the whole corpus,
+edited documents join their previous vectors instead of replacing them) or wipe-and-reload
+(loses everything between passes). `IngestionTracker` closes that gap: it tracks one row per document
+— fingerprint, content hash, segment count, a two-phase `in_progress`/`done`/`failed` status,
+and `tombstone`/`pinned` flags — as the single authority on what was ingested. The vector store
+itself stays a disposable projection that is never asked questions; losing the tracker only costs
+re-ingestion, never correctness, because segment ids are deterministic.
+
+The two-phase `writeIntent`/`commit` protocol is what makes the tracker crash-safe: a row left
+`in_progress` by a crash (killed process, OOM, ...) is never mistaken for "already ingested", so
+the next delivery of the same document converges the store instead of skipping it.
+
+`org.apache.camel.quarkus.component.support.langchain4j.tracker.jdbc.JdbcIngestionTracker` is the
+reference implementation: deliberately dialect-free SQL (upserts are update-then-insert inside
+application code rather than vendor `MERGE`/`ON CONFLICT`), using only JDK types, so the same
+code runs unmodified against PostgreSQL and H2. It owns its own schema
+(`cq_ingestion_tracker`, created on first use via `ensureSchema()`) and expects to be handed a
+`javax.sql.DataSource` — in a Quarkus application that's typically an Agroal-managed datasource,
+with Dev Services providing one automatically in dev/test when none is configured.
+
+`IngestionTrackerContract` is a reusable JUnit test base class that pins the behavioural guarantees
+every implementation must satisfy (durability of in-progress intents, shrink-bound tracking
+across re-intents, tombstone/pin lifecycle, dead-letter semantics on failure, ...). A new
+implementation — for example an adapter over a future upstream LangChain4j record manager — is a
+drop-in replacement for `JdbcIngestionTracker` exactly when its own subclass of this contract passes.
+It is verified twice: `JdbcIngestionTrackerTest` (in this module) runs it against H2 for a fast unit
+loop, and `integration-tests/langchain4j-ingestion-tracker` runs the same guarantees over REST against
+a real PostgreSQL instance (Dev Services), because H2 alone does not prove the "works on
+PostgreSQL" half of the contract.
+
+CAUTION: `IngestionTracker` and its `tracker.*` package are experimental and an internal SPI, not a
+public API — no compatibility guarantees between releases, and applications must not implement or
+call it directly; it may change or be removed without a deprecation cycle. It exists so the
+implementation can be replaced wholesale later. It is not yet wired into a user-facing extension;
+it is consumed by the upcoming `langchain4j-ingest` extension's `sync` mode.
