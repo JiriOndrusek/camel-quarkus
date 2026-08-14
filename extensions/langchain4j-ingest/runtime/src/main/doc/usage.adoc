@@ -1,0 +1,234 @@
+The extension turns document ingestion into configuration. Declare a knowledge base (an _ingestion
+pipeline_) and point it at a folder:
+
+[source,properties]
+----
+quarkus.camel.ai.ingest.products.source.type=file
+quarkus.camel.ai.ingest.products.source.directory=/data/docs
+quarkus.camel.ai.ingest.products.mode=sync
+----
+
+Every file found is parsed, split into segments, embedded with the application's `EmbeddingModel`
+bean and written to its `EmbeddingStore` bean. When more than one store or model bean exists,
+select them explicitly per pipeline:
+
+[source,properties]
+----
+quarkus.camel.ai.ingest.products.embedding-store=products
+quarkus.camel.ai.ingest.products.embedding-model=my-model
+----
+
+=== Staying correct: `mode=sync`
+
+With `mode=sync` the knowledge base *mirrors* its source: an edited document replaces its
+previous vectors instead of joining them, a document that shrank loses its stale segments, and an
+unchanged corpus costs nothing on restart — change detection uses a cheap fingerprint first
+(file size + modification time) and a content hash second, so unchanged documents are skipped
+without splitting or embedding.
+
+Sync mode records what was ingested in a small tracker table (`cq_ingestion_tracker`) in the
+application's datasource. In dev and test mode, Dev Services provides the database
+automatically; in production configure `quarkus.datasource.*` as usual, or point the tracker at a
+named datasource:
+
+[source,properties]
+----
+quarkus.camel.ai.ingest.products.tracker.datasource=my-datasource
+----
+
+Segment identifiers are deterministic, so on stores whose write overwrites by id (pgvector,
+qdrant, elasticsearch) replacement is a plain upsert. Stores that keep or mix old content on
+same-id writes (chroma, milvus, the in-memory store) need:
+
+[source,properties]
+----
+quarkus.camel.ai.ingest.products.write-strategy=remove-then-add
+----
+
+Declare the embedding model's identity so a provider-side model change can be detected — bump it
+to force re-embedding:
+
+[source,properties]
+----
+quarkus.camel.ai.ingest.products.embedding-model-id=openai/text-embedding-3-small@2024-01
+----
+
+`mode=append` remains available for disposable stores and demos: documents are only ever added,
+a restart re-ingests the corpus, and no datasource is needed.
+
+=== Deletion, safely
+
+In sync mode a document that disappears from the source disappears from the knowledge base — on
+the next pass, and only when the pass is safe: a pass whose enumeration failed or that had any
+processing failure deletes nothing (an undelivered document is indistinguishable from a
+disappeared one), and a pass refusing to delete more than 10 % of a pipeline's documents without
+explicit consent turns a mistyped directory or a failed mount into a warning instead of an
+emptied knowledge base:
+
+[source,properties]
+----
+quarkus.camel.ai.ingest.products.reconcile.bulk-delete-threshold=0.1
+quarkus.camel.ai.ingest.products.reconcile.allow-bulk-delete=false
+----
+
+=== Correcting the knowledge base from code
+
+[source,java]
+----
+@Inject IngestOperations ingest;
+
+ingest.delete("products", "manuals/withdrawn.pdf");   // sticks: survives every future pass
+ingest.upsert("products", "manuals/spec.pdf", correctedText); // pins: the source stops updating it
+ingest.unsuppress("products", "manuals/withdrawn.pdf"); // hands it back to the source
+ingest.unpin("products", "manuals/spec.pdf");
+----
+
+`delete` records a tombstone, so the document stays deleted even while its source file still
+exists — a legal hold that reverts on the next poll would be worse than none. `upsert` over a
+source-owned document pins it for the same reason: a correction must not silently revert.
+Documents written through `IngestOperations` or the ingress are `api`-origin and are never
+deleted for not appearing in a source listing.
+
+=== Sources
+
+[cols="1,2,2,2"]
+|===
+|Type |Options |Document id / fingerprint |Deletion signal
+
+|`file`
+|`directory`, `recursive`, `include`
+|relative path / size + mtime
+|file disappears
+
+|`http`
+|`url`, `poll-interval`
+|the URL / `ETag` or `Last-Modified` (HEAD)
+|`404` / `410`
+
+|`s3`
+|`bucket`, `region`, `prefix`, `access-key`, `secret-key`, `endpoint-override`
+|object key / ETag (from the listing, before any download)
+|object disappears
+
+|`kafka`
+|`topic`, `brokers`, `from-beginning`
+|record key / — (streams re-deliver; the content hash deduplicates)
+|null-payload record (compacted-topic tombstone)
+
+|`endpoint`
+|`uri` (build-time fixed)
+|`CamelAiIngestDocumentId` header / optional `CamelAiIngestFingerprint` header
+|— (no enumeration)
+|===
+
+The `s3` and `kafka` sources need their Camel connector extension on the classpath — a missing
+one stops the build with the exact `quarkus:add-extension` command.
+
+Credentials and endpoint options are optional here on purpose: everything except the source's
+identity (`bucket`, `topic`, `url`, `directory`) may instead be configured once at the Camel
+component level, the standard way — for example `camel.component.aws2-s3.access-key` and
+`camel.component.kafka.brokers`. Only options that are set in `quarkus.camel.ai.ingest.*`
+override the component-level configuration.
+
+For `kafka` and `endpoint` sources — where a document is a Camel exchange — processing failures
+follow `on-failure`: `skip` (default: log, count, continue), `fail` (propagate to the
+consumer's error handling) or `dead-letter` (Camel's Dead Letter Channel routes the failed
+exchange to `dead-letter-uri`, for example a DLQ topic). Scan sources dead-letter through the
+tracker instead: a poison document is retried only when its content changes. Deletion always runs behind
+the pass interlock: a failed enumeration or any processing failure deletes nothing, and a pass
+refuses to delete more than `reconcile.bulk-delete-threshold` (default 10 %) of a pipeline's
+documents without `reconcile.allow-bulk-delete=true`.
+
+=== The type-safe builder
+
+Every property has a builder twin (enforced by a parity test). Prefer Java with IDE
+completion? The same model:
+
+[source,java]
+----
+@Ingest("products")
+IngestPipeline productDocs() {
+    return IngestPipeline.from(Source.s3("product-docs").region("eu-west-1"))
+            .sync()
+            .embeddingStore("products")
+            .splitter("recursive", 500, 50);
+}
+----
+
+`Source.endpoint(EndpointConsumerBuilder)` opens the full Camel Endpoint DSL — one static
+import buys typed autocompletion over a connector's complete option set. Sharp edge: the DSL
+factories all ship in one artifact, so that form compiles even when the connector extension is
+absent; the missing component is reported at startup.
+
+=== Tenant isolation and citations
+
+Every segment carries `cq_pipeline`, `cq_document_id` and (when the `CamelAiIngestTenant`
+header was set at ingestion) `cq_tenant` metadata. Retrieved content therefore always knows
+which document it came from — and providing a `RagRetrievalFilterSupplier` CDI bean turns the
+tenant key into an actual access control, consulted on every retrieval:
+
+[source,java]
+----
+@Singleton
+public class TenantFilter implements RagRetrievalFilterSupplier {
+    @Override
+    public Filter filter(String augmentorName) {
+        return metadataKey("cq_tenant").isEqualTo(currentTenant());
+    }
+}
+----
+
+=== Adopting an existing store
+
+The store cannot be enumerated, so adoption is a declaration, not a detection:
+`adopt=assume-empty` (default — the assertion is logged loudly), `adopt=wipe`
+(`removeAll()` then full ingest; refused when several pipelines share the store) or
+`adopt=coexist` (foreign vectors are never replaced or removed).
+
+=== Store support, measured
+
+Deterministic segment ids are the replacement primitive. Same-id write semantics differ per
+store and are verified by executable tests, not assumed (langchain4j stores at 1.17.2-beta27):
+
+[cols="1,1,1"]
+|===
+|Store |`write-strategy` |sync support
+
+|pgvector, qdrant, elasticsearch footnote:[The langchain4j elasticsearch client requires an
+Elasticsearch 9.x server.]
+|`upsert` (same-id write overwrites)
+|full
+
+|chroma, milvus, in-memory
+|`remove-then-add` (same-id write keeps or mixes old content)
+|full
+
+|cassandra, astra-db
+|—
+|`append` only (no removal support)
+|===
+
+=== Clustering
+
+Concurrent passes on multiple replicas converge (deterministic ids) but embed the same corpus
+repeatedly. With a `CamelClusterService` present (camel-quarkus-file-cluster-service,
+camel-quarkus-kubernetes-cluster-service, ...), scan passes automatically run on the leader
+only; `leader-only=true` without one fails at startup. Kafka streams are consumer-group
+balanced by Kafka itself.
+
+=== Pushing documents from code or routes
+
+Documents can be pushed through the `direct:ingest-<pipeline>` endpoint. The
+`CamelAiIngestDocumentId` header is required — replacement and (future) deletion are built on
+stable document ids; the optional `CamelAiIngestFingerprint` header enables cheap change
+detection for pushed documents:
+
+[source,java]
+----
+producerTemplate.requestBodyAndHeader("direct:ingest-products", text,
+        IngestHeaders.DOCUMENT_ID, "manuals/warranty.pdf", IngestResult.class);
+----
+
+In dev mode, the Dev UI card *Ingestion Pipelines* shows every pipeline's counters and, for
+sync pipelines, the tracker's per-document state — the answer to "why doesn't my assistant know
+about document X" without any vector-store spelunking.

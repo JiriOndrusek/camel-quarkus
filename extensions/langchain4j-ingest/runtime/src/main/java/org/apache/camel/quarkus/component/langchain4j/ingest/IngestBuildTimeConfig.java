@@ -1,0 +1,143 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.camel.quarkus.component.langchain4j.ingest;
+
+import java.util.Map;
+import java.util.Optional;
+
+import io.quarkus.runtime.annotations.ConfigDocMapKey;
+import io.quarkus.runtime.annotations.ConfigPhase;
+import io.quarkus.runtime.annotations.ConfigRoot;
+import io.smallrye.config.ConfigMapping;
+import io.smallrye.config.WithDefault;
+import io.smallrye.config.WithName;
+import io.smallrye.config.WithParentName;
+
+/**
+ * Build-time topology of ingestion pipelines: which pipelines exist, where documents come from
+ * (source type), how they are split, and which store/model beans they write to. Locations and
+ * credentials are runtime configuration, see {@link IngestRunTimeConfig}.
+ */
+@ConfigMapping(prefix = "quarkus.camel.ai.ingest")
+@ConfigRoot(phase = ConfigPhase.BUILD_AND_RUN_TIME_FIXED)
+public interface IngestBuildTimeConfig {
+
+    /**
+     * Ingestion pipelines by name.
+     */
+    @WithParentName
+    @ConfigDocMapKey("pipeline-name")
+    Map<String, PipelineBuildTimeConfig> pipelines();
+
+    interface PipelineBuildTimeConfig {
+
+        /**
+         * The document source.
+         */
+        SourceBuildTimeConfig source();
+
+        /**
+         * Ingestion mode. {@code sync}: the knowledge base mirrors the source — an edited
+         * document replaces its previous vectors, an unchanged corpus costs nothing on restart.
+         * Requires a datasource for the sync tracker. {@code append}: documents are only ever
+         * added; a restart re-ingests the corpus; no tracker needed.
+         */
+        @WithDefault("append")
+        String mode();
+
+        /**
+         * How the store behaves when the same segment ids are written again ({@code sync} mode):
+         * {@code upsert} for stores whose write overwrites (pgvector, qdrant, elasticsearch),
+         * {@code remove-then-add} for stores that keep or mix old content on same-id writes
+         * (chroma, milvus, in-memory).
+         */
+        @WithName("write-strategy")
+        @WithDefault("upsert")
+        String writeStrategy();
+
+        /**
+         * User-declared identity of the embedding model, for example
+         * {@code openai/text-embedding-3-small@2024-01}. Folded into change detection: bump it
+         * when the provider changes the model behind an unchanged name, so the corpus re-embeds
+         * instead of silently mixing two embedding spaces.
+         */
+        @WithName("embedding-model-id")
+        Optional<String> embeddingModelId();
+
+        /**
+         * What to assume about pre-existing store content. {@code assume-empty} (default): the
+         * user asserts the store holds nothing foreign — the assertion is logged loudly.
+         * {@code wipe}: {@code removeAll()} at startup, then full ingest — the only mode that
+         * can guarantee its postcondition, refused when several pipelines share the store.
+         * {@code coexist}: foreign vectors are never replaced or removed (read-only legacy
+         * corpora). The store cannot be enumerated, so adoption is a declaration, not a
+         * detection.
+         */
+        @WithDefault("assume-empty")
+        String adopt();
+
+        /**
+         * How documents are split into segments before embedding: {@code recursive} or
+         * {@code none}.
+         */
+        @WithDefault("recursive")
+        String splitter();
+
+        /**
+         * Maximum segment size in characters.
+         */
+        @WithDefault("500")
+        int maxSegmentSize();
+
+        /**
+         * Maximum overlap between adjacent segments in characters.
+         */
+        @WithDefault("50")
+        int maxOverlapSize();
+
+        /**
+         * Name of the {@code EmbeddingStore} bean this pipeline writes to. May be omitted when
+         * exactly one store bean exists in the application.
+         */
+        Optional<String> embeddingStore();
+
+        /**
+         * Name of the {@code EmbeddingModel} bean used to embed segments. May be omitted when
+         * exactly one model bean exists in the application.
+         */
+        Optional<String> embeddingModel();
+
+        interface SourceBuildTimeConfig {
+
+            /**
+             * Source type: {@code file}, {@code http}, or {@code endpoint} (any Camel consumer
+             * URI — the escape hatch for genuine integration problems). More curated types
+             * (s3, kafka) arrive in later releases.
+             */
+            String type();
+
+            /**
+             * The Camel consumer URI feeding this pipeline ({@code endpoint} source). Fixed at
+             * build time on purpose: a runtime-overridable consumer URI would be arbitrary
+             * component invocation. Each message needs the {@code CamelAiIngestDocumentId}
+             * header; {@code CamelAiIngestFingerprint} is optional. No enumeration exists, so
+             * deletion-by-disappearance does not apply to this source.
+             */
+            Optional<String> uri();
+        }
+    }
+}
