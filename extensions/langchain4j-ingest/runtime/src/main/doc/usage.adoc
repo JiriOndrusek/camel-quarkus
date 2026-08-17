@@ -139,6 +139,27 @@ the pass interlock: a failed enumeration or any processing failure deletes nothi
 refuses to delete more than `reconcile.bulk-delete-threshold` (default 10 %) of a pipeline's
 documents without `reconcile.allow-bulk-delete=true`.
 
+=== The type-safe builder
+
+Every property has a builder twin (enforced by a parity test). Prefer Java with IDE
+completion? The same model:
+
+[source,java]
+----
+@Ingest("products")
+IngestPipeline productDocs() {
+    return IngestPipeline.from(Source.s3("product-docs").region("eu-west-1"))
+            .sync()
+            .embeddingStore("products")
+            .splitter("recursive", 500, 50);
+}
+----
+
+`Source.endpoint(EndpointConsumerBuilder)` opens the full Camel Endpoint DSL — one static
+import buys typed autocompletion over a connector's complete option set. Sharp edge: the DSL
+factories all ship in one artifact, so that form compiles even when the connector extension is
+absent; the missing component is reported at startup.
+
 === Tenant isolation and citations
 
 Every segment carries `cq_pipeline`, `cq_document_id` and (when the `CamelAiIngestTenant`

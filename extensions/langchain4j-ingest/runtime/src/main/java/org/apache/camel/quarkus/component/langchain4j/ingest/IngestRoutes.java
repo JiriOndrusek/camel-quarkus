@@ -19,6 +19,7 @@ package org.apache.camel.quarkus.component.langchain4j.ingest;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
@@ -38,6 +39,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Default;
 import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.spi.CDI;
 import jakarta.enterprise.util.TypeLiteral;
 import jakarta.inject.Inject;
 import org.apache.camel.Exchange;
@@ -73,6 +75,9 @@ public class IngestRoutes extends RouteBuilder {
 
     @Inject
     IngestPipelineRegistry registry;
+
+    @Inject
+    IngestBuilderPipelines builderPipelines;
 
     private final AdoptPlan adoptPlan = new AdoptPlan();
 
@@ -135,6 +140,10 @@ public class IngestRoutes extends RouteBuilder {
                             : " (preview: append-only, re-ingests on restart)");
         }
 
+        for (IngestBuilderPipelines.Entry entry : builderPipelines.entries()) {
+            configureBuilderPipeline(entry);
+        }
+
         // adoption runs once, after every pipeline is declared: the shared-store wipe guard
         // needs the complete picture, and wipes must precede the first pass
         adoptPlan.execute();
@@ -144,6 +153,75 @@ public class IngestRoutes extends RouteBuilder {
         HealthCheckRegistry healthCheckRegistry = HealthCheckRegistry.get(getContext());
         if (healthCheckRegistry != null) {
             healthCheckRegistry.register(new IngestReadinessCheck(registry));
+        }
+    }
+
+    /** An {@code @Ingest}-declared pipeline: the builder twin of the configuration path. */
+    private void configureBuilderPipeline(IngestBuilderPipelines.Entry entry) {
+        String name = entry.name();
+        IngestRunTimeConfig.PipelineRunTimeConfig externalRuntime = runTimeConfig.pipelines().get(name);
+        if (externalRuntime != null && !externalRuntime.enabled()) {
+            LOG.infof("Ingestion pipeline '%s' (builder) is disabled", name);
+            return;
+        }
+
+        IngestPipeline definition = invokeBuilderMethod(entry);
+        // the definition's runtime-config view lets builder pipelines reuse every config path
+        IngestRunTimeConfig.PipelineRunTimeConfig runtime = definition.asRunTimeConfig();
+        String type = definition.sourceType();
+        boolean sync = "sync".equals(definition.mode());
+
+        if (Set.of("http", "s3", "kafka").contains(type) && !sync) {
+            throw new IllegalStateException(
+                    "Ingestion pipeline '" + name + "' (builder) combines source type '" + type
+                            + "' with append mode. This source is built on change detection and/or the "
+                            + "deletion signal and needs .sync() (and a datasource for the tracker).");
+        }
+
+        IngestionTracker tracker = sync ? createTracker(name, runtime) : null;
+        EmbeddingStore<TextSegment> store = resolveStore(name, definition.embeddingStoreName().orElse(null));
+        adoptPlan.add(name, definition.embeddingStoreName().orElse("<default>"), definition.adoptValue(), store);
+        IngestService service = new IngestService(
+                name,
+                store,
+                resolveModel(name, definition.embeddingModelName().orElse(null)),
+                definition.splitterKind(),
+                definition.maxSegmentSize(),
+                definition.maxOverlapSize(),
+                tracker,
+                IngestService.WriteStrategy.of(definition.writeStrategyValue()),
+                definition.embeddingModelIdValue())
+                .embeddingLimits(runtime.embedding().batchSize(),
+                        runtime.embedding().requestsPerMinute().orElse(null));
+
+        boolean scanBased = Set.of("file", "http", "s3").contains(type);
+        registry.register(name, service, sync && scanBased && definition.readinessEnabledValue());
+
+        switch (type) {
+        case "file" -> configureSourceRoute(name, runtime, service, sync);
+        case "http" -> configureHttpScanRoute(name, runtime, service);
+        case "s3" -> configureS3ScanRoute(name, runtime, service);
+        case "kafka" -> configureKafkaSourceRoute(name, runtime, service);
+        case "endpoint" -> configureEndpointSourceRoute(name, definition.sourceUri(), runtime, service);
+        default -> throw new IllegalStateException("Unknown source type " + type);
+        }
+        configureIngressRoute(name, service);
+
+        LOG.infof("Ingestion pipeline '%s' (builder): source=%s, mode=%s", name, type, definition.mode());
+    }
+
+    private IngestPipeline invokeBuilderMethod(IngestBuilderPipelines.Entry entry) {
+        try {
+            Class<?> beanClass = Thread.currentThread().getContextClassLoader().loadClass(entry.className());
+            Object bean = CDI.current().select(beanClass).get();
+            Method method = beanClass.getDeclaredMethod(entry.methodName());
+            method.setAccessible(true);
+            return (IngestPipeline) method.invoke(bean);
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                    "Failed to invoke @Ingest method " + entry.className() + "#" + entry.methodName()
+                            + " for pipeline '" + entry.name() + "'",
+                    e);
         }
     }
 

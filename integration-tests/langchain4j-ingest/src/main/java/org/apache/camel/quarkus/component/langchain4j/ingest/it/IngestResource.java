@@ -71,6 +71,14 @@ public class IngestResource {
     EmbeddingStore<TextSegment> eventsStore;
 
     @Inject
+    @Named("built-store")
+    EmbeddingStore<TextSegment> builtStore;
+
+    @Inject
+    @Named("builtfs-store")
+    EmbeddingStore<TextSegment> builtfsStore;
+
+    @Inject
     @Named("test-model")
     EmbeddingModel model;
 
@@ -103,6 +111,7 @@ public class IngestResource {
     private String directoryOf(String pipeline) {
         return switch (pipeline == null ? "products" : pipeline) {
         case "manuals" -> syncDirectory;
+        case "builtfs" -> "target/ingest-builtfs-docs";
         default -> directory;
         };
     }
@@ -149,6 +158,8 @@ public class IngestResource {
         case "custom" -> customStore;
         case "s3" -> s3Store;
         case "events" -> eventsStore;
+        case "built" -> builtStore;
+        case "builtfs" -> builtfsStore;
         default -> productsStore;
         };
         var result = store.search(EmbeddingSearchRequest.builder()
@@ -245,6 +256,17 @@ public class IngestResource {
     @Produces(MediaType.APPLICATION_JSON)
     public List<String> customDlq() {
         return DlqRoute.DEAD_LETTERS;
+    }
+
+    /** Feeds the {@code @Ingest}-builder-declared pipeline. */
+    @POST
+    @Path("/built-feed/{documentId:.+}")
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map<String, Object> builtFeed(@PathParam("documentId") String documentId, String content) {
+        IngestResult result = producerTemplate.requestBodyAndHeader(
+                "direct:built-source", content, IngestHeaders.DOCUMENT_ID, documentId, IngestResult.class);
+        return Map.of("outcome", result.outcome().label(), "segmentsWritten", result.segmentsWritten());
     }
 
     @GET
