@@ -37,6 +37,7 @@ public final class IngestPipeline {
     private double bulkDeleteThreshold = 0.1;
     private boolean allowBulkDelete;
     private boolean readinessEnabled = true;
+    private Boolean leaderOnly;
     private int embeddingBatchSize = 32;
     private Integer embeddingRequestsPerMinute;
     private String adopt = "assume-empty";
@@ -106,6 +107,11 @@ public final class IngestPipeline {
 
     public IngestPipeline readinessEnabled(boolean enabled) {
         this.readinessEnabled = enabled;
+        return this;
+    }
+
+    public IngestPipeline leaderOnly(boolean leaderOnly) {
+        this.leaderOnly = leaderOnly;
         return this;
     }
 
@@ -190,6 +196,11 @@ public final class IngestPipeline {
             @Override
             public ReadinessRunTimeConfig readiness() {
                 return () -> readinessEnabled;
+            }
+
+            @Override
+            public Optional<Boolean> leaderOnly() {
+                return Optional.ofNullable(leaderOnly);
             }
 
             @Override

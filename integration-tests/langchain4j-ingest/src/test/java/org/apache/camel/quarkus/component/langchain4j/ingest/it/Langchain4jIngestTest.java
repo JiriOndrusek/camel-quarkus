@@ -54,6 +54,12 @@ class Langchain4jIngestTest {
                 .statusCode(200)
                 .body("documents.products", greaterThan(0))
                 .body("segments.products", greaterThan(0));
+
+        // the same counters exposed through Micrometer (optional-dependency listener)
+        RestAssured.get("/q/metrics")
+                .then()
+                .statusCode(200)
+                .body(containsString("cq_ingest_documents"));
     }
 
     @Test

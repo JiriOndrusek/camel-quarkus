@@ -25,6 +25,8 @@ import java.util.stream.Collectors;
 
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
+import io.quarkus.deployment.Capabilities;
+import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
@@ -206,6 +208,15 @@ class Langchain4jIngestProcessor {
                 .unremovable()
                 .runtimeValue(recorder.createBuilderPipelines(flatEntries))
                 .done());
+    }
+
+    /** Micrometer exposition of the ingestion counters, active only when Micrometer is present. */
+    @BuildStep
+    void micrometerMetrics(Capabilities capabilities, BuildProducer<AdditionalBeanBuildItem> beans) {
+        if (capabilities.isPresent(Capability.METRICS)) {
+            beans.produce(AdditionalBeanBuildItem.unremovableOf(
+                    "org.apache.camel.quarkus.component.langchain4j.ingest.IngestMicrometerListener"));
+        }
     }
 
     /**

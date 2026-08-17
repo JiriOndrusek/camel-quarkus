@@ -208,6 +208,14 @@ Elasticsearch 9.x server.]
 |`append` only (no removal support)
 |===
 
+=== Clustering
+
+Concurrent passes on multiple replicas converge (deterministic ids) but embed the same corpus
+repeatedly. With a `CamelClusterService` present (camel-quarkus-file-cluster-service,
+camel-quarkus-kubernetes-cluster-service, ...), scan passes automatically run on the leader
+only; `leader-only=true` without one fails at startup. Kafka streams are consumer-group
+balanced by Kafka itself.
+
 === Pushing documents from code or routes
 
 Documents can be pushed through the `direct:ingest-<pipeline>` endpoint. The
@@ -220,3 +228,7 @@ detection for pushed documents:
 producerTemplate.requestBodyAndHeader("direct:ingest-products", text,
         IngestHeaders.DOCUMENT_ID, "manuals/warranty.pdf", IngestResult.class);
 ----
+
+In dev mode, the Dev UI card *Ingestion Pipelines* shows every pipeline's counters and, for
+sync pipelines, the tracker's per-document state — the answer to "why doesn't my assistant know
+about document X" without any vector-store spelunking.

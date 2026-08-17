@@ -74,9 +74,21 @@
             <artifactId>camel-quarkus-kafka</artifactId>
             <optional>true</optional>
         </dependency>
+        <!-- only leader-only passes touch it, and any CamelClusterService implementation
+             brings it transitively; LeaderOnlySupport isolates the class references -->
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-cluster</artifactId>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-health</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-micrometer</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <!-- optional in camel-quarkus-support-langchain4j; this extension consumes the

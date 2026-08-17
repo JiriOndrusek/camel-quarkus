@@ -257,6 +257,15 @@ Elasticsearch 9.x server.]
 |`append` only (no removal support)
 |===
 
+[id="extensions-langchain4j-ingest-usage-clustering"]
+=== Clustering
+
+Concurrent passes on multiple replicas converge (deterministic ids) but embed the same corpus
+repeatedly. With a `CamelClusterService` present (camel-quarkus-file-cluster-service,
+camel-quarkus-kubernetes-cluster-service, ...), scan passes automatically run on the leader
+only; `leader-only=true` without one fails at startup. Kafka streams are consumer-group
+balanced by Kafka itself.
+
 [id="extensions-langchain4j-ingest-usage-pushing-documents-from-code-or-routes"]
 === Pushing documents from code or routes
 
@@ -270,6 +279,10 @@ detection for pushed documents:
 producerTemplate.requestBodyAndHeader("direct:ingest-products", text,
         IngestHeaders.DOCUMENT_ID, "manuals/warranty.pdf", IngestResult.class);
 ----
+
+In dev mode, the Dev UI card *Ingestion Pipelines* shows every pipeline's counters and, for
+sync pipelines, the tracker's per-document state — the answer to "why doesn't my assistant know
+about document X" without any vector-store spelunking.
 
 
 [id="extensions-langchain4j-ingest-quarkus-langchain4j-bom"]
@@ -542,6 +555,18 @@ a| [[quarkus-camel-ai-ingest-pipeline-name-dead-letter-uri]]`link:#quarkus-camel
 The Camel endpoint receiving failed exchanges when {@code on-failure=dead-letter},
 for example a DLQ topic.
 | `string`
+| 
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-leader-only]]`link:#quarkus-camel-ai-ingest-pipeline-name-leader-only[quarkus.camel.ai.ingest."pipeline-name".leader-only]`
+
+Whether synchronisation passes run on the cluster leader only — a cost optimisation:
+concurrent passes on multiple replicas converge (deterministic segment ids) but embed
+the same documents repeatedly. Default: enabled automatically when a
+{@code CamelClusterService} is present (for example camel-quarkus-file-cluster-service
+or camel-quarkus-kubernetes-cluster-service). {@code true} without a cluster service
+fails at startup. Applies to scan-based sources; streams are consumer-group balanced
+by Kafka itself.
+| `boolean`
 | 
 
 a| [[quarkus-camel-ai-ingest-pipeline-name-embedding-batch-size]]`link:#quarkus-camel-ai-ingest-pipeline-name-embedding-batch-size[quarkus.camel.ai.ingest."pipeline-name".embedding.batch-size]`

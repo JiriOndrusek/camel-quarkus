@@ -44,6 +44,7 @@ import jakarta.enterprise.util.TypeLiteral;
 import jakarta.inject.Inject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.cluster.CamelClusterService;
 import org.apache.camel.health.HealthCheckRegistry;
 import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.AdoptPlan;
@@ -275,6 +276,7 @@ public class IngestRoutes extends RouteBuilder {
 
         RouteDefinition route = from("timer:ingest-" + name + "?period=" + runtime.source().pollInterval()
                 + "&delay=0").routeId("ingest-" + name);
+        applyLeaderOnly(route, name, runtime);
         route
                 .process(exchange -> {
                     Map<String, SyncPassRunner.SourceDocument> listing;
@@ -322,6 +324,7 @@ public class IngestRoutes extends RouteBuilder {
 
         RouteDefinition route = from("timer:ingest-" + name + "?period=" + runtime.source().pollInterval()
                 + "&delay=0").routeId("ingest-" + name);
+        applyLeaderOnly(route, name, runtime);
         route
                 .process(exchange -> {
                     Map<String, SyncPassRunner.SourceDocument> listing;
@@ -404,6 +407,7 @@ public class IngestRoutes extends RouteBuilder {
 
         RouteDefinition route = from("timer:ingest-" + name + "?period=" + runtime.source().pollInterval()
                 + "&delay=0").routeId("ingest-" + name);
+        applyLeaderOnly(route, name, runtime);
         route
                 .process(exchange -> {
                     Map<String, SyncPassRunner.SourceDocument> listing;
@@ -478,6 +482,37 @@ public class IngestRoutes extends RouteBuilder {
                                 documentId);
                     }
                 });
+    }
+
+    /**
+     * Leader-only scan passes — a cost optimisation, not a correctness requirement:
+     * deterministic segment ids make concurrent writers converge, they just embed the same
+     * corpus repeatedly. Applied automatically when a {@link CamelClusterService} is present;
+     * {@code leader-only=true} without one fails loudly.
+     */
+    private void applyLeaderOnly(RouteDefinition route, String name,
+            IngestRunTimeConfig.PipelineRunTimeConfig runtime) {
+        boolean clusterServicePresent = !getContext().getRegistry().findByType(CamelClusterService.class).isEmpty()
+                || getContext().hasService(CamelClusterService.class) != null;
+        boolean apply = runtime != null && runtime.leaderOnly().isPresent()
+                ? runtime.leaderOnly().get()
+                : clusterServicePresent;
+        if (!apply) {
+            return;
+        }
+        if (!clusterServicePresent) {
+            throw new IllegalStateException(
+                    "Ingestion pipeline '" + name + "' has leader-only=true but no CamelClusterService is "
+                            + "configured. Add camel-quarkus-file-cluster-service, "
+                            + "camel-quarkus-kubernetes-cluster-service or "
+                            + "camel-quarkus-infinispan-cluster-service, or remove leader-only.");
+        }
+        try {
+            LeaderOnlySupport.apply(route, getContext());
+            LOG.infof("Ingestion pipeline '%s': scan passes run on the cluster leader only", name);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to set up leader-only passes for pipeline '" + name + "'", e);
+        }
     }
 
     /** The complete listing of the source directory: documentId → (fingerprint, lazy content). */

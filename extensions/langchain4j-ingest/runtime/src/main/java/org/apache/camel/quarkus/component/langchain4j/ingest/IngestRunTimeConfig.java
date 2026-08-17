@@ -87,6 +87,17 @@ public interface IngestRunTimeConfig {
          */
         Optional<String> deadLetterUri();
 
+        /**
+         * Whether synchronisation passes run on the cluster leader only — a cost optimisation:
+         * concurrent passes on multiple replicas converge (deterministic segment ids) but embed
+         * the same documents repeatedly. Default: enabled automatically when a
+         * {@code CamelClusterService} is present (for example camel-quarkus-file-cluster-service
+         * or camel-quarkus-kubernetes-cluster-service). {@code true} without a cluster service
+         * fails at startup. Applies to scan-based sources; streams are consumer-group balanced
+         * by Kafka itself.
+         */
+        Optional<Boolean> leaderOnly();
+
         interface ReadinessRunTimeConfig {
 
             /**

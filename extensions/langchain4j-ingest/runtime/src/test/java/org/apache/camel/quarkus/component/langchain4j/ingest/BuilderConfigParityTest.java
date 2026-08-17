@@ -71,6 +71,7 @@ class BuilderConfigParityTest {
             entry("reconcile.bulk-delete-threshold", "IngestPipeline.bulkDeleteThreshold"),
             entry("reconcile.allow-bulk-delete", "IngestPipeline.allowBulkDelete"),
             entry("readiness.enabled", "IngestPipeline.readinessEnabled"),
+            entry("leader-only", "IngestPipeline.leaderOnly"),
             entry("on-failure", "IngestPipeline.onFailure"),
             entry("dead-letter-uri", "IngestPipeline.deadLetterUri"),
             entry("embedding.batch-size", "IngestPipeline.embeddingBatchSize"),
