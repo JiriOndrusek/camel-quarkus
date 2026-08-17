@@ -144,10 +144,45 @@ deleted for not appearing in a source listing.
 |`directory`, `recursive`, `include`
 |relative path / size + mtime
 |file disappears
+
+|`http`
+|`url`, `poll-interval`
+|the URL / `ETag` or `Last-Modified` (HEAD)
+|`404` / `410`
+
+|`s3`
+|`bucket`, `region`, `prefix`, `access-key`, `secret-key`, `endpoint-override`
+|object key / ETag (from the listing, before any download)
+|object disappears
+
+|`kafka`
+|`topic`, `brokers`, `from-beginning`
+|record key / — (streams re-deliver; the content hash deduplicates)
+|null-payload record (compacted-topic tombstone)
+
+|`endpoint`
+|`uri` (build-time fixed)
+|`CamelAiIngestDocumentId` header / optional `CamelAiIngestFingerprint` header
+|— (no enumeration)
 |===
 
-More curated source types (s3, kafka, http) and an `endpoint` escape hatch for arbitrary Camel
-consumer URIs arrive in later releases.
+The `s3` and `kafka` sources need their Camel connector extension on the classpath — a missing
+one stops the build with the exact `quarkus:add-extension` command.
+
+Credentials and endpoint options are optional here on purpose: everything except the source's
+identity (`bucket`, `topic`, `url`, `directory`) may instead be configured once at the Camel
+component level, the standard way — for example `camel.component.aws2-s3.access-key` and
+`camel.component.kafka.brokers`. Only options that are set in `quarkus.camel.ai.ingest.*`
+override the component-level configuration.
+
+For `kafka` and `endpoint` sources — where a document is a Camel exchange — processing failures
+follow `on-failure`: `skip` (default: log, count, continue), `fail` (propagate to the
+consumer's error handling) or `dead-letter` (Camel's Dead Letter Channel routes the failed
+exchange to `dead-letter-uri`, for example a DLQ topic). Scan sources dead-letter through the
+tracker instead: a poison document is retried only when its content changes. Deletion always runs behind
+the pass interlock: a failed enumeration or any processing failure deletes nothing, and a pass
+refuses to delete more than `reconcile.bulk-delete-threshold` (default 10 %) of a pipeline's
+documents without `reconcile.allow-bulk-delete=true`.
 
 [id="extensions-langchain4j-ingest-usage-tenant-isolation-and-citations"]
 === Tenant isolation and citations
@@ -255,10 +290,21 @@ Consequently, both JVM and native modes may exhibit unexpected behaviour or fail
 
 a|icon:lock[title=Fixed at build time] [[quarkus-camel-ai-ingest-pipeline-name-source-type]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-type[quarkus.camel.ai.ingest."pipeline-name".source.type]`
 
-Source type: currently {@code file}. More curated types (s3, kafka) arrive in
-later releases.
+Source type: {@code file}, {@code http}, or {@code endpoint} (any Camel consumer
+URI — the escape hatch for genuine integration problems). More curated types
+(s3, kafka) arrive in later releases.
 | `string`
 | required icon:exclamation-circle[title=Configuration property is required]
+
+a|icon:lock[title=Fixed at build time] [[quarkus-camel-ai-ingest-pipeline-name-source-uri]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-uri[quarkus.camel.ai.ingest."pipeline-name".source.uri]`
+
+The Camel consumer URI feeding this pipeline ({@code endpoint} source). Fixed at
+build time on purpose: a runtime-overridable consumer URI would be arbitrary
+component invocation. Each message needs the {@code CamelAiIngestDocumentId}
+header; {@code CamelAiIngestFingerprint} is optional. No enumeration exists, so
+deletion-by-disappearance does not apply to this source.
+| `string`
+| 
 
 a|icon:lock[title=Fixed at build time] [[quarkus-camel-ai-ingest-pipeline-name-mode]]`link:#quarkus-camel-ai-ingest-pipeline-name-mode[quarkus.camel.ai.ingest."pipeline-name".mode]`
 
@@ -356,6 +402,72 @@ Ant-style include pattern, for example {@code **&#47;*.txt} ({@code file} source
 | `string`
 | 
 
+a| [[quarkus-camel-ai-ingest-pipeline-name-source-url]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-url[quarkus.camel.ai.ingest."pipeline-name".source.url]`
+
+The document URL ({@code http} source). The URL is the document id; change
+detection uses {@code ETag} / {@code Last-Modified} via a cheap HEAD request.
+| `string`
+| 
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-source-bucket]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-bucket[quarkus.camel.ai.ingest."pipeline-name".source.bucket]`
+
+The bucket to ingest from ({@code s3} source). The object key is the document id;
+the ETag is the change fingerprint.
+| `string`
+| 
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-source-region]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-region[quarkus.camel.ai.ingest."pipeline-name".source.region]`
+
+AWS region ({@code s3} source).
+| `string`
+| 
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-source-prefix]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-prefix[quarkus.camel.ai.ingest."pipeline-name".source.prefix]`
+
+Only objects whose key starts with this prefix are ingested ({@code s3} source).
+| `string`
+| 
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-source-access-key]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-access-key[quarkus.camel.ai.ingest."pipeline-name".source.access-key]`
+
+Access key ({@code s3} source).
+| `string`
+| 
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-source-secret-key]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-secret-key[quarkus.camel.ai.ingest."pipeline-name".source.secret-key]`
+
+Secret key ({@code s3} source).
+| `string`
+| 
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-source-endpoint-override]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-endpoint-override[quarkus.camel.ai.ingest."pipeline-name".source.endpoint-override]`
+
+Endpoint override for S3-compatible stores such as MinIO ({@code s3} source).
+| `string`
+| 
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-source-topic]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-topic[quarkus.camel.ai.ingest."pipeline-name".source.topic]`
+
+The topic to consume ({@code kafka} source). The record key is the document id; a
+record with a null payload (a compacted-topic tombstone) deletes the document.
+Records without a key are skipped with a warning — replacement needs a stable id.
+| `string`
+| 
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-source-brokers]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-brokers[quarkus.camel.ai.ingest."pipeline-name".source.brokers]`
+
+Broker list ({@code kafka} source). When not set, the component-level
+{@code camel.component.kafka.brokers} configuration applies.
+| `string`
+| 
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-source-from-beginning]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-from-beginning[quarkus.camel.ai.ingest."pipeline-name".source.from-beginning]`
+
+Whether the consumer starts from the beginning of the topic on first start
+({@code kafka} source).
+| `boolean`
+| `true`
+
 a| [[quarkus-camel-ai-ingest-pipeline-name-source-poll-interval]]`link:#quarkus-camel-ai-ingest-pipeline-name-source-poll-interval[quarkus.camel.ai.ingest."pipeline-name".source.poll-interval]`
 
 Interval between synchronisation passes in milliseconds ({@code sync} mode).
@@ -391,6 +503,24 @@ synchronisation pass ({@code sync} mode). Disable for side-feature knowledge
 bases that must not take the whole application out of rotation.
 | `boolean`
 | `true`
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-on-failure]]`link:#quarkus-camel-ai-ingest-pipeline-name-on-failure[quarkus.camel.ai.ingest."pipeline-name".on-failure]`
+
+What happens when a pushed document fails to process ({@code kafka} and
+{@code endpoint} sources, where a document is a Camel exchange): {@code skip} (log,
+count, continue), {@code fail} (propagate to the consumer's error handling), or
+{@code dead-letter} (route the failed exchange to {@code dead-letter-uri} via Camel's
+Dead Letter Channel). Scan sources dead-letter through the tracker instead — a
+document there is not an exchange.
+| `string`
+| `skip`
+
+a| [[quarkus-camel-ai-ingest-pipeline-name-dead-letter-uri]]`link:#quarkus-camel-ai-ingest-pipeline-name-dead-letter-uri[quarkus.camel.ai.ingest."pipeline-name".dead-letter-uri]`
+
+The Camel endpoint receiving failed exchanges when {@code on-failure=dead-letter},
+for example a DLQ topic.
+| `string`
+| 
 
 a| [[quarkus-camel-ai-ingest-pipeline-name-embedding-batch-size]]`link:#quarkus-camel-ai-ingest-pipeline-name-embedding-batch-size[quarkus.camel.ai.ingest."pipeline-name".embedding.batch-size]`
 

@@ -45,6 +45,34 @@ public class IngestItProducers {
 
     @Produces
     @Singleton
+    @Named("webdoc-store")
+    EmbeddingStore<TextSegment> webdocStore() {
+        return new InMemoryEmbeddingStore<>();
+    }
+
+    @Produces
+    @Singleton
+    @Named("custom-store")
+    EmbeddingStore<TextSegment> customStore() {
+        return new InMemoryEmbeddingStore<>();
+    }
+
+    @Produces
+    @Singleton
+    @Named("s3-store")
+    EmbeddingStore<TextSegment> s3Store() {
+        return new InMemoryEmbeddingStore<>();
+    }
+
+    @Produces
+    @Singleton
+    @Named("events-store")
+    EmbeddingStore<TextSegment> eventsStore() {
+        return new InMemoryEmbeddingStore<>();
+    }
+
+    @Produces
+    @Singleton
     @Named("test-model")
     EmbeddingModel embeddingModel() {
         return new DeterministicEmbeddingModel(64);

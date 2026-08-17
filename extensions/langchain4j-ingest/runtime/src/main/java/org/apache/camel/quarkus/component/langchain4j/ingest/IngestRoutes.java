@@ -25,6 +25,7 @@ import java.nio.file.PathMatcher;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -42,6 +43,7 @@ import jakarta.inject.Inject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.health.HealthCheckRegistry;
+import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.AdoptPlan;
 import org.apache.camel.quarkus.component.support.langchain4j.ingest.IngestResult;
 import org.apache.camel.quarkus.component.support.langchain4j.ingest.IngestService;
@@ -108,11 +110,21 @@ public class IngestRoutes extends RouteBuilder {
                         runtime.embedding().requestsPerMinute().orElse(null));
             }
 
-            // only bounded scan sources have a "first pass" to gate on
-            boolean gatesReadiness = sync && (runtime == null || runtime.readiness().enabled());
+            // only bounded scan sources have a "first pass" to gate on; streams (kafka) and
+            // push sources (endpoint) are ready once their consumer starts (17-§11)
+            boolean scanBased = Set.of("file", "http", "s3").contains(pipeline.source().type());
+            boolean gatesReadiness = sync && scanBased && (runtime == null || runtime.readiness().enabled());
             registry.register(name, service, gatesReadiness);
             switch (pipeline.source().type()) {
             case "file" -> configureSourceRoute(name, runtime, service, sync);
+            case "http" -> configureHttpScanRoute(name, runtime, service);
+            case "s3" -> configureS3ScanRoute(name, runtime, service);
+            case "kafka" -> configureKafkaSourceRoute(name, runtime, service);
+            case "endpoint" -> configureEndpointSourceRoute(name,
+                    pipeline.source().uri().orElseThrow(() -> new IllegalStateException(
+                            "Ingestion pipeline '" + name + "' has source type 'endpoint' but no uri. "
+                                    + "Set quarkus.camel.ai.ingest." + name + ".source.uri (build-time)")),
+                    runtime, service);
             default -> throw new IllegalStateException("Unknown source type " + pipeline.source().type());
             }
             configureIngressRoute(name, service);
@@ -183,8 +195,9 @@ public class IngestRoutes extends RouteBuilder {
         boolean recursive = runtime.source().recursive();
         String include = runtime.source().include().orElse(null);
 
-        from("timer:ingest-" + name + "?period=" + runtime.source().pollInterval() + "&delay=0")
-                .routeId("ingest-" + name)
+        RouteDefinition route = from("timer:ingest-" + name + "?period=" + runtime.source().pollInterval()
+                + "&delay=0").routeId("ingest-" + name);
+        route
                 .process(exchange -> {
                     Map<String, SyncPassRunner.SourceDocument> listing;
                     try {
@@ -211,6 +224,180 @@ public class IngestRoutes extends RouteBuilder {
                                 outcome.deletionRefused() > 0
                                         ? ", " + outcome.deletionRefused() + " deletions REFUSED (bulk floor)"
                                         : "");
+                    }
+                });
+    }
+
+    /** The {@code http} source: one URL, one document, synchronised by scan passes like a folder. */
+    private void configureHttpScanRoute(String name, IngestRunTimeConfig.PipelineRunTimeConfig runtime,
+            IngestService service) {
+        String url = runtime == null ? null : runtime.source().url().orElse(null);
+        if (url == null) {
+            throw new IllegalStateException(
+                    "Ingestion pipeline '" + name + "' has source type 'http' but no url. "
+                            + "Set quarkus.camel.ai.ingest." + name + ".source.url");
+        }
+        HttpSourceEnumerator enumerator = new HttpSourceEnumerator(url);
+        SyncPassRunner passRunner = new SyncPassRunner(service, service.tracker(), name,
+                runtime.reconcile().bulkDeleteThreshold(), runtime.reconcile().allowBulkDelete(),
+                "set quarkus.camel.ai.ingest." + name + ".reconcile.allow-bulk-delete=true for one pass");
+
+        RouteDefinition route = from("timer:ingest-" + name + "?period=" + runtime.source().pollInterval()
+                + "&delay=0").routeId("ingest-" + name);
+        route
+                .process(exchange -> {
+                    Map<String, SyncPassRunner.SourceDocument> listing;
+                    try {
+                        listing = enumerator.enumerate();
+                    } catch (Exception e) {
+                        metrics.failure(name);
+                        LOG.errorf(e, "Pipeline '%s': http enumeration failed — pass aborted", name);
+                        return;
+                    }
+                    SyncPassRunner.PassOutcome outcome = passRunner.run(listing);
+                    metrics.applyPass(name, outcome);
+                    if (outcome.succeeded()) {
+                        registry.markReady(name);
+                    }
+                });
+    }
+
+    /**
+     * The escape hatch: any Camel consumer URI feeds the pipeline. Deliberately the only tier
+     * where Camel is visible. Messages carry the required document-id header; there is no
+     * enumeration, so deletion-by-disappearance does not apply here.
+     */
+    private void configureEndpointSourceRoute(String name, String uri,
+            IngestRunTimeConfig.PipelineRunTimeConfig runtime, IngestService service) {
+        String onFailure = onFailureOf(name, runtime);
+        RouteDefinition route = from(uri).routeId("ingest-" + name);
+        applyFailurePolicy(route, name, onFailure, runtime);
+        route
+                .process(exchange -> {
+                    String documentId = exchange.getMessage().getHeader(IngestHeaders.DOCUMENT_ID, String.class);
+                    try {
+                        String fingerprint = exchange.getMessage().getHeader(IngestHeaders.FINGERPRINT,
+                                String.class);
+                        String text = exchange.getMessage().getBody(String.class);
+                        IngestResult result = service.ingest(documentId, fingerprint, text,
+                                IngestService.Origin.SOURCE);
+                        count(name, result);
+                        exchange.getMessage().setBody(result);
+                    } catch (Exception e) {
+                        metrics.failure(name);
+                        if (!"skip".equals(onFailure)) {
+                            throw e; // fail: to the consumer's error handling; dead-letter: to the DLC
+                        }
+                        LOG.errorf(e, "Pipeline '%s': failed to ingest '%s' from endpoint source — skipped",
+                                name, documentId);
+                    }
+                });
+    }
+
+    private static String onFailureOf(String name, IngestRunTimeConfig.PipelineRunTimeConfig runtime) {
+        String onFailure = runtime == null ? "skip" : runtime.onFailure();
+        if (!Set.of("skip", "fail", "dead-letter").contains(onFailure)) {
+            throw new IllegalStateException(
+                    "Ingestion pipeline '" + name + "' has unknown on-failure '" + onFailure
+                            + "'. Supported: skip, fail, dead-letter");
+        }
+        return onFailure;
+    }
+
+    /** {@code dead-letter} uses Camel's Dead Letter Channel: the failed exchange is routed on. */
+    private void applyFailurePolicy(RouteDefinition route, String name, String onFailure,
+            IngestRunTimeConfig.PipelineRunTimeConfig runtime) {
+        if ("dead-letter".equals(onFailure)) {
+            String deadLetterUri = runtime.deadLetterUri().orElseThrow(() -> new IllegalStateException(
+                    "Ingestion pipeline '" + name + "' has on-failure=dead-letter but no dead-letter-uri. "
+                            + "Set quarkus.camel.ai.ingest." + name + ".dead-letter-uri"));
+            route.errorHandler(deadLetterChannel(deadLetterUri));
+        }
+    }
+
+    /** The {@code s3} source: scan passes over the bucket listing, ETags as fingerprints. */
+    private void configureS3ScanRoute(String name, IngestRunTimeConfig.PipelineRunTimeConfig runtime,
+            IngestService service) {
+        S3SourceEnumerator enumerator = new S3SourceEnumerator(
+                getCamelContext().createProducerTemplate(), runtime.source(), name);
+        SyncPassRunner passRunner = new SyncPassRunner(service, service.tracker(), name,
+                runtime.reconcile().bulkDeleteThreshold(), runtime.reconcile().allowBulkDelete(),
+                "set quarkus.camel.ai.ingest." + name + ".reconcile.allow-bulk-delete=true for one pass");
+
+        RouteDefinition route = from("timer:ingest-" + name + "?period=" + runtime.source().pollInterval()
+                + "&delay=0").routeId("ingest-" + name);
+        route
+                .process(exchange -> {
+                    Map<String, SyncPassRunner.SourceDocument> listing;
+                    try {
+                        listing = enumerator.enumerate();
+                    } catch (Exception e) {
+                        metrics.failure(name);
+                        LOG.errorf(e, "Pipeline '%s': bucket enumeration failed — pass aborted, nothing "
+                                + "processed, nothing deleted", name);
+                        return;
+                    }
+                    SyncPassRunner.PassOutcome outcome = passRunner.run(listing);
+                    metrics.applyPass(name, outcome);
+                    if (outcome.succeeded()) {
+                        registry.markReady(name);
+                    }
+                });
+    }
+
+    /**
+     * The {@code kafka} source: a stream, not a bounded pass. The record key is the document id;
+     * a null-payload record (a compacted-topic tombstone) deletes the document; a record without
+     * a key is skipped with a warning, because replacement needs a stable id. There is no
+     * enumeration, so deletion-by-disappearance does not apply — tombstone records are the
+     * deletion signal.
+     */
+    private void configureKafkaSourceRoute(String name, IngestRunTimeConfig.PipelineRunTimeConfig runtime,
+            IngestService service) {
+        String topic = runtime == null ? null : runtime.source().topic().orElse(null);
+        if (topic == null) {
+            throw new IllegalStateException(
+                    "Ingestion pipeline '" + name + "' has source type 'kafka' but no topic. "
+                            + "Set quarkus.camel.ai.ingest." + name + ".source.topic");
+        }
+        StringBuilder uri = new StringBuilder("kafka:").append(topic)
+                .append("?groupId=cq-ingest-").append(name)
+                .append("&autoOffsetReset=").append(runtime.source().fromBeginning() ? "earliest" : "latest");
+        runtime.source().brokers().ifPresent(brokers -> uri.append("&brokers=").append(brokers));
+
+        String onFailure = onFailureOf(name, runtime);
+        RouteDefinition route = from(uri.toString()).routeId("ingest-" + name);
+        applyFailurePolicy(route, name, onFailure, runtime);
+        route
+                .process(exchange -> {
+                    String documentId = exchange.getMessage().getHeader("CamelKafkaKey", String.class);
+                    try {
+                        if (documentId == null || documentId.isBlank()) {
+                            LOG.warnf("Pipeline '%s': kafka record without a key skipped — replacement "
+                                    + "needs a stable document id (produce with a key)", name);
+                            metrics.failure(name);
+                            return;
+                        }
+                        String text = exchange.getMessage().getBody(String.class);
+                        if (text == null || text.isBlank()) {
+                            // compacted-topic tombstone: the ecosystem's native deletion signal
+                            IngestResult result = service.delete(documentId);
+                            count(name, result);
+                            metrics.documentDeleted(name);
+                            service.unsuppress(documentId); // stream semantics: a later record may re-create
+                            LOG.debugf("Pipeline '%s': tombstone record deleted '%s'", name, documentId);
+                            return;
+                        }
+                        IngestResult result = service.ingest(documentId, null, text,
+                                IngestService.Origin.SOURCE);
+                        count(name, result);
+                    } catch (Exception e) {
+                        metrics.failure(name);
+                        if (!"skip".equals(onFailure)) {
+                            throw e; // fail: to the consumer's error handling; dead-letter: to the DLC
+                        }
+                        LOG.errorf(e, "Pipeline '%s': failed to ingest kafka record '%s' — skipped", name,
+                                documentId);
                     }
                 });
     }

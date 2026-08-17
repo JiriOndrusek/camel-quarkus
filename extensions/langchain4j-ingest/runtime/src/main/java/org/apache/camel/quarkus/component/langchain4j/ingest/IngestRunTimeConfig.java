@@ -70,6 +70,23 @@ public interface IngestRunTimeConfig {
          */
         ReadinessRunTimeConfig readiness();
 
+        /**
+         * What happens when a pushed document fails to process ({@code kafka} and
+         * {@code endpoint} sources, where a document is a Camel exchange): {@code skip} (log,
+         * count, continue), {@code fail} (propagate to the consumer's error handling), or
+         * {@code dead-letter} (route the failed exchange to {@code dead-letter-uri} via Camel's
+         * Dead Letter Channel). Scan sources dead-letter through the tracker instead — a
+         * document there is not an exchange.
+         */
+        @WithDefault("skip")
+        String onFailure();
+
+        /**
+         * The Camel endpoint receiving failed exchanges when {@code on-failure=dead-letter},
+         * for example a DLQ topic.
+         */
+        Optional<String> deadLetterUri();
+
         interface ReadinessRunTimeConfig {
 
             /**
@@ -125,6 +142,63 @@ public interface IngestRunTimeConfig {
              * Ant-style include pattern, for example {@code **&#47;*.txt} ({@code file} source).
              */
             Optional<String> include();
+
+            /**
+             * The document URL ({@code http} source). The URL is the document id; change
+             * detection uses {@code ETag} / {@code Last-Modified} via a cheap HEAD request.
+             */
+            Optional<String> url();
+
+            /**
+             * The bucket to ingest from ({@code s3} source). The object key is the document id;
+             * the ETag is the change fingerprint.
+             */
+            Optional<String> bucket();
+
+            /**
+             * AWS region ({@code s3} source).
+             */
+            Optional<String> region();
+
+            /**
+             * Only objects whose key starts with this prefix are ingested ({@code s3} source).
+             */
+            Optional<String> prefix();
+
+            /**
+             * Access key ({@code s3} source).
+             */
+            Optional<String> accessKey();
+
+            /**
+             * Secret key ({@code s3} source).
+             */
+            Optional<String> secretKey();
+
+            /**
+             * Endpoint override for S3-compatible stores such as MinIO ({@code s3} source).
+             */
+            Optional<String> endpointOverride();
+
+            /**
+             * The topic to consume ({@code kafka} source). The record key is the document id; a
+             * record with a null payload (a compacted-topic tombstone) deletes the document.
+             * Records without a key are skipped with a warning — replacement needs a stable id.
+             */
+            Optional<String> topic();
+
+            /**
+             * Broker list ({@code kafka} source). When not set, the component-level
+             * {@code camel.component.kafka.brokers} configuration applies.
+             */
+            Optional<String> brokers();
+
+            /**
+             * Whether the consumer starts from the beginning of the topic on first start
+             * ({@code kafka} source).
+             */
+            @WithDefault("true")
+            boolean fromBeginning();
 
             /**
              * Interval between synchronisation passes in milliseconds ({@code sync} mode).
