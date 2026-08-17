@@ -1,0 +1,69 @@
+=== Ingesting a directory
+
+Point a pipeline at a folder and the files in it become a knowledge base. No route, no ingestion code:
+
+[source,properties]
+----
+quarkus.camel.ai.ingest.products.source.directory=/var/data/product-docs
+quarkus.camel.ai.ingest.products.embedding-store=products
+quarkus.camel.ai.ingest.products.embedding-model=my-model
+----
+
+Documents are read as text — there is no format parsing, so a PDF or DOCX must be converted before it reaches a pipeline. Each file is read as UTF-8, split into overlapping segments (`max-segment-size` and `max-overlap-size`), embedded and written to the store. `embedding-store` and `embedding-model` name CDI beans and may be omitted when the application has exactly one of each; with several, naming one is required rather than guessed.
+
+Every segment carries `camel_quarkus_pipeline` and `camel_quarkus_document_id` metadata, so retrieval can cite which document an answer came from.
+
+[NOTE]
+====
+This preview ingests what it is given and keeps no record of it, so a document ingested twice leaves two copies in the store. That has consequences worth planning around: a restart re-reads the whole directory, because the file consumer's duplicate protection is an in-memory register capped at 1000 entries rather than a persisted one; and a polled consumer such as `aws2-s3` with `deleteAfterRead(false)` re-reads every object on every poll, growing the store without bound. Ingest into a store you can rebuild, or keep the polling interval long, until the synchronising engine lands. Keeping a store in step with a changing source — skipping unchanged documents, replacing edited ones and removing deleted ones — needs that record, and arrives in a later release.
+====
+
+=== Any other source
+
+Beyond a directory, a pipeline reads from any Camel consumer at all — the roughly 300 components, with their own option names, their own defaults and their own documentation. The way to reach them is the Endpoint DSL, so the options are typed rather than spelled into a URI:
+
+[source,java]
+----
+@Ingest("product-docs")
+IngestPipeline productDocs() {
+    return IngestPipeline.from(Source.endpoint(dsl -> dsl.aws2S3("product-docs")
+            .region("eu-west-1")
+            .deleteAfterRead(false))
+            .documentId("CamelAwsS3Key"))
+            .embeddingStore("products");
+}
+----
+
+Nothing is imported: typing `dsl.` lists a factory for every Camel component, and each completes its own options. `Source.endpoint(aws2S3(...))` with a static import of `StaticEndpointBuilders` is the same DSL for those who prefer it.
+
+Ingestion needs a stable id per document, and where that id lives is the consumer's business: the object key for S3 (`CamelAwsS3Key`), the record key for Kafka (`CamelKafkaKey`), a header your own route sets. `documentId` names it. Without it, the pipeline expects the `CamelIngestDocumentId` header and fails the exchange when it is absent.
+
+Setting `source.uri` is what makes a pipeline consume from a component rather than read a directory — there is no source type to declare. The URI is build-time by design — a runtime-overridable consumer URI would be arbitrary component invocation. Property placeholders inside it still resolve at startup, so credentials and endpoints stay runtime configuration:
+
+[source,properties]
+----
+quarkus.camel.ai.ingest.custom.source.uri=direct:custom-source
+quarkus.camel.ai.ingest.custom.source.document-id=CamelAwsS3Key
+----
+
+Give `document-id` a header name, or a full simple-language expression when the id is not a plain header — though in a properties file `${...}` is expanded by MicroProfile Config before Camel sees it, so the bare header name is the form to prefer there.
+=== Declaring a pipeline in Java
+
+Every property has a builder twin, for those who prefer IDE completion to property names:
+
+[source,java]
+----
+@Ingest("datasheets")
+IngestPipeline datasheets() {
+    return IngestPipeline.from(Source.endpoint(dsl -> dsl.aws2S3("product-docs").region("eu-west-1"))
+                    .documentId("CamelAwsS3Key"))
+            .embeddingStore("products")
+            .splitter(500, 50);
+}
+----
+
+`Source` offers the same source three ways, and the lambda above is the one to reach for: `dsl.` lists a factory for every Camel component and each completes its own options, with nothing to import and nothing to look up. `Source.endpoint(aws2S3(...))` is the identical DSL through a static import of `StaticEndpointBuilders`, and `Source.endpoint("aws2-s3://…")` takes a raw URI for the cases where one is assembled at runtime. `Source.file` is the shorthand for a directory, and `.documentId(...)` names the id in every case.
+
+Sharp edge worth knowing about the first two: the DSL factories all ship in one artifact, so the call compiles even when the connector extension is absent — the missing component is then reported at startup.
+
+`@Ingest` methods must return `IngestPipeline`, take no parameters and carry a name that no configuration-declared pipeline already uses — all three are build failures otherwise.
