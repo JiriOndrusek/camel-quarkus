@@ -16,18 +16,8 @@
  */
 package org.apache.camel.quarkus.component.langchain4j.ragbridge.it;
 
-import java.util.Map;
+import io.quarkus.test.junit.QuarkusIntegrationTest;
 
-import io.quarkus.test.junit.QuarkusTestProfile;
-
-public class MultiAugmentorProfile implements QuarkusTestProfile {
-    @Override
-    public Map<String, String> getConfigOverrides() {
-        // Two augmentors require exactly one designated default — without the marking the build
-        // fails (see SupportQuarkusLangchain4jProcessor.resolveDesignatedDefault and its test)
-        return Map.of(
-                "quarkus.camel.langchain4j.rag.augmentors.products.embedding-store-name", "products",
-                "quarkus.camel.langchain4j.rag.augmentors.products.default", "true",
-                "quarkus.camel.langchain4j.rag.augmentors.support.embedding-store-name", "support");
-    }
+@QuarkusIntegrationTest
+class RagRetrievalFilterIT extends RagRetrievalFilterTest {
 }

@@ -24,9 +24,10 @@ import org.junit.jupiter.api.Test;
 import static org.hamcrest.Matchers.is;
 
 /**
- * Verifies that when multiple augmentors are configured, no default (unqualified)
- * RetrievalAugmentor bean is produced. Each augmentor should only be resolvable
- * via its {@code @Named} qualifier to prevent silent auto-selection.
+ * Verifies that with multiple augmentors configured and one marked {@code default=true}, the
+ * designated one serves the unqualified lookup (RAG stays on) while the others remain
+ * resolvable by name. Two augmentors with no default marked fail the build instead of silently
+ * disabling RAG — covered by {@code RagAugmentorDefaultResolutionTest} in the support module.
  *
  * <p>
  * No {@code @QuarkusIntegrationTest} counterpart exists because this test uses
@@ -41,12 +42,12 @@ import static org.hamcrest.Matchers.is;
 class MultiAugmentorTest {
 
     @Test
-    void noDefaultAugmentorWithMultipleConfigured() {
+    void designatedDefaultAugmentorResolvableWithMultipleConfigured() {
         RestAssured.given()
                 .get("/rag-bridge/augmentor-present")
                 .then()
                 .statusCode(200)
-                .body(is("false"));
+                .body(is("true"));
     }
 
     @Test

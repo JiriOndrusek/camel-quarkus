@@ -16,18 +16,22 @@
  */
 package org.apache.camel.quarkus.component.langchain4j.ragbridge.it;
 
-import java.util.Map;
+import dev.langchain4j.store.embedding.filter.Filter;
+import dev.langchain4j.store.embedding.filter.MetadataFilterBuilder;
+import jakarta.inject.Singleton;
+import org.apache.camel.quarkus.component.support.langchain4j.RagRetrievalFilterSupplier;
 
-import io.quarkus.test.junit.QuarkusTestProfile;
+/**
+ * The retrieval-side isolation hook under test: when a tenant is set (via REST), every
+ * retrieval through the produced augmentor is filtered to that tenant's documents.
+ */
+@Singleton
+public class TestTenantFilterSupplier implements RagRetrievalFilterSupplier {
 
-public class MultiAugmentorProfile implements QuarkusTestProfile {
+    static volatile String tenant;
+
     @Override
-    public Map<String, String> getConfigOverrides() {
-        // Two augmentors require exactly one designated default — without the marking the build
-        // fails (see SupportQuarkusLangchain4jProcessor.resolveDesignatedDefault and its test)
-        return Map.of(
-                "quarkus.camel.langchain4j.rag.augmentors.products.embedding-store-name", "products",
-                "quarkus.camel.langchain4j.rag.augmentors.products.default", "true",
-                "quarkus.camel.langchain4j.rag.augmentors.support.embedding-store-name", "support");
+    public Filter filter(String augmentorName) {
+        return tenant == null ? null : MetadataFilterBuilder.metadataKey("cq_tenant").isEqualTo(tenant);
     }
 }
