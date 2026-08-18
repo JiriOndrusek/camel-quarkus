@@ -77,7 +77,7 @@ public interface IngestRunTimeConfig {
              * a properties file MicroProfile Config expands such a value before Camel sees it, so
              * the header name is the form to prefer there. When not set, a pipeline reading a
              * directory uses the file name, and one consuming from a component uses the
-             * `CamelIngestDocumentId` header.
+             * `CamelLangChain4jIngestDocumentId` header.
              */
             Optional<String> documentId();
         }

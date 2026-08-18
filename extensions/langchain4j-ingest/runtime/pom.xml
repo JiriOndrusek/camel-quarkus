@@ -30,7 +30,7 @@
 
     <artifactId>camel-quarkus-langchain4j-ingest</artifactId>
     <name>Camel Quarkus :: LangChain4j Ingest :: Runtime</name>
-    <description>Declarative AI document ingestion: point a knowledge base at a folder via configuration; splitting, embedding and storing are handled under the hood</description>
+    <description>Ingest documents into a LangChain4j embedding store: split into segments, embed and store.</description>
 
     <properties>
         <camel.quarkus.jvmSince>3.39.0</camel.quarkus.jvmSince>
@@ -52,12 +52,12 @@
             <artifactId>camel-quarkus-support-langchain4j</artifactId>
         </dependency>
         <dependency>
-            <groupId>dev.langchain4j</groupId>
-            <artifactId>langchain4j-core</artifactId>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-langchain4j-ingest</artifactId>
         </dependency>
         <dependency>
             <groupId>dev.langchain4j</groupId>
-            <artifactId>langchain4j</artifactId>
+            <artifactId>langchain4j-core</artifactId>
         </dependency>
     </dependencies>
 

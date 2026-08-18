@@ -34,8 +34,8 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.quarkus.component.langchain4j.ingest.IngestHeaders;
-import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestResult;
+import org.apache.camel.component.langchain4j.ingest.LangChain4jIngestHeaders;
+import org.apache.camel.component.langchain4j.ingest.LangChain4jIngestResult;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @jakarta.ws.rs.Path("/langchain4j-ingest")
@@ -108,8 +108,8 @@ public class IngestResource {
     public String feed(@PathParam("pipeline") String pipeline, @PathParam("documentId") String documentId,
             String content) {
         String uri = "built".equals(pipeline) ? "direct:built-source" : "direct:custom-source";
-        IngestResult result = producerTemplate.requestBodyAndHeader(uri, content, IngestHeaders.DOCUMENT_ID,
-                documentId, IngestResult.class);
+        LangChain4jIngestResult result = producerTemplate.requestBodyAndHeader(uri, content,
+                LangChain4jIngestHeaders.DOCUMENT_ID, documentId, LangChain4jIngestResult.class);
         return result.outcome().label();
     }
 

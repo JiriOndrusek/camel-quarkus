@@ -9,7 +9,7 @@ quarkus.camel.ai.ingest.products.embedding-store=products
 quarkus.camel.ai.ingest.products.embedding-model=my-model
 ----
 
-Each file is read as UTF-8 text — there is no format parsing, so convert a PDF or DOCX before it reaches the pipeline — split into overlapping segments (`max-segment-size`, `max-overlap-size`), embedded in batches and written to the store; a document is held in memory whole while it is split. `embedding-store` and `embedding-model` name CDI beans and may be omitted when the application has exactly one of each. Every segment carries `camel_quarkus_pipeline` and `camel_quarkus_document_id` metadata, so retrieval can cite which document an answer came from. Apart from `enabled` and the `source.*` settings shown here, properties are fixed at build time.
+Each file is read as UTF-8 text — there is no format parsing, so convert a PDF or DOCX before it reaches the pipeline — split into overlapping segments (`max-segment-size`, `max-overlap-size`), embedded in batches and written to the store; a document is held in memory whole while it is split. `embedding-store` and `embedding-model` name CDI beans and may be omitted when the application has exactly one of each. Every segment carries `camel_ingest_pipeline` and `camel_ingest_document_id` metadata, so retrieval can cite which document an answer came from. Apart from `enabled` and the `source.*` settings shown here, properties are fixed at build time.
 
 [NOTE]
 ====
@@ -32,9 +32,9 @@ IngestPipeline events() {
 
 Typing `dsl.` lists a factory for every component, each completing its own typed options. The method runs once at startup; it must return `IngestPipeline`, take no parameters and use a name no configured pipeline uses. `enabled=false` in configuration switches a Java-declared pipeline off. A component missing from the classpath fails at startup with the `add-extension` command that fixes it — the DSL compiles regardless, since its factories all ship in one artifact.
 
-Ingestion needs a stable id per document, and where it lives is the consumer's business: `documentId` names the header — the record key `CamelKafkaKey` above, `CamelAwsS3Key` for S3 — or gives a simple-language expression. Without it, the pipeline expects the `CamelIngestDocumentId` header and fails the exchange when it is absent. Mind each component's own defaults, too: the `aws2-s3` consumer *deletes objects after reading them* unless `deleteAfterRead(false)` is set — a knowledge base reads its source, it does not consume it.
+Ingestion needs a stable id per document, and where it lives is the consumer's business: `documentId` names the header — the record key `CamelKafkaKey` above, `CamelAwsS3Key` for S3 — or gives a simple-language expression. Without it, the pipeline expects the `CamelLangChain4jIngestDocumentId` header and fails the exchange when it is absent. Mind each component's own defaults, too: the `aws2-s3` consumer *deletes objects after reading them* unless `deleteAfterRead(false)` is set — a knowledge base reads its source, it does not consume it.
 
-After such a pipeline ingests a document, the exchange body is replaced with the `IngestResult`, so a request-reply caller receives the outcome of its call.
+After such a pipeline ingests a document, the exchange body is replaced with the `LangChain4jIngestResult` of the underlying `camel-langchain4j-ingest` component, so a request-reply caller receives the outcome of its call.
 
 The same pipeline can be declared purely in properties: `source.uri` takes the consumer URI as written, `source.document-id` the header name. The URI is fixed at build time by design — a runtime-overridable consumer URI would be arbitrary component invocation — while property placeholders inside it still resolve at startup, keeping credentials and endpoints runtime configuration. Treat runtime configuration as the trust boundary it is: the directory and the id expression decide what the process reads into an often external store.
 

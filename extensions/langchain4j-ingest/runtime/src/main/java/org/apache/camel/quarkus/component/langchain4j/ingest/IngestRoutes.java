@@ -33,7 +33,7 @@ import jakarta.inject.Inject;
 import org.apache.camel.Exchange;
 import org.apache.camel.Expression;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestService;
+import org.apache.camel.component.langchain4j.ingest.LangChain4jIngestHeaders;
 import org.apache.camel.support.builder.ExpressionBuilder;
 import org.apache.camel.support.processor.idempotent.MemoryIdempotentRepository;
 import org.apache.camel.util.URISupport;
@@ -89,7 +89,7 @@ public class IngestRoutes extends RouteBuilder {
                 continue;
             }
 
-            IngestService service = new IngestService(
+            String sink = sink(
                     name,
                     resolveStore(name, pipeline == null ? null : pipeline.embeddingStore().orElse(null)),
                     resolveModel(name, pipeline == null ? null : pipeline.embeddingModel().orElse(null)),
@@ -104,10 +104,10 @@ public class IngestRoutes extends RouteBuilder {
                         + "reads one source: keep the URI, or drop it to read the directory.");
             }
             if (uri == null) {
-                configureFileSource(name, runtime, service);
+                configureFileSource(name, runtime, sink);
                 LOG.infof("Ingestion pipeline '%s': source=file", name);
             } else {
-                configureEndpointSource(name, uri, runtime, service);
+                configureEndpointSource(name, uri, runtime, sink);
                 LOG.infof("Ingestion pipeline '%s': source=%s", name, URISupport.sanitizeUri(uri));
             }
         }
@@ -141,7 +141,7 @@ public class IngestRoutes extends RouteBuilder {
         IngestPipeline definition = builderPipelines.definition(entry);
         IngestRunTimeConfig.PipelineRunTimeConfig runtime = definition.asRunTimeConfig();
 
-        IngestService service = new IngestService(
+        String sink = sink(
                 name,
                 resolveStore(name, definition.embeddingStoreName().orElse(null)),
                 resolveModel(name, definition.embeddingModelName().orElse(null)),
@@ -149,8 +149,8 @@ public class IngestRoutes extends RouteBuilder {
                 definition.maxOverlapSize());
 
         switch (definition.sourceType()) {
-        case "file" -> configureFileSource(name, runtime, service);
-        case "endpoint" -> configureEndpointSource(name, definition.sourceUri(), runtime, service);
+        case "file" -> configureFileSource(name, runtime, sink);
+        case "endpoint" -> configureEndpointSource(name, definition.sourceUri(), runtime, sink);
         default -> throw new IllegalStateException("Unknown source type " + definition.sourceType());
         }
 
@@ -159,7 +159,7 @@ public class IngestRoutes extends RouteBuilder {
     }
 
     private void configureFileSource(String name, IngestRunTimeConfig.PipelineRunTimeConfig runtime,
-            IngestService service) {
+            String sink) {
         String directory = required(name, runtime == null ? null : runtime.source().directory().orElse(null),
                 "source.directory");
         // built with the Endpoint DSL rather than concatenated: a directory containing ? # & or a
@@ -180,8 +180,8 @@ public class IngestRoutes extends RouteBuilder {
                 .readLock("changed")
                 .charset(StandardCharsets.UTF_8.name()))
                 .routeId(routeId(name))
-                .process(exchange -> service.ingest(documentId.evaluate(exchange, String.class),
-                        exchange.getIn().getBody(String.class)));
+                .setHeader(LangChain4jIngestHeaders.DOCUMENT_ID, documentId)
+                .to(sink);
     }
 
     /**
@@ -190,20 +190,21 @@ public class IngestRoutes extends RouteBuilder {
      * {@code ${header.CamelAwsS3Key}} for an S3 consumer, the message header otherwise.
      */
     private void configureEndpointSource(String name, String uri,
-            IngestRunTimeConfig.PipelineRunTimeConfig runtime, IngestService service) {
-        Expression documentId = documentIdExpression(runtime, IngestHeaders.DOCUMENT_ID);
+            IngestRunTimeConfig.PipelineRunTimeConfig runtime, String sink) {
+        Expression documentId = documentIdExpression(runtime, LangChain4jIngestHeaders.DOCUMENT_ID);
         from(uri)
                 .routeId(routeId(name))
                 .process(exchange -> {
                     String id = documentId.evaluate(exchange, String.class);
                     if (id == null) {
                         throw new IllegalArgumentException("Ingestion pipeline '" + name + "': no document id. "
-                                + "Set the " + IngestHeaders.DOCUMENT_ID + " header, or point "
+                                + "Set the " + LangChain4jIngestHeaders.DOCUMENT_ID + " header, or point "
                                 + "quarkus.camel.ai.ingest." + name + ".source.document-id at where the "
                                 + "consumer puts it.");
                     }
-                    exchange.getIn().setBody(service.ingest(id, exchange.getIn().getBody(String.class)));
-                });
+                    exchange.getIn().setHeader(LangChain4jIngestHeaders.DOCUMENT_ID, id);
+                })
+                .to(sink);
     }
 
     private Expression documentIdExpression(IngestRunTimeConfig.PipelineRunTimeConfig runtime,
@@ -220,6 +221,26 @@ public class IngestRoutes extends RouteBuilder {
 
     private static String routeId(String name) {
         return "camel-quarkus-ai-ingest-" + name;
+    }
+
+    /**
+     * The route's terminus: the {@code langchain4j-ingest} component, which splits, embeds and
+     * stores the document and replaces the body with its result. The store and model are resolved
+     * here rather than autowired by the component, so a missing or ambiguous bean fails with a
+     * message naming the pipeline and the configuration key; the component receives the chosen
+     * beans by registry reference.
+     */
+    private String sink(String name, EmbeddingStore<TextSegment> store, EmbeddingModel model,
+            int maxSegmentSize, int maxOverlapSize) {
+        String storeRef = routeId(name) + "-store";
+        String modelRef = routeId(name) + "-model";
+        getContext().getRegistry().bind(storeRef, EmbeddingStore.class, store);
+        getContext().getRegistry().bind(modelRef, EmbeddingModel.class, model);
+        return "langchain4j-ingest:" + name
+                + "?embeddingStore=#" + storeRef
+                + "&embeddingModel=#" + modelRef
+                + "&maxSegmentSize=" + maxSegmentSize
+                + "&maxOverlapSize=" + maxOverlapSize;
     }
 
     private static String required(String name, String value, String property) {

@@ -2227,6 +2227,11 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.camel</groupId>
+                <artifactId>camel-langchain4j-ingest</artifactId>
+                <version>${camel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel</groupId>
                 <artifactId>camel-langchain4j-tokenizer</artifactId>
                 <version>${camel.version}</version>
             </dependency>
