@@ -16,6 +16,7 @@
  */
 package org.apache.camel.quarkus.component.langchain4j.ingest.core;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,13 +25,18 @@ import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentSplitter;
 import dev.langchain4j.data.document.Metadata;
 import dev.langchain4j.data.document.splitter.DocumentSplitters;
+import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
+import dev.langchain4j.model.output.Response;
 import dev.langchain4j.store.embedding.EmbeddingStore;
+import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import org.jboss.logging.Logger;
 
 /**
- * Splits a document, embeds the segments and writes them to the store.
+ * Splits a document, embeds the segments and writes them to the store. The pipeline itself is
+ * LangChain4j's {@link EmbeddingStoreIngestor}; the splitter, model and store are always passed
+ * to it explicitly, so none of its classpath-provided SPI defaults can slip in.
  *
  * <p>
  * Deliberately naive: it writes whatever it is given and remembers nothing, so ingesting a
@@ -64,6 +70,7 @@ public class IngestService {
         if (documentId == null || documentId.isBlank()) {
             throw new IllegalArgumentException("Ingestion pipeline '" + pipeline + "': documentId is required");
         }
+        // decided before the ingestor sees it: Document.from refuses blank text outright
         if (text == null || text.isBlank()) {
             return new IngestResult(pipeline, documentId, 0, IngestResult.Outcome.EMPTY);
         }
@@ -74,20 +81,50 @@ public class IngestService {
         metadata.put(METADATA_PIPELINE, pipeline);
         metadata.put(METADATA_DOCUMENT_ID, documentId);
 
-        List<TextSegment> segments = splitter.split(Document.from(text, Metadata.from(metadata)));
-        // embedded in batches: a single embedAll over a large document's full segment list can
-        // exceed an embedding provider's per-request limits
-        for (int from = 0; from < segments.size(); from += EMBEDDING_BATCH_SIZE) {
-            List<TextSegment> batch = segments.subList(from, Math.min(from + EMBEDDING_BATCH_SIZE, segments.size()));
-            store.addAll(model.embedAll(batch).content(), batch);
-        }
+        // built per call: the decorated model both chunks the embedding requests and counts the
+        // segments of this document alone, concurrent consumers included
+        BatchingEmbeddingModel batchingModel = new BatchingEmbeddingModel(model);
+        EmbeddingStoreIngestor.builder()
+                .documentSplitter(splitter)
+                .embeddingModel(batchingModel)
+                .embeddingStore(store)
+                .build()
+                .ingest(Document.from(text, Metadata.from(metadata)));
 
-        LOG.debugf("Ingestion pipeline '%s': wrote %d segment(s) of document '%s'", pipeline, segments.size(),
-                documentId);
-        return new IngestResult(pipeline, documentId, segments.size(), IngestResult.Outcome.INGESTED);
+        LOG.debugf("Ingestion pipeline '%s': wrote %d segment(s) of document '%s'", pipeline,
+                batchingModel.segments, documentId);
+        return new IngestResult(pipeline, documentId, batchingModel.segments, IngestResult.Outcome.INGESTED);
     }
 
     public String pipeline() {
         return pipeline;
+    }
+
+    /**
+     * The ingestor embeds a document's full segment list in a single {@code embedAll}, which a
+     * large document would push past an embedding provider's per-request limits — so the calls
+     * are chunked here. Counting the segments on the way through recovers what the ingestor's
+     * own result does not carry.
+     */
+    private static final class BatchingEmbeddingModel implements EmbeddingModel {
+
+        private final EmbeddingModel delegate;
+        private int segments;
+
+        private BatchingEmbeddingModel(EmbeddingModel delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public Response<List<Embedding>> embedAll(List<TextSegment> textSegments) {
+            segments += textSegments.size();
+            List<Embedding> embeddings = new ArrayList<>(textSegments.size());
+            for (int from = 0; from < textSegments.size(); from += EMBEDDING_BATCH_SIZE) {
+                List<TextSegment> batch = textSegments.subList(from,
+                        Math.min(from + EMBEDDING_BATCH_SIZE, textSegments.size()));
+                embeddings.addAll(delegate.embedAll(batch).content());
+            }
+            return Response.from(embeddings);
+        }
     }
 }

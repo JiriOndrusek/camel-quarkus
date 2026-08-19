@@ -54,8 +54,10 @@ class Langchain4jIngestTest {
 
     @Test
     void longFileIsSplitIntoSegments() {
-        // comfortably longer than max-segment-size, so a single document must yield several hits
-        write("manual.txt", ("The ACME-2000 mixer needs a 12 volt supply. ").repeat(12));
+        // comfortably longer than max-segment-size, so a single document must yield several
+        // hits - and long enough to split into more segments than one embedding batch holds,
+        // so the batched embedAll path runs more than one round trip
+        write("manual.txt", ("The ACME-2000 mixer needs a 12 volt supply. ").repeat(120));
 
         Awaitility.await().atMost(30, TimeUnit.SECONDS).pollInterval(500, TimeUnit.MILLISECONDS)
                 .untilAsserted(() -> assertTrue(search("What supply does the mixer need?").stream()
