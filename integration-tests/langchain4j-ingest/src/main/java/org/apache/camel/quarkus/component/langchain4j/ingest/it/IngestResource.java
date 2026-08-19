@@ -69,6 +69,14 @@ public class IngestResource {
     EmbeddingStore<TextSegment> eventsStore;
 
     @Inject
+    @Named("reports-store")
+    EmbeddingStore<TextSegment> reportsStore;
+
+    @Inject
+    @Named("scans-store")
+    EmbeddingStore<TextSegment> scansStore;
+
+    @Inject
     ProducerTemplate producerTemplate;
 
     @Inject
@@ -76,6 +84,12 @@ public class IngestResource {
 
     @ConfigProperty(name = "ingest.test.directory")
     String directory;
+
+    @ConfigProperty(name = "ingest.reports.directory")
+    String reportsDirectory;
+
+    @ConfigProperty(name = "ingest.scans.directory")
+    String scansDirectory;
 
     /** Asserts a key was committed; registry lookup by name, the same way the pipelines resolve. */
     @GET
@@ -97,6 +111,17 @@ public class IngestResource {
         Files.writeString(dir.resolve(name), content);
     }
 
+    /** Writes a binary document into a parser pipeline's watched directory. */
+    @POST
+    @jakarta.ws.rs.Path("/binary/{pipeline}/{name}")
+    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    public void writeBinary(@PathParam("pipeline") String pipeline, @PathParam("name") String name,
+            byte[] content) throws Exception {
+        Path dir = Path.of("scans".equals(pipeline) ? scansDirectory : reportsDirectory);
+        Files.createDirectories(dir);
+        Files.write(dir.resolve(name), content);
+    }
+
     @GET
     @jakarta.ws.rs.Path("/search")
     @Produces(MediaType.APPLICATION_JSON)
@@ -106,6 +131,8 @@ public class IngestResource {
         case "datasheets" -> datasheetsStore;
         case "s3" -> s3Store;
         case "events" -> eventsStore;
+        case "reports" -> reportsStore;
+        case "scans" -> scansStore;
         default -> productsStore;
         };
         // the deterministic test model gives a query no semantic pull towards any document, so

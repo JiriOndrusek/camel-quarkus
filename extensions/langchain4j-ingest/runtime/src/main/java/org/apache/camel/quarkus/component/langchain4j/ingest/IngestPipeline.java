@@ -17,6 +17,7 @@
 package org.apache.camel.quarkus.component.langchain4j.ingest;
 
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * A pipeline declared in Java rather than in configuration, returned from an {@link Ingest}
@@ -24,9 +25,13 @@ import java.util.Optional;
  */
 public final class IngestPipeline {
 
+    /** The values {@link #parser(String)} and the {@code parser} configuration property accept. */
+    public static final Set<String> SUPPORTED_PARSERS = Set.of("tika", "docling");
+
     private final Source source;
     private String embeddingStoreName;
     private String embeddingModelName;
+    private String parser;
     private int maxSegmentSize = IngestBuildTimeConfig.DEFAULT_MAX_SEGMENT_SIZE;
     private int maxOverlapSize = IngestBuildTimeConfig.DEFAULT_MAX_OVERLAP_SIZE;
 
@@ -45,6 +50,21 @@ public final class IngestPipeline {
 
     public IngestPipeline embeddingModel(String beanName) {
         this.embeddingModelName = beanName;
+        return this;
+    }
+
+    /**
+     * Parses the consumed payload into text before splitting: {@code tika} extracts plain text
+     * in-process, {@code docling} converts to markdown through a Docling Serve instance. The
+     * corresponding extension must be on the classpath.
+     */
+    public IngestPipeline parser(String parser) {
+        // the same rule the configuration path is held to at build time
+        if (!SUPPORTED_PARSERS.contains(parser)) {
+            throw new IllegalArgumentException("parser must be one of " + SUPPORTED_PARSERS
+                    + " (got '" + parser + "')");
+        }
+        this.parser = parser;
         return this;
     }
 
@@ -74,6 +94,10 @@ public final class IngestPipeline {
 
     Optional<String> embeddingModelName() {
         return Optional.ofNullable(embeddingModelName);
+    }
+
+    Optional<String> parser() {
+        return Optional.ofNullable(parser);
     }
 
     int maxSegmentSize() {
