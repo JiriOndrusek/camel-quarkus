@@ -16,12 +16,17 @@
  */
 package org.apache.camel.quarkus.component.langchain4j.ingest;
 
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.xml.sax.InputSource;
 
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
@@ -34,7 +39,10 @@ import jakarta.inject.Inject;
 import org.apache.camel.CamelContextAware;
 import org.apache.camel.Exchange;
 import org.apache.camel.Expression;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.builder.endpoint.dsl.FileEndpointBuilderFactory;
+import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestResult;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestService;
 import org.apache.camel.spi.IdempotentRepository;
@@ -112,11 +120,12 @@ public class IngestRoutes extends RouteBuilder {
                         + "') and source.directory ('" + runtime.source().directory().get() + "'). A pipeline "
                         + "reads one source: keep the URI, or drop it to read the directory.");
             }
+            String parser = pipeline == null ? null : pipeline.parser().orElse(null);
             if (uri == null) {
-                configureFileSource(name, runtime, service);
+                configureFileSource(name, runtime, service, parser);
                 LOG.infof("Ingestion pipeline '%s': source=file", name);
             } else {
-                configureEndpointSource(name, uri, runtime, service);
+                configureEndpointSource(name, uri, runtime, service, parser);
                 LOG.infof("Ingestion pipeline '%s': source=%s", name, URISupport.sanitizeUri(uri));
             }
         }
@@ -159,9 +168,10 @@ public class IngestRoutes extends RouteBuilder {
                 definition.maxSegmentSize(),
                 definition.maxOverlapSize());
 
+        String parser = definition.parser().orElse(null);
         switch (definition.sourceType()) {
-        case "file" -> configureFileSource(name, runtime, service);
-        case "endpoint" -> configureEndpointSource(name, definition.sourceUri(), runtime, service);
+        case "file" -> configureFileSource(name, runtime, service, parser);
+        case "endpoint" -> configureEndpointSource(name, definition.sourceUri(), runtime, service, parser);
         default -> throw new IllegalStateException("Unknown source type " + definition.sourceType());
         }
 
@@ -170,18 +180,31 @@ public class IngestRoutes extends RouteBuilder {
     }
 
     private void configureFileSource(String name, IngestRunTimeConfig.PipelineRunTimeConfig runtime,
-            IngestService service) {
+            IngestService service, String parser) {
         String directory = required(name, runtime == null ? null : runtime.source().directory().orElse(null),
                 "source.directory");
-        // built with the Endpoint DSL rather than concatenated: a directory containing ? # & or a
-        // space would otherwise mis-parse, and a crafted one could inject options - delete=true
-        // is honoured ahead of noop and would delete the user's documents after reading them.
-        // noop leaves the documents where they are (a knowledge base reads its source, it does
-        // not consume it), idempotent keeps the same file from being ingested twice, and the
-        // changed read lock waits for a file still being copied in rather than embedding half
-        // of it
         Expression documentId = documentIdExpression(runtime, Exchange.FILE_NAME);
         maybeAutoCreateRepository(name, runtime);
+
+        // the route: watch the directory -> (parse) -> split, embed, store; the register in
+        // the endpoint keeps unchanged files from re-ingesting
+        ProcessorDefinition<?> route = from(fileSource(name, directory, runtime, parser))
+                .routeId(routeId(name));
+        route = parseStep(route, parser);
+        route.process(ingestFileStep(name, service, documentId, parser));
+    }
+
+    /**
+     * The directory consumer. Built with the Endpoint DSL rather than concatenated: a directory
+     * containing ? # &amp; or a space would otherwise mis-parse, and a crafted one could inject
+     * options - delete=true is honoured ahead of noop and would delete the user's documents
+     * after reading them. noop leaves the documents where they are (a knowledge base reads its
+     * source, it does not consume it), idempotent keeps the same file from being ingested twice,
+     * and the changed read lock waits for a file still being copied in rather than embedding
+     * half of it.
+     */
+    private FileEndpointBuilderFactory.FileEndpointConsumerBuilder fileSource(String name, String directory,
+            IngestRunTimeConfig.PipelineRunTimeConfig runtime, String parser) {
         String repositoryName = runtime == null ? null : runtime.source().idempotentRepository().orElse(null);
         var endpoint = file(directory)
                 .noop(true)
@@ -193,23 +216,17 @@ public class IngestRoutes extends RouteBuilder {
             // re-ingest large directories; lost on restart
             endpoint.idempotentRepository(MemoryIdempotentRepository.memoryIdempotentRepository(100_000));
         }
-        from(endpoint
+        endpoint
                 // an edited file gets a new key and re-ingests; old segments remain (append)
                 .idempotentKey("${file:absolute.path}:${file:modified}:${file:size}")
                 .recursive(runtime.source().recursive())
-                .readLock("changed")
-                .charset(StandardCharsets.UTF_8.name()))
-                .routeId(routeId(name))
-                .process(exchange -> {
-                    IngestResult result = service.ingest(documentId.evaluate(exchange, String.class),
-                            exchange.getIn().getBody(String.class));
-                    // the file consumer discards the result, so an EMPTY outcome would
-                    // otherwise leave no trace at all
-                    if (result.outcome() == IngestResult.Outcome.EMPTY) {
-                        LOG.debugf("Ingestion pipeline '%s': document '%s' contained no text, nothing was written",
-                                name, result.documentId());
-                    }
-                });
+                .readLock("changed");
+        if (parser == null) {
+            // text is read as UTF-8; a parser receives the raw bytes instead - the format is its
+            // business, and a charset conversion would corrupt a binary document
+            endpoint.charset(StandardCharsets.UTF_8.name());
+        }
+        return endpoint;
     }
 
     /**
@@ -218,47 +235,144 @@ public class IngestRoutes extends RouteBuilder {
      * {@code ${header.CamelAwsS3Key}} for an S3 consumer, the message header otherwise.
      */
     private void configureEndpointSource(String name, String uri,
-            IngestRunTimeConfig.PipelineRunTimeConfig runtime, IngestService service) {
+            IngestRunTimeConfig.PipelineRunTimeConfig runtime, IngestService service, String parser) {
         Expression documentId = documentIdExpression(runtime, IngestHeaders.DOCUMENT_ID);
         maybeAutoCreateRepository(name, runtime);
         String repositoryName = runtime == null ? null : runtime.source().idempotentRepository().orElse(null);
+
         if (repositoryName == null) {
-            from(uri)
-                    .routeId(routeId(name))
-                    .process(exchange -> {
-                        String id = requireDocumentId(name, documentId, exchange);
-                        exchange.getIn().setBody(service.ingest(id, exchange.getIn().getBody(String.class)));
-                    });
+            // the route: consume -> (parse) -> split, embed, store
+            ProcessorDefinition<?> route = from(uri).routeId(routeId(name));
+            route = parseStep(route, parser);
+            route.process(ingestStep(name, service, documentId));
             return;
         }
-        // duplicates skip the block and the tail processor answers SKIPPED; first write wins
-        // per id. The EIP keys on the validated id property, evaluating the expression once
+
+        // the route: consume -> resolve the id -> claim it in the register [ -> (parse) ->
+        // split, embed, store ] -> answer duplicates SKIPPED. A duplicate skips the claimed
+        // block without paying for a parse; first write wins per id. The EIP keys on the
+        // validated id property, evaluating the expression once
         IdempotentRepository repository = resolveRepository(name, repositoryName);
-        from(uri)
+        ProcessorDefinition<?> route = from(uri)
                 .routeId(routeId(name))
-                .process(exchange -> exchange.setProperty(DOCUMENT_ID_PROPERTY,
-                        requireDocumentId(name, documentId, exchange)))
-                .idempotentConsumer(exchangeProperty(DOCUMENT_ID_PROPERTY), repository)
-                .process(exchange -> {
-                    String id = (String) exchange.getProperty(DOCUMENT_ID_PROPERTY);
-                    IngestResult result = service.ingest(id, exchange.getIn().getBody(String.class));
-                    if (result.outcome() == IngestResult.Outcome.EMPTY) {
-                        // a blank document wrote nothing, so it must not keep the eager claim
-                        // on the id - a later, populated delivery under the same id would be
-                        // answered SKIPPED. The completion-time confirm() of the removed key
-                        // is a no-op in the memory, file and JDBC repositories alike
-                        repository.remove(id);
-                    }
-                    exchange.getIn().setBody(result);
-                })
+                .process(resolveDocumentIdStep(name, documentId))
+                .idempotentConsumer(exchangeProperty(DOCUMENT_ID_PROPERTY), repository);
+        route = parseStep(route, parser);
+        route.process(ingestClaimedStep(service, repository))
                 .end()
-                .process(exchange -> {
-                    if (exchange.getProperty(Exchange.DUPLICATE_MESSAGE, false, Boolean.class)) {
-                        exchange.getIn().setBody(new IngestResult(name,
-                                (String) exchange.getProperty(DOCUMENT_ID_PROPERTY), 0,
-                                IngestResult.Outcome.SKIPPED));
-                    }
-                });
+                .process(answerDuplicateStep(name));
+    }
+
+    /** The optional parse stage; the route is returned unchanged when the pipeline has no parser. */
+    private static ProcessorDefinition<?> parseStep(ProcessorDefinition<?> route, String parser) {
+        if (parser == null) {
+            return route;
+        }
+        route = route.to(parserEndpoint(parser));
+        if ("tika".equals(parser)) {
+            route = route.process(IngestRoutes::tikaXhtmlToText);
+        }
+        return route;
+    }
+
+    /**
+     * The ingest stage of a directory pipeline. The file consumer discards the result, so an
+     * EMPTY outcome would otherwise leave no trace at all — and it commits the file's key, so
+     * the file is not retried until it changes. With a parser that deserves a warning: a parse
+     * to nothing typically means a missing Tika parser module or an image-only document.
+     */
+    private static Processor ingestFileStep(String name, IngestService service, Expression documentId,
+            String parser) {
+        return exchange -> {
+            IngestResult result = service.ingest(documentId.evaluate(exchange, String.class),
+                    exchange.getIn().getBody(String.class));
+            if (result.outcome() == IngestResult.Outcome.EMPTY) {
+                if (parser != null) {
+                    LOG.warnf("Ingestion pipeline '%s': document '%s' parsed to no text and was skipped; its "
+                            + "key is committed, so it is not retried until the file changes (missing parser "
+                            + "module? image-only document?)", name, result.documentId());
+                } else {
+                    LOG.debugf("Ingestion pipeline '%s': document '%s' contained no text, nothing was written",
+                            name, result.documentId());
+                }
+            }
+        };
+    }
+
+    /** The ingest stage of a consumer-fed pipeline without a register. */
+    private static Processor ingestStep(String name, IngestService service, Expression documentId) {
+        return exchange -> {
+            String id = requireDocumentId(name, documentId, exchange);
+            exchange.getIn().setBody(service.ingest(id, exchange.getIn().getBody(String.class)));
+        };
+    }
+
+    /** Resolves the document id up front and carries it as an exchange property. */
+    private static Processor resolveDocumentIdStep(String name, Expression documentId) {
+        return exchange -> exchange.setProperty(DOCUMENT_ID_PROPERTY,
+                requireDocumentId(name, documentId, exchange));
+    }
+
+    /** The ingest stage inside the register's claim. */
+    private static Processor ingestClaimedStep(IngestService service, IdempotentRepository repository) {
+        return exchange -> {
+            String id = (String) exchange.getProperty(DOCUMENT_ID_PROPERTY);
+            IngestResult result = service.ingest(id, exchange.getIn().getBody(String.class));
+            if (result.outcome() == IngestResult.Outcome.EMPTY) {
+                // a blank document wrote nothing, so it must not keep the eager claim
+                // on the id - a later, populated delivery under the same id would be
+                // answered SKIPPED. The completion-time confirm() of the removed key
+                // is a no-op in the memory, file and JDBC repositories alike
+                repository.remove(id);
+            }
+            exchange.getIn().setBody(result);
+        };
+    }
+
+    /** A duplicate delivery kept its original body; answered SKIPPED so a caller can tell. */
+    private static Processor answerDuplicateStep(String name) {
+        return exchange -> {
+            if (exchange.getProperty(Exchange.DUPLICATE_MESSAGE, false, Boolean.class)) {
+                exchange.getIn().setBody(new IngestResult(name,
+                        (String) exchange.getProperty(DOCUMENT_ID_PROPERTY), 0,
+                        IngestResult.Outcome.SKIPPED));
+            }
+        };
+    }
+
+    /**
+     * The parse step in front of the engine. Tika parses the payload in-process; docling hands a
+     * file path or the raw bytes to a Docling Serve instance and returns markdown.
+     */
+    private static String parserEndpoint(String parser) {
+        return switch (parser) {
+        // the output encoding is pinned: Tika's default is the platform charset, while the
+        // route reads the XHTML back as UTF-8
+        case "tika" -> "tika:parse?tikaParseOutputEncoding=UTF-8";
+        case "docling" -> "docling:convert?operation=CONVERT_TO_MARKDOWN&contentInBody=true";
+        default -> throw new IllegalStateException("Unknown parser " + parser);
+        };
+    }
+
+    /**
+     * Lifts the text out of Tika's XHTML. The endpoint's own plain-text output format loses
+     * content smaller than its encoder buffer behind an unflushed writer, so the parse runs with
+     * the default XHTML output instead and the markup is dropped here.
+     */
+    private static void tikaXhtmlToText(Exchange exchange) throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        // the XHTML is produced locally by Tika, but a document is attacker-supplied input, so
+        // the usual XML hardening applies
+        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        factory.setNamespaceAware(true);
+        org.w3c.dom.Document document = factory.newDocumentBuilder()
+                .parse(new InputSource(new StringReader(exchange.getIn().getBody(String.class))));
+        // the body subtree only: the whole document would prepend Tika's <head><title> - the
+        // PDF Title metadata or the resource name - to the ingested text
+        org.w3c.dom.Node body = document.getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "body").item(0);
+        exchange.getIn().setBody((body != null ? body : document.getDocumentElement()).getTextContent());
     }
 
     private static String requireDocumentId(String name, Expression documentId, Exchange exchange) {

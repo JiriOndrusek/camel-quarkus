@@ -78,6 +78,20 @@ public class IngestItProducers {
 
     @Produces
     @Singleton
+    @Named("reports-store")
+    EmbeddingStore<TextSegment> reportsStore() {
+        return new InMemoryEmbeddingStore<>();
+    }
+
+    @Produces
+    @Singleton
+    @Named("scans-store")
+    EmbeddingStore<TextSegment> scansStore() {
+        return new InMemoryEmbeddingStore<>();
+    }
+
+    @Produces
+    @Singleton
     @Named("test-model")
     EmbeddingModel embeddingModel() {
         return new DeterministicEmbeddingModel(64);
