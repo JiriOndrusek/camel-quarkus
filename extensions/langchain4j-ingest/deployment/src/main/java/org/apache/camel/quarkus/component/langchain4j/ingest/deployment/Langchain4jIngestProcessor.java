@@ -74,6 +74,20 @@ class Langchain4jIngestProcessor {
     }
 
     /**
+     * The repository classes the documentation recommends for {@code camel.beans.*} definitions:
+     * {@code #class:} beans are instantiated reflectively, which native mode allows only for
+     * registered classes.
+     */
+    @BuildStep
+    ReflectiveClassBuildItem repositoryReflection() {
+        return ReflectiveClassBuildItem.builder(
+                "org.apache.camel.support.processor.idempotent.MemoryIdempotentRepository",
+                "org.apache.camel.support.processor.idempotent.FileIdempotentRepository")
+                .methods()
+                .build();
+    }
+
+    /**
      * Discovers {@code @Ingest} builder methods: validated here (return type, no parameters,
      * unique names, no collision with configuration-declared pipelines), invoked reflectively once
      * at startup. Violations are reported as {@link ValidationErrorBuildItem}s — the channel every

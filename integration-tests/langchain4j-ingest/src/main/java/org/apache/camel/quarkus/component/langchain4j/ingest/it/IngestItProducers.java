@@ -24,6 +24,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
+import org.apache.camel.spi.IdempotentRepository;
+import org.apache.camel.support.processor.idempotent.MemoryIdempotentRepository;
 
 @ApplicationScoped
 public class IngestItProducers {
@@ -69,5 +71,13 @@ public class IngestItProducers {
     @Named("test-model")
     EmbeddingModel embeddingModel() {
         return new DeterministicEmbeddingModel(64);
+    }
+
+    // the custom pipeline's register; auto-create is also set, so this existing bean must win
+    @Produces
+    @Singleton
+    @Named("test-register")
+    IdempotentRepository testRegister() {
+        return MemoryIdempotentRepository.memoryIdempotentRepository(1000);
     }
 }

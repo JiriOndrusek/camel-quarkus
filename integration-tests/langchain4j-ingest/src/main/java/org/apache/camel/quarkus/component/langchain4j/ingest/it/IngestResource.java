@@ -33,10 +33,12 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
+import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.quarkus.component.langchain4j.ingest.IngestHeaders;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestResult;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestService;
+import org.apache.camel.spi.IdempotentRepository;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @jakarta.ws.rs.Path("/langchain4j-ingest")
@@ -69,8 +71,21 @@ public class IngestResource {
     @Inject
     ProducerTemplate producerTemplate;
 
+    @Inject
+    CamelContext camelContext;
+
     @ConfigProperty(name = "ingest.test.directory")
     String directory;
+
+    /** Asserts a key was committed; registry lookup by name, the same way the pipelines resolve. */
+    @GET
+    @jakarta.ws.rs.Path("/register-contains")
+    @Produces(MediaType.TEXT_PLAIN)
+    public boolean registerContains(@QueryParam("repo") String repo, @QueryParam("key") String key) {
+        IdempotentRepository repository = camelContext.getRegistry().lookupByNameAndType(repo,
+                IdempotentRepository.class);
+        return repository != null && repository.contains(key);
+    }
 
     /** Writes a document into the watched directory — app-side, so native mode shares the path. */
     @POST

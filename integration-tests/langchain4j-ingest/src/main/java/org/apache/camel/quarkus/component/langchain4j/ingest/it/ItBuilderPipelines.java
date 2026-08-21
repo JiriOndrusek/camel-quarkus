@@ -48,7 +48,10 @@ public class ItBuilderPipelines {
 
     @Ingest("datasheets")
     IngestPipeline datasheets() {
-        return IngestPipeline.from(Source.endpoint(direct("built-source")))
+        // the auto-created register: named, but no bean is defined anywhere for it
+        return IngestPipeline.from(Source.endpoint(direct("built-source"))
+                .idempotentRepository("builtRegister")
+                .idempotentRepositoryAutoCreate(true))
                 .embeddingStore("built-store")
                 .embeddingModel("test-model")
                 .splitter(120, 20);
