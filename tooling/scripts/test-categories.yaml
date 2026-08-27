@@ -121,7 +121,6 @@ group-06:
   - exec
   - file
   - hashicorp-vault
-  - headersmap
   - jsonpath
   - kamelet
   - langchain4j-chat-ql4j
@@ -132,7 +131,6 @@ group-06:
   - quartz
   - saga
   - sjms-qpid-amqp-client
-  - splunk
   - wasm
 group-07:
   - cassandraql
@@ -196,7 +194,6 @@ group-10:
   - as2
   - braintree
   - consul
-  - digitalocean
   - docling
   - fop
   - groovy
