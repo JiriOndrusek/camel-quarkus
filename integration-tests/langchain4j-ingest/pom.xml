@@ -81,6 +81,11 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-jdbc-h2</artifactId>
         </dependency>
+        <!-- exposes the cq.ingest.* counters at /q/metrics for the metrics test -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
+        </dependency>
 
         <!-- test dependencies -->
         <dependency>

@@ -71,6 +71,9 @@ public class IngestRoutes extends RouteBuilder {
     @Inject
     IngestBuilderPipelines builderPipelines;
 
+    @Inject
+    IngestMetrics metrics;
+
     // these injection points also keep an unnamed store or model bean from being removed as
     // unused - nothing else in the application need inject it
     @Inject
@@ -193,7 +196,7 @@ public class IngestRoutes extends RouteBuilder {
         ProcessorDefinition<?> route = from(fileSource(name, directory, runtime, parser))
                 .routeId(routeId(name));
         route = parseStep(route, parser);
-        route.process(ingestFileStep(name, service, documentId, parser));
+        route.process(ingestFileStep(name, service, documentId, parser, metrics));
     }
 
     /**
@@ -250,7 +253,7 @@ public class IngestRoutes extends RouteBuilder {
             // the route: consume -> (parse) -> split, embed, store
             ProcessorDefinition<?> route = from(uri).routeId(routeId(name));
             route = parseStep(route, parser);
-            route.process(ingestStep(name, service, documentId));
+            route.process(ingestStep(name, service, documentId, metrics));
             return;
         }
 
@@ -264,9 +267,9 @@ public class IngestRoutes extends RouteBuilder {
                 .process(resolveDocumentIdStep(name, documentId))
                 .idempotentConsumer(exchangeProperty(DOCUMENT_ID_PROPERTY), repository);
         route = parseStep(route, parser);
-        route.process(ingestClaimedStep(service, repository))
+        route.process(ingestClaimedStep(name, service, repository, metrics))
                 .end()
-                .process(answerDuplicateStep(name));
+                .process(answerDuplicateStep(name, metrics));
     }
 
     /** The optional parse stage; the route is returned unchanged when the pipeline has no parser. */
@@ -288,10 +291,17 @@ public class IngestRoutes extends RouteBuilder {
      * to nothing typically means a missing Tika parser module or an image-only document.
      */
     private static Processor ingestFileStep(String name, IngestService service, Expression documentId,
-            String parser) {
+            String parser, IngestMetrics metrics) {
         return exchange -> {
-            IngestResult result = service.ingest(documentId.evaluate(exchange, String.class),
-                    exchange.getIn().getBody(String.class));
+            IngestResult result;
+            try {
+                result = service.ingest(documentId.evaluate(exchange, String.class),
+                        exchange.getIn().getBody(String.class));
+            } catch (Exception e) {
+                metrics.failure(name);
+                throw e;
+            }
+            metrics.record(result);
             if (result.outcome() == IngestResult.Outcome.EMPTY) {
                 if (parser != null) {
                     LOG.warnf("Ingestion pipeline '%s': document '%s' parsed to no text and was skipped; its "
@@ -306,10 +316,19 @@ public class IngestRoutes extends RouteBuilder {
     }
 
     /** The ingest stage of a consumer-fed pipeline without a register. */
-    private static Processor ingestStep(String name, IngestService service, Expression documentId) {
+    private static Processor ingestStep(String name, IngestService service, Expression documentId,
+            IngestMetrics metrics) {
         return exchange -> {
             String id = requireDocumentId(name, documentId, exchange);
-            exchange.getIn().setBody(service.ingest(id, exchange.getIn().getBody(String.class)));
+            IngestResult result;
+            try {
+                result = service.ingest(id, exchange.getIn().getBody(String.class));
+            } catch (Exception e) {
+                metrics.failure(name);
+                throw e;
+            }
+            metrics.record(result);
+            exchange.getIn().setBody(result);
         };
     }
 
@@ -320,10 +339,18 @@ public class IngestRoutes extends RouteBuilder {
     }
 
     /** The ingest stage inside the register's claim. */
-    private static Processor ingestClaimedStep(IngestService service, IdempotentRepository repository) {
+    private static Processor ingestClaimedStep(String name, IngestService service, IdempotentRepository repository,
+            IngestMetrics metrics) {
         return exchange -> {
             String id = (String) exchange.getProperty(DOCUMENT_ID_PROPERTY);
-            IngestResult result = service.ingest(id, exchange.getIn().getBody(String.class));
+            IngestResult result;
+            try {
+                result = service.ingest(id, exchange.getIn().getBody(String.class));
+            } catch (Exception e) {
+                metrics.failure(name);
+                throw e;
+            }
+            metrics.record(result);
             if (result.outcome() == IngestResult.Outcome.EMPTY) {
                 // a blank document wrote nothing, so it must not keep the eager claim
                 // on the id - a later, populated delivery under the same id would be
@@ -336,12 +363,14 @@ public class IngestRoutes extends RouteBuilder {
     }
 
     /** A duplicate delivery kept its original body; answered SKIPPED so a caller can tell. */
-    private static Processor answerDuplicateStep(String name) {
+    private static Processor answerDuplicateStep(String name, IngestMetrics metrics) {
         return exchange -> {
             if (exchange.getProperty(Exchange.DUPLICATE_MESSAGE, false, Boolean.class)) {
-                exchange.getIn().setBody(new IngestResult(name,
+                IngestResult result = new IngestResult(name,
                         (String) exchange.getProperty(DOCUMENT_ID_PROPERTY), 0,
-                        IngestResult.Outcome.SKIPPED));
+                        IngestResult.Outcome.SKIPPED);
+                metrics.record(result);
+                exchange.getIn().setBody(result);
             }
         };
     }

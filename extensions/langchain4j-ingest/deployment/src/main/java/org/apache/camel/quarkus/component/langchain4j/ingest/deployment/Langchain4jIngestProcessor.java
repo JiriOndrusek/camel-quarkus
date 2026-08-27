@@ -29,6 +29,8 @@ import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
 import io.quarkus.arc.deployment.SyntheticBeansRuntimeInitBuildItem;
 import io.quarkus.arc.deployment.ValidationPhaseBuildItem.ValidationErrorBuildItem;
 import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
+import io.quarkus.deployment.Capabilities;
+import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.Consume;
@@ -47,9 +49,11 @@ import jakarta.inject.Singleton;
 import org.apache.camel.quarkus.component.langchain4j.ingest.Ingest;
 import org.apache.camel.quarkus.component.langchain4j.ingest.IngestBuildTimeConfig;
 import org.apache.camel.quarkus.component.langchain4j.ingest.IngestBuilderPipelines;
+import org.apache.camel.quarkus.component.langchain4j.ingest.IngestMetrics;
 import org.apache.camel.quarkus.component.langchain4j.ingest.IngestPipeline;
 import org.apache.camel.quarkus.component.langchain4j.ingest.IngestRoutes;
 import org.apache.camel.quarkus.component.langchain4j.ingest.Langchain4jIngestRecorder;
+import org.apache.camel.quarkus.component.langchain4j.ingest.MicrometerIngestMetricsListener;
 import org.apache.camel.quarkus.core.deployment.spi.CamelContextBuildItem;
 import org.apache.camel.quarkus.core.deployment.spi.CamelRuntimeTaskBuildItem;
 import org.apache.camel.quarkus.core.deployment.spi.CamelServiceBuildItem;
@@ -73,9 +77,21 @@ class Langchain4jIngestProcessor {
     @BuildStep
     AdditionalBeanBuildItem beans() {
         return AdditionalBeanBuildItem.builder()
-                .addBeanClasses(IngestRoutes.class)
+                .addBeanClasses(IngestRoutes.class, IngestMetrics.class)
                 .setUnremovable()
                 .build();
+    }
+
+    /**
+     * Publishes the ingestion counters through Micrometer when the metrics capability (provided
+     * by quarkus-micrometer) is present; the listener bean is registered only then, which is
+     * what keeps Micrometer an optional dependency of the runtime module.
+     */
+    @BuildStep
+    void micrometerMetrics(Capabilities capabilities, BuildProducer<AdditionalBeanBuildItem> beans) {
+        if (capabilities.isPresent(Capability.METRICS)) {
+            beans.produce(AdditionalBeanBuildItem.unremovableOf(MicrometerIngestMetricsListener.class));
+        }
     }
 
     /**
