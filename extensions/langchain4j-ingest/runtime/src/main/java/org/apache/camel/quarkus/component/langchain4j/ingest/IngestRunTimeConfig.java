@@ -70,6 +70,24 @@ public interface IngestRunTimeConfig {
             boolean recursive();
 
             /**
+             * Comma-separated Ant path patterns selecting which files a directory pipeline
+             * ingests, matched against the path relative to `source.directory` — for example
+             * `*.txt,*.md`; a doubled-asterisk segment crosses directory levels. Unset means
+             * every file. A file must match `includes` when it is set and must not match
+             * `excludes`; exclusion wins. Ignored for `source.uri` pipelines, whose consumer
+             * carries its own filtering options.
+             */
+            Optional<String> includes();
+
+            /**
+             * Comma-separated Ant path patterns excluding files from a directory pipeline,
+             * matched against the path relative to `source.directory` — for example
+             * `*.tmp,draft-*.txt`. Exclusion wins over `includes`. Ignored for `source.uri`
+             * pipelines, whose consumer carries its own filtering options.
+             */
+            Optional<String> excludes();
+
+            /**
              * Name of the `IdempotentRepository` bean remembering already ingested documents,
              * instead of the built-in in-memory one (100 000 keys, lost on restart). Looked up
              * by name only. On a pipeline consuming from a component it deduplicates deliveries

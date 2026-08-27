@@ -16,6 +16,16 @@ Each file is read as UTF-8 text — unless a `parser` turns binary formats into 
 This experimental extension keeps no record of what it wrote: an edited document re-ingests on top of its old segments, and removing a document from the source removes nothing from the store. Replace and delete arrive with the synchronising engine in a later release. What is remembered is which documents were already ingested — the idempotent repository below.
 ====
 
+`source.includes` and `source.excludes` narrow a directory pipeline to matching files — comma-separated Ant path patterns matched against the path relative to `source.directory`, exclusion winning over inclusion:
+
+[source,properties]
+----
+quarkus.camel.langchain4j.ingest.products.source.includes=*.txt,**/*.txt
+quarkus.camel.langchain4j.ingest.products.source.excludes=**/drafts/**
+----
+
+A pipeline consuming through `source.uri` filters with its consumer's own options instead.
+
 === The idempotent repository
 
 A directory pipeline registers what it ingested, keyed on the file's path, modification time and size: unchanged files are skipped, edited files re-ingest (their previous segments remain, see the note above). The default register is in-memory (100,000 keys) and is there for the poll loop, not for restarts: the consumer re-scans the directory on every poll, so without a register a running application would re-embed the whole directory every few seconds. A restart loses it and re-ingests the directory once; a persistent repository makes restarts free. `source.idempotent-repository` names an `IdempotentRepository` bean to use instead:

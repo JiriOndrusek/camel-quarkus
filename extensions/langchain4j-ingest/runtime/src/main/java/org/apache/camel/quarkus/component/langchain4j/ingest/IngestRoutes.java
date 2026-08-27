@@ -152,7 +152,9 @@ public class IngestRoutes extends RouteBuilder {
         if (external != null && (external.source().directory().isPresent()
                 || external.source().documentId().isPresent()
                 || external.source().idempotentRepository().isPresent()
-                || external.source().idempotentRepositoryAutoCreate())) {
+                || external.source().idempotentRepositoryAutoCreate()
+                || external.source().includes().isPresent()
+                || external.source().excludes().isPresent())) {
             throw new IllegalStateException("Ingestion pipeline '" + name + "' is declared in Java, so its source "
                     + "comes from the @Ingest method. Remove quarkus.camel.langchain4j.ingest." + name + ".source.* , or "
                     + "declare the pipeline in configuration instead.");
@@ -221,6 +223,10 @@ public class IngestRoutes extends RouteBuilder {
                 .idempotentKey("${file:absolute.path}:${file:modified}:${file:size}")
                 .recursive(runtime.source().recursive())
                 .readLock("changed");
+        // Ant-pattern filters, evaluated by the consumer against the path relative to the
+        // directory; exclusion wins over inclusion
+        runtime.source().includes().ifPresent(endpoint::antInclude);
+        runtime.source().excludes().ifPresent(endpoint::antExclude);
         if (parser == null) {
             // text is read as UTF-8; a parser receives the raw bytes instead - the format is its
             // business, and a charset conversion would corrupt a binary document

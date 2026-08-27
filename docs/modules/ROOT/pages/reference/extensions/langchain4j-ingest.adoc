@@ -58,6 +58,16 @@ Each file is read as UTF-8 text — unless a `parser` turns binary formats into 
 This experimental extension keeps no record of what it wrote: an edited document re-ingests on top of its old segments, and removing a document from the source removes nothing from the store. Replace and delete arrive with the synchronising engine in a later release. What is remembered is which documents were already ingested — the idempotent repository below.
 ====
 
+`source.includes` and `source.excludes` narrow a directory pipeline to matching files — comma-separated Ant path patterns matched against the path relative to `source.directory`, exclusion winning over inclusion:
+
+[source,properties]
+----
+quarkus.camel.langchain4j.ingest.products.source.includes=*.txt,**/*.txt
+quarkus.camel.langchain4j.ingest.products.source.excludes=**/drafts/**
+----
+
+A pipeline consuming through `source.uri` filters with its consumer's own options instead.
+
 [id="extensions-langchain4j-ingest-usage-the-idempotent-repository"]
 === The idempotent repository
 
@@ -268,6 +278,26 @@ a| [[quarkus-camel-langchain4j-ingest-pipeline-name-source-recursive]]`link:#qua
 Whether subdirectories are ingested too, when reading a directory.
 | `boolean`
 | `true`
+
+a| [[quarkus-camel-langchain4j-ingest-pipeline-name-source-includes]]`link:#quarkus-camel-langchain4j-ingest-pipeline-name-source-includes[quarkus.camel.langchain4j.ingest."pipeline-name".source.includes]`
+
+Comma-separated Ant path patterns selecting which files a directory pipeline
+ingests, matched against the path relative to `source.directory` — for example
+`*.txt,*.md`; a doubled-asterisk segment crosses directory levels. Unset means
+every file. A file must match `includes` when it is set and must not match
+`excludes`; exclusion wins. Ignored for `source.uri` pipelines, whose consumer
+carries its own filtering options.
+| `string`
+| 
+
+a| [[quarkus-camel-langchain4j-ingest-pipeline-name-source-excludes]]`link:#quarkus-camel-langchain4j-ingest-pipeline-name-source-excludes[quarkus.camel.langchain4j.ingest."pipeline-name".source.excludes]`
+
+Comma-separated Ant path patterns excluding files from a directory pipeline,
+matched against the path relative to `source.directory` — for example
+`*.tmp,draft-*.txt`. Exclusion wins over `includes`. Ignored for `source.uri`
+pipelines, whose consumer carries its own filtering options.
+| `string`
+| 
 
 a| [[quarkus-camel-langchain4j-ingest-pipeline-name-source-idempotent-repository]]`link:#quarkus-camel-langchain4j-ingest-pipeline-name-source-idempotent-repository[quarkus.camel.langchain4j.ingest."pipeline-name".source.idempotent-repository]`
 

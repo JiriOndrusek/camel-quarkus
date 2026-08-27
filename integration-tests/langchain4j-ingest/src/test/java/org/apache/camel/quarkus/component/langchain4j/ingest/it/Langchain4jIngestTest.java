@@ -98,6 +98,23 @@ class Langchain4jIngestTest {
         assertEquals("datasheets/sigma.txt", hit.get("documentId"));
     }
 
+    /** Ant filters on the directory: outside-includes and excluded files never ingest. */
+    @Test
+    void filteredFilesAreNotIngested() {
+        write("note.md", "The filtered LAMBDA-9 memo must never be ingested.");
+        write("draft-spec.txt", "The filtered MU-4 draft must never be ingested.");
+        write("kept.txt", "The PHI-6 sensor is retained by the filters.");
+
+        Awaitility.await().atMost(30, TimeUnit.SECONDS).pollInterval(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> assertNotNull(hit("What is retained?", null, "PHI-6"),
+                        "the included file must be ingested"));
+
+        assertTrue(hits("filtered", null).stream().noneMatch(h -> h.get("text").contains("LAMBDA-9")),
+                "a file outside source.includes must not be ingested");
+        assertTrue(hits("filtered", null).stream().noneMatch(h -> h.get("text").contains("MU-4")),
+                "an excluded file must not be ingested even though it matches includes");
+    }
+
     static void write(String name, String content) {
         RestAssured.given().contentType(ContentType.TEXT).body(content)
                 .post("/langchain4j-ingest/file/" + name)

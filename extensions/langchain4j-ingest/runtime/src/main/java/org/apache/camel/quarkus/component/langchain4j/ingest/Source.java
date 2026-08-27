@@ -51,6 +51,8 @@ public final class Source {
     private String documentId;
     private String idempotentRepository;
     private boolean idempotentRepositoryAutoCreate;
+    private String includes;
+    private String excludes;
     private boolean recursive = true;
 
     private Source(String type) {
@@ -123,6 +125,18 @@ public final class Source {
         return this;
     }
 
+    /** Comma-separated Ant path patterns selecting files; twin of {@code source.includes}. */
+    public Source includes(String patterns) {
+        this.includes = requireText(patterns, "includes");
+        return this;
+    }
+
+    /** Comma-separated Ant path patterns excluding files; twin of {@code source.excludes}. */
+    public Source excludes(String patterns) {
+        this.excludes = requireText(patterns, "excludes");
+        return this;
+    }
+
     /** A null or blank value here would surface much later as an obscure Camel error. */
     private static String requireText(String value, String what) {
         if (value == null || value.isBlank()) {
@@ -166,6 +180,16 @@ public final class Source {
             @Override
             public boolean idempotentRepositoryAutoCreate() {
                 return idempotentRepositoryAutoCreate;
+            }
+
+            @Override
+            public Optional<String> includes() {
+                return Optional.ofNullable(includes);
+            }
+
+            @Override
+            public Optional<String> excludes() {
+                return Optional.ofNullable(excludes);
             }
         };
     }
