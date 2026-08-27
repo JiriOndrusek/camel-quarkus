@@ -166,6 +166,11 @@ quarkus.camel.langchain4j.ingest.s3docs.source.document-id=CamelAwsS3Key
 quarkus.camel.langchain4j.ingest.s3docs.embedding-store=products
 ----
 
+[id="extensions-langchain4j-ingest-usage-readiness"]
+=== Readiness
+
+With xref:reference/extensions/microprofile-health.adoc[`camel-quarkus-microprofile-health`] present, a readiness check named `camel-quarkus-langchain4j-ingest` reports each pipeline under `/q/health/ready`: ready while every pipeline's route is started, down naming the stopped ones. Without a health extension the check is simply not registered.
+
 [id="extensions-langchain4j-ingest-usage-metrics"]
 === Metrics
 

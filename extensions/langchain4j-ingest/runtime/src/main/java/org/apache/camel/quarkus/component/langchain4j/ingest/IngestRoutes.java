@@ -18,6 +18,7 @@ package org.apache.camel.quarkus.component.langchain4j.ingest;
 
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -42,6 +43,7 @@ import org.apache.camel.Expression;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.FileEndpointBuilderFactory;
+import org.apache.camel.health.HealthCheckRegistry;
 import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestResult;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestService;
@@ -100,6 +102,7 @@ public class IngestRoutes extends RouteBuilder {
         names.addAll(runTimeConfig.pipelines().keySet());
         names.removeAll(builderDeclared);
 
+        List<String> activePipelines = new ArrayList<>();
         for (String name : names) {
             IngestBuildTimeConfig.PipelineBuildTimeConfig pipeline = buildTimeConfig.pipelines().get(name);
             IngestRunTimeConfig.PipelineRunTimeConfig runtime = runTimeConfig.pipelines().get(name);
@@ -131,22 +134,32 @@ public class IngestRoutes extends RouteBuilder {
                 configureEndpointSource(name, uri, runtime, service, parser);
                 LOG.infof("Ingestion pipeline '%s': source=%s", name, URISupport.sanitizeUri(uri));
             }
+            activePipelines.add(name);
         }
 
         for (IngestBuilderPipelines.Entry entry : builderPipelines.entries()) {
-            configureBuilderPipeline(entry);
+            if (configureBuilderPipeline(entry)) {
+                activePipelines.add(entry.name());
+            }
+        }
+
+        // the readiness check names every active pipeline; without a health-exposing extension
+        // (camel-quarkus-microprofile-health) the registry is absent and nothing is registered
+        HealthCheckRegistry healthChecks = HealthCheckRegistry.get(getContext());
+        if (healthChecks != null) {
+            healthChecks.register(new IngestReadinessCheck(List.copyOf(activePipelines)));
         }
     }
 
     /** An {@code @Ingest}-declared pipeline: the builder twin of the configuration path. */
-    private void configureBuilderPipeline(IngestBuilderPipelines.Entry entry) {
+    private boolean configureBuilderPipeline(IngestBuilderPipelines.Entry entry) {
         String name = entry.name();
         // configuration can still switch a builder-declared pipeline off, and the check precedes
         // the invocation so a disabled pipeline's method never runs
         IngestRunTimeConfig.PipelineRunTimeConfig external = runTimeConfig.pipelines().get(name);
         if (external != null && !external.enabled()) {
             LOG.infof("Ingestion pipeline '%s' (builder) is disabled", name);
-            return;
+            return false;
         }
         // enabled is the one thing configuration may say about a builder pipeline; anything about
         // its source would be quietly overruled by the @Ingest method, so it is an error instead
@@ -182,6 +195,7 @@ public class IngestRoutes extends RouteBuilder {
 
         LOG.infof("Ingestion pipeline '%s' (builder): source=%s", name,
                 URISupport.sanitizeUri(definition.sourceUri() == null ? definition.sourceType() : definition.sourceUri()));
+        return true;
     }
 
     private void configureFileSource(String name, IngestRunTimeConfig.PipelineRunTimeConfig runtime,

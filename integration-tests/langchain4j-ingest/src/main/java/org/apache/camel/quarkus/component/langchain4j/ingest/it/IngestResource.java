@@ -101,6 +101,18 @@ public class IngestResource {
         return repository != null && repository.contains(key);
     }
 
+    /** Stops or starts a pipeline's route, so the tests can drive the readiness check. */
+    @POST
+    @jakarta.ws.rs.Path("/route/{pipeline}/{action}")
+    public void route(@PathParam("pipeline") String pipeline, @PathParam("action") String action) throws Exception {
+        String routeId = "camel-quarkus-langchain4j-ingest-" + pipeline;
+        if ("stop".equals(action)) {
+            camelContext.getRouteController().stopRoute(routeId);
+        } else {
+            camelContext.getRouteController().startRoute(routeId);
+        }
+    }
+
     /** Writes a document into the watched directory — app-side, so native mode shares the path. */
     @POST
     @jakarta.ws.rs.Path("/file/{name}")
