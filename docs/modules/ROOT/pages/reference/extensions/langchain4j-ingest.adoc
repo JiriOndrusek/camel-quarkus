@@ -174,7 +174,7 @@ With xref:reference/extensions/microprofile-health.adoc[`camel-quarkus-microprof
 [id="extensions-langchain4j-ingest-usage-metrics"]
 === Metrics
 
-With `io.quarkus:quarkus-micrometer` present (plus a registry such as `quarkus-micrometer-registry-prometheus` to expose it), every pipeline counts its work into Micrometer meters tagged with the pipeline name: `cq.ingest.documents` and `cq.ingest.segments` for what was written, `cq.ingest.empty` for blank documents, `cq.ingest.skipped` for duplicate deliveries answered from the register, and `cq.ingest.failures` for ingestions that threw. Without Micrometer the counters cost nothing — the extension does not depend on it.
+With `io.quarkus:quarkus-micrometer` present (plus a registry such as `quarkus-micrometer-registry-prometheus` to expose it), every pipeline counts its work into Micrometer meters tagged with the pipeline name: `cq.ingest.documents` and `cq.ingest.segments` for what was written, `cq.ingest.empty` for blank documents, `cq.ingest.skipped` for duplicate deliveries answered from the register, and `cq.ingest.failures` for ingestions that threw. Without Micrometer the counters cost nothing — the extension does not depend on it. In dev mode the same counters appear on the extension's Dev UI card, one row per pipeline next to its source and configuration.
 
 [id="extensions-langchain4j-ingest-usage-when-ingestion-fails"]
 === When ingestion fails

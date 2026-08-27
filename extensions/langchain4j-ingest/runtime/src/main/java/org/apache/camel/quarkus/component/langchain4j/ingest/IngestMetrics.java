@@ -16,6 +16,12 @@
  */
 package org.apache.camel.quarkus.component.langchain4j.ingest;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.LongAdder;
+
 import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
@@ -23,12 +29,14 @@ import jakarta.inject.Singleton;
 import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestResult;
 
 /**
- * The per-pipeline ingestion counters, forwarded to every {@link IngestMetricsListener} bean —
- * with Micrometer present the increments appear as {@code cq.ingest.*} meters. Without a
- * listener an increment is a no-op.
+ * The per-pipeline ingestion counters: kept in-process (the Dev UI reads them) and forwarded to
+ * every {@link IngestMetricsListener} bean — with Micrometer present the increments also appear
+ * as {@code cq.ingest.*} meters.
  */
 @Singleton
 public class IngestMetrics {
+
+    private final ConcurrentMap<String, ConcurrentMap<String, LongAdder>> counters = new ConcurrentHashMap<>();
 
     @Inject
     @Any
@@ -51,7 +59,18 @@ public class IngestMetrics {
         increment(pipeline, "failures", 1);
     }
 
+    /** A snapshot of one pipeline's counters; a counter never incremented is absent. */
+    public Map<String, Long> counters(String pipeline) {
+        Map<String, Long> snapshot = new LinkedHashMap<>();
+        counters.getOrDefault(pipeline, new ConcurrentHashMap<>())
+                .forEach((counter, adder) -> snapshot.put(counter, adder.sum()));
+        return snapshot;
+    }
+
     private void increment(String pipeline, String counter, long amount) {
+        counters.computeIfAbsent(pipeline, key -> new ConcurrentHashMap<>())
+                .computeIfAbsent(counter, key -> new LongAdder())
+                .add(amount);
         for (IngestMetricsListener listener : listeners) {
             listener.increment(pipeline, counter, amount);
         }
