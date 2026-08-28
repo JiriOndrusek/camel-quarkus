@@ -50,6 +50,13 @@ public class IngestItProducers {
 
     @Produces
     @Singleton
+    @Named("htmlfeed-store")
+    EmbeddingStore<TextSegment> htmlfeedStore() {
+        return new InMemoryEmbeddingStore<>();
+    }
+
+    @Produces
+    @Singleton
     @Named("datasheets-store")
     EmbeddingStore<TextSegment> datasheetsStore() {
         return new InMemoryEmbeddingStore<>();

@@ -16,9 +16,10 @@
  */
 package org.apache.camel.quarkus.component.langchain4j.ingest;
 
-import java.io.StringReader;
+import java.io.ByteArrayInputStream;
 import java.util.Locale;
 
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.xml.sax.InputSource;
@@ -75,9 +76,16 @@ final class IngestParsers {
         return switch (parser) {
         case TIKA -> route.to("tika:parse?tikaParseOutputEncoding=UTF-8")
                 .process(IngestParsers::tikaXhtmlToText);
-        case DOCLING -> route.to("docling:convert?operation=CONVERT_TO_MARKDOWN&contentInBody=true");
+        // the body is pinned to bytes: the docling producer rejects streams, reads a leading-/
+        // String as a server-side file path, and honours CamelDocling* control headers - none of
+        // which a consumer-delivered payload may decide, hence the header sweep
+        case DOCLING -> route.convertBodyTo(byte[].class)
+                .removeHeaders("CamelDocling*")
+                .to("docling:convert?operation=CONVERT_TO_MARKDOWN&contentInBody=true");
         };
     }
+
+    private static final DocumentBuilderFactory DOCUMENT_BUILDER_FACTORY = xhtmlBuilderFactory();
 
     /**
      * Lifts the text out of Tika's XHTML. The endpoint's own plain-text output format loses
@@ -85,18 +93,37 @@ final class IngestParsers {
      * the default XHTML output instead and the markup is dropped here.
      */
     private static void tikaXhtmlToText(Exchange exchange) throws Exception {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        // the XHTML is produced locally by Tika, but a document is attacker-supplied input, so
-        // the usual XML hardening applies
-        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-        factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-        factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-        factory.setNamespaceAware(true);
-        org.w3c.dom.Document document = factory.newDocumentBuilder()
-                .parse(new InputSource(new StringReader(exchange.getIn().getBody(String.class))));
+        // the raw bytes, so the XML prolog's pinned UTF-8 governs the decode - a String read
+        // would go through the exchange charset heuristic, which headers (including
+        // document-controlled ones after the parse) can steer to the wrong charset
+        byte[] xhtml = exchange.getIn().getBody(byte[].class);
+        DocumentBuilder builder;
+        // the factory is configured once; builder creation is cheap but the factory is not
+        // documented thread-safe
+        synchronized (DOCUMENT_BUILDER_FACTORY) {
+            builder = DOCUMENT_BUILDER_FACTORY.newDocumentBuilder();
+        }
+        org.w3c.dom.Document document = builder.parse(new InputSource(new ByteArrayInputStream(xhtml)));
         // the body subtree only: the whole document would prepend Tika's <head><title> - the
         // PDF Title metadata or the resource name - to the ingested text
         org.w3c.dom.Node body = document.getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "body").item(0);
         exchange.getIn().setBody((body != null ? body : document.getDocumentElement()).getTextContent());
+    }
+
+    /**
+     * The XHTML is produced locally by Tika, but a document is attacker-supplied input, so the
+     * usual XML hardening applies.
+     */
+    private static DocumentBuilderFactory xhtmlBuilderFactory() {
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            factory.setNamespaceAware(true);
+            return factory;
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot configure the XHTML parser", e);
+        }
     }
 }

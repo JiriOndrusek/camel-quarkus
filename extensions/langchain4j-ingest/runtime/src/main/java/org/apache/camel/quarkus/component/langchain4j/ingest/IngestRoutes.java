@@ -96,7 +96,7 @@ public class IngestRoutes extends RouteBuilder {
                 continue;
             }
 
-            configurePipeline(name, pipeline, runtime);
+            configurePipeline(name, pipeline, runtime, "");
         }
 
         for (IngestBuilderPipelines.Entry entry : builderPipelines.entries()) {
@@ -128,7 +128,7 @@ public class IngestRoutes extends RouteBuilder {
         }
 
         IngestPipeline definition = builderPipelines.definition(entry);
-        configurePipeline(name, definition.asBuildTimeConfig(), definition.asRunTimeConfig());
+        configurePipeline(name, definition.asBuildTimeConfig(), definition.asRunTimeConfig(), " (builder)");
     }
 
     /**
@@ -139,7 +139,7 @@ public class IngestRoutes extends RouteBuilder {
      * the null fallbacks.
      */
     private void configurePipeline(String name, IngestBuildTimeConfig.PipelineBuildTimeConfig pipeline,
-            IngestRunTimeConfig.PipelineRunTimeConfig runtime) {
+            IngestRunTimeConfig.PipelineRunTimeConfig runtime, String origin) {
         IngestService service = new IngestService(
                 name,
                 beans.resolveStore(name, pipeline == null ? null : pipeline.embeddingStore().orElse(null)),
@@ -158,10 +158,10 @@ public class IngestRoutes extends RouteBuilder {
                 IngestParsers.Parser.of(pipeline == null ? null : pipeline.parser().orElse(null)));
         if (uri == null) {
             directoryRoute(spec);
-            LOG.infof("Ingestion pipeline '%s': source=file", name);
+            LOG.infof("Ingestion pipeline '%s'%s: source=file", name, origin);
         } else {
             consumerRoute(spec, uri);
-            LOG.infof("Ingestion pipeline '%s': source=%s", name, URISupport.sanitizeUri(uri));
+            LOG.infof("Ingestion pipeline '%s'%s: source=%s", name, origin, URISupport.sanitizeUri(uri));
         }
     }
 
@@ -176,12 +176,15 @@ public class IngestRoutes extends RouteBuilder {
         Expression documentId = documentIdExpression(spec.runtime(), Exchange.FILE_NAME);
         beans.maybeAutoCreateRepository(spec.name(), spec.runtime());
 
-        // the route: watch the directory -> (parse) -> split, embed, store; the register in
-        // the endpoint keeps unchanged files from re-ingesting
+        // the route: watch the directory -> resolve the id -> (parse) -> split, embed, store;
+        // the register in the endpoint keeps unchanged files from re-ingesting. The id is
+        // captured before the parse: a parser copies document metadata over the headers, so a
+        // crafted document could otherwise forge its own identity
         ProcessorDefinition<?> route = from(fileEndpoint(spec, directory))
-                .routeId(routeId(spec.name()));
+                .routeId(routeId(spec.name()))
+                .process(resolveDocumentIdProcessor(spec, documentId));
         route = parseStep(route, spec.parser());
-        route.process(directoryIngestProcessor(spec, documentId));
+        route.process(directoryIngestProcessor(spec));
     }
 
     /**
@@ -194,8 +197,9 @@ public class IngestRoutes extends RouteBuilder {
      * half of it.
      */
     private FileEndpointBuilderFactory.FileEndpointConsumerBuilder fileEndpoint(PipelineSpec spec, String directory) {
-        String repositoryName = spec.runtime() == null
-                ? null : spec.runtime().source().idempotentRepository().orElse(null);
+        // the runtime view is never null here: a directory pipeline without one would have
+        // failed the required(source.directory) check before this method is reached
+        String repositoryName = spec.runtime().source().idempotentRepository().orElse(null);
         var endpoint = file(directory)
                 .noop(true)
                 .idempotent(true);
@@ -230,10 +234,13 @@ public class IngestRoutes extends RouteBuilder {
                 ? null : spec.runtime().source().idempotentRepository().orElse(null);
 
         if (repositoryName == null) {
-            // the route: consume -> (parse) -> split, embed, store
-            ProcessorDefinition<?> route = from(uri).routeId(routeId(spec.name()));
+            // the route: consume -> resolve the id -> (parse) -> split, embed, store; the id
+            // is captured before the parse for the same anti-spoofing reason as everywhere
+            ProcessorDefinition<?> route = from(uri)
+                    .routeId(routeId(spec.name()))
+                    .process(resolveDocumentIdProcessor(spec, documentId));
             route = parseStep(route, spec.parser());
-            route.process(plainIngestProcessor(spec, documentId));
+            route.process(plainIngestProcessor(spec));
             return;
         }
 

@@ -57,6 +57,10 @@ public class IngestResource {
     EmbeddingStore<TextSegment> customStore;
 
     @Inject
+    @Named("htmlfeed-store")
+    EmbeddingStore<TextSegment> htmlfeedStore;
+
+    @Inject
     @Named("datasheets-store")
     EmbeddingStore<TextSegment> datasheetsStore;
 
@@ -128,6 +132,7 @@ public class IngestResource {
     public List<SearchHit> search(@QueryParam("q") String query, @QueryParam("store") String storeName) {
         EmbeddingStore<TextSegment> store = switch (storeName == null ? "products" : storeName) {
         case "custom" -> customStore;
+        case "htmlfeed" -> htmlfeedStore;
         case "datasheets" -> datasheetsStore;
         case "s3" -> s3Store;
         case "events" -> eventsStore;

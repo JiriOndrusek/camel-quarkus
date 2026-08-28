@@ -63,8 +63,9 @@ public final class IngestPipeline {
      * corresponding extension must be on the classpath.
      */
     public IngestPipeline parser(String parser) {
-        // the same rule the configuration path is held to at build time
-        if (!SUPPORTED_PARSERS.contains(parser)) {
+        // the same rule the configuration path is held to at build time; the null check comes
+        // first because the unmodifiable set's contains(null) throws a bare NPE
+        if (parser == null || !SUPPORTED_PARSERS.contains(parser)) {
             throw new IllegalArgumentException("parser must be one of " + SUPPORTED_PARSERS
                     + " (got '" + parser + "')");
         }

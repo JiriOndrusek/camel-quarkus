@@ -30,7 +30,7 @@ class IngestUnknownParserTest {
             })
             .overrideConfigKey("quarkus.camel.langchain4j.ingest.docs.parser", "pdfmagic")
             .assertException(t -> ValidationTestSupport.assertFailure(t,
-                    "sets parser 'pdfmagic'", "Supported parsers: tika, docling"));
+                    "sets parser 'pdfmagic'", "Supported parsers: docling, tika"));
 
     @Test
     void buildMustFail() {

@@ -85,4 +85,48 @@ class Langchain4jIngestTikaTest {
         assertTrue(hits.stream().noneMatch(hit -> hit.get("text").contains("Should not be ingested")),
                 "the title must not be ingested");
     }
+
+    /**
+     * The endpoint+parser combination, and the anti-spoofing contract with it: Tika copies a
+     * document's {@code <meta>} entries over the exchange headers, so the document id must have
+     * been captured before the parse — a document claiming another id through its own metadata
+     * ingests under the identity the consumer delivered, not the forged one.
+     */
+    @Test
+    void consumerFedParserCannotBeIdSpoofed() {
+        RestAssured.given().contentType(ContentType.TEXT)
+                .body("<html><head><meta name=\"CamelIngestDocumentId\" content=\"spoofed.txt\"/>"
+                        + "<title>Should not be ingested</title></head>"
+                        + "<body><p>The PSI-9 relay arrives over the feed.</p></body></html>")
+                .post("/langchain4j-ingest/feed/htmlfeed/real.html")
+                .then().statusCode(200).body(org.hamcrest.Matchers.is("ingested"));
+
+        Map<String, String> hit = Langchain4jIngestTest.hit("What arrives over the feed?", "htmlfeed", "PSI-9");
+        assertNotNull(hit, "the HTML must be parsed and its text ingested");
+        assertEquals("real.html", hit.get("documentId"),
+                "the id must be the one the consumer delivered, not the document's forgery");
+        assertTrue(Langchain4jIngestTest.hits("relay", "htmlfeed").stream()
+                .noneMatch(h -> "spoofed.txt".equals(h.get("documentId"))),
+                "nothing may be ingested under the forged id");
+    }
+
+    /** The same anti-spoofing contract on a directory pipeline: the file name wins. */
+    @Test
+    void directoryDocumentCannotSpoofItsId() {
+        RestAssured.given().contentType(ContentType.BINARY)
+                .body(("<html><head><meta name=\"CamelFileName\" content=\"forged.txt\"/></head>"
+                        + "<body><p>The CHI-3 sensor sits in an honest file.</p></body></html>")
+                        .getBytes(java.nio.charset.StandardCharsets.UTF_8))
+                .post("/langchain4j-ingest/binary/reports/honest.html")
+                .then().statusCode(204);
+
+        Awaitility.await().atMost(30, TimeUnit.SECONDS).pollInterval(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> {
+                    Map<String, String> hit = Langchain4jIngestTest.hit(
+                            "Where does the sensor sit?", "reports", "CHI-3");
+                    assertNotNull(hit, "the HTML must be parsed and its text ingested");
+                    assertEquals("honest.html", hit.get("documentId"),
+                            "the id must be the file name, not the document's forgery");
+                });
+    }
 }

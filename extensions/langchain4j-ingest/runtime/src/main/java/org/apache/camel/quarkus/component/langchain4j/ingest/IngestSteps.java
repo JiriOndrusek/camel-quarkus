@@ -42,11 +42,14 @@ final class IngestSteps {
      * result, so an EMPTY outcome would otherwise leave no trace at all — and it commits the
      * file's key, so the file is not retried until it changes. With a parser that deserves a
      * warning: a parse to nothing typically means a missing Tika parser module or an image-only
-     * document.
+     * document. The id comes from the exchange property captured before the parse — a parser
+     * (Tika) copies document metadata over the headers, so a header read here could be spoofed
+     * by the document itself.
      */
-    static Processor directoryIngestProcessor(PipelineSpec spec, Expression documentId) {
+    static Processor directoryIngestProcessor(PipelineSpec spec) {
         return exchange -> {
-            IngestResult result = spec.service().ingest(documentId.evaluate(exchange, String.class),
+            IngestResult result = spec.service().ingest(
+                    (String) exchange.getProperty(DOCUMENT_ID_PROPERTY),
                     exchange.getIn().getBody(String.class));
             if (result.outcome() == IngestResult.Outcome.EMPTY) {
                 if (spec.parser() != null) {
@@ -61,10 +64,14 @@ final class IngestSteps {
         };
     }
 
-    /** The ingest stage of a consumer-fed pipeline without a register: the result is the reply. */
-    static Processor plainIngestProcessor(PipelineSpec spec, Expression documentId) {
+    /**
+     * The ingest stage of a consumer-fed pipeline without a register: the result is the reply.
+     * Like every ingest stage, it reads the id property captured before the parse, never a
+     * post-parse header.
+     */
+    static Processor plainIngestProcessor(PipelineSpec spec) {
         return exchange -> {
-            String id = requireDocumentId(spec.name(), documentId, exchange);
+            String id = (String) exchange.getProperty(DOCUMENT_ID_PROPERTY);
             exchange.getIn().setBody(spec.service().ingest(id, exchange.getIn().getBody(String.class)));
         };
     }

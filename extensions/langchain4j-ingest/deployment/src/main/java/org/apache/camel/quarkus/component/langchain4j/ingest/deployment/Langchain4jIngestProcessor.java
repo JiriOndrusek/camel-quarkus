@@ -86,12 +86,17 @@ class Langchain4jIngestProcessor {
      * BouncyCastle's S/MIME handlers ({@code bcjmail}'s mailcap references
      * {@code jakarta.mail.Part}, and jakarta.mail is not on the classpath). The feature only
      * registers mailcap handlers, which nothing on the ingest path uses, so its registration
-     * is excluded; when angus-activation is absent the pattern matches nothing.
+     * is excluded — but only in the constellation that crashes: PDFBox present (the recipe) and
+     * jakarta.mail absent. An application that uses mail and angus for real keeps its feature.
      */
     @BuildStep
-    ExcludeConfigBuildItem excludeAngusActivationFeature() {
-        return new ExcludeConfigBuildItem("org\\.eclipse\\.angus\\.angus-activation-.*\\.jar",
-                "/META-INF/native-image/org.eclipse.angus/angus-activation/native-image.properties");
+    void excludeAngusActivationFeature(BuildProducer<ExcludeConfigBuildItem> excludeConfig) {
+        if (!QuarkusClassLoader.isClassPresentAtRuntime("org.apache.pdfbox.pdmodel.PDDocument")
+                || QuarkusClassLoader.isClassPresentAtRuntime("jakarta.mail.Part")) {
+            return;
+        }
+        excludeConfig.produce(new ExcludeConfigBuildItem("org\\.eclipse\\.angus\\.angus-activation-.*\\.jar",
+                "/META-INF/native-image/org.eclipse.angus/angus-activation/native-image.properties"));
     }
 
     /**
@@ -311,7 +316,9 @@ class Langchain4jIngestProcessor {
                 if (!IngestPipeline.SUPPORTED_PARSERS.contains(parser)) {
                     validationErrors.produce(new ValidationErrorBuildItem(new ConfigurationException(
                             "Ingestion pipeline '" + entry.getKey() + "' sets parser '" + parser
-                                    + "'. Supported parsers: tika, docling")));
+                                    + "'. Supported parsers: "
+                                    + IngestPipeline.SUPPORTED_PARSERS.stream().sorted()
+                                            .collect(Collectors.joining(", ")))));
                 } else if (!components.contains(parser)) {
                     validationErrors.produce(new ValidationErrorBuildItem(new ConfigurationException(
                             "Ingestion pipeline '" + entry.getKey() + "' parses with '" + parser
