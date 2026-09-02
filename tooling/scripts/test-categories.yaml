@@ -209,6 +209,7 @@ group-10:
   - swift
   - tls-registry
   - weaviate
+  - weaviate-minimal
 group-11:
   - compression-grouped
   - disruptor

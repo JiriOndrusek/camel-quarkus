@@ -272,6 +272,7 @@
         <module>wasm</module>
         <module>weather</module>
         <module>weaviate</module>
+        <module>weaviate-minimal</module>
         <module>xchange</module>
         <module>xj</module>
         <module>xml-grouped</module>
