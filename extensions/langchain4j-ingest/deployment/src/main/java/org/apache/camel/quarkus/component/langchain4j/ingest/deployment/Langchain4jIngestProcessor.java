@@ -48,6 +48,7 @@ import org.apache.camel.quarkus.component.langchain4j.ingest.Langchain4jIngestRe
 import org.apache.camel.quarkus.core.deployment.spi.CamelContextBuildItem;
 import org.apache.camel.quarkus.core.deployment.spi.CamelRuntimeTaskBuildItem;
 import org.apache.camel.quarkus.core.deployment.spi.CamelServiceBuildItem;
+import org.apache.camel.quarkus.core.deployment.spi.RoutesBuilderClassExcludeBuildItem;
 import org.apache.camel.quarkus.core.deployment.util.CamelSupport;
 import org.apache.camel.quarkus.core.deployment.util.PathFilter;
 import org.apache.camel.util.URISupport;
@@ -63,6 +64,17 @@ class Langchain4jIngestProcessor {
     @BuildStep
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
+    }
+
+    /**
+     * The upstream pipeline route builder is a library class the delegating {@link IngestRoutes}
+     * extends; without this exclusion, routes discovery would instantiate it reflectively as a
+     * second, empty routes builder and fail the start on its protected constructor.
+     */
+    @BuildStep
+    RoutesBuilderClassExcludeBuildItem excludeUpstreamPipelineRouteBuilder() {
+        return RoutesBuilderClassExcludeBuildItem.ofClassName(
+                "org.apache.camel.component.langchain4j.ingest.IngestPipelineRouteBuilder");
     }
 
     @BuildStep

@@ -35,9 +35,9 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.component.langchain4j.ingest.IngestResult;
+import org.apache.camel.component.langchain4j.ingest.LangChain4jIngest;
 import org.apache.camel.quarkus.component.langchain4j.ingest.IngestHeaders;
-import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestResult;
-import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestService;
 import org.apache.camel.spi.IdempotentRepository;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -119,8 +119,8 @@ public class IngestResource {
         return result.matches().stream()
                 .map(match -> new SearchHit(
                         match.embedded().text(),
-                        match.embedded().metadata().getString(IngestService.METADATA_PIPELINE),
-                        match.embedded().metadata().getString(IngestService.METADATA_DOCUMENT_ID)))
+                        match.embedded().metadata().getString(LangChain4jIngest.METADATA_PIPELINE),
+                        match.embedded().metadata().getString(LangChain4jIngest.METADATA_DOCUMENT_ID)))
                 .toList();
     }
 
