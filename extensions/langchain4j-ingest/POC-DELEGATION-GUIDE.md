@@ -76,6 +76,18 @@ framework-provided `RouteBuilder` — so discovery skips it by construction, in 
 application, and the exclusion build step was removed again. Kept here as the PoC's most
 instructive finding: a component must never ship a concrete public `RouteBuilder`.
 
+## Inherited upstream evolutions
+
+The upstream component kept moving after the initial delegation; the extension inherits the
+engine changes for free (EmbeddingStoreIngestor orchestration, single store write, tika's
+plain-text output with the pinned-charset decode) and exposes the two new knobs through its
+own surface: `embedding-batch-size` (build-time, default 32, validated at build) and
+`document-splitter` (a `DocumentSplitter` bean name replacing the recursive default), each
+with an `IngestPipeline` builder twin. Note for the eventual #9078 reconciliation: the
+"camel-tika text output loses small documents behind an unflushed writer" claim in that PR's
+comments and this extension's released usage.adoc was disproven against the Tika 2.9/3.3/4.0
+sources — correct it when the parser support is delegated.
+
 ## PoC liberties to undo in the real PR
 
 1. `poms/bom/pom.xml` pins `camel-langchain4j-ingest:4.23.0-SNAPSHOT` (CQ's sanity-check

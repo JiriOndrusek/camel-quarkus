@@ -51,7 +51,7 @@ quarkus.camel.langchain4j.ingest.products.embedding-store=products
 quarkus.camel.langchain4j.ingest.products.embedding-model=my-model
 ----
 
-Each file is read as UTF-8 text — there is no format parsing, so convert a PDF or DOCX before it reaches the pipeline — split into overlapping segments (`max-segment-size`, `max-overlap-size`), embedded in batches and written to the store; a document is held in memory whole while it is split. `embedding-store` and `embedding-model` name CDI beans and may be omitted when the application has exactly one of each. Every segment carries `camel_quarkus_pipeline` and `camel_quarkus_document_id` metadata, so retrieval can cite which document an answer came from. Apart from `enabled` and the `source.*` settings shown here, properties are fixed at build time. A pipeline declared through runtime properties alone — nothing but a `source.directory`, say — is invisible to build-time validation; its checks, including the clash with an equally named `@Ingest` pipeline, report at startup instead.
+Each file is read as UTF-8 text — there is no format parsing, so convert a PDF or DOCX before it reaches the pipeline — split into overlapping segments (`max-segment-size`, `max-overlap-size`; or a `DocumentSplitter` CDI bean named by `document-splitter`, which then replaces the sizes), embedded in batches (`embedding-batch-size`, 32 by default) and written to the store; a document is held in memory whole while it is split. `embedding-store` and `embedding-model` name CDI beans and may be omitted when the application has exactly one of each. Every segment carries `camel_quarkus_pipeline` and `camel_quarkus_document_id` metadata, so retrieval can cite which document an answer came from. Apart from `enabled` and the `source.*` settings shown here, properties are fixed at build time. A pipeline declared through runtime properties alone — nothing but a `source.directory`, say — is invisible to build-time validation; its checks, including the clash with an equally named `@Ingest` pipeline, report at startup instead.
 
 [NOTE]
 ====
@@ -220,6 +220,24 @@ How much of the previous segment each segment repeats, in characters. Overlap ke
 sentence split across a boundary retrievable from either side.
 | `int`
 | `50`
+
+a|icon:lock[title=Fixed at build time] [[quarkus-camel-langchain4j-ingest-pipeline-name-embedding-batch-size]]`link:#quarkus-camel-langchain4j-ingest-pipeline-name-embedding-batch-size[quarkus.camel.langchain4j.ingest."pipeline-name".embedding-batch-size]`
+
+How many segments are embedded per request to the embedding model. Providers with
+generous per-request limits ingest large documents faster with a bigger batch; a batch
+carries at most `embedding-batch-size` × `max-segment-size` characters, so tune the two
+together against the provider's token limits.
+| `int`
+| `32`
+
+a|icon:lock[title=Fixed at build time] [[quarkus-camel-langchain4j-ingest-pipeline-name-document-splitter]]`link:#quarkus-camel-langchain4j-ingest-pipeline-name-document-splitter[quarkus.camel.langchain4j.ingest."pipeline-name".document-splitter]`
+
+Name of the `DocumentSplitter` bean replacing the default recursive splitting;
+`max-segment-size` and `max-overlap-size` are then ignored. Looked up by name only —
+an application may hold unrelated splitters. Segments returned without the identity
+metadata are re-stamped, so a custom splitter cannot break citation.
+| `string`
+| 
 
 a| [[quarkus-camel-langchain4j-ingest-pipeline-name-enabled]]`link:#quarkus-camel-langchain4j-ingest-pipeline-name-enabled[quarkus.camel.langchain4j.ingest."pipeline-name".enabled]`
 

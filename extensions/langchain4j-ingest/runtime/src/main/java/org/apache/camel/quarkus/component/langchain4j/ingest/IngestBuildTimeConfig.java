@@ -40,6 +40,9 @@ public interface IngestBuildTimeConfig {
     /** Mirrors the {@code @WithDefault} below, which can only carry a literal. */
     int DEFAULT_MAX_OVERLAP_SIZE = 50;
 
+    /** Mirrors the {@code @WithDefault} below, which can only carry a literal. */
+    int DEFAULT_EMBEDDING_BATCH_SIZE = 32;
+
     /**
      * Ingestion pipelines by name.
      */
@@ -78,6 +81,23 @@ public interface IngestBuildTimeConfig {
          */
         @WithDefault("50")
         int maxOverlapSize();
+
+        /**
+         * How many segments are embedded per request to the embedding model. Providers with
+         * generous per-request limits ingest large documents faster with a bigger batch; a batch
+         * carries at most `embedding-batch-size` × `max-segment-size` characters, so tune the two
+         * together against the provider's token limits.
+         */
+        @WithDefault("32")
+        int embeddingBatchSize();
+
+        /**
+         * Name of the `DocumentSplitter` bean replacing the default recursive splitting;
+         * `max-segment-size` and `max-overlap-size` are then ignored. Looked up by name only —
+         * an application may hold unrelated splitters. Segments returned without the identity
+         * metadata are re-stamped, so a custom splitter cannot break citation.
+         */
+        Optional<String> documentSplitter();
 
         /**
          * A pipeline reads either a directory or a Camel consumer, and the two halves of that
