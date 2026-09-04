@@ -267,6 +267,12 @@ class Langchain4jIngestProcessor {
                         "Ingestion pipeline '" + entry.getKey() + "': embedding-batch-size must be positive (got "
                                 + pipeline.embeddingBatchSize() + ")")));
             }
+
+            if (pipeline.maxDocumentSize() < 0) {
+                validationErrors.produce(new ValidationErrorBuildItem(new ConfigurationException(
+                        "Ingestion pipeline '" + entry.getKey() + "': max-document-size must not be negative, 0 "
+                                + "meaning no limit (got " + pipeline.maxDocumentSize() + ")")));
+            }
         }
     }
 }

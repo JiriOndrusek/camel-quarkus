@@ -51,7 +51,7 @@ quarkus.camel.langchain4j.ingest.products.embedding-store=products
 quarkus.camel.langchain4j.ingest.products.embedding-model=my-model
 ----
 
-Each file is read as UTF-8 text — there is no format parsing, so convert a PDF or DOCX before it reaches the pipeline — split into overlapping segments (`max-segment-size`, `max-overlap-size`; or a `DocumentSplitter` CDI bean named by `document-splitter`, which then replaces the sizes), embedded in batches (`embedding-batch-size`, 32 by default) and written to the store; a document is held in memory whole while it is split. `embedding-store` and `embedding-model` name CDI beans and may be omitted when the application has exactly one of each. Every segment carries `camel_quarkus_pipeline` and `camel_quarkus_document_id` metadata, so retrieval can cite which document an answer came from. Apart from `enabled` and the `source.*` settings shown here, properties are fixed at build time. A pipeline declared through runtime properties alone — nothing but a `source.directory`, say — is invisible to build-time validation; its checks, including the clash with an equally named `@Ingest` pipeline, report at startup instead.
+Each file is read as UTF-8 text — there is no format parsing, so convert a PDF or DOCX before it reaches the pipeline — split into overlapping segments (`max-segment-size`, `max-overlap-size`; or a `DocumentSplitter` CDI bean named by `document-splitter`, which then replaces the sizes), embedded in batches (`embedding-batch-size`, 32 by default) and written to the store; a document is held in memory whole while it is split, so `max-document-size` can cap it in characters — 0, the default, means no limit, and an oversized document fails the exchange cleanly. `embedding-store` and `embedding-model` name CDI beans and may be omitted when the application has exactly one of each. Every segment carries `camel_quarkus_pipeline` and `camel_quarkus_document_id` metadata, so retrieval can cite which document an answer came from. Apart from `enabled` and the `source.*` settings shown here, properties are fixed at build time. A pipeline declared through runtime properties alone — nothing but a `source.directory`, say — is invisible to build-time validation; its checks, including the clash with an equally named `@Ingest` pipeline, report at startup instead.
 
 [NOTE]
 ====
@@ -229,6 +229,15 @@ carries at most `embedding-batch-size` × `max-segment-size` characters, so tune
 together against the provider's token limits.
 | `int`
 | `32`
+
+a|icon:lock[title=Fixed at build time] [[quarkus-camel-langchain4j-ingest-pipeline-name-max-document-size]]`link:#quarkus-camel-langchain4j-ingest-pipeline-name-max-document-size[quarkus.camel.langchain4j.ingest."pipeline-name".max-document-size]`
+
+Maximum size of one document in characters, applied to the text about to be split;
+0, the default, means no limit. The pipeline holds a document in memory whole, so the
+cap is the protection against oversized — on a consumer-fed pipeline, attacker-sized —
+payloads. An oversized document fails the exchange cleanly.
+| `int`
+| `0`
 
 a|icon:lock[title=Fixed at build time] [[quarkus-camel-langchain4j-ingest-pipeline-name-document-splitter]]`link:#quarkus-camel-langchain4j-ingest-pipeline-name-document-splitter[quarkus.camel.langchain4j.ingest."pipeline-name".document-splitter]`
 

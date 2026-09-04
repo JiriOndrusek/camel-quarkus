@@ -43,6 +43,9 @@ public interface IngestBuildTimeConfig {
     /** Mirrors the {@code @WithDefault} below, which can only carry a literal. */
     int DEFAULT_EMBEDDING_BATCH_SIZE = 32;
 
+    /** Mirrors the {@code @WithDefault} below, which can only carry a literal; 0 means no limit. */
+    int DEFAULT_MAX_DOCUMENT_SIZE = 0;
+
     /**
      * Ingestion pipelines by name.
      */
@@ -90,6 +93,15 @@ public interface IngestBuildTimeConfig {
          */
         @WithDefault("32")
         int embeddingBatchSize();
+
+        /**
+         * Maximum size of one document in characters, applied to the text about to be split;
+         * 0, the default, means no limit. The pipeline holds a document in memory whole, so the
+         * cap is the protection against oversized — on a consumer-fed pipeline, attacker-sized —
+         * payloads. An oversized document fails the exchange cleanly.
+         */
+        @WithDefault("0")
+        int maxDocumentSize();
 
         /**
          * Name of the `DocumentSplitter` bean replacing the default recursive splitting;
