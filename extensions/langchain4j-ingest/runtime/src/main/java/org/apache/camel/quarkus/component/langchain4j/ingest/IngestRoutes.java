@@ -106,6 +106,7 @@ public class IngestRoutes extends IngestPipelineRouteBuilder {
                     pipeline == null ? IngestBuildTimeConfig.DEFAULT_MAX_SEGMENT_SIZE : pipeline.maxSegmentSize(),
                     pipeline == null ? IngestBuildTimeConfig.DEFAULT_MAX_OVERLAP_SIZE : pipeline.maxOverlapSize(),
                     pipeline == null ? IngestBuildTimeConfig.DEFAULT_EMBEDDING_BATCH_SIZE : pipeline.embeddingBatchSize(),
+                    pipeline == null ? IngestBuildTimeConfig.DEFAULT_MAX_DOCUMENT_SIZE : pipeline.maxDocumentSize(),
                     pipeline == null ? null : pipeline.documentSplitter().orElse(null)));
         }
 
@@ -149,6 +150,7 @@ public class IngestRoutes extends IngestPipelineRouteBuilder {
                 definition.maxSegmentSize(),
                 definition.maxOverlapSize(),
                 definition.embeddingBatchSize(),
+                definition.maxDocumentSize(),
                 definition.documentSplitterName().orElse(null));
     }
 
@@ -159,7 +161,8 @@ public class IngestRoutes extends IngestPipelineRouteBuilder {
     private IngestPipelineDefinition definition(String name, String uri,
             IngestRunTimeConfig.PipelineRunTimeConfig runtime,
             EmbeddingStore<TextSegment> store, EmbeddingModel model,
-            int maxSegmentSize, int maxOverlapSize, int embeddingBatchSize, String documentSplitterName) {
+            int maxSegmentSize, int maxOverlapSize, int embeddingBatchSize, int maxDocumentSize,
+            String documentSplitterName) {
 
         IngestPipelineDefinition definition;
         if (uri == null) {
@@ -174,6 +177,9 @@ public class IngestRoutes extends IngestPipelineRouteBuilder {
                 .embeddingModel(model)
                 .splitter(maxSegmentSize, maxOverlapSize)
                 .embeddingBatchSize(embeddingBatchSize);
+        if (maxDocumentSize > 0) {
+            definition.maxDocumentSize(maxDocumentSize);
+        }
         if (documentSplitterName != null) {
             definition.documentSplitter(documentSplitterName);
         }

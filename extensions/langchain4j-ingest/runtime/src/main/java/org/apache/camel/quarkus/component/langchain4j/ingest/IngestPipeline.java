@@ -30,6 +30,7 @@ public final class IngestPipeline {
     private int maxSegmentSize = IngestBuildTimeConfig.DEFAULT_MAX_SEGMENT_SIZE;
     private int maxOverlapSize = IngestBuildTimeConfig.DEFAULT_MAX_OVERLAP_SIZE;
     private int embeddingBatchSize = IngestBuildTimeConfig.DEFAULT_EMBEDDING_BATCH_SIZE;
+    private int maxDocumentSize = IngestBuildTimeConfig.DEFAULT_MAX_DOCUMENT_SIZE;
     private String documentSplitterName;
 
     private IngestPipeline(Source source) {
@@ -77,6 +78,20 @@ public final class IngestPipeline {
     }
 
     /**
+     * Maximum size of one document in characters; unset means no limit. The twin of the
+     * {@code max-document-size} configuration property.
+     */
+    public IngestPipeline maxDocumentSize(int maxDocumentSize) {
+        // the same rule the configuration path is held to at build time
+        if (maxDocumentSize < 1) {
+            throw new IllegalArgumentException(
+                    "max-document-size must be positive (got " + maxDocumentSize + ")");
+        }
+        this.maxDocumentSize = maxDocumentSize;
+        return this;
+    }
+
+    /**
      * Name of the {@code DocumentSplitter} bean replacing the default recursive splitting; the
      * twin of the {@code document-splitter} configuration property. The splitter sizes are then
      * ignored.
@@ -112,6 +127,10 @@ public final class IngestPipeline {
 
     int embeddingBatchSize() {
         return embeddingBatchSize;
+    }
+
+    int maxDocumentSize() {
+        return maxDocumentSize;
     }
 
     Optional<String> documentSplitterName() {
