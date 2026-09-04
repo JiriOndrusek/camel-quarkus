@@ -261,6 +261,12 @@ class Langchain4jIngestProcessor {
                                 + "max-overlap-size must be smaller than it (got " + pipeline.maxSegmentSize()
                                 + " / " + pipeline.maxOverlapSize() + ")")));
             }
+
+            if (pipeline.embeddingBatchSize() < 1) {
+                validationErrors.produce(new ValidationErrorBuildItem(new ConfigurationException(
+                        "Ingestion pipeline '" + entry.getKey() + "': embedding-batch-size must be positive (got "
+                                + pipeline.embeddingBatchSize() + ")")));
+            }
         }
     }
 }

@@ -104,7 +104,9 @@ public class IngestRoutes extends IngestPipelineRouteBuilder {
                     resolveStore(name, pipeline == null ? null : pipeline.embeddingStore().orElse(null)),
                     resolveModel(name, pipeline == null ? null : pipeline.embeddingModel().orElse(null)),
                     pipeline == null ? IngestBuildTimeConfig.DEFAULT_MAX_SEGMENT_SIZE : pipeline.maxSegmentSize(),
-                    pipeline == null ? IngestBuildTimeConfig.DEFAULT_MAX_OVERLAP_SIZE : pipeline.maxOverlapSize()));
+                    pipeline == null ? IngestBuildTimeConfig.DEFAULT_MAX_OVERLAP_SIZE : pipeline.maxOverlapSize(),
+                    pipeline == null ? IngestBuildTimeConfig.DEFAULT_EMBEDDING_BATCH_SIZE : pipeline.embeddingBatchSize(),
+                    pipeline == null ? null : pipeline.documentSplitter().orElse(null)));
         }
 
         for (IngestBuilderPipelines.Entry entry : builderPipelines.entries()) {
@@ -145,7 +147,9 @@ public class IngestRoutes extends IngestPipelineRouteBuilder {
                 resolveStore(name, definition.embeddingStoreName().orElse(null)),
                 resolveModel(name, definition.embeddingModelName().orElse(null)),
                 definition.maxSegmentSize(),
-                definition.maxOverlapSize());
+                definition.maxOverlapSize(),
+                definition.embeddingBatchSize(),
+                definition.documentSplitterName().orElse(null));
     }
 
     /**
@@ -155,7 +159,7 @@ public class IngestRoutes extends IngestPipelineRouteBuilder {
     private IngestPipelineDefinition definition(String name, String uri,
             IngestRunTimeConfig.PipelineRunTimeConfig runtime,
             EmbeddingStore<TextSegment> store, EmbeddingModel model,
-            int maxSegmentSize, int maxOverlapSize) {
+            int maxSegmentSize, int maxOverlapSize, int embeddingBatchSize, String documentSplitterName) {
 
         IngestPipelineDefinition definition;
         if (uri == null) {
@@ -168,7 +172,11 @@ public class IngestRoutes extends IngestPipelineRouteBuilder {
         }
         definition.embeddingStore(store)
                 .embeddingModel(model)
-                .splitter(maxSegmentSize, maxOverlapSize);
+                .splitter(maxSegmentSize, maxOverlapSize)
+                .embeddingBatchSize(embeddingBatchSize);
+        if (documentSplitterName != null) {
+            definition.documentSplitter(documentSplitterName);
+        }
 
         String documentId = runtime == null ? null : runtime.source().documentId().orElse(null);
         if (documentId != null) {

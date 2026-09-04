@@ -29,6 +29,8 @@ public final class IngestPipeline {
     private String embeddingModelName;
     private int maxSegmentSize = IngestBuildTimeConfig.DEFAULT_MAX_SEGMENT_SIZE;
     private int maxOverlapSize = IngestBuildTimeConfig.DEFAULT_MAX_OVERLAP_SIZE;
+    private int embeddingBatchSize = IngestBuildTimeConfig.DEFAULT_EMBEDDING_BATCH_SIZE;
+    private String documentSplitterName;
 
     private IngestPipeline(Source source) {
         this.source = source;
@@ -60,6 +62,30 @@ public final class IngestPipeline {
         return this;
     }
 
+    /**
+     * How many segments are embedded per request to the embedding model; the twin of the
+     * {@code embedding-batch-size} configuration property.
+     */
+    public IngestPipeline embeddingBatchSize(int embeddingBatchSize) {
+        // the same rule the configuration path is held to at build time
+        if (embeddingBatchSize < 1) {
+            throw new IllegalArgumentException(
+                    "embedding-batch-size must be positive (got " + embeddingBatchSize + ")");
+        }
+        this.embeddingBatchSize = embeddingBatchSize;
+        return this;
+    }
+
+    /**
+     * Name of the {@code DocumentSplitter} bean replacing the default recursive splitting; the
+     * twin of the {@code document-splitter} configuration property. The splitter sizes are then
+     * ignored.
+     */
+    public IngestPipeline documentSplitter(String beanName) {
+        this.documentSplitterName = beanName;
+        return this;
+    }
+
     String sourceType() {
         return source.type();
     }
@@ -82,6 +108,14 @@ public final class IngestPipeline {
 
     int maxOverlapSize() {
         return maxOverlapSize;
+    }
+
+    int embeddingBatchSize() {
+        return embeddingBatchSize;
+    }
+
+    Optional<String> documentSplitterName() {
+        return Optional.ofNullable(documentSplitterName);
     }
 
     /** The configuration view, so a builder pipeline reuses every configuration path verbatim. */
