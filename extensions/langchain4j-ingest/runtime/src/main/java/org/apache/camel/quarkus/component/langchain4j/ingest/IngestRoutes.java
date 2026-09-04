@@ -187,6 +187,12 @@ public class IngestRoutes extends IngestPipelineRouteBuilder {
         String documentId = runtime == null ? null : runtime.source().documentId().orElse(null);
         if (documentId != null) {
             definition.documentId(documentId);
+        } else if (uri != null) {
+            // the upstream default header follows the design/headers.adoc convention
+            // (CamelLangChain4jIngestDocumentId); this extension released the contract as
+            // CamelIngestDocumentId in 3.39.0, so the legacy name is pinned here - the
+            // compatibility burden stays downstream, where it was created
+            definition.documentId(IngestHeaders.DOCUMENT_ID);
         }
 
         String repositoryName = runtime == null ? null : runtime.source().idempotentRepository().orElse(null);
