@@ -65,14 +65,16 @@ missing-component hint (`IngestComponentPresence` + recorder), and native-image 
 
 ## The routes-discovery trap (important finding)
 
-camel-quarkus discovers `RouteBuilder` classes via Jandex and instantiates them reflectively.
-The upstream `IngestPipelineRouteBuilder` is a public `RouteBuilder` in a dependency jar, so
-discovery tried to boot it as a second, empty routes builder and crashed on its protected
-constructor (`IllegalAccessException` inside `CamelMainRecorder.addRoutesBuilder`). Fix in
-`Langchain4jIngestProcessor#excludeUpstreamPipelineRouteBuilder` using
-`RoutesBuilderClassExcludeBuildItem` (precedent: camel-lra). Any CQ application using the
-plain upstream component would hit the same — a point for the real delegation PR (keep the
-exclusion here, or reshape the upstream class).
+camel-quarkus discovers `RouteBuilder` classes via Jandex and instantiates them reflectively
+(filtering to *public and non-abstract* classes). The upstream `IngestPipelineRouteBuilder`
+was originally a concrete public `RouteBuilder` in a dependency jar, so discovery tried to
+boot it as a second, empty routes builder and crashed on its protected constructor
+(`IllegalAccessException` inside `CamelMainRecorder.addRoutesBuilder`). First fixed with a
+`RoutesBuilderClassExcludeBuildItem` (precedent: camel-lra), then **resolved structurally**:
+the upstream class is now an *abstract* base with an `of(...)` factory — the shape of every
+framework-provided `RouteBuilder` — so discovery skips it by construction, in every CQ
+application, and the exclusion build step was removed again. Kept here as the PoC's most
+instructive finding: a component must never ship a concrete public `RouteBuilder`.
 
 ## PoC liberties to undo in the real PR
 
