@@ -32,8 +32,6 @@ import jakarta.enterprise.inject.Instance;
 import jakarta.enterprise.inject.literal.NamedLiteral;
 import jakarta.inject.Inject;
 import org.apache.camel.CamelContextAware;
-import org.apache.camel.component.langchain4j.ingest.IngestPipelineDefinition;
-import org.apache.camel.component.langchain4j.ingest.IngestPipelineRouteBuilder;
 import org.apache.camel.spi.IdempotentRepository;
 import org.jboss.logging.Logger;
 

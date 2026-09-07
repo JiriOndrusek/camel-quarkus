@@ -2,7 +2,7 @@
 
 PoC status (2026-09-03): lives only on the local branch `feature/ingest-delegation-poc`
 (based on origin/main, camel-quarkus 3.40.0-SNAPSHOT / Camel 4.22.x). The extension now
-delegates its engine and route topology to the upstream `org.apache.camel:camel-langchain4j-ingest`
+delegates its ENGINE (split/embed/store, dedup semantics) to the upstream `org.apache.camel:camel-langchain4j-ingest`
 component (locally built 4.23.0-SNAPSHOT from `~/camel` branch `feature/camel-langchain4j-ingest`;
 see the `POC-GUIDE.md` in that module). Verified: 23/23 deployment test suites and 12/12 JVM
 integration tests (incl. Kafka and S3/MinIO containers) green.
@@ -15,7 +15,7 @@ integration tests (incl. Kafka and S3/MinIO containers) green.
  core/IngestService   (engine)         ──>  deleted; upstream IngestService inside the
  core/IngestResult                          langchain4j-ingest producer; upstream IngestResult
  IngestRoutes 386 lines:                    IngestRoutes ~250 lines:
-   route topology (file endpoint,             extends upstream IngestPipelineRouteBuilder,
+   route topology (file endpoint,             extends the INTERNAL IngestPipelineRouteBuilder,
    idempotentConsumer EIP, processors)        overrides pipelines(): pure config translation
    + CDI bean resolution                      + CDI bean resolution (kept, same messages)
  metadata keys camel_quarkus_*         ──>  camel_ingest_* (upstream-neutral)
@@ -40,8 +40,8 @@ missing-component hint (`IngestComponentPresence` + recorder), and native-image 
 
  runtime start
  ─────────────
- ArC creates IngestRoutes (@ApplicationScoped, extends upstream IngestPipelineRouteBuilder)
-   camel-main adds it as a routes builder -> configure() [inherited from upstream] calls:
+ ArC creates IngestRoutes (@ApplicationScoped, extends the internal IngestPipelineRouteBuilder)
+   camel-main adds it as a routes builder -> configure() [internal builder] calls:
    │
    ├─ pipelines()   [overridden HERE — the whole delegation]
    │    ├─ union of quarkus.camel.langchain4j.ingest.<name>.* config roots
@@ -52,7 +52,8 @@ missing-component hint (`IngestComponentPresence` + recorder), and native-image 
    │    ├─ idempotent repo: existence check + trySetCamelContext (CQ message kept)
    │    └─ -> List<IngestPipelineDefinition>   (store/model passed as INSTANCES)
    │
-   └─ upstream configurePipeline() per definition
+   └─ internal configurePipeline() per definition (topology package-private in CQ; option-4 split:
+        engine-only upstream delegation - the topology is replaceable by an upstream artifact or kamelets)
         directory  -> file endpoint w/ safe defaults + register
         consumer   -> any URI; dedup now INSIDE the upstream producer (no idempotentConsumer EIP)
         both       -> setProperty(document id) -> to("langchain4j-ingest:<name>?...")
