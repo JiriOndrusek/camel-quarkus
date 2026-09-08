@@ -24,8 +24,9 @@ delegates its ENGINE to the upstream `org.apache.camel:camel-langchain4j-ingest`
 (locally built 4.23.0-SNAPSHOT from `~/camel` branch `feature/camel-langchain4j-ingest-pr1`;
 see the `POC-GUIDE.md` in that module) and its TOPOLOGY to the langchain4j-ingest Kamelets
 (locally built camel-kamelets 4.22.1-SNAPSHOT from `~/camel-kamelets` branch
-`ingest-kamelet-1-sink`). Verified: 25/25 deployment test suites and 12/12 JVM
-integration tests (incl. Kafka and S3/MinIO containers) green.
+`ingest-kamelet-1-sink`). Verified: 25/25 deployment test suites, 12/12 JVM
+integration tests and 12/12 NATIVE integration tests (incl. Kafka and S3/MinIO
+containers; container-built Mandrel image, `-Dquarkus.native.container-build=true`) green.
 
 ## What moved where
 
@@ -106,6 +107,17 @@ templated endpoint URI literally, where it no longer parses as a registry refere
 (`No type conversion available ... String -> IdempotentRepository`). `kameletUri()` in
 `IngestRoutes` therefore restores `#bean:` after encoding.
 
+A third trap, native-only: camel-kamelet ships
+`org.apache.camel.component.kamelet.utils.format.schema.DelegatingSchemaResolver`, which
+hard-references the schema resolvers of the *optional* camel-jackson/-avro/-protobuf
+dependencies. CQ's own kamelet tests never make it reachable, but the file consumer inside
+the file-source kamelet does (ScheduledBatchPollingConsumer processor dispatch), and the
+native-image analysis dies parsing it (`UnresolvedElementException ... JsonSchemaResolver`).
+Fixed in CQ's `KameletProcessor` with a conditional `RemovedResourceBuildItem` — a
+standalone, upstream-able change that benefits every kamelet+native user. The kamelet
+YAMLs themselves needed nothing: the kamelet extension's default
+`quarkus.camel.kamelet.identifiers=*` embeds all catalog kamelets as native resources.
+
 ## Inherited upstream evolutions
 
 The upstream component kept moving after the initial delegation; the extension inherits the
@@ -137,6 +149,8 @@ sources — correct it when the parser support is delegated.
 cd ~/camel-quarkus
 ./mvnw clean install -f extensions/langchain4j-ingest       # runtime + 25 deployment suites
 ./mvnw clean test -f integration-tests/langchain4j-ingest   # 12 JVM ITs (needs Docker)
+./mvnw clean verify -f integration-tests/langchain4j-ingest -Dnative \
+    -Dquarkus.native.container-build=true                   # 12 native ITs (no local GraalVM needed)
 ```
 
 The locally-built jars must be in the local repo first:
