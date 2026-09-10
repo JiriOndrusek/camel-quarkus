@@ -2191,6 +2191,13 @@
                 <artifactId>camel-langchain4j-embeddingstore-api</artifactId>
                 <version>${camel.version}</version>
             </dependency>
+            <!-- PoC: locally-built upstream ingest component, ahead of the Camel 4.23 upgrade;
+                 becomes ${camel.version} once camel-quarkus moves to Camel 4.23.x -->
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-langchain4j-ingest</artifactId>
+                <version>${camel.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.camel</groupId>
                 <artifactId>camel-langchain4j-tokenizer</artifactId>

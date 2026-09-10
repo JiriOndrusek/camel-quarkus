@@ -17,7 +17,9 @@
 package org.apache.camel.quarkus.component.langchain4j.ingest;
 
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -35,8 +37,8 @@ import org.apache.camel.CamelContextAware;
 import org.apache.camel.Exchange;
 import org.apache.camel.Expression;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestResult;
-import org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestService;
+import org.apache.camel.component.langchain4j.ingest.IngestResult;
+import org.apache.camel.component.langchain4j.ingest.LangChain4jIngest;
 import org.apache.camel.spi.IdempotentRepository;
 import org.apache.camel.support.builder.ExpressionBuilder;
 import org.apache.camel.support.processor.idempotent.MemoryIdempotentRepository;
@@ -47,7 +49,10 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.file;
 
 /**
  * Generates one Camel route per configured ingestion pipeline. Users never see these routes —
- * they are the implementation of the configuration.
+ * they are the implementation of the configuration. Splitting, embedding, storing and
+ * per-document-id deduplication happen inside the {@code langchain4j-ingest} producer each
+ * route ends in; what stays here is the Quarkus DX: the configuration model, CDI bean
+ * resolution and the configuration-level validations, all with their established messages.
  */
 @ApplicationScoped
 public class IngestRoutes extends RouteBuilder {
@@ -73,9 +78,6 @@ public class IngestRoutes extends RouteBuilder {
     @Any
     Instance<EmbeddingModel> modelCandidates;
 
-    /** Exchange property carrying the resolved document id. */
-    private static final String DOCUMENT_ID_PROPERTY = "CamelQuarkusIngestDocumentId";
-
     @Override
     public void configure() {
         // a pipeline may be declared entirely through runtime properties - the documented
@@ -98,12 +100,12 @@ public class IngestRoutes extends RouteBuilder {
                 continue;
             }
 
-            IngestService service = new IngestService(
-                    name,
+            String producerUri = producerUri(name,
                     resolveStore(name, pipeline == null ? null : pipeline.embeddingStore().orElse(null)),
                     resolveModel(name, pipeline == null ? null : pipeline.embeddingModel().orElse(null)),
                     pipeline == null ? IngestBuildTimeConfig.DEFAULT_MAX_SEGMENT_SIZE : pipeline.maxSegmentSize(),
-                    pipeline == null ? IngestBuildTimeConfig.DEFAULT_MAX_OVERLAP_SIZE : pipeline.maxOverlapSize());
+                    pipeline == null ? IngestBuildTimeConfig.DEFAULT_MAX_OVERLAP_SIZE : pipeline.maxOverlapSize(),
+                    runtime);
 
             // a consumer URI says "consume from this"; its absence says "read that directory"
             String uri = pipeline == null ? null : pipeline.source().uri().orElse(null);
@@ -113,10 +115,10 @@ public class IngestRoutes extends RouteBuilder {
                         + "reads one source: keep the URI, or drop it to read the directory.");
             }
             if (uri == null) {
-                configureFileSource(name, runtime, service);
+                configureFileSource(name, runtime, producerUri);
                 LOG.infof("Ingestion pipeline '%s': source=file", name);
             } else {
-                configureEndpointSource(name, uri, runtime, service);
+                configureEndpointSource(name, uri, runtime, producerUri);
                 LOG.infof("Ingestion pipeline '%s': source=%s", name, URISupport.sanitizeUri(uri));
             }
         }
@@ -152,16 +154,16 @@ public class IngestRoutes extends RouteBuilder {
         IngestPipeline definition = builderPipelines.definition(entry);
         IngestRunTimeConfig.PipelineRunTimeConfig runtime = definition.asRunTimeConfig();
 
-        IngestService service = new IngestService(
-                name,
+        String producerUri = producerUri(name,
                 resolveStore(name, definition.embeddingStoreName().orElse(null)),
                 resolveModel(name, definition.embeddingModelName().orElse(null)),
                 definition.maxSegmentSize(),
-                definition.maxOverlapSize());
+                definition.maxOverlapSize(),
+                runtime);
 
         switch (definition.sourceType()) {
-        case "file" -> configureFileSource(name, runtime, service);
-        case "endpoint" -> configureEndpointSource(name, definition.sourceUri(), runtime, service);
+        case "file" -> configureFileSource(name, runtime, producerUri);
+        case "endpoint" -> configureEndpointSource(name, definition.sourceUri(), runtime, producerUri);
         default -> throw new IllegalStateException("Unknown source type " + definition.sourceType());
         }
 
@@ -170,7 +172,7 @@ public class IngestRoutes extends RouteBuilder {
     }
 
     private void configureFileSource(String name, IngestRunTimeConfig.PipelineRunTimeConfig runtime,
-            IngestService service) {
+            String producerUri) {
         String directory = required(name, runtime == null ? null : runtime.source().directory().orElse(null),
                 "source.directory");
         // built with the Endpoint DSL rather than concatenated: a directory containing ? # & or a
@@ -193,6 +195,9 @@ public class IngestRoutes extends RouteBuilder {
             // re-ingest large directories; lost on restart
             endpoint.idempotentRepository(MemoryIdempotentRepository.memoryIdempotentRepository(100_000));
         }
+        // the endpoint register already keeps the same file version from being ingested twice,
+        // so no repository is passed to the producer; the file consumer discards the reply, and
+        // an EMPTY outcome would otherwise leave no trace at all
         from(endpoint
                 // an edited file gets a new key and re-ingests; old segments remain (append)
                 .idempotentKey("${file:absolute.path}:${file:modified}:${file:size}")
@@ -200,12 +205,11 @@ public class IngestRoutes extends RouteBuilder {
                 .readLock("changed")
                 .charset(StandardCharsets.UTF_8.name()))
                 .routeId(routeId(name))
+                .setProperty(LangChain4jIngest.DOCUMENT_ID_PROPERTY, documentId)
+                .to(producerUri)
                 .process(exchange -> {
-                    IngestResult result = service.ingest(documentId.evaluate(exchange, String.class),
-                            exchange.getIn().getBody(String.class));
-                    // the file consumer discards the result, so an EMPTY outcome would
-                    // otherwise leave no trace at all
-                    if (result.outcome() == IngestResult.Outcome.EMPTY) {
+                    IngestResult result = exchange.getIn().getBody(IngestResult.class);
+                    if (result != null && result.outcome() == IngestResult.Outcome.EMPTY) {
                         LOG.debugf("Ingestion pipeline '%s': document '%s' contained no text, nothing was written",
                                 name, result.documentId());
                     }
@@ -215,50 +219,20 @@ public class IngestRoutes extends RouteBuilder {
     /**
      * The escape hatch: any Camel consumer feeds the pipeline. Which part of the exchange
      * identifies the document is the consumer's business, so {@code source.document-id} says it —
-     * {@code ${header.CamelAwsS3Key}} for an S3 consumer, the message header otherwise.
+     * {@code ${header.CamelAwsS3Key}} for an S3 consumer, the message header otherwise. The id is
+     * validated here, with the established messages, and travels to the producer as an exchange
+     * property; deduplication by document id — first write wins, a blank document releases its
+     * claim, a duplicate is answered SKIPPED — happens inside the producer when the pipeline
+     * configures a register.
      */
     private void configureEndpointSource(String name, String uri,
-            IngestRunTimeConfig.PipelineRunTimeConfig runtime, IngestService service) {
+            IngestRunTimeConfig.PipelineRunTimeConfig runtime, String producerUri) {
         Expression documentId = documentIdExpression(runtime, IngestHeaders.DOCUMENT_ID);
-        maybeAutoCreateRepository(name, runtime);
-        String repositoryName = runtime == null ? null : runtime.source().idempotentRepository().orElse(null);
-        if (repositoryName == null) {
-            from(uri)
-                    .routeId(routeId(name))
-                    .process(exchange -> {
-                        String id = requireDocumentId(name, documentId, exchange);
-                        exchange.getIn().setBody(service.ingest(id, exchange.getIn().getBody(String.class)));
-                    });
-            return;
-        }
-        // duplicates skip the block and the tail processor answers SKIPPED; first write wins
-        // per id. The EIP keys on the validated id property, evaluating the expression once
-        IdempotentRepository repository = resolveRepository(name, repositoryName);
         from(uri)
                 .routeId(routeId(name))
-                .process(exchange -> exchange.setProperty(DOCUMENT_ID_PROPERTY,
+                .process(exchange -> exchange.setProperty(LangChain4jIngest.DOCUMENT_ID_PROPERTY,
                         requireDocumentId(name, documentId, exchange)))
-                .idempotentConsumer(exchangeProperty(DOCUMENT_ID_PROPERTY), repository)
-                .process(exchange -> {
-                    String id = (String) exchange.getProperty(DOCUMENT_ID_PROPERTY);
-                    IngestResult result = service.ingest(id, exchange.getIn().getBody(String.class));
-                    if (result.outcome() == IngestResult.Outcome.EMPTY) {
-                        // a blank document wrote nothing, so it must not keep the eager claim
-                        // on the id - a later, populated delivery under the same id would be
-                        // answered SKIPPED. The completion-time confirm() of the removed key
-                        // is a no-op in the memory, file and JDBC repositories alike
-                        repository.remove(id);
-                    }
-                    exchange.getIn().setBody(result);
-                })
-                .end()
-                .process(exchange -> {
-                    if (exchange.getProperty(Exchange.DUPLICATE_MESSAGE, false, Boolean.class)) {
-                        exchange.getIn().setBody(new IngestResult(name,
-                                (String) exchange.getProperty(DOCUMENT_ID_PROPERTY), 0,
-                                IngestResult.Outcome.SKIPPED));
-                    }
-                });
+                .to(producerUri);
     }
 
     private static String requireDocumentId(String name, Expression documentId, Exchange exchange) {
@@ -269,7 +243,48 @@ public class IngestRoutes extends RouteBuilder {
                     + "quarkus.camel.langchain4j.ingest." + name + ".source.document-id at where the "
                     + "consumer puts it.");
         }
+        if (id.isBlank()) {
+            throw new IllegalArgumentException("Ingestion pipeline '" + name + "': documentId is required");
+        }
         return id;
+    }
+
+    /**
+     * The {@code langchain4j-ingest} endpoint the route ends in: the resolved store and model
+     * instances are bound into the Camel registry and referenced by name, the way the endpoint
+     * takes them. Built through {@code createQueryString} rather than concatenated, so no option
+     * can be injected through a crafted value. A consumer-fed pipeline's register is passed to
+     * the producer, which deduplicates internally; a directory pipeline deduplicates in its file
+     * endpoint instead.
+     */
+    private String producerUri(String name, EmbeddingStore<TextSegment> store, EmbeddingModel model,
+            int maxSegmentSize, int maxOverlapSize, IngestRunTimeConfig.PipelineRunTimeConfig runtime) {
+        Map<String, Object> options = new LinkedHashMap<>();
+        options.put("maxSegmentSize", String.valueOf(maxSegmentSize));
+        options.put("maxOverlapSize", String.valueOf(maxOverlapSize));
+        options.put("embeddingStore", "#bean:" + bindInstance(name, "store", store));
+        options.put("embeddingModel", "#bean:" + bindInstance(name, "model", model));
+        boolean directory = runtime != null && runtime.source().directory().isPresent();
+        if (!directory) {
+            // the directory pipeline auto-creates and validates its register itself, around its
+            // file endpoint
+            maybeAutoCreateRepository(name, runtime);
+            String repositoryName = runtime == null ? null : runtime.source().idempotentRepository().orElse(null);
+            if (repositoryName != null) {
+                // validated here so a missing bean fails with the configuration-level message
+                // before the endpoint would report its own
+                resolveRepository(name, repositoryName);
+                options.put("idempotentRepository", "#bean:" + repositoryName);
+            }
+        }
+        return LangChain4jIngest.SCHEME + ":" + name + "?" + URISupport.createQueryString(options);
+    }
+
+    /** Binds a resolved CDI instance to the Camel registry, so the endpoint can reference it. */
+    private String bindInstance(String name, String what, Object instance) {
+        String ref = routeId(name) + "-" + what;
+        getContext().getRegistry().bind(ref, instance);
+        return ref;
     }
 
     private Expression documentIdExpression(IngestRunTimeConfig.PipelineRunTimeConfig runtime,
@@ -313,13 +328,6 @@ public class IngestRoutes extends RouteBuilder {
     }
 
     /**
-     * CDI is the one mechanism for both lookups: the named path selects on the qualifier, the
-     * unnamed path counts the candidates — through handles, so beans are not instantiated merely
-     * to be counted. Picking one silently would bind a pipeline to whichever bean happened to be
-     * discovered first. A raw-typed registry search cannot serve here: it never matches a bean
-     * typed {@code EmbeddingStore<TextSegment>}.
-     */
-    /**
      * Binds an in-memory register under the configured name, unless a bean with that name
      * already exists — {@code camel.beans.*} beans are bound before route builders run, so both
      * they and CDI beans are visible here and win.
@@ -361,6 +369,13 @@ public class IngestRoutes extends RouteBuilder {
         return repository;
     }
 
+    /**
+     * CDI is the one mechanism for both lookups: the named path selects on the qualifier, the
+     * unnamed path counts the candidates — through handles, so beans are not instantiated merely
+     * to be counted. Picking one silently would bind a pipeline to whichever bean happened to be
+     * discovered first. A raw-typed registry search cannot serve here: it never matches a bean
+     * typed {@code EmbeddingStore<TextSegment>}.
+     */
     private <T> T resolve(String name, Instance<T> candidates, String configured, String what, String property) {
         if (configured != null) {
             Instance<T> named = candidates.select(NamedLiteral.of(configured));
