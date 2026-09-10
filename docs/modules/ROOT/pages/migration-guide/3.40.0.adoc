@@ -43,12 +43,26 @@ startup when they are registered without it. Its behaviour is otherwise unchange
 === Segment metadata keys are now camel_ingest_*
 
 Segments were written with `camel_quarkus_pipeline` and `camel_quarkus_document_id` metadata; the extension writes the runtime-neutral `camel_ingest_pipeline` and `camel_ingest_document_id` instead.
-These are the key names of the `camel-langchain4j-ingest` component introduced in Camel 4.23.0, which this extension will delegate its engine to — stores written from 3.40.0 on are compatible with that engine as-is, so users of this LTS stream will not face a second key change.
+These are the key names of the `camel-langchain4j-ingest` component introduced in Camel 4.23.0, which this extension delegates its engine to — stores written from 3.40.0 on are compatible with that engine as-is, so users of this LTS stream will not face a second key change.
 Nothing else about the metadata changed: the values and the segment text are written exactly as before.
 
 Newly ingested segments carry the new keys, while segments already in a store keep the old ones — retrieval that filters or cites by these keys sees the mismatch.
 Either re-ingest the affected documents (with the default in-memory register a restart re-ingests the directory; clear a persistent register first) so everything carries the new keys, or make retrieval read both key pairs during the transition.
 
+=== The ingestion engine moved to the camel-langchain4j-ingest component
+
+The extension now drives the `camel-langchain4j-ingest` component instead of carrying its own implementation.
+The declaration surface is unchanged — the same `quarkus.camel.langchain4j.ingest.*` properties and the same `@Ingest` builder API — and grew new options (`parser`, `embedding-batch-size`, `document-splitter`, `max-document-size`).
+Java code reading the request-reply outcome as `IngestResult` now imports `org.apache.camel.component.langchain4j.ingest.IngestResult` — the extension's `org.apache.camel.quarkus.component.langchain4j.ingest.core.IngestResult` is gone with the engine, so this surfaces at compile time.
+
+A pipeline's route id is now `langchain4j-ingest-<pipeline-name>` rather than `camel-quarkus-langchain4j-ingest-<pipeline-name>`.
+Tooling that addresses the routes by id — JMX, the management endpoints, `camel.main.*` route policies keyed on ids — must use the new names.
+The prefix is the component's scheme name, so it follows the component.
+
+A consumer-fed delivery whose document id resolves to nothing still fails the exchange, but the message now comes from the component and names its `documentIdHeader` endpoint option instead of the `quarkus.camel.langchain4j.ingest.<name>.source.document-id` property.
+Code matching on the message text must be adjusted; matching on the exception type is unaffected.
+
+The default document-id header on consumer-fed pipelines remains `CamelIngestDocumentId` as released — the extension pins it over the component's own `CamelLangChain4jIngestDocumentId` default — so routes that set the header keep working unchanged.
 == JTA extension changes
 
 === Rollback and resume failures are no longer swallowed
