@@ -26,7 +26,8 @@ import java.util.Set;
 public final class IngestPipeline {
 
     /** The values {@link #parser(String)} and the {@code parser} configuration property accept. */
-    public static final Set<String> SUPPORTED_PARSERS = IngestPipelineDefinition.SUPPORTED_PARSERS;
+    // keep in step with the parser switch in IngestRoutes.parseSteps
+    public static final Set<String> SUPPORTED_PARSERS = Set.of("tika", "docling");
 
     private final Source source;
     private String embeddingStoreName;
