@@ -85,6 +85,10 @@ public class IngestResource {
     EmbeddingStore<TextSegment> cappedStore;
 
     @Inject
+    @Named("filtered-store")
+    EmbeddingStore<TextSegment> filteredStore;
+
+    @Inject
     ProducerTemplate producerTemplate;
 
     @Inject
@@ -149,6 +153,7 @@ public class IngestResource {
         case "events" -> eventsStore;
         case "reports" -> reportsStore;
         case "capped" -> cappedStore;
+        case "filtered" -> filteredStore;
         case "scans" -> scansStore;
         default -> productsStore;
         };

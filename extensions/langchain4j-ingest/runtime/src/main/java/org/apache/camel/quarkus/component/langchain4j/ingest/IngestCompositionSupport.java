@@ -161,10 +161,15 @@ final class IngestCompositionSupport {
     /**
      * Built through {@code createQueryString} rather than concatenated, so no Kamelet property can be injected. The
      * {@code #bean:} prefix of registry references is restored afterwards: percent-encoded it would survive the
-     * template substitution literally and reach the inner endpoint as text instead of a bean lookup.
+     * template substitution literally and reach the inner endpoint as text instead of a bean lookup. Slashes and
+     * commas are restored for the same reason — a parameter-position placeholder keeps them encoded all the way to
+     * the inner endpoint, which would read an Ant pattern such as {@code **}{@code /draft-*} as literal text.
      */
     static String kameletUri(String kamelet, Map<String, Object> properties) {
-        return "kamelet:" + kamelet + "?" + URISupport.createQueryString(properties).replace("%23bean%3A", "#bean:");
+        return "kamelet:" + kamelet + "?" + URISupport.createQueryString(properties)
+                .replace("%23bean%3A", "#bean:")
+                .replace("%2F", "/")
+                .replace("%2C", ",");
     }
 
     static String routeId(String name) {

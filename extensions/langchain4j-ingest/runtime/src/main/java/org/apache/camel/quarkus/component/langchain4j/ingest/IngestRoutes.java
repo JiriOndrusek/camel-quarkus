@@ -34,6 +34,7 @@ import jakarta.enterprise.inject.literal.NamedLiteral;
 import jakarta.inject.Inject;
 import org.apache.camel.CamelContextAware;
 import org.apache.camel.Expression;
+import org.apache.camel.Predicate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.langchain4j.ingest.LangChain4jIngestHeaders;
 import org.apache.camel.model.ProcessorDefinition;
@@ -206,6 +207,9 @@ public class IngestRoutes extends RouteBuilder {
         if (documentSplitterName != null) {
             sink.put("documentSplitter", "#bean:" + documentSplitterName);
         }
+        if (runtime != null) {
+            filterParams(name, runtime.filter(), sink);
+        }
         sink.put("embeddingStore", "#bean:" + storeRef);
         sink.put("embeddingModel", "#bean:" + modelRef);
 
@@ -260,6 +264,29 @@ public class IngestRoutes extends RouteBuilder {
             route.to(kameletUri("langchain4j-ingest-sink", sink));
             LOG.infof("Ingestion pipeline '%s': source=%s", name, URISupport.sanitizeUri(uri));
         }
+    }
+
+    /**
+     * The filter options, forwarded to the sink Kamelet and enforced by the component: id
+     * patterns act before the dedup claim, the size floor and the predicate answer
+     * {@code FILTERED} and release theirs. Only the predicate bean is validated here — it is
+     * the one reference the component would otherwise fail on with a binding error instead of
+     * a configuration-level message.
+     */
+    private void filterParams(String name, IngestRunTimeConfig.PipelineRunTimeConfig.FilterRunTimeConfig filter,
+            Map<String, Object> sink) {
+        filter.includeId().ifPresent(patterns -> sink.put("includeId", patterns));
+        filter.excludeId().ifPresent(patterns -> sink.put("excludeId", patterns));
+        if (filter.minDocumentSize() > 0) {
+            sink.put("minDocumentSize", String.valueOf(filter.minDocumentSize()));
+        }
+        filter.documentFilter().ifPresent(beanName -> {
+            if (getContext().getRegistry().lookupByNameAndType(beanName, Predicate.class) == null) {
+                throw new IllegalStateException("Ingestion pipeline '" + name + "' references document filter '"
+                        + beanName + "' but no Predicate bean with that name exists");
+            }
+            sink.put("documentFilter", "#bean:" + beanName);
+        });
     }
 
     /**

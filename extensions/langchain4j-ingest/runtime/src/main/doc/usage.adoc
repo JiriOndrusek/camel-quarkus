@@ -23,6 +23,20 @@ Replace and delete arrive with the synchronising engine in a later release.
 What is remembered is which documents were already ingested — the idempotent repository below.
 ====
 
+=== Filtering deliveries
+
+Not everything a source delivers belongs in a knowledge base.
+Per pipeline, `filter.include-id` and `filter.exclude-id` take comma-separated Ant-style patterns matched against the document id — exclusion wins, and a rejected delivery never reads the body or occupies its dedup claim.
+`filter.min-document-size` rejects documents too short to carry retrievable content, and `filter.document-filter` names a Camel `Predicate` bean evaluated with the body available.
+A rejected delivery is answered with a `filtered` outcome; the enforcement lives in the `camel-langchain4j-ingest` component.
+
+[source,properties]
+----
+quarkus.camel.langchain4j.ingest.products.filter.include-id=**/*.pdf,**/*.md
+quarkus.camel.langchain4j.ingest.products.filter.exclude-id=**/draft-*
+quarkus.camel.langchain4j.ingest.products.filter.min-document-size=100
+----
+
 === The idempotent repository
 
 A directory pipeline registers what it ingested, keyed on the file's path, modification time and size: unchanged files are skipped, edited files re-ingest (their previous segments remain, see the note above).

@@ -177,6 +177,33 @@ public final class IngestPipeline {
             public SourceRunTimeConfig source() {
                 return sourceConfig;
             }
+
+            @Override
+            public FilterRunTimeConfig filter() {
+                // the builder does not expose filters yet; configuration-declared pipelines do
+                return new FilterRunTimeConfig() {
+
+                    @Override
+                    public Optional<String> includeId() {
+                        return Optional.empty();
+                    }
+
+                    @Override
+                    public Optional<String> excludeId() {
+                        return Optional.empty();
+                    }
+
+                    @Override
+                    public int minDocumentSize() {
+                        return 0;
+                    }
+
+                    @Override
+                    public Optional<String> documentFilter() {
+                        return Optional.empty();
+                    }
+                };
+            }
         };
     }
 }
