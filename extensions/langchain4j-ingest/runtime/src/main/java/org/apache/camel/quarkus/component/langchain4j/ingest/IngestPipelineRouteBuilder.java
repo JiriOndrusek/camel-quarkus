@@ -22,10 +22,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.camel.Component;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.camel.Component;
 import org.apache.camel.Exchange;
 import org.apache.camel.Expression;
 import org.apache.camel.Processor;

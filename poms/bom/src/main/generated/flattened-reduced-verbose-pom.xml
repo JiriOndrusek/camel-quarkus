@@ -8989,7 +8989,7 @@
       <dependency>
         <groupId>org.apache.zookeeper</groupId>
         <artifactId>zookeeper</artifactId>
-        <version>3.9.5</version>
+        <version>3.9.6</version>
         <exclusions>
           <exclusion>
             <groupId>ch.qos.logback</groupId>
@@ -9004,7 +9004,7 @@
       <dependency>
         <groupId>org.apache.zookeeper</groupId>
         <artifactId>zookeeper-jute</artifactId>
-        <version>3.9.5</version>
+        <version>3.9.6</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.woodstox</groupId>
