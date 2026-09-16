@@ -7178,6 +7178,21 @@
 
             <!--$ Other third party dependencies $-->
             <dependency>
+                <groupId>ai.docling</groupId>
+                <artifactId>docling-core</artifactId>
+                <version>${docling-java.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ai.docling</groupId>
+                <artifactId>docling-serve-api</artifactId>
+                <version>${docling-java.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ai.docling</groupId>
+                <artifactId>docling-serve-client</artifactId>
+                <version>${docling-java.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>ca.uhn.hapi</groupId>
                 <artifactId>hapi-base</artifactId>
                 <version>${hapi-base.version}</version>
