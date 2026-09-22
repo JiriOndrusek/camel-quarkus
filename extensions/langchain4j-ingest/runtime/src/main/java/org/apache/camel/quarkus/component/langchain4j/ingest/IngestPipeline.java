@@ -26,7 +26,7 @@ import java.util.Set;
 public final class IngestPipeline {
 
     /** The values {@link #parser(String)} and the {@code parser} configuration property accept. */
-    public static final Set<String> SUPPORTED_PARSERS = IngestPipelineDefinition.SUPPORTED_PARSERS;
+    public static final Set<String> SUPPORTED_PARSERS = IngestParser.labels();
 
     private final Source source;
     private String embeddingStoreName;
@@ -176,6 +176,34 @@ public final class IngestPipeline {
             @Override
             public SourceRunTimeConfig source() {
                 return sourceConfig;
+            }
+
+            @Override
+            public FilterRunTimeConfig filter() {
+                // the builder exposes no filter API; IngestRoutes overlays configuration-supplied
+                // filters over this empty default
+                return new FilterRunTimeConfig() {
+
+                    @Override
+                    public Optional<String> includeId() {
+                        return Optional.empty();
+                    }
+
+                    @Override
+                    public Optional<String> excludeId() {
+                        return Optional.empty();
+                    }
+
+                    @Override
+                    public int minDocumentSize() {
+                        return 0;
+                    }
+
+                    @Override
+                    public Optional<String> documentFilter() {
+                        return Optional.empty();
+                    }
+                };
             }
         };
     }

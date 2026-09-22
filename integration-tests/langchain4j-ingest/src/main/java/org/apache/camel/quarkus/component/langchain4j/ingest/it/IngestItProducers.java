@@ -106,6 +106,21 @@ public class IngestItProducers {
 
     @Produces
     @Singleton
+    @Named("filtered-store")
+    EmbeddingStore<TextSegment> filteredStore() {
+        return new InMemoryEmbeddingStore<>();
+    }
+
+    /** The documentFilter predicate of the filtered pipeline: content marked confidential stays out. */
+    @Produces
+    @Singleton
+    @Named("confidentialFilter")
+    org.apache.camel.Predicate confidentialFilter() {
+        return exchange -> !exchange.getMessage().getBody(String.class).contains("CONFIDENTIAL");
+    }
+
+    @Produces
+    @Singleton
     @Named("test-model")
     EmbeddingModel embeddingModel() {
         return new DeterministicEmbeddingModel(64);
